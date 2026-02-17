@@ -1,0 +1,501 @@
+---
+description: Visual-first mockup builder for frontend work — see first, refine with user, then build. Integrates with agentic workflow.
+alwaysApply: false
+---
+
+# MOCKUP-BUILDER-AGENT: VISUAL-FIRST FRONTEND DEVELOPMENT
+
+## Purpose
+
+This rule provides a **visual-first, iterative refinement workflow** for frontend tasks. Instead of building full scaffolding immediately, it:
+
+1. **Shows** a working mockup with mock data in the browser
+2. **Refines** based on visual feedback from the user
+3. **Builds** the real implementation once design is confirmed
+
+**When to use:** Frontend pages, components, or UI flows where visual confirmation prevents rework.
+
+**Integration:** Works within the agentic workflow as an **optional execution mode** during Implementation Phase (Step 7: UI work).
+
+---
+
+## Core Principles (Inherited from Agentic Workflow)
+
+1. **Inquiry First** — Ask what the user wants to see before building
+2. **Phased Delivery** — Mockup → Refinement → Implementation (three micro-phases)
+3. **Beaded Tracking** — Mockup work is part of the current bead; refinements update the same bead
+4. **Contract Awareness** — Mockups respect UI routes and data contracts, but use mock data
+5. **No Placeholders** — Mockups are fully functional with realistic mock data, not wireframes
+
+---
+
+## When to Trigger Mockup Mode
+
+### Automatic Triggers (Agent Should Offer)
+
+During Session Start Ritual (Step 4: Draft the Plan), if the task involves:
+
+- **New page creation** — "Build user dashboard", "Add application review page"
+- **Complex UI flows** — Multi-step forms, wizards, conditional layouts
+- **Data-heavy interfaces** — Tables, lists, cards with filtering/sorting
+- **Visual-critical features** — Charts, graphs, status indicators
+
+**Agent should ask:**
+
+> "This task involves [UI component/page]. Would you like to:
+> A) **Mockup-first** — See a working prototype with mock data, refine visually, then build backend
+> B) **Full-stack** — Build backend + frontend together (standard workflow)
+> C) **Backend-first** — Build API/data layer first, then UI"
+
+### User-Requested Triggers
+
+User explicitly says:
+- "Show me a mockup first"
+- "Let's see how it looks before building"
+- "Build the UI with fake data"
+- "Prototype the interface"
+
+---
+
+## Mockup-First Workflow
+
+### Phase 1: Inquiry & Planning
+
+**Same as agentic workflow Steps 1-3:**
+
+1. Establish scope (bead confirmed)
+2. Verify phase alignment
+3. Read contracts (UI routes, data model for mock structure)
+
+**Additional mockup-specific questions:**
+
+```
+MOCKUP PLANNING for BD-XXX: [Task description]
+
+UI CONTRACTS:
+- Route: [e.g., /admin/applications/review]
+- Layout: [e.g., AdminLayout with sidebar]
+- Data shape: [Based on data model, e.g., Application with status, applicant, timestamps]
+
+MOCKUP SCOPE:
+- Components: [List components to build]
+- Interactions: [Buttons, forms, filters — what should be clickable?]
+- States: [Empty state, loading, error, success]
+- Mock data: [Realistic sample data to populate]
+
+VISUAL QUESTIONS:
+- Should this match existing [similar page] style?
+- Any specific layout preferences (grid, list, cards)?
+- Mobile-responsive or desktop-first?
+
+Confirm mockup scope? (Y/n)
+```
+
+### Phase 2: Build Mockup
+
+**Create a fully functional Svelte page/component with:**
+
+1. **Realistic mock data** — Inline JSON or separate mock file
+2. **Full interactivity** — Buttons work (console logs or alerts), forms validate client-side
+3. **All UI states** — Empty, loading (simulated), error (simulated), populated
+4. **Proper styling** — TailwindCSS + shadcn-svelte components, matches existing design system
+5. **No backend calls** — Use `setTimeout` to simulate async operations if needed
+
+**Example mockup structure:**
+
+```svelte
+<script>
+  import { Button } from '@/Components/ui/button';
+  import { Card } from '@/Components/ui/card';
+  
+  // Mock data (realistic structure per data model)
+  let applications = $state([
+    { id: 1, name: 'John Doe', status: 'pending', submitted_at: '2024-01-15' },
+    { id: 2, name: 'Jane Smith', status: 'approved', submitted_at: '2024-01-14' },
+    // ... more mock entries
+  ]);
+  
+  let loading = $state(false);
+  
+  function handleApprove(id) {
+    console.log('Approve clicked for:', id);
+    // Simulate backend call
+    loading = true;
+    setTimeout(() => {
+      applications = applications.map(app => 
+        app.id === id ? { ...app, status: 'approved' } : app
+      );
+      loading = false;
+    }, 500);
+  }
+</script>
+
+<div class="p-6">
+  <h1 class="text-2xl font-bold mb-4">Application Review</h1>
+  
+  {#if applications.length === 0}
+    <Card class="p-8 text-center text-muted-foreground">
+      No applications to review
+    </Card>
+  {:else}
+    <div class="space-y-4">
+      {#each applications as app}
+        <Card class="p-4">
+          <div class="flex justify-between items-center">
+            <div>
+              <h3 class="font-semibold">{app.name}</h3>
+              <p class="text-sm text-muted-foreground">
+                Submitted: {app.submitted_at}
+              </p>
+            </div>
+            <Button 
+              onclick={() => handleApprove(app.id)}
+              disabled={loading || app.status === 'approved'}
+            >
+              {app.status === 'approved' ? 'Approved' : 'Approve'}
+            </Button>
+          </div>
+        </Card>
+      {/each}
+    </div>
+  {/if}
+</div>
+```
+
+**Delivery:**
+
+1. Create the mockup file(s)
+2. Add route (Inertia route in `web.php` returning mockup page)
+3. Run dev server if not running: `./vendor/bin/sail npm run dev`
+4. Open browser to mockup route
+5. **Take screenshot** using browser tools
+6. Present to user:
+
+```
+MOCKUP READY: [Route URL]
+
+Screenshot: [Attach screenshot]
+
+IMPLEMENTED:
+- [Component 1]: [Description]
+- [Component 2]: [Description]
+- Mock data: [X] sample records
+- States: Empty, loading, populated
+
+INTERACTIVE ELEMENTS:
+- [Button/action]: [What it does in mockup]
+
+Please review and provide feedback:
+- Layout/spacing OK?
+- Missing any UI elements?
+- Any state/interaction issues?
+- Ready to proceed with backend integration?
+```
+
+### Phase 3: Iterative Refinement
+
+**User provides feedback. Agent responds with:**
+
+- **Small tweaks** (color, spacing, text) → Make changes immediately, show updated screenshot
+- **New components** (add filter, change layout) → Update mockup, show screenshot
+- **Data structure changes** → Update mock data shape, note if data model contract needs updating
+
+**Refinement loop continues until user says:**
+- "Looks good"
+- "Proceed with backend"
+- "Build it"
+
+**Track refinements:**
+
+```bash
+# Update bead with refinement notes
+bd update <id> --body="Mockup refined: Added filter dropdown, changed card layout per user feedback"
+```
+
+### Phase 4: Build Real Implementation
+
+**Once mockup is approved:**
+
+1. **Confirm transition:**
+
+```
+Mockup approved. Building real implementation:
+
+BACKEND WORK:
+- Controller: [ControllerName]
+- Service: [ServiceName] (business logic)
+- Form Request: [RequestName] (validation)
+- Policy: [Authorization checks]
+
+FRONTEND WORK:
+- Replace mock data with Inertia props
+- Wire up form submissions to backend routes
+- Add error handling (validation errors, server errors)
+- Add loading states (Inertia progress indicator)
+
+TESTS:
+- [Test scenario 1]
+- [Test scenario 2]
+
+Proceed with full build? (Y/n)
+```
+
+2. **Follow standard agentic workflow:**
+   - TDD loop (write tests, implement backend)
+   - Replace mock data with real Inertia props
+   - Wire up forms with `useForm()` and backend routes
+   - Add proper error handling
+   - Test end-to-end
+
+3. **Preserve mockup (optional):**
+   - Keep mockup file as `[PageName]Mockup.svelte` for reference
+   - Or delete mockup and route once real implementation is complete
+   - Document in bead: "Mockup archived at commit [hash]"
+
+---
+
+## Integration Points with Agentic Workflow
+
+### During Session Start Ritual
+
+**After Step 3 (Read Contracts), before Step 4 (Draft the Plan):**
+
+If task involves UI work, agent asks:
+
+> "This task requires building [UI component/page]. Approach:
+> A) Mockup-first (see it, refine it, build it)
+> B) Standard full-stack (build backend + frontend together)
+> 
+> Which do you prefer?"
+
+### During Implementation Phase
+
+**Step 7 (UI work) can now be:**
+
+- **Standard:** Build UI with real backend integration (existing workflow)
+- **Mockup-first:** Follow Mockup-Builder-Agent workflow (this rule)
+
+### During Session End Ritual
+
+**Handoff report includes mockup status:**
+
+```
+SESSION SUMMARY
+
+COMPLETED:
+- BD-XXX: [Description]
+  - Mockup: Approved and archived
+  - Backend: Implemented with tests
+  - Frontend: Integrated with real data
+  - Tests passing: Yes
+```
+
+Or if still in mockup phase:
+
+```
+IN PROGRESS:
+- BD-XXX: [Description] (Mockup refinement - awaiting user feedback)
+  - Mockup URL: [Route]
+  - Refinements done: [List]
+  - Next: User approval → build backend
+```
+
+---
+
+## Mockup-Specific Rules
+
+### Mock Data Quality
+
+- **Realistic:** Use real-looking names, dates, statuses (not "Test 1", "Test 2")
+- **Varied:** Show different states (approved/pending, old/new dates)
+- **Edge cases:** Include empty state, single item, many items (pagination mockup)
+- **Errors:** Mock validation errors, server errors for demonstration
+
+### No Backend Shortcuts
+
+- **Never** create API endpoints just for mockup data
+- **Never** seed database for mockups
+- **Always** use inline or imported mock JSON
+
+### Browser-Based Review
+
+- **Always** run mockup in browser (via Inertia route)
+- **Always** provide screenshot in first presentation
+- **Optionally** use browser tools (cursor-ide-browser) to demonstrate interactions
+
+### Styling Consistency
+
+- **Match existing pages:** Check 2-3 similar pages for layout patterns
+- **Use design system:** shadcn-svelte components, existing Tailwind classes
+- **Responsive by default:** Test mobile view in browser tools
+
+---
+
+## Example: Full Mockup-First Flow
+
+**User request:** "Build the application review page for admins"
+
+**Agent response:**
+
+> This task involves building a new admin page with table/card layout and approval actions. Would you like to:
+> A) **Mockup-first** — See a working prototype with sample applications, refine layout/interactions, then build backend
+> B) **Full-stack** — Build controller + service + page together (standard workflow)
+
+**User:** "A, mockup first"
+
+**Agent:**
+
+```
+MOCKUP PLANNING for BD-042: Admin application review page
+
+UI CONTRACTS:
+- Route: /admin/applications/review
+- Layout: AdminLayout (sidebar + header)
+- Data shape: Application { id, applicant_name, status, submitted_at, documents[] }
+
+MOCKUP SCOPE:
+- Components: ApplicationCard, ApprovalButton, StatusBadge
+- Interactions: Approve button (simulated), status filter dropdown
+- States: Empty (no applications), loading (simulated), populated (5 sample apps)
+- Mock data: 5 realistic applications with varied statuses
+
+VISUAL QUESTIONS:
+- Should this match existing Admin/Users/Index.svelte table style?
+- Prefer cards or table layout?
+- Mobile-responsive needed for Phase 1?
+
+Confirm mockup scope? (Y/n)
+```
+
+**User:** "Yes, use cards like the users page, desktop-only for now"
+
+**Agent builds mockup, runs dev server, takes screenshot:**
+
+```
+MOCKUP READY: http://localhost/admin/applications/review
+
+[Screenshot attached]
+
+IMPLEMENTED:
+- ApplicationCard: Shows applicant name, status badge, submission date
+- ApprovalButton: Click logs to console, simulates 500ms backend call
+- StatusFilter: Dropdown filters by pending/approved/rejected
+- Mock data: 5 sample applications
+- States: Empty state card, loading spinner on approve
+
+INTERACTIVE ELEMENTS:
+- Approve button: Simulates approval, updates status badge
+- Filter dropdown: Filters cards by status
+
+Please review and provide feedback:
+- Layout/spacing OK?
+- Missing any UI elements?
+- Any state/interaction issues?
+- Ready to proceed with backend integration?
+```
+
+**User:** "Add a 'View Details' button to each card"
+
+**Agent updates mockup, shows new screenshot:**
+
+```
+Updated mockup with "View Details" button (currently logs application ID to console).
+
+[New screenshot]
+
+Any other changes, or ready to build backend?
+```
+
+**User:** "Looks good, build it"
+
+**Agent:**
+
+```
+Mockup approved. Building real implementation:
+
+BACKEND WORK:
+- Controller: Admin/ApplicationController@review
+- Service: ApplicationReviewService (approval logic)
+- Form Request: ApproveApplicationRequest (validation)
+- Policy: ApplicationPolicy@approve (admin-only check)
+
+FRONTEND WORK:
+- Replace mock data with Inertia props from controller
+- Wire up Approve button to POST /admin/applications/{id}/approve
+- Add error handling (validation errors, unauthorized)
+- Add Inertia progress indicator for loading state
+
+TESTS:
+- test_admin_can_view_review_page
+- test_admin_can_approve_application
+- test_non_admin_cannot_approve
+- test_approve_with_invalid_id_returns_404
+
+Proceed with full build? (Y/n)
+```
+
+**User:** "Yes"
+
+**Agent follows standard TDD workflow, builds backend + integrates frontend, runs tests, commits.**
+
+---
+
+## Anti-Patterns to Avoid
+
+| Anti-Pattern | Problem | Fix |
+|--------------|---------|-----|
+| Mockup without user confirmation | Builds wrong UI, wasted work | Always show screenshot and get approval before backend |
+| Placeholder mockups | "TODO: Add table here" defeats purpose | Build fully functional mockup with realistic data |
+| Backend calls in mockup | Couples mockup to backend, defeats isolation | Use inline mock data and setTimeout for async simulation |
+| Skipping edge cases | Mockup only shows happy path | Include empty state, loading, error states in mockup |
+| No screenshot | User can't review without running locally | Always provide screenshot in first presentation |
+
+---
+
+## Success Metrics
+
+**Mockup-first is working when:**
+
+- User says "perfect, build it" after 1-2 refinements
+- No UI rework needed after backend integration
+- Mockup accurately predicted data structure needs
+- User catches layout issues before backend work starts
+
+**Mockup-first is NOT working when:**
+
+- User requests major changes after backend is built
+- Mockup doesn't match data model (requires refactor)
+- Mockup takes longer than full-stack would have
+- User says "just build it" repeatedly (wrong use case)
+
+---
+
+## Quick Decision Tree
+
+```
+Is this a frontend task?
+├─ No → Use standard agentic workflow
+└─ Yes → Is it visually complex or new UI pattern?
+    ├─ No (simple form, existing pattern) → Use standard workflow
+    └─ Yes → Offer mockup-first option
+        ├─ User accepts → Follow Mockup-Builder-Agent workflow
+        └─ User declines → Use standard workflow
+```
+
+---
+
+## Summary
+
+Mockup-Builder-Agent is **not a replacement** for agentic workflow. It's an **optional execution mode** for frontend work that benefits from visual confirmation.
+
+**Use it when:**
+- Building new pages or complex UI flows
+- User wants to see before committing to implementation
+- Visual design is uncertain or needs iteration
+
+**Skip it when:**
+- Building simple forms or CRUD pages with established patterns
+- Backend-first makes more sense (API design is the blocker)
+- User explicitly requests full-stack approach
+
+**Integration:** Triggered during Session Start Ritual (Step 4) or Implementation Phase (Step 7: UI work). Maintains beads, phase alignment, and inquiry-first principles throughout.

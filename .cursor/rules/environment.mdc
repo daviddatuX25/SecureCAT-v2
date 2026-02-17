@@ -1,0 +1,89 @@
+---
+description: Local development environment standards using Laravel Sail (Docker) for PHP, Artisan, Composer, and MySQL
+alwaysApply: true
+---
+
+# DEVELOPMENT ENVIRONMENT
+
+## Default: Laravel Sail (Docker)
+
+This project uses **Laravel Sail** as the standard local development environment. Sail provides a consistent, reproducible stack via Docker containers.
+
+### Stack
+
+| Layer | Technology | Version |
+|-------|------------|---------|
+| Runtime | PHP | 8.2+ |
+| Database | MySQL | 8.0+ |
+| Node.js | Node | 20+ |
+| Cache/Queue | Redis | Latest (when needed) |
+| Real-time | Laravel Reverb | Latest (when needed) |
+
+### Standard Commands
+
+When suggesting terminal commands, prefer Sail-based commands:
+
+```bash
+# Start containers
+./vendor/bin/sail up -d
+
+# Stop containers
+./vendor/bin/sail down
+
+# Artisan commands
+./vendor/bin/sail artisan migrate
+./vendor/bin/sail artisan key:generate
+./vendor/bin/sail artisan db:seed
+./vendor/bin/sail artisan make:model ModelName -mfs
+
+# Composer
+./vendor/bin/sail composer install
+./vendor/bin/sail composer require package/name
+
+# NPM / Frontend
+./vendor/bin/sail npm install
+./vendor/bin/sail npm run dev
+./vendor/bin/sail npm run build
+
+# Queue and real-time (when configured)
+./vendor/bin/sail artisan queue:work
+./vendor/bin/sail artisan reverb:start
+
+# Testing
+./vendor/bin/sail artisan test
+./vendor/bin/sail npx playwright test
+```
+
+**Alias tip**: Add `alias sail='./vendor/bin/sail'` to shell config for shorter commands.
+
+### When to Use Sail
+
+- **Always** for PHP, Artisan, Composer, database operations (migrations, seeders), and queue workers
+- **Respect user choice**: If the user explicitly runs bare `php artisan` or `composer`, they may be using bare metal intentionally
+- **NPM/Vite**: Sail by default; host-based NPM acceptable for WSL users experiencing file watch issues
+
+### Setup Documentation
+
+For first-time setup, reference any `docs/SETUP*.md` files for:
+
+- Sail installation (`php artisan sail:install`)
+- Container configuration
+- Environment variables (`.env`)
+- Daily workflow
+
+### Scope
+
+| Context | Use Sail? |
+|---------|-----------|
+| Local development | Yes |
+| CI/CD pipelines | Optional (can use standard PHP/Node images) |
+| Production | No (standard Laravel deployment) |
+
+---
+
+## Why Sail?
+
+- **Stack alignment**: Ensures consistent MySQL version and PHP extensions across all developers
+- **Environment parity**: Eliminates "works on my machine" issues, WSL path problems, missing PHP extensions
+- **Zero local setup**: No need to install PHP, Composer, MySQL, or Node locally
+- **Pre-configured**: `laravel/sail` is included in `composer.json` require-dev
