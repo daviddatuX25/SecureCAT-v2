@@ -206,6 +206,27 @@ Concise checklist to avoid repeating non-obvious bugs. Add new items when fixing
 
 ---
 
+## UI Best Practices
+
+### Icons & Visual Elements
+
+- **Never use emojis in UI components**
+  - Cause: Emojis are inconsistent across platforms, not accessible, and unprofessional
+  - Fix: Use Lucide icons (`lucide-svelte`) for all iconography:
+    ```svelte
+    import { Check, Users, Calendar } from 'lucide-svelte';
+    <Check class="w-4 h-4" />
+    ```
+
+- **Never use long dashes (—) or special Unicode characters**
+  - Cause: Inconsistent rendering, accessibility issues, and unprofessional appearance
+  - Fix: Use standard ASCII characters:
+    - Use `-` (hyphen) or `--` (double hyphen) instead of `—` (em dash) or `–` (en dash)
+    - Use `"` and `'` instead of `"` and `'` (smart quotes)
+    - Use `...` instead of `…` (ellipsis character)
+
+---
+
 ## Adding New Gotchas
 
 Format:
