@@ -1,10 +1,21 @@
 ---
-description: Frontend/Inertia/Svelte/Shadcn-svelte gotchas — avoid repeat bugs. Apply when editing Svelte pages, app.js, or build/config.
+description: Beads daemon/repo mismatch and frontend/Inertia/Svelte/shadcn gotchas — avoid repeat bugs. Apply when: Beads/daemon errors (e.g. "Failed to restart daemon", "Daemon health check failed", "ECONNREFUSED", bd commands failing), or when editing Svelte pages, app.js, or build/config.
 alwaysApply: false
 ---
 # Developing Gotchas (Living Doc)
 
 Concise checklist to avoid repeating non-obvious bugs. Add new items when fixing issues.
+
+---
+
+## Beads (bd) Daemon & Repo ID
+
+### Daemon won't start / ECONNREFUSED
+
+- **"Failed to restart daemon" or "Daemon health check failed: Error: Socket error: connect ECONNREFUSED"**
+  - Cause: Daemon exits on startup due to **repository ID mismatch**: the database is bound to a different repo fingerprint than the current git remote. Nothing listens on the socket, so the CLI gets ECONNREFUSED.
+  - Fix: Update the database to match the current repo: run `bd migrate --update-repo-id` and confirm when prompted. If you have other clones, run the same in each so they stay in sync.
+  - If you copied `.beads` from another repo or want a fresh start: `rm -rf .beads && bd init`.
 
 ---
 
@@ -98,6 +109,10 @@ Concise checklist to avoid repeating non-obvious bugs. Add new items when fixing
     />
     ```
 
+- **Multi-value checkboxes (e.g. role selection) not submitting in useForm**
+  - Cause: Inertia Svelte useForm has `setStore` not `set`; `form.set()` is the Svelte store's set. Checkbox array state may not sync into form payload before submit.
+  - Fix: Use local `$state` for selected values, then `$form.transform((data) => ({ ...data, roles: selectedRoles }))` before `$form.put(url)` so payload includes the array at submit time.
+
 ### Ecosystem Limitations
 
 - **Laravel Precognition (real-time validation) not working with Svelte**
@@ -144,6 +159,12 @@ Concise checklist to avoid repeating non-obvious bugs. Add new items when fixing
   - Fix: Use correct relative depth:
     - From `Pages/Admin/`: `../../Layouts/`
     - From `Pages/Admin/Programs/`: `../../../Layouts/`
+
+### UI / Layout
+
+- **Mobile sidebar backdrop blocks all interaction**
+  - Cause: Backdrop element rendered unconditionally on mobile (`lg:hidden`); with `fixed inset-0 z-40` it always covers the viewport below lg breakpoint.
+  - Fix: Render backdrop only when sidebar is open: wrap in `{#if sidebarOpen} ... {/if}`.
 
 ### Svelte Syntax
 

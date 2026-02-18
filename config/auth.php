@@ -112,4 +112,18 @@ return [
 
     'password_timeout' => env('AUTH_PASSWORD_TIMEOUT', 10800),
 
+    /*
+    |--------------------------------------------------------------------------
+    | Login Rate Limiting
+    |--------------------------------------------------------------------------
+    |
+    | Set LOGIN_THROTTLE_ENABLED=false in .env to disable during development.
+    | In production, enable and tune attempts/decay as needed.
+    |
+    */
+
+    'login_throttle_enabled' => env('LOGIN_THROTTLE_ENABLED', true),
+    'login_throttle_attempts' => (int) env('LOGIN_THROTTLE_ATTEMPTS', 5),
+    'login_throttle_decay_minutes' => (int) env('LOGIN_THROTTLE_DECAY_MINUTES', 15),
+
 ];

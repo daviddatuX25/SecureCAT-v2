@@ -7,8 +7,10 @@
         "dev": "vite"
     },
     "devDependencies": {
+        "@internationalized/date": "^3.11.0",
         "@tailwindcss/vite": "^4.0.0",
         "axios": "^1.11.0",
+        "bits-ui": "^2.15.6",
         "clsx": "^2.1.1",
         "concurrently": "^9.0.1",
         "laravel-vite-plugin": "^2.0.0",

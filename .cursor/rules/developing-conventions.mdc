@@ -1,0 +1,93 @@
+---
+description: Development conventions and patterns — when to use Badge, status mapping, table/list patterns, and other UI/structure norms. Use when adding or reviewing UI, status displays, or shared patterns.
+alwaysApply: false
+---
+# Developing Conventions (Living Doc)
+
+Conventions and patterns to keep the codebase consistent. Add new items when establishing a pattern. See also `stack-conventions.mdc` (anti-patterns, runes, file naming) and `developing-gotchas.mdc` (fixes for known bugs).
+
+---
+
+## UI Components
+
+### Badge — status and state pills
+
+- **Use the shared Badge component** for any status or binary state (e.g. application status, room active/inactive). Do not repeat inline `span` + Tailwind classes for status.
+- **Import:** `import { Badge } from '@/Components/ui/badge';`
+- **Semantic variants (outline, readable on any background):**
+  - `success` — accepted, active, completed (emerald)
+  - `warning` — pending, in progress (amber)
+  - `danger` — rejected, failed, error (red)
+  - `muted` — inactive, disabled, neutral (border + muted text)
+  - `outline` — generic neutral outline when no semantic meaning
+- **Mapping status to variant:** Use a small helper or inline so all pages stay consistent:
+  ```svelte
+  function statusVariant(status) {
+    if (status === 'pending') return 'warning';
+    if (status === 'accepted') return 'success';
+    return 'danger';
+  }
+  ```
+  Then: `<Badge variant={statusVariant(app.status)}>{statusLabel(app.status)}</Badge>`
+- **Room/boolean state:** `<Badge variant={room.is_active ? 'success' : 'muted'}>Active|Inactive</Badge>`
+- **Custom class when needed:** `<Badge variant="success" class="capitalize">…</Badge>` — variant drives color; class only for typography/layout.
+
+### Button
+
+- Use `Button` from `@/Components/ui/button`. Variants: `default`, `secondary`, `outline`, `ghost`, `destructive`, `link`. Prefer `outline` or `ghost` for secondary actions.
+- Touch targets: use `min-h-[44px]` for primary action buttons on mobile (see stack-conventions).
+
+### Icons
+
+- Use **Lucide Svelte** (`lucide-svelte`) only. No emojis or other icon sets (see developing-gotchas → UI Best Practices).
+
+---
+
+## Status and state display
+
+- **Labels:** Prefer server-provided labels (e.g. `statuses` prop with `{ value, label }`) over client-side `capitalize(status)` when the backend owns the list (e.g. applications). Use `statusLabel(value)` from that prop.
+- **Single status on detail pages:** Use the same Badge variant mapping as in list views so status looks consistent (e.g. Applications Show and Applications Index).
+
+---
+
+## Tables (data lists)
+
+- **Structure:** `<table class="w-full text-sm">`, `<thead class="bg-muted/50">`, `<tr class="border-t border-border hover:bg-muted/30">` for body rows.
+- **Cells:** `px-4 py-3` for consistency. Use `text-right` for actions column.
+- **Empty state:** One row with `colspan` and `text-center text-muted-foreground`, e.g. "No items match your filters."
+- **Pagination:** When present, keep in a footer row or bar below the table with `border-t border-border`, same as Applications Index.
+
+### Table + card layout (list views)
+
+- **Provide both table and card layouts** for list/index pages (e.g. Applications, Rooms) so mobile users get a card stack and desktop can choose.
+- **View mode:** Use `viewMode = $state('responsive' | 'table' | 'cards')`. Default `'responsive'`: cards below `md`, table from `md` up. User can lock to Auto / Table / Cards via the toggle.
+- **Toggle UI:** Use shadcn **Toggle Group** (`@/Components/ui/toggle-group`): `ToggleGroup.Root type="single" bind:value={viewMode} variant="outline" size="sm"`. Three items: `value="responsive"` (Auto, icon `MonitorSmartphone`), `value="table"` (Table, `Table2`), `value="cards"` (Cards, `LayoutGrid`). Add `aria-label` on each Item. On small screens show icon-only; from `md` add label with `<span class="hidden md:inline">Auto</span>` etc. Use `class="min-h-[44px]"` on items for touch targets.
+- **Visibility:** Table wrapper `class="{viewMode === 'cards' ? 'hidden' : viewMode === 'table' ? 'block' : 'hidden md:block'}"`. Card wrapper `class="{viewMode === 'table' ? 'hidden' : viewMode === 'cards' ? 'block' : 'block md:hidden'}"`.
+- **Cards:** Grid `grid gap-3 sm:grid-cols-2 lg:grid-cols-3`, each item in a bordered card with key fields and primary action (e.g. link to show/edit). Keep actions touch-friendly (`min-h-[44px]` where needed).
+
+---
+
+## Forms and validation
+
+- **Backend:** All form submissions validated via Form Request classes; no inline validation in controllers (stack-conventions).
+- **Frontend:** Use Inertia `useForm()`; with shadcn components (Select, Checkbox) bind via `form.set()` / `onValueChange` (developing-gotchas → Form State with shadcn Components).
+
+---
+
+## File and export conventions
+
+- **Pages:** Under `resources/js/Pages/` with section subfolders (e.g. `Admin/Rooms/`, `Applications/`). Use `Index.svelte`, `Show.svelte`, `Edit.svelte`, `Create.svelte` where applicable.
+- **UI components:** Shared components in `resources/js/Components/ui/`. Use `index.js` re-export (e.g. `Badge`, `badgeVariants`) for public API.
+
+---
+
+## Adding new conventions
+
+When the team agrees on a pattern (e.g. a new shared component or table style), add it here in the right section. Format:
+
+```markdown
+- **Thing** — Short rule or when to use it.
+  - Optional: code snippet or sub-bullets.
+```
+
+Keep entries short and scannable.

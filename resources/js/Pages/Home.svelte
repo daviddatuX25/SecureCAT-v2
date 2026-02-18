@@ -1,4 +1,5 @@
 <script>
+  import { Link } from '@inertiajs/svelte';
   import Hero from '@/Components/blocks/Hero.svelte';
   import Benefits from '@/Components/blocks/Benefits.svelte';
   import PerspectiveSection from '@/Components/blocks/PerspectiveSection.svelte';
@@ -37,8 +38,13 @@
     <p class="mb-2">
       <span class="font-semibold text-foreground">SecureCAT</span> - Computerized Admission & Testing System
     </p>
-    <p>
+    <p class="mb-2">
       Information Assurance and Security Academic Project
+    </p>
+    <p>
+      <Link href="/apply" class="text-primary hover:underline">Apply online</Link>
+      {' | '}
+      <Link href="/login" class="text-primary hover:underline">Staff login</Link>
     </p>
   </div>
 </footer>
