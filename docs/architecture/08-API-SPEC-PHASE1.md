@@ -491,7 +491,7 @@ This document defines all Phase 1 endpoints. Each endpoint includes method, path
 ---
 
 ### GET /admin/exam-sessions
-**Purpose**: List exam sessions
+**Purpose**: List exam sessions. Same route used by admin (full list) and proctor (assigned only); response includes a `view` prop (`admin` or `proctor`) so the UI can show the correct title and hide create/edit for proctors.
 
 **Inputs** (query):
 | Field | Type | Required | Validation |
@@ -500,7 +500,7 @@ This document defines all Phase 1 endpoints. Each endpoint includes method, path
 | date_from | date | No | |
 | date_to | date | No | |
 
-**Authorization**: admin, super_admin, proctor (assigned only), grader, counselor
+**Authorization**: admin, super_admin (full list); proctor (sessions where current user is assigned only)
 
 ---
 
@@ -595,8 +595,10 @@ This document defines all Phase 1 endpoints. Each endpoint includes method, path
 
 ## Examination Module
 
-### GET /proctor/sessions
-**Purpose**: List proctor's assigned sessions
+**Implementation note**: Proctors list their assigned sessions via **GET /admin/exam-sessions** (same route as admin; backend scopes to assigned and returns `view: 'proctor'`). A dedicated `GET /proctor/sessions` may be added later for session-roster flows.
+
+### GET /proctor/sessions (optional / future)
+**Purpose**: List proctor's assigned sessions (alternative: use GET /admin/exam-sessions with proctor role, which returns scoped list)
 
 **Outputs**:
 - **200**: Sessions where current user is assigned proctor
@@ -685,13 +687,14 @@ This document defines all Phase 1 endpoints. Each endpoint includes method, path
 
 **Outputs**:
 - **200**: Session status updated to `in_progress`
-- **409**: Invalid status transition
+- **409**: Invalid status transition, or outside scheduled window (proctor only; admin/super_admin may override)
 
 **Business Rules**:
 - Must be `published`
-- Log start time
+- Start allowed only within the scheduled window (session date + start_time/end_time with fixed grace: 15 min before start, 30 min after end). Outside that window, only admin/super_admin may start (override). Override logging and override_reason deferred to a future task.
+- Log start time (`started_at`)
 
-**Authorization**: proctor (assigned), admin
+**Authorization**: proctor (assigned), admin, super_admin. Proctors may start only within the schedule window; admin/super_admin may start outside the window (override).
 
 ---
 
@@ -1003,14 +1006,21 @@ This document defines all Phase 1 endpoints. Each endpoint includes method, path
 ### POST /admin/courses
 **Purpose**: Create course
 
-**Authorization**: super_admin
+**Authorization**: admin, super_admin
 
 ---
 
 ### PUT /admin/courses/{id}
 **Purpose**: Update course
 
-**Authorization**: super_admin
+**Authorization**: admin, super_admin
+
+---
+
+### DELETE /admin/courses/{id}
+**Purpose**: Deactivate course (soft-delete via `is_active = false`)
+
+**Authorization**: admin, super_admin
 
 ---
 

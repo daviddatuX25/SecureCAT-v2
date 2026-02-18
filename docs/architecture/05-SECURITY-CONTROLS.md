@@ -87,7 +87,10 @@ This document defines authentication, authorization, and security requirements f
 | Mark attendance | ✗ | ✗ | ✗ | ✓ (own sessions) | ✗ | ✗ |
 | Log submission | ✗ | ✗ | ✗ | ✓ (own sessions) | ✗ | ✗ |
 | Start/close session | ✗ | ✗ | ✓ | ✓ (own sessions) | ✗ | ✗ |
+| Start/close outside schedule (override) | ✗ | ✗ | ✓ | ✗ (proctor only within window) | ✗ | ✗ |
 | View session status | ✓ | ✗ | ✓ | ✓ | ✓ | ✓ |
+
+**Note**: Start is allowed only within the session's scheduled date/time window; outside that window only admin/super_admin may start (override). Override audit logging to be added in a future task.
 
 #### Grading Module
 
