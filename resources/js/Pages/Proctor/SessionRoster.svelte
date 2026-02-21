@@ -25,13 +25,33 @@
       : applicants
   );
 
-  function statusVariant(status) {
-    if (status === 'pending') return 'muted';
-    if (status === 'present' || status === 'submitted' || status === 'published') return 'success';
-    if (status === 'absent' || status === 'cancelled') return 'danger';
+  /** Session statuses: draft, published, in_progress, completed, cancelled. Per E-019. */
+  function sessionStatusVariant(status) {
+    if (status === 'draft') return 'muted';
+    if (status === 'published') return 'success';
     if (status === 'in_progress') return 'warning';
-    if (status === 'draft' || status === 'completed') return 'outline';
+    if (status === 'completed') return 'outline';
+    if (status === 'cancelled') return 'danger';
     return 'outline';
+  }
+
+  /** Attendance/submission statuses: pending, present, absent, submitted. Per E-019. */
+  function attendanceStatusVariant(status) {
+    if (status === 'pending') return 'muted';
+    if (status === 'present' || status === 'submitted') return 'success';
+    if (status === 'absent') return 'danger';
+    return 'outline';
+  }
+
+  function sessionStatusLabel(status) {
+    const labels = {
+      draft: 'Draft',
+      published: 'Published (scheduled)',
+      in_progress: 'In progress',
+      completed: 'Completed',
+      cancelled: 'Cancelled',
+    };
+    return labels[status] ?? status;
   }
 
   function handleRosterError(err) {
@@ -63,6 +83,14 @@
     });
   }
 
+  function logSubmissionBulk() {
+    actionError = '';
+    router.post(`/proctor/sessions/${session.id}/submission-bulk`, {}, {
+      onError: handleRosterError,
+      onSuccess: () => router.reload(),
+    });
+  }
+
   function startSession() {
     actionError = '';
     router.post(`/proctor/sessions/${session.id}/start`, {}, { onError: handleRosterError, onSuccess: () => router.reload() });
@@ -84,6 +112,9 @@
     session.status === 'published' || session.status === 'in_progress'
   );
   const canLogSubmission = $derived(session.status === 'in_progress');
+  const canBulkSubmit = $derived(
+    session.status === 'in_progress' && (stats.present_pending_submission ?? 0) > 0
+  );
 
   function formatDate(value) {
     if (value == null || value === '') return '—';
@@ -103,6 +134,20 @@
     const h = hours % 12 || 12;
     const ampm = hours < 12 ? 'AM' : 'PM';
     return `${h}:${String(mins).padStart(2, '0')} ${ampm}`;
+  }
+
+  function formatDateTime(isoString) {
+    if (isoString == null || isoString === '') return '—';
+    try {
+      const d = new Date(isoString);
+      if (Number.isNaN(d.getTime())) return '—';
+      const h = d.getHours() % 12 || 12;
+      const m = String(d.getMinutes()).padStart(2, '0');
+      const ampm = d.getHours() < 12 ? 'AM' : 'PM';
+      return `${h}:${m} ${ampm}`;
+    } catch {
+      return '—';
+    }
   }
 </script>
 
@@ -146,9 +191,21 @@
         <div>
           <dt class="text-sm text-muted-foreground">Status</dt>
           <dd>
-            <Badge variant={statusVariant(session.status)}>{session.status}</Badge>
+            <Badge variant={sessionStatusVariant(session.status)}>{sessionStatusLabel(session.status)}</Badge>
           </dd>
         </div>
+        {#if session.started_at}
+          <div>
+            <dt class="text-sm text-muted-foreground">Started</dt>
+            <dd class="font-medium">{formatDateTime(session.started_at)}</dd>
+          </div>
+        {/if}
+        {#if session.closed_at}
+          <div>
+            <dt class="text-sm text-muted-foreground">Closed</dt>
+            <dd class="font-medium">{formatDateTime(session.closed_at)}</dd>
+          </div>
+        {/if}
       </dl>
 
       <div class="mt-4 flex flex-wrap gap-3">
@@ -178,15 +235,18 @@
         <span class="text-sm text-muted-foreground">Total: <strong class="text-foreground">{stats.total ?? 0}</strong></span>
         <span class="text-sm text-muted-foreground">Present: <strong class="text-foreground">{stats.present ?? 0}</strong></span>
         <span class="text-sm text-muted-foreground">Absent: <strong class="text-foreground">{stats.absent ?? 0}</strong></span>
-        <span class="text-sm text-muted-foreground">Pending: <strong class="text-foreground">{stats.pending ?? 0}</strong></span>
+        <span class="text-sm text-muted-foreground">Pending (attendance): <strong class="text-foreground">{stats.pending ?? 0}</strong></span>
         <span class="text-sm text-muted-foreground">Submitted: <strong class="text-foreground">{stats.submitted ?? 0}</strong></span>
+        {#if (stats.present_pending_submission ?? 0) > 0}
+          <span class="text-sm text-muted-foreground">Present, not yet submitted: <strong class="text-foreground">{stats.present_pending_submission ?? 0}</strong></span>
+        {/if}
       </div>
     </div>
 
     <div class="rounded-lg border border-border bg-card p-6">
       <h2 class="text-lg font-semibold">Applicants</h2>
       <p class="mt-1 text-sm text-muted-foreground">Mark attendance and log submission. Attendance cannot be changed once set.</p>
-      <div class="mt-4">
+      <div class="mt-4 flex flex-wrap items-center gap-3">
         <Input
           type="search"
           placeholder="Search by name or reference..."
@@ -194,6 +254,12 @@
           bind:value={searchQuery}
           aria-label="Search applicants"
         />
+        {#if canBulkSubmit}
+          <Button variant="outline" class="min-h-[44px]" onclick={logSubmissionBulk}>
+            <FileCheck class="h-4 w-4 mr-2" />
+            Mark all present as submitted
+          </Button>
+        {/if}
       </div>
       {#if filteredApplicants.length > 0}
         <div class="mt-4 overflow-x-auto">
@@ -203,7 +269,9 @@
                 <th class="px-4 py-3 text-left font-medium">Reference</th>
                 <th class="px-4 py-3 text-left font-medium">Name</th>
                 <th class="px-4 py-3 text-left font-medium">Attendance</th>
+                <th class="px-4 py-3 text-left font-medium">Time in</th>
                 <th class="px-4 py-3 text-left font-medium">Submission</th>
+                <th class="px-4 py-3 text-left font-medium">Submitted at</th>
                 <th class="px-4 py-3 text-right font-medium">Actions</th>
               </tr>
             </thead>
@@ -213,11 +281,13 @@
                   <td class="px-4 py-3">{row.reference_number ?? '—'}</td>
                   <td class="px-4 py-3">{row.name ?? '—'}</td>
                   <td class="px-4 py-3">
-                    <Badge variant={statusVariant(row.attendance_status)}>{row.attendance_status}</Badge>
+                    <Badge variant={attendanceStatusVariant(row.attendance_status)}>{row.attendance_status}</Badge>
                   </td>
+                  <td class="px-4 py-3">{formatDateTime(row.attendance_marked_at)}</td>
                   <td class="px-4 py-3">
-                    <Badge variant={statusVariant(row.submission_status)}>{row.submission_status}</Badge>
+                    <Badge variant={attendanceStatusVariant(row.submission_status)}>{row.submission_status}</Badge>
                   </td>
+                  <td class="px-4 py-3">{formatDateTime(row.submitted_at)}</td>
                   <td class="px-4 py-3 text-right">
                     {#if row.attendance_status === 'pending' && canMarkAttendance}
                       <div class="flex flex-wrap justify-end gap-1">

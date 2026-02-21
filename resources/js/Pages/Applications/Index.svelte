@@ -1,29 +1,34 @@
 <script>
   import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.svelte';
-  import { Link, router, useForm } from '@inertiajs/svelte';
+  import { Link, router } from '@inertiajs/svelte';
   import * as ToggleGroup from '@/Components/ui/toggle-group';
   import { Button } from '@/Components/ui/button';
   import { Badge } from '@/Components/ui/badge';
   import { Input } from '@/Components/ui/input';
-  import { Search, FileText, LayoutGrid, Table2, MonitorSmartphone } from 'lucide-svelte';
+  import { FileText, LayoutGrid, Table2, MonitorSmartphone, ChevronDown, Filter } from 'lucide-svelte';
 
   let { applications, filters = {}, statuses = [] } = $props();
 
-  const filterForm = useForm(
-    (() => ({
-      search: filters?.search ?? '',
-      status: filters?.status ?? '',
-      date_from: filters?.date_from ?? '',
-      date_to: filters?.date_to ?? '',
-    }))()
-  );
+  let filterSearch = $state('');
+  let filterStatus = $state('');
+  let filterDateFrom = $state('');
+  let filterDateTo = $state('');
+  let mobileFiltersDetails = $state(null);
+  $effect(() => {
+    filterSearch = filters.search ?? '';
+    filterStatus = filters.status ?? '';
+    filterDateFrom = filters.date_from ?? '';
+    filterDateTo = filters.date_to ?? '';
+  });
 
   function applyFilters() {
+    if (mobileFiltersDetails) mobileFiltersDetails.open = false;
     router.get('/applications', {
-      search: $filterForm.search || undefined,
-      status: $filterForm.status || undefined,
-      date_from: $filterForm.date_from || undefined,
-      date_to: $filterForm.date_to || undefined,
+      search: filterSearch || undefined,
+      status: filterStatus || undefined,
+      date_from: filterDateFrom || undefined,
+      date_to: filterDateTo || undefined,
+      page: 1,
     }, { preserveState: true });
   }
 
@@ -46,7 +51,7 @@
 </svelte:head>
 
 <AuthenticatedLayout>
-  <div class="space-y-6">
+  <div class="space-y-6 min-w-0">
     <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
       <div>
         <h1 class="text-2xl font-bold">Applications</h1>
@@ -75,51 +80,110 @@
       </ToggleGroup.Root>
     </div>
 
-    <div class="flex flex-col gap-4 sm:flex-row sm:flex-wrap">
-      <Input
-        type="search"
-        placeholder="Search by name or reference number"
-        bind:value={$filterForm.search}
-        onkeydown={(e) => e.key === 'Enter' && applyFilters()}
-        class="max-w-xs min-h-[44px]"
-      />
-      <select
-        bind:value={$filterForm.status}
-        class="rounded-md border border-input bg-background px-3 py-2 text-sm min-h-[44px] min-w-[120px]"
-      >
-        <option value="">All statuses</option>
-        {#each statuses as s}
-          <option value={s.value}>{s.label}</option>
-        {/each}
-      </select>
-      <Input
-        type="date"
-        bind:value={$filterForm.date_from}
-        class="min-h-[44px]"
-        aria-label="From date"
-      />
-      <Input
-        type="date"
-        bind:value={$filterForm.date_to}
-        class="min-h-[44px]"
-        aria-label="To date"
-      />
-      <Button variant="secondary" onclick={applyFilters} class="min-h-[44px]">
-        <Search class="mr-2 h-4 w-4" />
-        Apply
-      </Button>
+    <!-- Filters: one row on desktop; on mobile search + collapsible "Filters" dropdown, dates always together, Apply always visible -->
+    <div class="flex flex-col gap-3">
+      <div class="hidden md:flex flex-wrap items-center gap-3">
+        <Input
+          type="search"
+          placeholder="Search by name or reference number"
+          bind:value={filterSearch}
+          onkeydown={(e) => e.key === 'Enter' && applyFilters()}
+          class="min-w-[160px] max-w-[220px] h-10"
+        />
+        <label for="filter-status-desk" class="sr-only">Status</label>
+        <select
+          id="filter-status-desk"
+          class="flex h-10 rounded-md border border-input bg-background px-3 py-2 text-sm min-w-[140px]"
+          bind:value={filterStatus}
+        >
+          <option value="">All statuses</option>
+          {#each statuses as s}
+            <option value={s.value}>{s.label}</option>
+          {/each}
+        </select>
+        <div class="flex items-center gap-2">
+          <label for="filter-date-from-desk" class="text-sm text-muted-foreground whitespace-nowrap">From</label>
+          <input
+            id="filter-date-from-desk"
+            type="date"
+            bind:value={filterDateFrom}
+            class="flex h-10 rounded-md border border-input bg-background px-3 py-2 text-sm"
+          />
+          <label for="filter-date-to-desk" class="text-sm text-muted-foreground whitespace-nowrap">To</label>
+          <input
+            id="filter-date-to-desk"
+            type="date"
+            bind:value={filterDateTo}
+            class="flex h-10 rounded-md border border-input bg-background px-3 py-2 text-sm"
+          />
+        </div>
+        <Button onclick={applyFilters} class="min-h-[40px]">Apply</Button>
+      </div>
+
+      <div class="flex flex-col gap-2 md:hidden">
+        <div class="flex items-center gap-3">
+          <Input
+            type="search"
+            placeholder="Search by name or reference number"
+            bind:value={filterSearch}
+            onkeydown={(e) => e.key === 'Enter' && applyFilters()}
+            class="min-h-[44px] flex-1 min-w-0"
+          />
+          <details class="relative group" bind:this={mobileFiltersDetails}>
+            <summary class="list-none flex items-center gap-2 min-h-[44px] px-4 rounded-md border border-input bg-background text-sm font-medium cursor-pointer hover:bg-muted/50">
+              <Filter class="h-4 w-4" />
+              <span>Filters</span>
+              <ChevronDown class="h-4 w-4 transition-transform group-open:rotate-180" />
+            </summary>
+            <div class="absolute right-0 top-full z-10 mt-1 w-[min(320px,calc(100vw-2rem))] rounded-lg border border-border bg-card p-4 shadow-lg flex flex-col gap-3">
+              <div>
+                <label for="filter-status-mob" class="text-sm font-medium block mb-1">Status</label>
+                <select
+                  id="filter-status-mob"
+                  class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                  bind:value={filterStatus}
+                >
+                  <option value="">All statuses</option>
+                  {#each statuses as s}
+                    <option value={s.value}>{s.label}</option>
+                  {/each}
+                </select>
+              </div>
+              <div>
+                <span class="text-sm font-medium block mb-1">Date range</span>
+                <div class="flex items-center gap-2">
+                  <input
+                    id="filter-date-from-mob"
+                    type="date"
+                    bind:value={filterDateFrom}
+                    class="flex h-10 flex-1 min-w-0 rounded-md border border-input bg-background px-3 py-2 text-sm"
+                  />
+                  <span class="text-muted-foreground">–</span>
+                  <input
+                    id="filter-date-to-mob"
+                    type="date"
+                    bind:value={filterDateTo}
+                    class="flex h-10 flex-1 min-w-0 rounded-md border border-input bg-background px-3 py-2 text-sm"
+                  />
+                </div>
+              </div>
+            </div>
+          </details>
+        </div>
+        <Button onclick={applyFilters} class="min-h-[44px] w-full">Apply</Button>
+      </div>
     </div>
 
-    <div class="rounded-lg border border-border overflow-hidden">
+    <div class="rounded-lg border border-border overflow-hidden min-w-0 max-w-full">
       <!-- Table view: visible on md+ when responsive, or when Table chosen -->
       <div
-        class="overflow-x-auto {viewMode === 'cards'
+        class="w-full min-w-0 overflow-x-scroll overscroll-x-contain {viewMode === 'cards'
           ? 'hidden'
           : viewMode === 'table'
             ? 'block'
             : 'hidden md:block'}"
       >
-        <table class="w-full text-sm">
+        <table class="w-full min-w-[640px] text-sm">
           <thead class="bg-muted/50">
             <tr>
               <th class="px-4 py-3 text-left font-medium">Reference</th>

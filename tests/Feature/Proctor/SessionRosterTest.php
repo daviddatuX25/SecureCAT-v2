@@ -100,6 +100,43 @@ class SessionRosterTest extends TestCase
             ->has('applicants')
             ->has('stats')
             ->where('stats.total', 2)
+            ->has('stats.present_pending_submission')
+        );
+    }
+
+    public function test_roster_includes_timestamps_and_present_pending_submission(): void
+    {
+        $applicants = $this->session->applicants()->get();
+        // First applicant: present + submitted
+        DB::table('exam_session_applicant')
+            ->where('exam_session_id', $this->session->id)
+            ->where('applicant_id', $applicants[0]->id)
+            ->update([
+                'attendance_status' => 'present',
+                'attendance_marked_at' => now(),
+                'attendance_marked_by' => $this->proctor->id,
+                'submission_status' => 'submitted',
+                'submitted_at' => now(),
+                'submitted_to' => $this->proctor->id,
+            ]);
+        // Second applicant: present + pending submission
+        DB::table('exam_session_applicant')
+            ->where('exam_session_id', $this->session->id)
+            ->where('applicant_id', $applicants[1]->id)
+            ->update([
+                'attendance_status' => 'present',
+                'attendance_marked_at' => now(),
+                'attendance_marked_by' => $this->proctor->id,
+            ]);
+
+        $response = $this->actingAs($this->proctor)->get("/proctor/sessions/{$this->session->id}");
+
+        $response->assertStatus(200);
+        $response->assertInertia(fn ($page) => $page
+            ->has('applicants', 2)
+            ->has('applicants.0.attendance_marked_at')
+            ->has('applicants.0.submitted_at')
+            ->where('stats.present_pending_submission', 1)
         );
     }
 
@@ -258,6 +295,53 @@ class SessionRosterTest extends TestCase
         ]);
 
         $response->assertStatus(409);
+    }
+
+    public function test_submission_bulk_marks_all_present_as_submitted(): void
+    {
+        $this->session->update(['status' => ExamSession::STATUS_IN_PROGRESS]);
+        $applicants = $this->session->applicants()->get();
+        foreach ($applicants as $a) {
+            DB::table('exam_session_applicant')
+                ->where('exam_session_id', $this->session->id)
+                ->where('applicant_id', $a->id)
+                ->update([
+                    'attendance_status' => 'present',
+                    'attendance_marked_at' => now(),
+                    'attendance_marked_by' => $this->proctor->id,
+                ]);
+        }
+
+        $response = $this->actingAs($this->proctor)->post("/proctor/sessions/{$this->session->id}/submission-bulk");
+
+        $response->assertRedirect();
+        $response->assertSessionHas('success');
+        foreach ($applicants as $a) {
+            $this->assertDatabaseHas('exam_session_applicant', [
+                'exam_session_id' => $this->session->id,
+                'applicant_id' => $a->id,
+                'submission_status' => 'submitted',
+            ]);
+        }
+    }
+
+    public function test_submission_bulk_when_not_in_progress_returns_409(): void
+    {
+        $response = $this->actingAs($this->proctor)->post("/proctor/sessions/{$this->session->id}/submission-bulk");
+
+        $response->assertRedirect();
+        $response->assertSessionHas('error', 'Session must be in progress.');
+    }
+
+    public function test_submission_bulk_with_no_eligible_applicants_returns_success(): void
+    {
+        $this->session->update(['status' => ExamSession::STATUS_IN_PROGRESS]);
+        // All still pending attendance - none present
+
+        $response = $this->actingAs($this->proctor)->post("/proctor/sessions/{$this->session->id}/submission-bulk");
+
+        $response->assertRedirect();
+        $response->assertSessionHas('success', 'No applicants to mark as submitted.');
     }
 
     public function test_start_session_when_published_and_within_window_returns_200(): void

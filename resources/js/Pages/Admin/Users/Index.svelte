@@ -1,27 +1,32 @@
 <script>
   import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.svelte';
-  import { Link, router, useForm } from '@inertiajs/svelte';
+  import { Link, router } from '@inertiajs/svelte';
   import { usePage } from '@inertiajs/svelte';
   import { Button } from '@/Components/ui/button';
   import { Input } from '@/Components/ui/input';
-  import { Plus, Pencil, Trash2 } from 'lucide-svelte';
+  import { Plus, Pencil, Trash2, ChevronDown, Filter } from 'lucide-svelte';
 
-  let { users, roles, filters } = $props();
+  let { users, roles, filters = {} } = $props();
 
   const page = usePage();
   const success = $derived($page.props.flash?.success ?? null);
 
-  const filterForm = useForm({
-    search: filters?.search ?? '',
-    role: filters?.role ?? '',
+  let filterSearch = $state('');
+  let filterRole = $state('');
+  let mobileFiltersDetails = $state(null);
+  $effect(() => {
+    filterSearch = filters.search ?? '';
+    filterRole = filters.role ?? '';
   });
 
   let deleteId = $state(null);
 
   function applyFilters() {
+    if (mobileFiltersDetails) mobileFiltersDetails.open = false;
     router.get('/admin/users', {
-      search: $filterForm.search,
-      role: $filterForm.role,
+      search: filterSearch || undefined,
+      role: filterRole || undefined,
+      page: 1,
     }, { preserveState: true });
   }
 
@@ -45,7 +50,7 @@
 </svelte:head>
 
 <AuthenticatedLayout>
-  <div class="space-y-6">
+  <div class="space-y-6 min-w-0">
     <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
       <h1 class="text-2xl font-bold">User Management</h1>
       <Link href="/admin/users/create">
@@ -62,29 +67,66 @@
       </div>
     {/if}
 
-    <div class="flex flex-col gap-4 sm:flex-row">
-      <Input
-        type="search"
-        placeholder="Search name or email"
-        bind:value={$filterForm.search}
-        onkeydown={(e) => e.key === 'Enter' && applyFilters()}
-        class="max-w-xs"
-      />
-      <select
-        bind:value={$filterForm.role}
-        class="rounded-md border border-input bg-background px-3 py-2 text-sm"
-      >
-        <option value="">All roles</option>
-        {#each roles as r}
-          <option value={r.name}>{r.display_name}</option>
-        {/each}
-      </select>
-      <Button variant="secondary" onclick={applyFilters}>Apply</Button>
+    <!-- Filters: one row on desktop; on mobile search + collapsible "Filters" dropdown, Apply always visible -->
+    <div class="flex flex-col gap-3">
+      <div class="hidden md:flex flex-wrap items-center gap-3">
+        <Input
+          type="search"
+          placeholder="Search name or email"
+          bind:value={filterSearch}
+          onkeydown={(e) => e.key === 'Enter' && applyFilters()}
+          class="min-w-[160px] max-w-[220px] h-10"
+        />
+        <label for="filter-role-desk" class="sr-only">Role</label>
+        <select
+          id="filter-role-desk"
+          class="flex h-10 rounded-md border border-input bg-background px-3 py-2 text-sm min-w-[140px]"
+          bind:value={filterRole}
+        >
+          <option value="">All roles</option>
+          {#each roles as r}
+            <option value={r.name}>{r.display_name}</option>
+          {/each}
+        </select>
+        <Button onclick={applyFilters} class="min-h-[40px]">Apply</Button>
+      </div>
+      <div class="flex flex-wrap items-center gap-3 md:hidden">
+        <Input
+          type="search"
+          placeholder="Search name or email"
+          bind:value={filterSearch}
+          onkeydown={(e) => e.key === 'Enter' && applyFilters()}
+          class="min-h-[44px] flex-1 min-w-0"
+        />
+        <details class="relative group" bind:this={mobileFiltersDetails}>
+          <summary class="list-none flex items-center gap-2 min-h-[44px] px-4 rounded-md border border-input bg-background text-sm font-medium cursor-pointer hover:bg-muted/50">
+            <Filter class="h-4 w-4" />
+            <span>Filters</span>
+            <ChevronDown class="h-4 w-4 transition-transform group-open:rotate-180" />
+          </summary>
+          <div class="absolute right-0 top-full z-10 mt-1 w-[min(320px,calc(100vw-2rem))] rounded-lg border border-border bg-card p-4 shadow-lg flex flex-col gap-3">
+            <div>
+              <label for="filter-role-mob" class="text-sm font-medium block mb-1">Role</label>
+              <select
+                id="filter-role-mob"
+                class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                bind:value={filterRole}
+              >
+                <option value="">All roles</option>
+                {#each roles as r}
+                  <option value={r.name}>{r.display_name}</option>
+                {/each}
+              </select>
+            </div>
+          </div>
+        </details>
+        <Button onclick={applyFilters} class="min-h-[44px]">Apply</Button>
+      </div>
     </div>
 
-    <div class="rounded-lg border border-border overflow-hidden">
-      <div class="overflow-x-auto">
-        <table class="w-full text-sm">
+    <div class="rounded-lg border border-border overflow-hidden min-w-0 max-w-full">
+      <div class="w-full min-w-0 overflow-x-scroll overscroll-x-contain">
+        <table class="w-full min-w-[640px] text-sm">
           <thead class="bg-muted/50">
             <tr>
               <th class="px-4 py-3 text-left font-medium">Name</th>

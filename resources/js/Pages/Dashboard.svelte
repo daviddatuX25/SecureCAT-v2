@@ -1,7 +1,7 @@
 <script>
   import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.svelte';
   import { Link, usePage } from '@inertiajs/svelte';
-  import { Users, Settings, FileText, BookOpen, DoorOpen, ClipboardCheck, Calendar, GraduationCap, MessageSquare } from 'lucide-svelte';
+  import { Users, Settings, FileText, BookOpen, DoorOpen, Calendar, GraduationCap, MessageSquare } from 'lucide-svelte';
 
   let { user, stats } = $props();
   const page = usePage();
@@ -18,9 +18,8 @@
     (hasRole('admin') || hasRole('staff') || hasRole('counselor')) && { href: '/applications', label: 'Applications', icon: FileText },
     (hasRole('super_admin') || hasRole('admin')) && { href: '/admin/courses', label: 'Courses', icon: BookOpen },
     (hasRole('super_admin') || hasRole('admin')) && { href: '/admin/rooms', label: 'Rooms', icon: DoorOpen },
-    (hasRole('super_admin') || hasRole('admin')) && { href: '/admin/proctors', label: 'Proctors', icon: ClipboardCheck },
     (hasRole('super_admin') || hasRole('admin')) && { href: '/admin/exam-sessions', label: 'Exam Sessions', icon: Calendar },
-    (hasRole('super_admin') || hasRole('admin') || hasRole('proctor')) && { href: '/proctor', label: 'My Sessions', icon: Calendar },
+    hasRole('proctor') && { href: '/admin/exam-sessions', label: 'My Sessions', icon: Calendar },
     (hasRole('super_admin') || hasRole('grader')) && { href: '/grading', label: 'Grading', icon: GraduationCap },
     (hasRole('super_admin') || hasRole('counselor')) && { href: '/consultation', label: 'Consultation', icon: MessageSquare },
   ].filter(Boolean));

@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreRoomRequest;
 use App\Http\Requests\UpdateRoomRequest;
+use App\Models\ExamSession;
 use App\Models\Room;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -15,14 +16,20 @@ class RoomController extends Controller
 {
     public function index(Request $request): Response
     {
-        $rooms = Room::query()
-            ->orderBy('building')
-            ->orderBy('name')
-            ->paginate(15)
-            ->withQueryString();
+        $query = Room::query()->orderBy('building')->orderBy('name');
+
+        if ($request->filled('search')) {
+            $term = '%'.$request->get('search').'%';
+            $query->where(function ($q) use ($term) {
+                $q->where('name', 'like', $term)->orWhere('building', 'like', $term);
+            });
+        }
+
+        $rooms = $query->paginate(15)->withQueryString();
 
         return Inertia::render('Admin/Rooms/Index', [
             'rooms' => $rooms,
+            'filters' => $request->only(['search']),
         ]);
     }
 
@@ -61,9 +68,21 @@ class RoomController extends Controller
         return redirect()->route('admin.rooms.index')->with('success', 'Room updated.');
     }
 
+    /**
+     * Deactivate room. Per E-024: Block if room has future exam sessions.
+     */
     public function destroy(Room $room): RedirectResponse
     {
-        // Per API spec: Deactivate room. Future: cannot deactivate if assigned to future exam_sessions
+        $hasFutureSessions = ExamSession::query()
+            ->where('room_id', $room->id)
+            ->whereDate('date', '>=', now()->toDateString())
+            ->exists();
+
+        if ($hasFutureSessions) {
+            return redirect()->route('admin.rooms.index')
+                ->with('error', 'Cannot deactivate: this room has exam sessions scheduled in the future.');
+        }
+
         $room->update(['is_active' => false]);
 
         return redirect()->route('admin.rooms.index')->with('success', 'Room deactivated.');

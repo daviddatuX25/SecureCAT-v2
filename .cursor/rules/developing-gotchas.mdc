@@ -172,6 +172,12 @@ Concise checklist to avoid repeating non-obvious bugs. Add new items when fixing
   - Cause: `class:name={cond}` only works on DOM elements, not components
   - Fix: Use `class={cond ? 'active' : ''}` instead of `class:active={cond}`
 
+### Email / Mailpit (local dev)
+
+- **Accept or Resend setup email doesn't show in Mailpit**
+  - Cause: Applicant setup mail is sent via a **queued job**; with `QUEUE_CONNECTION=database` nothing runs until a worker processes the queue.
+  - Fix: Either run `./vendor/bin/sail artisan queue:work` in a terminal, or set `QUEUE_CONNECTION=sync` in `.env` so the job runs during the request. See `docs/architecture/EMAIL-DEV-SETUP.md`.
+
 ---
 
 ## Playwright Testing
@@ -219,11 +225,15 @@ Concise checklist to avoid repeating non-obvious bugs. Add new items when fixing
 
 ---
 
-## Backend / Middleware
+## Backend / Middleware & Laravel
 
 - **HandleInertiaRequests causes 500 on fresh DB**
   - Cause: Shared data queries tables that don't exist before migrations
   - Fix: Wrap queries in try-catch, return null/default on failure
+
+- **Pivot table has `id` but `$model->pivot->id` is null**
+  - Cause: BelongsToMany only exposes pivot columns listed in `withPivot()`; the pivot table's `id` is not included by default.
+  - Fix: Add `'id'` to the relationship's `withPivot()` array so the pivot row id is available (e.g. for delete-by-pivot-id or passing to the frontend).
 
 ---
 

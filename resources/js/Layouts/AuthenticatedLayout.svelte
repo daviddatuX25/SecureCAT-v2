@@ -1,7 +1,7 @@
 <script>
   import { Link, router } from '@inertiajs/svelte';
   import { usePage } from '@inertiajs/svelte';
-  import { ChevronDown, Menu, LayoutDashboard, Users, FileText, Calendar, DoorOpen, ClipboardCheck, GraduationCap, BookOpen, Settings } from 'lucide-svelte';
+  import { ChevronDown, Menu, LayoutDashboard, Users, FileText, Calendar, DoorOpen, GraduationCap, BookOpen, Settings, MessageSquare, Gavel, CalendarCheck, UsersRound } from 'lucide-svelte';
   import { Button } from '@/Components/ui/button';
 
   let { children } = $props();
@@ -35,13 +35,16 @@
       { href: '/applications', label: 'Applications', icon: FileText, roles: ['super_admin', 'staff', 'admin', 'counselor'] },
       { href: '/admin/courses', label: 'Courses', icon: BookOpen, roles: ['super_admin', 'admin'] },
       { href: '/admin/rooms', label: 'Rooms', icon: DoorOpen, roles: ['super_admin', 'admin'] },
-      { href: '/admin/proctors', label: 'Proctors', icon: ClipboardCheck, roles: ['super_admin', 'admin'] },
       { href: '/admin/exam-sessions', label: 'Exam Sessions', icon: Calendar, roles: ['super_admin', 'admin'] },
     ]},
     { label: 'Guidance', items: [
-      { href: '/proctor', label: 'My Sessions', icon: Calendar, roles: ['super_admin', 'admin', 'proctor'] },
+      { href: '/admin/exam-sessions', label: 'My Sessions', icon: Calendar, roles: ['proctor'] },
       { href: '/grading', label: 'Grading', icon: GraduationCap, roles: ['super_admin', 'grader'] },
-      { href: '/consultation', label: 'Consultation', icon: BookOpen, roles: ['super_admin', 'counselor'] },
+      { href: '/admin/result-sheet-templates', label: 'Result templates', icon: FileText, roles: ['super_admin', 'admin', 'counselor'] },
+      { href: '/consultation', label: 'Consultation', icon: MessageSquare, roles: ['super_admin', 'counselor'] },
+      { href: '/consultation/rules', label: 'Decision rules', icon: Gavel, roles: ['super_admin', 'counselor'] },
+      { href: '/consultation/day', label: 'Live consultation', icon: UsersRound, roles: ['super_admin', 'counselor'] },
+      { href: '/consultation/schedule', label: 'Schedule consultation', icon: CalendarCheck, roles: ['super_admin', 'counselor'] },
     ]},
   ].map((section) => ({
     ...section,
@@ -58,7 +61,7 @@
   <title>SecureCAT</title>
 </svelte:head>
 
-<div class="min-h-screen bg-background flex">
+<div class="min-h-screen w-full max-w-[100vw] bg-background flex overflow-x-hidden">
   <!-- Sidebar backdrop (mobile) - only show when sidebar is open -->
   {#if sidebarOpen}
   <button
@@ -102,7 +105,7 @@
     </nav>
   </aside>
 
-  <div class="flex flex-1 flex-col lg:pl-64">
+  <div class="flex min-w-0 flex-1 flex-col lg:pl-64 overflow-x-hidden">
     <!-- Header -->
     <header class="sticky top-0 z-30 flex h-16 items-center justify-between border-b border-border bg-background px-4 lg:px-8">
       <Button variant="ghost" size="icon" class="lg:hidden" onclick={() => (sidebarOpen = true)} aria-label="Open menu">
@@ -143,9 +146,11 @@
       </div>
     </header>
 
-    <!-- Main content -->
-    <main class="flex-1 p-4 lg:p-8">
-      {@render children?.()}
+    <!-- Main content: min-w-0 so table containers can shrink and scroll horizontally on mobile -->
+    <main class="flex-1 min-w-0 overflow-x-hidden p-4 lg:p-8">
+      <div class="min-w-0 w-full max-w-full overflow-x-hidden">
+        {@render children?.()}
+      </div>
     </main>
   </div>
 </div>

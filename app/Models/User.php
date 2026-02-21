@@ -61,4 +61,10 @@ class User extends Authenticatable
     {
         return $this->roles()->whereIn('name', $roles)->exists();
     }
+
+    public function examSessionsAsProctor(): BelongsToMany
+    {
+        return $this->belongsToMany(ExamSession::class, 'exam_session_user')
+            ->withTimestamps();
+    }
 }

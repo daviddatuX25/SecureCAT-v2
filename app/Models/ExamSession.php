@@ -76,6 +76,11 @@ class ExamSession extends Model
         return $this->belongsTo(User::class, 'created_by');
     }
 
+    public function gradingSession(): \Illuminate\Database\Eloquent\Relations\HasOne
+    {
+        return $this->hasOne(GradingSession::class);
+    }
+
     /**
      * Check if another session exists in the same room on the same date with overlapping time.
      * Exclude given session ID when updating.

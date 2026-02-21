@@ -2,16 +2,22 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\RejectApplicationRequest;
 use App\Http\Requests\StoreApplicationRequest;
+use App\Jobs\SendApplicantSetupEmail;
+use App\Models\Applicant;
 use App\Models\Application;
 use App\Models\Appointment;
 use App\Models\Course;
+use App\Services\AdmissionSlipService;
 use Carbon\Carbon;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Inertia\Inertia;
 use Inertia\Response;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class ApplicationController extends Controller
 {
@@ -200,6 +206,144 @@ class ApplicationController extends Controller
             'reference_number' => $request->session()->get('reference_number', 'APP-MOCK-00001'),
             'appointment_details' => $request->session()->get('appointment_details'),
         ]);
+    }
+
+    /**
+     * Accept application. Per 08-API-SPEC-PHASE1: create applicant, send setup email, audit.
+     */
+    public function accept(Application $application): RedirectResponse
+    {
+        $this->authorize('accept', $application);
+
+        if ($application->status !== 'pending') {
+            return redirect()
+                ->back()
+                ->with('error', 'Application has already been processed.');
+        }
+
+        DB::transaction(function () use ($application) {
+            $application->update([
+                'status' => 'accepted',
+                'processed_by' => auth()->id(),
+                'processed_at' => now(),
+            ]);
+
+            $setupToken = Applicant::generateSetupToken();
+            $expiresAt = now()->addHours(72);
+
+            $applicant = Applicant::create([
+                'application_id' => $application->id,
+                'email' => $application->email,
+                'setup_token' => $setupToken,
+                'setup_token_expires_at' => $expiresAt,
+            ]);
+
+            SendApplicantSetupEmail::dispatch($applicant);
+
+            Log::info('Application accepted', [
+                'application_id' => $application->id,
+                'reference_number' => $application->reference_number,
+                'processed_by' => auth()->id(),
+            ]);
+        });
+
+        return redirect()
+            ->route('applications.show', $application)
+            ->with('success', 'Application accepted. Setup email has been sent to the applicant.');
+    }
+
+    /**
+     * Resend portal setup email for an accepted application (e.g. applicant didn't receive it).
+     */
+    public function resendSetupEmail(Application $application): RedirectResponse
+    {
+        $this->authorize('resendSetupEmail', $application);
+
+        if ($application->status !== 'accepted') {
+            return redirect()
+                ->back()
+                ->with('error', 'Only accepted applications can have the setup email resent.');
+        }
+
+        $applicant = Applicant::where('application_id', $application->id)->first();
+
+        if (! $applicant) {
+            return redirect()
+                ->back()
+                ->with('error', 'No applicant record found for this application.');
+        }
+
+        if ($applicant->hasCompletedSetup()) {
+            return redirect()
+                ->route('applications.show', $application)
+                ->with('success', 'This applicant has already set up their portal account. They can sign in at the portal.');
+        }
+
+        $applicant->setup_token = Applicant::generateSetupToken();
+        $applicant->setup_token_expires_at = now()->addHours(72);
+        $applicant->save();
+
+        SendApplicantSetupEmail::dispatch($applicant);
+
+        Log::info('Setup email resent', [
+            'application_id' => $application->id,
+            'reference_number' => $application->reference_number,
+            'by' => auth()->id(),
+        ]);
+
+        return redirect()
+            ->route('applications.show', $application)
+            ->with('success', 'Portal setup email has been resent to the applicant.');
+    }
+
+    /**
+     * Reject application. Per 08-API-SPEC-PHASE1.
+     */
+    public function reject(RejectApplicationRequest $request, Application $application): RedirectResponse
+    {
+        if ($application->status !== 'pending') {
+            return redirect()
+                ->back()
+                ->with('error', 'Application has already been processed.');
+        }
+
+        if ($application->appointment_id) {
+            Appointment::where('id', $application->appointment_id)->where('booked_count', '>', 0)->decrement('booked_count');
+        }
+
+        $application->update([
+            'status' => 'rejected',
+            'rejection_reason' => $request->validated('reason'),
+            'processed_by' => auth()->id(),
+            'processed_at' => now(),
+        ]);
+
+        Log::info('Application rejected', [
+            'application_id' => $application->id,
+            'reference_number' => $application->reference_number,
+            'processed_by' => auth()->id(),
+        ]);
+
+        return redirect()
+            ->route('applications.show', $application)
+            ->with('success', 'Application has been rejected.');
+    }
+
+    /**
+     * Download admission slip PDF. Per 08-API-SPEC-PHASE1: 403 if not accepted.
+     */
+    public function admissionSlip(Application $application): StreamedResponse|\Illuminate\Http\Response
+    {
+        $this->authorize('admissionSlip', $application);
+
+        if ($application->status !== 'accepted') {
+            abort(403, 'Admission slip is only available for accepted applications.');
+        }
+
+        $pdf = app(AdmissionSlipService::class)->generatePdf($application);
+        $filename = "admission-slip-{$application->reference_number}.pdf";
+
+        return $pdf->download($filename);
     }
 
     private function getCourses(): array

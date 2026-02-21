@@ -16,6 +16,8 @@ class DatabaseSeeder extends Seeder
     {
         $this->call(RoleSeeder::class);
         $this->call(CourseSeeder::class);
+        $this->call(ExamDomainSeeder::class);
+        $this->call(ResultSheetTemplateSeeder::class);
 
         $superAdminEmail = env('SUPER_ADMIN_EMAIL', 'admin@example.com');
         $superAdminPassword = env('SUPER_ADMIN_PASSWORD', 'Password1!');
@@ -32,49 +34,48 @@ class DatabaseSeeder extends Seeder
             $superAdmin->roles()->attach($superAdminRole);
         }
 
-        $staffEmail = env('STAFF_USER_EMAIL', 'test@example.com');
-        if ($staffEmail !== $superAdminEmail) {
-            $staff = User::firstOrCreate(
-                ['email' => $staffEmail],
-                [
-                    'name' => env('STAFF_USER_NAME', 'Test User'),
-                    'password' => Hash::make(env('STAFF_USER_PASSWORD', 'password')),
-                ]
-            );
-            $staffRole = Role::where('name', 'staff')->first();
-            if ($staffRole && ! $staff->roles()->where('role_id', $staffRole->id)->exists()) {
-                $staff->roles()->attach($staffRole);
-            }
-        }
-
-        $sampleUsers = [
-            ['email' => 'registrar@example.com', 'name' => 'Registrar Admin', 'role' => 'admin'],
-            ['email' => 'proctor@example.com', 'name' => 'Proctor User', 'role' => 'proctor'],
-            ['email' => 'grader@example.com', 'name' => 'Grader User', 'role' => 'grader'],
-            ['email' => 'counselor@example.com', 'name' => 'Counselor User', 'role' => 'counselor'],
-        ];
         $defaultPassword = Hash::make('password');
-        foreach ($sampleUsers as $data) {
+
+        // Registrar: 4 staff (1 admin, 3 staff)
+        $registrarUsers = [
+            ['email' => 'lorna.santos@example.com', 'name' => 'Lorna Santos', 'roles' => ['admin']],
+            ['email' => 'juan.delacruz@example.com', 'name' => 'Juan Dela Cruz', 'roles' => ['staff']],
+            ['email' => 'ana.garcia@example.com', 'name' => 'Ana Garcia', 'roles' => ['staff']],
+            ['email' => 'pedro.ramos@example.com', 'name' => 'Pedro Ramos', 'roles' => ['staff']],
+        ];
+        foreach ($registrarUsers as $data) {
             $user = User::firstOrCreate(
                 ['email' => $data['email']],
                 ['name' => $data['name'], 'password' => $defaultPassword]
             );
-            $role = Role::where('name', $data['role'])->first();
-            if ($role && ! $user->roles()->where('role_id', $role->id)->exists()) {
-                $user->roles()->attach($role);
+            foreach ($data['roles'] as $roleName) {
+                $role = Role::where('name', $roleName)->first();
+                if ($role && ! $user->roles()->where('role_id', $role->id)->exists()) {
+                    $user->roles()->attach($role);
+                }
             }
         }
 
-        // Multi-role user: admin + proctor (registrar who also proctors)
-        $multiRoleUser = User::firstOrCreate(
-            ['email' => 'registrar-proctor@example.com'],
-            ['name' => 'Registrar & Proctor', 'password' => $defaultPassword]
-        );
-        foreach (['admin', 'proctor'] as $roleName) {
-            $role = Role::where('name', $roleName)->first();
-            if ($role && ! $multiRoleUser->roles()->where('role_id', $role->id)->exists()) {
-                $multiRoleUser->roles()->attach($role);
+        // Guidance office: 3 staff (all grader+proctor; 2 also counselor — Sonny Jalorina, Jalorina Reyes)
+        $guidanceUsers = [
+            ['email' => 'sonny.jalorina@example.com', 'name' => 'Sonny Jalorina', 'roles' => ['grader', 'proctor', 'counselor']],
+            ['email' => 'jalorina.reyes@example.com', 'name' => 'Jalorina Reyes', 'roles' => ['grader', 'proctor', 'counselor']],
+            ['email' => 'miguel.reyes@example.com', 'name' => 'Miguel Reyes', 'roles' => ['grader', 'proctor']],
+        ];
+        foreach ($guidanceUsers as $data) {
+            $user = User::firstOrCreate(
+                ['email' => $data['email']],
+                ['name' => $data['name'], 'password' => $defaultPassword]
+            );
+            foreach ($data['roles'] as $roleName) {
+                $role = Role::where('name', $roleName)->first();
+                if ($role && ! $user->roles()->where('role_id', $role->id)->exists()) {
+                    $user->roles()->attach($role);
+                }
             }
         }
+
+        $this->call(RealisticDataSeeder::class);
+        $this->call(ProctorDemoSeeder::class);
     }
 }

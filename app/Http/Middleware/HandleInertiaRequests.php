@@ -3,6 +3,8 @@
 namespace App\Http\Middleware;
 
 use Illuminate\Http\Request;
+use Illuminate\Notifications\DatabaseNotification;
+use Illuminate\Support\Facades\Auth;
 use Inertia\Middleware;
 
 class HandleInertiaRequests extends Middleware
@@ -35,16 +37,55 @@ class HandleInertiaRequests extends Middleware
      */
     public function share(Request $request): array
     {
+        $applicant = Auth::guard('applicant')->user();
+        $applicantPayload = null;
+        $notificationsUnreadCount = 0;
+        $notificationsRecent = [];
+
+        if ($applicant) {
+            $applicant->load('application');
+            $app = $applicant->application;
+            $name = $app
+                ? trim(($app->first_name ?? '') . ' ' . ($app->middle_name ?? '') . ' ' . ($app->last_name ?? ''))
+                : $applicant->email;
+
+            $notificationsUnreadCount = $applicant->unreadNotifications()->count();
+            $notificationsRecent = $applicant->notifications()
+                ->orderBy('created_at', 'desc')
+                ->limit(10)
+                ->get()
+                ->map(fn (DatabaseNotification $n) => [
+                    'id' => $n->id,
+                    'type' => $n->type,
+                    'message' => ($n->data['message'] ?? $n->data['title'] ?? class_basename($n->type)),
+                    'read' => $n->read_at !== null,
+                    'created_at' => $n->created_at?->toIso8601String(),
+                ])
+                ->values()
+                ->all();
+
+            $applicantPayload = [
+                'name' => $name,
+                'email' => $applicant->email,
+                'reference_number' => $app?->reference_number ?? '—',
+            ];
+        }
+
         return [
             ...parent::share($request),
             'auth' => [
-                'user' => $request->user()
+                'user' => $request->user() && $request->user() instanceof \App\Models\User
                     ? $request->user()->load('roles:id,name,display_name')
                     : null,
+                'applicant' => $applicantPayload,
+                'notifications_unread_count' => $notificationsUnreadCount,
+                'notifications_recent' => $notificationsRecent,
             ],
             'flash' => [
                 'success' => $request->session()->get('success'),
+                'error' => $request->session()->get('error'),
             ],
+            'csrf_token' => $request->session()->token(),
         ];
     }
 }

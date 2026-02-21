@@ -1,0 +1,308 @@
+<?php
+
+namespace App\Http\Controllers\Admin;
+
+use App\Http\Controllers\Controller;
+use App\Http\Requests\AssignApplicantsRequest;
+use App\Http\Requests\StoreExamSessionRequest;
+use App\Http\Requests\UpdateExamSessionRequest;
+use App\Models\Applicant;
+use App\Models\ExamSession;
+use App\Models\Room;
+use App\Models\User;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
+use Inertia\Inertia;
+use Inertia\Response;
+
+class ExamSessionController extends Controller
+{
+    private static function statusesList(): array
+    {
+        return [
+            ['value' => 'draft', 'label' => 'Draft'],
+            ['value' => 'published', 'label' => 'Published'],
+            ['value' => 'in_progress', 'label' => 'In progress'],
+            ['value' => 'completed', 'label' => 'Completed'],
+            ['value' => 'cancelled', 'label' => 'Cancelled'],
+        ];
+    }
+
+    public function index(Request $request): Response
+    {
+        $this->authorize('viewAny', ExamSession::class);
+
+        $user = $request->user();
+        $isProctorView = $user->hasAnyRole(['proctor']) && ! $user->hasAnyRole(['super_admin', 'admin']);
+
+        $query = ExamSession::query()
+            ->with(['room:id,name,building,capacity', 'proctors:id,name'])
+            ->orderBy('date')
+            ->orderBy('start_time');
+
+        if ($isProctorView) {
+            $query->whereHas('proctors', fn ($q) => $q->where('users.id', $user->id));
+        }
+
+        if ($request->filled('search')) {
+            $term = '%'.$request->get('search').'%';
+            $query->whereHas('room', function ($r) use ($term) {
+                $r->where('name', 'like', $term)->orWhere('building', 'like', $term);
+            });
+        }
+        if ($request->filled('status')) {
+            $query->where('status', $request->get('status'));
+        }
+        if ($request->filled('date_from')) {
+            $query->whereDate('date', '>=', $request->get('date_from'));
+        }
+        if ($request->filled('date_to')) {
+            $query->whereDate('date', '<=', $request->get('date_to'));
+        }
+
+        $sessions = $query->paginate(15)->withQueryString();
+
+        return Inertia::render('Admin/ExamSessions/Index', [
+            'sessions' => $sessions,
+            'filters' => $request->only(['search', 'status', 'date_from', 'date_to']),
+            'statuses' => self::statusesList(),
+            'view' => $isProctorView ? 'proctor' : 'admin',
+        ]);
+    }
+
+    public function create(): Response
+    {
+        $this->authorize('create', ExamSession::class);
+
+        $rooms = Room::query()->where('is_active', true)->orderBy('building')->orderBy('name')->get(['id', 'name', 'building', 'capacity']);
+        $proctors = User::query()->whereHas('roles', fn ($q) => $q->where('name', 'proctor'))->orderBy('name')->get(['id', 'name']);
+
+        return Inertia::render('Admin/ExamSessions/Create', [
+            'rooms' => $rooms,
+            'proctors' => $proctors,
+        ]);
+    }
+
+    public function store(StoreExamSessionRequest $request): RedirectResponse
+    {
+        $this->authorize('create', ExamSession::class);
+
+        $validated = $request->validated();
+
+        $session = ExamSession::create([
+            'room_id' => $validated['room_id'],
+            'date' => $validated['date'],
+            'start_time' => $validated['start_time'],
+            'end_time' => $validated['end_time'] ?? null,
+            'status' => ExamSession::STATUS_DRAFT,
+            'created_by' => $request->user()->id,
+        ]);
+        if (! empty($validated['proctor_ids'])) {
+            $session->proctors()->sync($validated['proctor_ids']);
+        }
+
+        return redirect()->route('admin.exam-sessions.index')->with('success', 'Exam session created.');
+    }
+
+    public function show(ExamSession $exam_session): Response
+    {
+        $this->authorize('view', $exam_session);
+
+        $user = request()->user();
+        $isProctorView = $user->hasAnyRole(['proctor']) && ! $user->hasAnyRole(['super_admin', 'admin']);
+
+        $exam_session->load(['room:id,name,building,capacity', 'proctors:id,name']);
+
+        $assigned_applicants = $exam_session->applicants()
+            ->with('application:id,reference_number,first_name,middle_name,last_name,suffix')
+            ->get()
+            ->map(fn ($a) => [
+                'id' => $a->id,
+                'session_applicant_id' => $a->pivot->id,
+                'reference_number' => $a->application?->reference_number,
+                'name' => trim(implode(' ', array_filter([$a->application?->first_name, $a->application?->middle_name, $a->application?->last_name, $a->application?->suffix]))),
+            ]);
+
+        $available_applicants = Applicant::query()
+            ->whereHas('application', fn ($q) => $q->where('status', 'accepted'))
+            ->whereDoesntHave('examSessions')
+            ->with('application:id,reference_number,first_name,middle_name,last_name,suffix')
+            ->orderBy('email')
+            ->get()
+            ->map(fn ($a) => [
+                'id' => $a->id,
+                'reference_number' => $a->application?->reference_number,
+                'name' => trim(implode(' ', array_filter([$a->application?->first_name, $a->application?->middle_name, $a->application?->last_name, $a->application?->suffix]))),
+                'email' => $a->email,
+            ]);
+
+        $proctors = $isProctorView ? [] : User::query()->whereHas('roles', fn ($q) => $q->where('name', 'proctor'))->orderBy('name')->get(['id', 'name']);
+
+        return Inertia::render('Admin/ExamSessions/Show', [
+            'session' => $exam_session,
+            'assigned_applicants' => $assigned_applicants,
+            'available_applicants' => $available_applicants,
+            'proctors' => $proctors,
+            'view' => $isProctorView ? 'proctor' : 'admin',
+        ]);
+    }
+
+    public function edit(ExamSession $exam_session): Response
+    {
+        $this->authorize('update', $exam_session);
+
+        $exam_session->load(['room:id,name,building,capacity', 'proctors:id']);
+        $rooms = Room::query()->where('is_active', true)->orderBy('building')->orderBy('name')->get(['id', 'name', 'building', 'capacity']);
+        $proctors = User::query()->whereHas('roles', fn ($q) => $q->where('name', 'proctor'))->orderBy('name')->get(['id', 'name']);
+
+        return Inertia::render('Admin/ExamSessions/Edit', [
+            'session' => $exam_session,
+            'rooms' => $rooms,
+            'proctors' => $proctors,
+        ]);
+    }
+
+    public function update(UpdateExamSessionRequest $request, ExamSession $exam_session): RedirectResponse
+    {
+        $this->authorize('update', $exam_session);
+
+        $validated = $request->validated();
+        $sessionData = collect($validated)->only(['room_id', 'date', 'start_time', 'end_time'])->filter()->all();
+        if (! empty($sessionData)) {
+            $exam_session->update($sessionData);
+        }
+        if (array_key_exists('proctor_ids', $validated)) {
+            $exam_session->proctors()->sync($validated['proctor_ids'] ?? []);
+        }
+
+        return redirect()->route('admin.exam-sessions.show', $exam_session)->with('success', 'Exam session updated.');
+    }
+
+    private function redirectIfCompleted(ExamSession $exam_session, string $actionMessage): ?RedirectResponse
+    {
+        if ($exam_session->status === ExamSession::STATUS_COMPLETED) {
+            return redirect()->route('admin.exam-sessions.show', $exam_session)->with('error', $actionMessage);
+        }
+        return null;
+    }
+
+    /**
+     * Block schedule actions (publish, release date) when exam is in progress or cancelled.
+     * Per EDGE-CASES: publish = announce schedule; cannot announce something already in progress.
+     */
+    private function redirectIfNotPublishable(ExamSession $exam_session, string $actionMessage): ?RedirectResponse
+    {
+        if ($exam_session->status === ExamSession::STATUS_IN_PROGRESS) {
+            return redirect()->route('admin.exam-sessions.show', $exam_session)->with('error', $actionMessage);
+        }
+        if ($exam_session->status === ExamSession::STATUS_CANCELLED) {
+            return redirect()->route('admin.exam-sessions.show', $exam_session)->with('error', $actionMessage);
+        }
+        return null;
+    }
+
+    /**
+     * Assign applicants to exam session. Per 08-API-SPEC-PHASE1: capacity, accepted only, no duplicate sessions.
+     */
+    public function assignApplicants(AssignApplicantsRequest $request, ExamSession $exam_session): RedirectResponse|JsonResponse
+    {
+        if ($redirect = $this->redirectIfCompleted($exam_session, 'You cannot assign applicants to a completed exam session.')) {
+            return $redirect;
+        }
+        $applicantIds = array_values(array_unique(array_map('intval', $request->validated('applicant_ids'))));
+        $alreadyAttached = $exam_session->applicants()->whereIn('applicants.id', $applicantIds)->pluck('applicants.id')->all();
+        $toAttach = array_diff($applicantIds, $alreadyAttached);
+        if (! empty($toAttach)) {
+            $exam_session->applicants()->attach($toAttach);
+        }
+
+        $exam_session->loadCount('applicants');
+        if ($request->wantsJson()) {
+            return response()->json([
+                'session' => $exam_session->fresh(['room:id,name,building,capacity'])->loadCount('applicants'),
+                'assigned_count' => $exam_session->applicants_count,
+            ], 200);
+        }
+        return redirect()->route('admin.exam-sessions.show', $exam_session)->with('success', 'Applicants assigned.');
+    }
+
+    public function removeApplicant(Request $request, ExamSession $exam_session): RedirectResponse
+    {
+        if ($redirect = $this->redirectIfCompleted($exam_session, 'You cannot remove applicants from a completed exam session.')) {
+            return $redirect;
+        }
+        $this->authorize('update', $exam_session);
+        $data = $request->validate(['session_applicant_id' => 'required|integer']);
+        $pivotId = (int) $data['session_applicant_id'];
+        \Illuminate\Support\Facades\DB::table('exam_session_applicant')->where('id', $pivotId)->where('exam_session_id', $exam_session->id)->delete();
+
+        return redirect()->route('admin.exam-sessions.show', $exam_session)->with('success', 'Applicant removed.');
+    }
+
+    public function publish(ExamSession $exam_session): RedirectResponse
+    {
+        if ($redirect = $this->redirectIfCompleted($exam_session, 'You cannot change a completed exam session.')) {
+            return $redirect;
+        }
+        if ($redirect = $this->redirectIfNotPublishable($exam_session, 'You cannot publish an exam session that is in progress or cancelled.')) {
+            return $redirect;
+        }
+        $this->authorize('update', $exam_session);
+
+        if ($exam_session->applicants()->count() === 0) {
+            return redirect()->route('admin.exam-sessions.show', $exam_session)
+                ->with('error', 'Assign at least one applicant before publishing.');
+        }
+
+        $exam_session->update([
+            'status' => ExamSession::STATUS_PUBLISHED,
+            'published_at' => now(),
+        ]);
+
+        return redirect()->route('admin.exam-sessions.show', $exam_session)->with('success', 'Session published.');
+    }
+
+    public function releaseDate(Request $request, ExamSession $exam_session): RedirectResponse
+    {
+        if ($redirect = $this->redirectIfCompleted($exam_session, 'You cannot change the release date of a completed exam session.')) {
+            return $redirect;
+        }
+        if ($redirect = $this->redirectIfNotPublishable($exam_session, 'You cannot change the release date of an exam session that is in progress or cancelled.')) {
+            return $redirect;
+        }
+        $this->authorize('update', $exam_session);
+        $request->validate(['score_release_date' => 'required|date']);
+        $exam_session->update(['score_release_date' => $request->input('score_release_date')]);
+        return redirect()->route('admin.exam-sessions.show', $exam_session)->with('success', 'Release date set.');
+    }
+
+    /**
+     * Reopen a completed exam session (set status back to in_progress).
+     * Admin/super_admin only; e.g. for late examinee or accidental close.
+     * Per E-020: Cannot reopen if grading session exists and is finalized.
+     */
+    public function reopen(ExamSession $exam_session): RedirectResponse
+    {
+        $this->authorize('reopen', $exam_session);
+
+        if ($exam_session->status !== ExamSession::STATUS_COMPLETED) {
+            return redirect()->route('admin.exam-sessions.show', $exam_session)
+                ->with('error', 'Only completed sessions can be reopened.');
+        }
+
+        $gradingSession = $exam_session->gradingSession;
+        if ($gradingSession && $gradingSession->status === \App\Models\GradingSession::STATUS_FINALIZED) {
+            return redirect()->route('admin.exam-sessions.show', $exam_session)
+                ->with('error', 'Cannot reopen: grading for this exam is already finalized.');
+        }
+
+        $exam_session->update([
+            'status' => ExamSession::STATUS_IN_PROGRESS,
+            'closed_at' => null,
+        ]);
+
+        return redirect()->route('admin.exam-sessions.show', $exam_session)
+            ->with('success', 'Session reopened. Proctors can continue marking attendance and submissions.');
+    }
+}

@@ -4,6 +4,8 @@ This document defines all Inertia.js page routes for Phase 1. Each route specifi
 
 > **Convention**: Pages are in `resources/js/Pages/{Module}/`. Layouts are in `resources/js/Layouts/`. All forms use shadcn-svelte components with Inertia's `useForm()` — reference `developing-gotchas.mdc` for form state binding.
 
+> **Role-based views**: Some pages serve multiple roles on the same URL (e.g. Exam Sessions). The backend passes a `view` prop (`admin` or `proctor`) and scopes data by role; the UI adapts title, description, and visible actions (e.g. proctors do not see Create/Edit/Assign/Publish). Nav labels differ by role (e.g. "Exam Sessions" for admin, "My Sessions" for proctor) but target the same route.
+
 ---
 
 ## Authentication Routes
@@ -150,9 +152,9 @@ This document defines all Inertia.js page routes for Phase 1. Each route specifi
 | URL | `/admin/exam-sessions` |
 | Component | `Pages/Admin/ExamSessions/Index.svelte` |
 | Layout | `AuthenticatedLayout.svelte` |
-| Props | `{ sessions (paginated), filters, rooms }` |
-| Actions | Create, edit, view, publish, set release date |
-| Auth | admin, super_admin |
+| Props | `{ sessions (paginated), filters, statuses, view }` — `view` is `'admin'` or `'proctor'`; when `proctor`, list is scoped to assigned sessions only and Create/Edit are hidden |
+| Actions | Admin: create, edit, view, publish, set release date. Proctor: view only (assigned sessions) |
+| Auth | admin, super_admin (full list); proctor (assigned only, same URL; nav label "My Sessions" is proctor-only) |
 
 ### Create Exam Session
 | Aspect | Value |
@@ -171,26 +173,22 @@ This document defines all Inertia.js page routes for Phase 1. Each route specifi
 | URL | `/admin/exam-sessions/{id}` |
 | Component | `Pages/Admin/ExamSessions/Show.svelte` |
 | Layout | `AuthenticatedLayout.svelte` |
-| Props | `{ session, assigned_applicants, available_applicants, proctors }` |
-| Actions | Assign applicants (table with checkboxes), remove applicants, publish → `POST .../publish`, set release date |
-| Auth | admin, super_admin |
+| Props | `{ session, assigned_applicants, available_applicants, proctors, view }` — `view` is `'admin'` or `'proctor'`; when `proctor`, assign/publish/release sections are hidden |
+| Actions | Admin: assign applicants, remove applicants, publish, set release date. Proctor: view only (read-only session details) |
+| Auth | admin, super_admin; proctor (assigned to session only) |
 | Form Considerations | Bulk applicant assignment — data table with selection. Date picker for release date. |
 
 ---
 
 ## Examination Module (Proctor)
 
-### Proctor Dashboard
-| Aspect | Value |
-|--------|-------|
-| URL | `/proctor` |
-| Component | `Pages/Proctor/Dashboard.svelte` |
-| Layout | `AuthenticatedLayout.svelte` |
-| Props | `{ assigned_sessions, today_sessions }` |
-| Actions | Navigate to session roster |
-| Auth | proctor |
+Proctors do **not** have a separate dashboard page. They use the same exam-sessions UI with a **proctor view**:
 
-### Session Roster
+- **Nav**: Proctors see "My Sessions" (Guidance section) linking to `/admin/exam-sessions`. Admins and super_admin see "Exam Sessions" (Registrar section) only — they do **not** see "My Sessions".
+- **Route**: `GET /proctor` redirects to `GET /admin/exam-sessions` (for bookmarks). Proctors have access to `GET /admin/exam-sessions` and `GET /admin/exam-sessions/{id}`; backend scopes list to sessions where the user is assigned and passes `view: 'proctor'` so the UI shows "My Sessions" and hides create/edit/assign/publish/release.
+- **Future**: Session roster (attendance, submission, start/close) will be a separate page when implemented (e.g. `/proctor/sessions/{id}`).
+
+### Session Roster (future)
 | Aspect | Value |
 |--------|-------|
 | URL | `/proctor/sessions/{id}` |
@@ -360,12 +358,14 @@ Based on user roles, show:
 
 | Role | Menu Items |
 |------|------------|
-| super_admin | Dashboard, Users, Applications, Scheduling, Rooms, Proctors, Grading, Consultation, Courses, Settings |
+| super_admin | Dashboard, Users, Applications, Scheduling, Exam Sessions, Rooms, Proctors, Grading, Consultation, Courses, Settings |
 | staff | Dashboard, Applications |
 | admin | Dashboard, Applications, Scheduling, Exam Sessions, Rooms, Proctors |
-| proctor | Dashboard, My Sessions |
+| proctor | Dashboard, My Sessions (same URL as Exam Sessions; proctor view = assigned only) |
 | grader | Dashboard, Grading |
 | counselor | Dashboard, Applications (view), Grading (view), Consultation, Decision Rules |
+
+**Note**: "My Sessions" is shown only to users with the **proctor** role. Admin and super_admin see "Exam Sessions" only (no duplicate "My Sessions").
 
 ### Applicant Portal Navigation
 - Dashboard (single page with all surfaces)
@@ -386,6 +386,16 @@ The following pages have complex forms requiring attention to shadcn-svelte + In
 5. **Applicant Consultation View** — Multi-section with editable summary
 
 Reference `developing-gotchas.mdc` for implementation guidance on these pages.
+
+---
+
+## List page implementation notes (Phase 1)
+
+Recorded so later phases and new list pages stay consistent:
+
+- **Filter bar:** Exam Sessions, Applications, Users, and Rooms use a shared pattern: desktop = one row (search, filters, dates side-by-side, Apply); mobile = search + collapsible "Filters" dropdown (right-aligned, width-capped) + Apply always visible. Date range (from/to) is always shown side by side. See developing-conventions.mdc → Filter bar.
+- **Table scroll on mobile:** Layout and table wrappers use `min-w-0` and a single scroll container so the table scrolls horizontally without stretching the viewport or showing double scrollbars. Pages using shadcn Table.Root (e.g. Rooms) must not add a second overflow on the page wrapper. See developing-conventions.mdc → Table horizontal scroll (mobile).
+- **Tables:** shadcn-svelte Table components are used where installed (e.g. Rooms). Other list pages (Applications, Exam Sessions, Users, Courses) can migrate to `Table.Root`/`Table.Header`/`Table.Body`/`Table.Row`/`Table.Head`/`Table.Cell` for consistency; apply convention classes (bg-muted/50, px-4 py-3) for the list-style look.
 
 ---
 

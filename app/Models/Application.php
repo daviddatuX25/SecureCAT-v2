@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Application extends Model
 {
@@ -57,6 +58,11 @@ class Application extends Model
     public function coursePreference3(): BelongsTo
     {
         return $this->belongsTo(Course::class, 'course_preference_3');
+    }
+
+    public function applicant(): HasOne
+    {
+        return $this->hasOne(Applicant::class);
     }
 
     public static function nextReferenceNumber(): string

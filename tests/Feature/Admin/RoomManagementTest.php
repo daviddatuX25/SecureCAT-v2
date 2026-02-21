@@ -2,6 +2,10 @@
 
 namespace Tests\Feature\Admin;
 
+use App\Models\Applicant;
+use App\Models\Application;
+use App\Models\Course;
+use App\Models\ExamSession;
 use App\Models\Role;
 use App\Models\Room;
 use App\Models\User;
@@ -103,6 +107,25 @@ class RoomManagementTest extends TestCase
         $this->assertFalse($room->is_active);
     }
 
+    /** E-024: Cannot deactivate room with future exam sessions. */
+    public function test_cannot_deactivate_room_with_future_exam_sessions(): void
+    {
+        $room = Room::factory()->create(['is_active' => true]);
+        ExamSession::factory()->create([
+            'room_id' => $room->id,
+            'date' => now()->addDays(7),
+            'status' => ExamSession::STATUS_PUBLISHED,
+            'created_by' => $this->admin->id,
+        ]);
+
+        $response = $this->actingAs($this->admin)->delete("/admin/rooms/{$room->id}");
+
+        $response->assertRedirect(route('admin.rooms.index'));
+        $response->assertSessionHas('error');
+        $room->refresh();
+        $this->assertTrue($room->is_active);
+    }
+
     public function test_guest_cannot_access_rooms(): void
     {
         $response = $this->get('/admin/rooms');
@@ -146,5 +169,56 @@ class RoomManagementTest extends TestCase
 
         $response->assertRedirect(route('admin.rooms.index'));
         $this->assertDatabaseCount('rooms', 2);
+    }
+
+    /** E-023: Capacity cannot be reduced below current max assignments in any session. */
+    public function test_cannot_reduce_capacity_below_assigned_applicants(): void
+    {
+        $this->seed(\Database\Seeders\CourseSeeder::class);
+        $room = Room::factory()->create(['capacity' => 50, 'name' => 'Room A', 'building' => 'ITBR']);
+        $session = ExamSession::factory()->create([
+            'room_id' => $room->id,
+            'status' => ExamSession::STATUS_COMPLETED,
+            'created_by' => User::factory()->create()->id,
+        ]);
+        $applicants = $this->createApplicants(35);
+        foreach ($applicants as $a) {
+            $session->applicants()->attach($a->id);
+        }
+
+        $response = $this->actingAs($this->admin)->put("/admin/rooms/{$room->id}", [
+            'name' => 'Room A',
+            'building' => 'ITBR',
+            'capacity' => 30,
+        ]);
+
+        $response->assertSessionHasErrors('capacity');
+        $room->refresh();
+        $this->assertSame(50, $room->capacity);
+    }
+
+    /** Helper: create accepted applicants. */
+    private function createApplicants(int $count): array
+    {
+        $courses = Course::orderBy('id')->limit(3)->pluck('id')->all();
+        $applicants = [];
+        for ($i = 0; $i < $count; $i++) {
+            $app = Application::create([
+                'reference_number' => Application::nextReferenceNumber(),
+                'first_name' => "Test{$i}",
+                'last_name' => 'Applicant',
+                'birthdate' => '2004-01-01',
+                'age' => 20,
+                'sex' => 'male',
+                'email' => "e023test{$i}@example.com",
+                'status' => 'accepted',
+                'submitted_at' => now(),
+                'course_preference_1' => $courses[0],
+                'course_preference_2' => $courses[1],
+                'course_preference_3' => $courses[2],
+            ]);
+            $applicants[] = Applicant::create(['application_id' => $app->id, 'email' => $app->email]);
+        }
+        return $applicants;
     }
 }

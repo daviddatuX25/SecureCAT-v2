@@ -2,9 +2,12 @@
 
 namespace App\Providers;
 
+use App\Models\ExamSession;
+use App\Policies\ExamSessionPolicy;
 use Illuminate\Auth\Middleware\RedirectIfAuthenticated;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
 
@@ -23,6 +26,8 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        Gate::policy(ExamSession::class, ExamSessionPolicy::class);
+
         RedirectIfAuthenticated::redirectUsing(fn () => route('dashboard'));
 
         RateLimiter::for('login', function (Request $request) {

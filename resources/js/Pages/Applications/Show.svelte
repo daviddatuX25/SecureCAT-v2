@@ -1,11 +1,17 @@
 <script>
   import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.svelte';
-  import { Link } from '@inertiajs/svelte';
+  import { Link, router } from '@inertiajs/svelte';
+  import { usePage } from '@inertiajs/svelte';
   import { Button } from '@/Components/ui/button';
   import { Badge } from '@/Components/ui/badge';
-  import { ArrowLeft, Check, X, FileDown } from 'lucide-svelte';
+  import { ArrowLeft, Check, X, FileDown, Mail } from 'lucide-svelte';
 
   let { application, courses = [] } = $props();
+
+  const page = usePage();
+  const flash = $derived($page.props.flash ?? {});
+  const success = $derived(flash.success ?? null);
+  const error = $derived(flash.error ?? null);
 
   const fullName = $derived(
     [application?.first_name, application?.middle_name, application?.last_name, application?.suffix]
@@ -13,10 +19,45 @@
       .join(' ')
   );
 
+  const isPending = $derived(application?.status === 'pending');
+  const isAccepted = $derived(application?.status === 'accepted');
+
+  let rejectModalOpen = $state(false);
+  let rejectReason = $state('');
+
   function statusVariant(status) {
     if (status === 'pending') return 'warning';
     if (status === 'accepted') return 'success';
     return 'danger';
+  }
+
+  function handleAccept() {
+    if (!application?.id || !isPending) return;
+    router.put(`/applications/${application.id}/accept`);
+  }
+
+  function openRejectModal() {
+    rejectReason = '';
+    rejectModalOpen = true;
+  }
+
+  function cancelReject() {
+    rejectModalOpen = false;
+    rejectReason = '';
+  }
+
+  function handleReject() {
+    if (!application?.id || !rejectReason.trim()) return;
+    router.put(`/applications/${application.id}/reject`, { reason: rejectReason.trim() }, {
+      onSuccess: () => (rejectModalOpen = false),
+    });
+  }
+
+  const admissionSlipUrl = $derived(application?.id ? `/applications/${application.id}/admission-slip` : null);
+
+  function handleResendSetupEmail() {
+    if (!application?.id || !isAccepted) return;
+    router.post(`/applications/${application.id}/resend-setup-email`);
   }
 </script>
 
@@ -26,6 +67,16 @@
 
 <AuthenticatedLayout>
   <div class="space-y-6">
+    {#if success}
+      <div class="rounded-lg bg-primary/10 px-4 py-3 text-sm text-primary">
+        {success}
+      </div>
+    {/if}
+    {#if error}
+      <div class="rounded-lg bg-destructive/10 px-4 py-3 text-sm text-destructive">
+        {error}
+      </div>
+    {/if}
     <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
       <div class="flex items-center gap-3">
         <Link href="/applications">
@@ -39,18 +90,30 @@
         </div>
       </div>
       <div class="flex gap-2">
-        <Button variant="outline" disabled class="min-h-[44px]" title="Coming soon">
-          <Check class="mr-2 h-4 w-4" />
-          Accept
-        </Button>
-        <Button variant="outline" disabled class="min-h-[44px]" title="Coming soon">
-          <X class="mr-2 h-4 w-4" />
-          Reject
-        </Button>
-        <Button variant="outline" disabled class="min-h-[44px]" title="Coming soon">
-          <FileDown class="mr-2 h-4 w-4" />
-          Download slip
-        </Button>
+        {#if isPending}
+          <Button variant="outline" class="min-h-[44px]" onclick={handleAccept}>
+            <Check class="mr-2 h-4 w-4" />
+            Accept
+          </Button>
+          <Button variant="outline" class="min-h-[44px]" onclick={openRejectModal}>
+            <X class="mr-2 h-4 w-4" />
+            Reject
+          </Button>
+        {/if}
+        {#if isAccepted}
+          <Button variant="outline" class="min-h-[44px]" onclick={handleResendSetupEmail}>
+            <Mail class="mr-2 h-4 w-4" />
+            Resend setup email
+          </Button>
+          {#if admissionSlipUrl}
+            <a href={admissionSlipUrl} target="_blank" rel="noopener noreferrer">
+              <Button variant="outline" class="min-h-[44px]">
+                <FileDown class="mr-2 h-4 w-4" />
+                Download slip
+              </Button>
+            </a>
+          {/if}
+        {/if}
       </div>
     </div>
 
@@ -145,4 +208,37 @@
       <p class="text-muted-foreground">Application not found.</p>
     {/if}
   </div>
+
+  {#if rejectModalOpen}
+    <div
+      class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="reject-title"
+    >
+      <div class="rounded-lg bg-card p-6 shadow-lg max-w-md w-full">
+        <h2 id="reject-title" class="text-lg font-semibold">Reject application?</h2>
+        <p class="mt-2 text-sm text-muted-foreground">
+          Please provide a reason for rejection. This will be visible to the applicant.
+        </p>
+        <div class="mt-4">
+          <label for="reject-reason" class="block text-sm font-medium mb-2">Reason (required)</label>
+          <textarea
+            id="reject-reason"
+            bind:value={rejectReason}
+            rows="4"
+            maxlength="500"
+            placeholder="Enter rejection reason..."
+            class="w-full rounded-md border border-input bg-background px-3 py-2 text-sm resize-none"
+          ></textarea>
+        </div>
+        <div class="mt-4 flex justify-end gap-2">
+          <Button variant="outline" onclick={cancelReject}>Cancel</Button>
+          <Button variant="destructive" onclick={handleReject} disabled={!rejectReason.trim()}>
+            Reject
+          </Button>
+        </div>
+      </div>
+    </div>
+  {/if}
 </AuthenticatedLayout>

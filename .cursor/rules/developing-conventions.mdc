@@ -50,12 +50,25 @@ Conventions and patterns to keep the codebase consistent. Add new items when est
 
 ---
 
+## Filter bar (list pages)
+
+- **Desktop:** One row — search input, filter dropdowns (e.g. status, role), date range (from/to always side by side), Apply button. Use `hidden md:flex` for this row.
+- **Mobile:** Search and Apply always visible. Other filters in a collapsible **Filters** dropdown (`<details>`/`<summary>`): label "Filters", icon Filter + ChevronDown. Dropdown content: right-aligned, width `w-[min(320px,calc(100vw-2rem))]` so it doesn’t overflow. Date-from and date-to always shown side by side inside the dropdown. Apply closes the dropdown and applies; Apply stays outside the dropdown so it’s always visible.
+- **State:** Use local `$state` for filter values and `$effect` to sync from server `filters` prop. Apply via `router.get(..., { page: 1 }, { preserveState: true })`.
+- **Pages using this pattern:** Exam Sessions, Applications, Users (Rooms has search + Apply only; no dropdown).
+
 ## Tables (data lists)
 
-- **Structure:** `<table class="w-full text-sm">`, `<thead class="bg-muted/50">`, `<tr class="border-t border-border hover:bg-muted/30">` for body rows.
+- **Preferred:** Use shadcn **Table** (`import * as Table from '@/Components/ui/table'`): `Table.Root`, `Table.Header`, `Table.Row`, `Table.Head`, `Table.Body`, `Table.Cell`. For list-style look add `class="bg-muted/50"` on `Table.Header` and `class="px-4 py-3"` on `Table.Head`/`Table.Cell`. Empty state: one `Table.Row` with one `Table.Cell` with `colspan={n}` and `class="px-4 py-12 text-center text-muted-foreground"`.
+- **Legacy structure:** If not using shadcn Table, use `<table class="w-full text-sm">`, `<thead class="bg-muted/50">`, `<tr class="border-t border-border hover:bg-muted/30">` for body rows.
 - **Cells:** `px-4 py-3` for consistency. Use `text-right` for actions column.
-- **Empty state:** One row with `colspan` and `text-center text-muted-foreground`, e.g. "No items match your filters."
 - **Pagination:** When present, keep in a footer row or bar below the table with `border-t border-border`, same as Applications Index.
+
+### Table horizontal scroll (mobile)
+
+- **Single scroll container:** To avoid double horizontal scrollbars, use only one element with `overflow-x-auto` or `overflow-x-scroll`. shadcn **Table.Root** already wraps the table in a div with `overflow-x-auto`. On pages that use `Table.Root` (e.g. Rooms), do **not** add `overflow-x-scroll` or `overflow-x-auto` on the page’s table wrapper — use `w-full min-w-0` only so the layout is constrained and the Table.Root inner div is the sole scroll container.
+- **Pages with plain `<table>`:** Use one wrapper: `class="w-full min-w-0 overflow-x-scroll overscroll-x-contain"` and table `class="w-full min-w-[640px] text-sm"`.
+- **Layout:** `AuthenticatedLayout` uses `min-w-0` on main and content wrapper, and root has `overflow-x-hidden`, so the table area doesn’t stretch the viewport.
 
 ### Table + card layout (list views)
 
@@ -71,6 +84,14 @@ Conventions and patterns to keep the codebase consistent. Add new items when est
 
 - **Backend:** All form submissions validated via Form Request classes; no inline validation in controllers (stack-conventions).
 - **Frontend:** Use Inertia `useForm()`; with shadcn components (Select, Checkbox) bind via `form.set()` / `onValueChange` (developing-gotchas → Form State with shadcn Components).
+
+---
+
+## Errors and user feedback (fallback / QA)
+
+- **Business-rule failures (e.g. “can’t do X when status is Y”):** Prefer **redirect back with a clear flash message** over returning 403 Unauthorized. Check the condition in the controller (or after authorize), return `redirect()->route(...)->with('error', 'Clear message.')` so the user sees why the action was disallowed instead of a generic “Unauthorized” page.
+- **Form Request vs controller:** If the failure is a business rule (e.g. “session is completed”), handle it in the controller so you can redirect with flash. Use the Form Request only for role/permission (so real unauthorized users still get 403).
+- **Show flash.error on pages:** On detail/show pages that can receive these redirects, display `flash.error` the same way as `flash.success`: e.g. `$derived($page.props.flash?.error ?? null)` and a block with destructive styling (`bg-destructive/10 text-destructive`). Example: Exam Session Show shows both success and error messages in context.
 
 ---
 

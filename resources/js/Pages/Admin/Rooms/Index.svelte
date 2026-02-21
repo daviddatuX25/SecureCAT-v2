@@ -5,12 +5,27 @@
   import * as ToggleGroup from '@/Components/ui/toggle-group';
   import { Button } from '@/Components/ui/button';
   import { Badge } from '@/Components/ui/badge';
+  import { Input } from '@/Components/ui/input';
+  import * as Table from '@/Components/ui/table';
   import { Plus, Pencil, Trash2, LayoutGrid, Table2, MonitorSmartphone } from 'lucide-svelte';
 
-  let { rooms } = $props();
+  let { rooms, filters = {} } = $props();
 
   const page = usePage();
   const success = $derived($page.props.flash?.success ?? null);
+  const error = $derived($page.props.flash?.error ?? null);
+
+  let filterSearch = $state('');
+  $effect(() => {
+    filterSearch = filters.search ?? '';
+  });
+
+  function applyFilters() {
+    router.get('/admin/rooms', {
+      search: filterSearch || undefined,
+      page: 1,
+    }, { preserveState: true });
+  }
 
   let deleteId = $state(null);
 
@@ -45,7 +60,7 @@
 </svelte:head>
 
 <AuthenticatedLayout>
-  <div class="space-y-6">
+  <div class="space-y-6 min-w-0">
     <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
       <div>
         <h1 class="text-2xl font-bold">Rooms</h1>
@@ -87,40 +102,59 @@
         {success}
       </div>
     {/if}
+    {#if error}
+      <div class="rounded-lg bg-destructive/10 px-4 py-3 text-sm text-destructive">
+        {error}
+      </div>
+    {/if}
 
-    <div class="rounded-lg border border-border overflow-hidden">
-      <!-- Table view -->
+    <!-- Filters: one row on desktop; same on mobile (search + Apply) -->
+    <div class="flex flex-col gap-3">
+      <div class="flex flex-wrap items-center gap-3">
+        <Input
+          type="search"
+          placeholder="Search name or building"
+          bind:value={filterSearch}
+          onkeydown={(e) => e.key === 'Enter' && applyFilters()}
+          class="min-w-[160px] max-w-[220px] md:max-w-[220px] flex-1 min-w-0 md:flex-none min-h-[44px] md:min-h-[40px] h-10"
+        />
+        <Button onclick={applyFilters} class="min-h-[44px] md:min-h-[40px]">Apply</Button>
+      </div>
+    </div>
+
+    <div class="rounded-lg border border-border overflow-hidden min-w-0 max-w-full">
+      <!-- Table view: single scroll container (Table.Root inner div); outer only constrains width -->
       <div
-        class="overflow-x-auto {viewMode === 'cards'
+        class="w-full min-w-0 {viewMode === 'cards'
           ? 'hidden'
           : viewMode === 'table'
             ? 'block'
             : 'hidden md:block'}"
       >
-        <table class="w-full text-sm">
-          <thead class="bg-muted/50">
-            <tr>
-              <th class="px-4 py-3 text-left font-medium">Name</th>
-              <th class="px-4 py-3 text-left font-medium">Building</th>
-              <th class="px-4 py-3 text-left font-medium">Floor</th>
-              <th class="px-4 py-3 text-left font-medium">Capacity</th>
-              <th class="px-4 py-3 text-left font-medium">Facilities</th>
-              <th class="px-4 py-3 text-left font-medium">Status</th>
-              <th class="px-4 py-3 text-right font-medium">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
+        <Table.Root class="w-full min-w-[640px]">
+          <Table.Header class="bg-muted/50">
+            <Table.Row>
+              <Table.Head class="px-4 py-3">Name</Table.Head>
+              <Table.Head class="px-4 py-3">Building</Table.Head>
+              <Table.Head class="px-4 py-3">Floor</Table.Head>
+              <Table.Head class="px-4 py-3">Capacity</Table.Head>
+              <Table.Head class="px-4 py-3">Facilities</Table.Head>
+              <Table.Head class="px-4 py-3">Status</Table.Head>
+              <Table.Head class="px-4 py-3 text-right">Actions</Table.Head>
+            </Table.Row>
+          </Table.Header>
+          <Table.Body>
             {#each rooms.data as room}
-              <tr class="border-t border-border hover:bg-muted/30">
-                <td class="px-4 py-3">{room.name}</td>
-                <td class="px-4 py-3">{room.building}</td>
-                <td class="px-4 py-3">{room.floor ?? '—'}</td>
-                <td class="px-4 py-3">{room.capacity}</td>
-                <td class="px-4 py-3">{formatFacilities(room.facilities)}</td>
-                <td class="px-4 py-3">
+              <Table.Row>
+                <Table.Cell class="px-4 py-3">{room.name}</Table.Cell>
+                <Table.Cell class="px-4 py-3">{room.building}</Table.Cell>
+                <Table.Cell class="px-4 py-3">{room.floor ?? '—'}</Table.Cell>
+                <Table.Cell class="px-4 py-3">{room.capacity}</Table.Cell>
+                <Table.Cell class="px-4 py-3">{formatFacilities(room.facilities)}</Table.Cell>
+                <Table.Cell class="px-4 py-3">
                   <Badge variant={room.is_active ? 'success' : 'muted'}>{room.is_active ? 'Active' : 'Inactive'}</Badge>
-                </td>
-                <td class="px-4 py-3 text-right">
+                </Table.Cell>
+                <Table.Cell class="px-4 py-3 text-right">
                   <div class="flex justify-end gap-2">
                     <Link href={`/admin/rooms/${room.id}/edit`}>
                       <Button variant="ghost" size="icon" aria-label="Edit">
@@ -139,17 +173,17 @@
                       </Button>
                     {/if}
                   </div>
-                </td>
-              </tr>
+                </Table.Cell>
+              </Table.Row>
             {:else}
-              <tr>
-                <td colspan="7" class="px-4 py-12 text-center text-muted-foreground">
+              <Table.Row>
+                <Table.Cell colspan={7} class="px-4 py-12 text-center text-muted-foreground">
                   No rooms yet. Create one to get started.
-                </td>
-              </tr>
+                </Table.Cell>
+              </Table.Row>
             {/each}
-          </tbody>
-        </table>
+          </Table.Body>
+        </Table.Root>
       </div>
 
       <!-- Card view -->
