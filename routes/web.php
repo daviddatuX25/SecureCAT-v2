@@ -1,9 +1,14 @@
 <?php
 
+use App\Http\Controllers\Admin\AdmissionSlipTemplateController;
+use App\Http\Controllers\Admin\AuditLogController;
 use App\Http\Controllers\Admin\CourseController;
 use App\Http\Controllers\Admin\ExamSessionController;
+use App\Http\Controllers\Admin\KnowledgeDocumentController;
 use App\Http\Controllers\Admin\ResultSheetTemplateController;
 use App\Http\Controllers\Admin\RoomController;
+use App\Http\Controllers\Admin\SeasonController;
+use App\Http\Controllers\Admin\SettingsController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Consultation\ConsultationApplicantController;
 use App\Http\Controllers\Consultation\ConsultationController;
@@ -16,6 +21,8 @@ use App\Http\Controllers\Grading\GradingScoreController;
 use App\Http\Controllers\Grading\GradingSessionController;
 use App\Http\Controllers\ApplicationController;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\Portal\AiCompanionController;
 use App\Http\Controllers\Portal\NotificationController as PortalNotificationController;
 use App\Http\Controllers\PortalAuthController;
 use App\Http\Controllers\Proctor\SessionRosterController;
@@ -55,19 +62,30 @@ Route::middleware(['web', 'auth:applicant'])->prefix('portal')->name('portal.')-
     Route::post('logout', [PortalAuthController::class, 'destroy'])->name('logout');
     Route::get('notifications', [PortalNotificationController::class, 'index'])->name('notifications.index');
     Route::post('notifications/{id}/read', [PortalNotificationController::class, 'markRead'])->name('notifications.read');
+    Route::get('ai-companion', [AiCompanionController::class, 'index'])->name('ai-companion.index');
+    Route::post('ai-companion/chat', [AiCompanionController::class, 'chat'])->name('ai-companion.chat');
+    Route::post('ai-companion/clear-history', [AiCompanionController::class, 'clearHistory'])->name('ai-companion.clear-history');
 });
 
 Route::middleware(['auth'])->group(function () {
     Route::post('/logout', [AuthController::class, 'destroy'])->name('logout');
-    Route::get('/dashboard', function () {
-        return Inertia::render('Dashboard', [
-            'user' => request()->user(),
-            'stats' => null,
-        ]);
-    })->name('dashboard');
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
     Route::middleware('role:super_admin')->prefix('admin')->name('admin.')->group(function () {
         Route::resource('users', UserController::class)->except('show')->parameters(['users' => 'user']);
+        Route::get('settings', [SettingsController::class, 'index'])->name('settings.index');
+        Route::put('settings', [SettingsController::class, 'update'])->name('settings.update');
+        Route::get('logs', [AuditLogController::class, 'index'])->name('logs.index');
+        Route::get('logs/export', [AuditLogController::class, 'export'])->name('logs.export');
+        Route::resource('admission-slip-templates', AdmissionSlipTemplateController::class)->except('show')->parameters(['admission_slip_templates' => 'admission_slip_template']);
+        Route::get('knowledge-documents', [KnowledgeDocumentController::class, 'index'])->name('knowledge-documents.index');
+        Route::get('knowledge-documents/create', [KnowledgeDocumentController::class, 'create'])->name('knowledge-documents.create');
+        Route::post('knowledge-documents', [KnowledgeDocumentController::class, 'store'])->name('knowledge-documents.store');
+        Route::get('knowledge-documents/import', [KnowledgeDocumentController::class, 'importForm'])->name('knowledge-documents.import');
+        Route::post('knowledge-documents/import', [KnowledgeDocumentController::class, 'import'])->name('knowledge-documents.import.store');
+        Route::get('knowledge-documents/{knowledge_document}/edit', [KnowledgeDocumentController::class, 'edit'])->name('knowledge-documents.edit');
+        Route::put('knowledge-documents/{knowledge_document}', [KnowledgeDocumentController::class, 'update'])->name('knowledge-documents.update');
+        Route::delete('knowledge-documents/{knowledge_document}', [KnowledgeDocumentController::class, 'destroy'])->name('knowledge-documents.destroy');
     });
 
     // Exam sessions: index & show for proctors too (proctor view = assigned only)
@@ -75,6 +93,8 @@ Route::middleware(['auth'])->group(function () {
     Route::middleware('role:super_admin,admin,proctor')->prefix('admin')->name('admin.')->group(function () {
         Route::get('exam-sessions', [ExamSessionController::class, 'index'])->name('exam-sessions.index');
         Route::get('exam-sessions/create', [ExamSessionController::class, 'create'])->name('exam-sessions.create');
+        Route::get('exam-sessions/monitoring', [ExamSessionController::class, 'monitoring'])->name('exam-sessions.monitoring');
+        Route::get('exam-sessions/schedule-assistant', fn () => redirect()->route('admin.exam-sessions.index'))->name('exam-sessions.schedule-assistant');
         Route::get('exam-sessions/{exam_session}', [ExamSessionController::class, 'show'])->name('exam-sessions.show');
     });
 
@@ -87,6 +107,8 @@ Route::middleware(['auth'])->group(function () {
         Route::post('exam-sessions', [ExamSessionController::class, 'store'])->name('exam-sessions.store');
         Route::get('exam-sessions/{exam_session}/edit', [ExamSessionController::class, 'edit'])->name('exam-sessions.edit');
         Route::put('exam-sessions/{exam_session}', [ExamSessionController::class, 'update'])->name('exam-sessions.update');
+        Route::resource('seasons', SeasonController::class)->except('show', 'destroy')->parameters(['seasons' => 'season']);
+        Route::post('seasons/{season}/activate', [SeasonController::class, 'activate'])->name('seasons.activate');
         Route::resource('courses', CourseController::class)->except('show')->parameters(['courses' => 'course']);
         Route::resource('rooms', RoomController::class)->except('show')->parameters(['rooms' => 'room']);
         Route::post('result-sheet-templates/preview', [ResultSheetTemplateController::class, 'preview'])->name('result-sheet-templates.preview');
@@ -135,5 +157,4 @@ Route::middleware(['auth'])->group(function () {
         Route::put('/applicants/{applicant}/summary', [ConsultationApplicantController::class, 'update'])->name('applicants.summary');
         Route::post('/applicants/{applicant}/release', [ConsultationApplicantController::class, 'release'])->name('applicants.release');
     });
-    Route::get('/admin/settings', fn () => Inertia::render('Placeholder', ['title' => 'Settings', 'description' => 'System settings.']))->middleware('role:super_admin');
 });

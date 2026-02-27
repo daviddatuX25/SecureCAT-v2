@@ -1,7 +1,7 @@
 <script>
   import { Link, router } from '@inertiajs/svelte';
   import { usePage } from '@inertiajs/svelte';
-  import { ChevronDown, Menu, LayoutDashboard, Users, FileText, Calendar, DoorOpen, GraduationCap, BookOpen, Settings, MessageSquare, Gavel, CalendarCheck, UsersRound } from 'lucide-svelte';
+  import { ChevronDown, Menu, LayoutDashboard, Users, FileText, Calendar, DoorOpen, GraduationCap, BookOpen, Settings, MessageSquare, Gavel, CalendarCheck, UsersRound, ScrollText, FileStack, Activity, CalendarRange } from 'lucide-svelte';
   import { Button } from '@/Components/ui/button';
 
   let { children } = $props();
@@ -9,6 +9,7 @@
   const page = usePage();
   const user = $derived($page.props.auth?.user ?? null);
   const roles = $derived(user?.roles?.map((r) => r.name) ?? []);
+  const consultationEnabled = $derived($page.props.consultation_enabled ?? true);
   let sidebarOpen = $state(false);
   let userDropdownOpen = $state(false);
 
@@ -16,9 +17,11 @@
     return roles.includes(r);
   }
 
-  function canSee(requiredRoles) {
+  function canSee(requiredRoles, item) {
     if (requiredRoles.includes('*')) return true;
-    return requiredRoles.some((r) => hasRole(r));
+    if (!requiredRoles.some((r) => hasRole(r))) return false;
+    if (item?.requiresConsultation && !consultationEnabled) return false;
+    return true;
   }
 
   function logout() {
@@ -30,8 +33,12 @@
     { label: 'System', items: [
       { href: '/admin/users', label: 'Users', icon: Users, roles: ['super_admin'] },
       { href: '/admin/settings', label: 'Settings', icon: Settings, roles: ['super_admin'] },
+      { href: '/admin/logs', label: 'Audit log', icon: ScrollText, roles: ['super_admin'] },
+      { href: '/admin/knowledge-documents', label: 'Knowledge docs', icon: BookOpen, roles: ['super_admin'] },
+      { href: '/admin/admission-slip-templates', label: 'Admission slip templates', icon: FileStack, roles: ['super_admin', 'admin'] },
     ]},
     { label: 'Registrar', items: [
+      { href: '/admin/seasons', label: 'Seasons', icon: CalendarRange, roles: ['super_admin', 'admin'] },
       { href: '/applications', label: 'Applications', icon: FileText, roles: ['super_admin', 'staff', 'admin', 'counselor'] },
       { href: '/admin/courses', label: 'Courses', icon: BookOpen, roles: ['super_admin', 'admin'] },
       { href: '/admin/rooms', label: 'Rooms', icon: DoorOpen, roles: ['super_admin', 'admin'] },
@@ -39,16 +46,17 @@
     ]},
     { label: 'Guidance', items: [
       { href: '/admin/exam-sessions', label: 'My Sessions', icon: Calendar, roles: ['proctor'] },
+      { href: '/admin/exam-sessions/monitoring', label: 'Session monitor', icon: Activity, roles: ['super_admin', 'admin', 'proctor'] },
       { href: '/grading', label: 'Grading', icon: GraduationCap, roles: ['super_admin', 'grader'] },
       { href: '/admin/result-sheet-templates', label: 'Result templates', icon: FileText, roles: ['super_admin', 'admin', 'counselor'] },
-      { href: '/consultation', label: 'Consultation', icon: MessageSquare, roles: ['super_admin', 'counselor'] },
-      { href: '/consultation/rules', label: 'Decision rules', icon: Gavel, roles: ['super_admin', 'counselor'] },
-      { href: '/consultation/day', label: 'Live consultation', icon: UsersRound, roles: ['super_admin', 'counselor'] },
-      { href: '/consultation/schedule', label: 'Schedule consultation', icon: CalendarCheck, roles: ['super_admin', 'counselor'] },
+      { href: '/consultation', label: 'Consultation', icon: MessageSquare, roles: ['super_admin', 'counselor'], requiresConsultation: true },
+      { href: '/consultation/rules', label: 'Decision rules', icon: Gavel, roles: ['super_admin', 'counselor'], requiresConsultation: true },
+      { href: '/consultation/day', label: 'Live consultation', icon: UsersRound, roles: ['super_admin', 'counselor'], requiresConsultation: true },
+      { href: '/consultation/schedule', label: 'Schedule consultation', icon: CalendarCheck, roles: ['super_admin', 'counselor'], requiresConsultation: true },
     ]},
   ].map((section) => ({
     ...section,
-    items: section.items.filter((item) => canSee(item.roles)),
+    items: section.items.filter((item) => canSee(item.roles, item)),
   })).filter((section) => section.items.length > 0));
 
   function closeDropdowns() {

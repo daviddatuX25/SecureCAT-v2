@@ -7,6 +7,7 @@ use App\Http\Requests\UpdateScoresRequest;
 use App\Models\Applicant;
 use App\Models\ExamDomain;
 use App\Models\GradingSession;
+use App\Services\AuditService;
 use App\Services\ScoreInputService;
 use Illuminate\Http\RedirectResponse;
 use Inertia\Inertia;
@@ -64,6 +65,12 @@ class GradingScoreController extends Controller
             $request->validated('scores'),
             $request->user()
         );
+
+        app(AuditService::class)->log('score.entered', GradingSession::class, $grading_session->id, [], [
+            'grading_session_id' => $grading_session->id,
+            'applicant_id' => $applicant->id,
+            'scores' => $request->validated('scores'),
+        ], "Scores entered for applicant {$applicant->id} in grading session {$grading_session->id}");
 
         return redirect()->route('grading.sessions.show', $grading_session->id)
             ->with('success', 'Scores saved.');

@@ -5,7 +5,7 @@
   import { Button } from '@/Components/ui/button';
   import { Badge } from '@/Components/ui/badge';
   import { Input } from '@/Components/ui/input';
-  import { ArrowLeft, UserPlus, UserMinus, Send, Calendar, ClipboardList, RotateCcw } from 'lucide-svelte';
+  import { ArrowLeft, UserPlus, UserMinus, Send, ClipboardList, RotateCcw } from 'lucide-svelte';
 
   let { session, assigned_applicants = [], available_applicants = [], proctors = [], view = 'admin' } = $props();
   const isProctorView = $derived(view === 'proctor');
@@ -164,8 +164,12 @@
     <!-- Assigned applicants (admin only) -->
     {#if !isProctorView}
     <div class="rounded-lg border border-border bg-card p-6">
-      <h2 class="text-lg font-semibold">Assigned applicants</h2>
-      <p class="mt-1 text-sm text-muted-foreground">Applicants assigned to this session. Remove to unassign.</p>
+      <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <h2 class="text-lg font-semibold">Assigned applicants</h2>
+          <p class="mt-1 text-sm text-muted-foreground">Applicants assigned to this session. Remove to unassign.</p>
+        </div>
+      </div>
       {#if (assigned_applicants ?? []).length > 0}
         <div class="mt-4 overflow-x-auto">
           <table class="w-full text-sm">
@@ -177,7 +181,7 @@
               </tr>
             </thead>
             <tbody>
-              {#each assigned_applicants as row}
+              {#each assigned_applicants as row (row.session_applicant_id)}
                 <tr class="border-t border-border hover:bg-muted/30">
                   <td class="px-4 py-3">{row.reference_number}</td>
                   <td class="px-4 py-3">{row.name}</td>
@@ -219,7 +223,7 @@
               </tr>
             </thead>
             <tbody>
-              {#each available_applicants as app}
+              {#each available_applicants as app (app.id)}
                 <tr class="border-t border-border hover:bg-muted/30">
                   <td class="px-4 py-3">
                     <input

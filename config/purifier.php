@@ -33,6 +33,15 @@ return [
         'test'    => [
             'Attr.EnableID' => 'true',
         ],
+        // Admission slip templates: HTML + CSS allowed, mirror result_sheet
+        'admission_slip' => [
+            'HTML.Doctype' => 'XHTML 1.0 Transitional',
+            'HTML.Allowed' => 'div[class|style],p[class|style],span[class|style],br,strong,b,i,em,u,table[class|style|border],thead,tbody,tfoot,tr[class|style],td[class|style|colspan|rowspan|align],th[class|style|colspan|rowspan|align],h1[class|style],h2[class|style],h3[class|style],h4[class|style],h5[class|style],h6[class|style],ul[class|style],ol[class|style],li[class|style],a[href|title|class],img[width|height|alt|src|class],hr',
+            'CSS.AllowTricky' => true,
+            'CSS.AllowedProperties' => 'font,font-size,font-weight,font-style,font-family,text-decoration,text-align,padding,padding-left,padding-right,padding-top,padding-bottom,margin,margin-left,margin-right,margin-top,margin-bottom,color,background-color,border,border-collapse,width,height,min-height,max-width,max-height,display,visibility,overflow,opacity',
+            'AutoFormat.AutoParagraph' => false,
+            'AutoFormat.RemoveEmpty' => false,
+        ],
         // Result sheet templates: HTML + CSS allowed, JavaScript strictly banned (script, event handlers, javascript: URLs)
         // CSS.AllowTricky enables display, visibility, overflow, opacity (HTMLPurifier implements these in doSetupTricky)
         // flex, flex-wrap, gap, justify-content, align-items are NOT implemented by HTMLPurifier and will trigger errors if listed

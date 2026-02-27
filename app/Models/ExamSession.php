@@ -20,6 +20,7 @@ class ExamSession extends Model
     public const STATUS_CANCELLED = 'cancelled';
 
     protected $fillable = [
+        'season_id',
         'room_id',
         'date',
         'start_time',
@@ -43,9 +44,23 @@ class ExamSession extends Model
         ];
     }
 
+    public function season(): BelongsTo
+    {
+        return $this->belongsTo(Season::class);
+    }
+
     public function room(): BelongsTo
     {
         return $this->belongsTo(Room::class);
+    }
+
+    public function scopeForSeason($query, $season): void
+    {
+        if ($season instanceof Season) {
+            $query->where('season_id', $season->id);
+        } elseif ($season !== null) {
+            $query->where('season_id', $season);
+        }
     }
 
     /** Users assigned as proctors for this session (proctor role). */

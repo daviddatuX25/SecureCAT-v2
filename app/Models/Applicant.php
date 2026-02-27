@@ -53,6 +53,11 @@ class Applicant extends Model implements AuthenticatableContract
         return $this->hasOne(ConsultationSummary::class);
     }
 
+    public function aiCompanionMessages(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(AiCompanionMessage::class);
+    }
+
     /** Exam sessions this applicant is assigned to (at most one per spec). */
     public function examSessions(): BelongsToMany
     {

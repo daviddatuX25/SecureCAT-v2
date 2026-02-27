@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\LoginRequest;
+use App\Services\AuditService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -44,6 +45,10 @@ class AuthController extends Controller
                 'ip' => $request->ip(),
                 'success' => true,
             ]);
+            app(AuditService::class)->log('user.login', null, null, [], [
+                'user_id' => Auth::id(),
+                'ip' => $request->ip(),
+            ], 'Staff login');
 
             return redirect()->intended(route('dashboard'));
         }
@@ -53,6 +58,10 @@ class AuthController extends Controller
             'ip' => $request->ip(),
             'success' => false,
         ]);
+        app(AuditService::class)->log('user.login_failed', null, null, [], [
+            'email' => $validated['email'],
+            'ip' => $request->ip(),
+        ], 'Staff login failed');
 
         return back()->withErrors([
             'email' => 'These credentials do not match our records.',
@@ -65,6 +74,7 @@ class AuthController extends Controller
     public function destroy(Request $request): RedirectResponse
     {
         $userId = Auth::id();
+        app(AuditService::class)->log('user.logout', null, null, [], ['user_id' => $userId], 'Staff logout');
 
         Auth::logout();
         $request->session()->invalidate();

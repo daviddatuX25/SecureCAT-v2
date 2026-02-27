@@ -3,33 +3,46 @@
   import Hero from '@/Components/blocks/Hero.svelte';
   import Benefits from '@/Components/blocks/Benefits.svelte';
   import PerspectiveSection from '@/Components/blocks/PerspectiveSection.svelte';
+  import StudentPerspectiveSection from '@/Components/blocks/StudentPerspectiveSection.svelte';
   import ProcessFlow from '@/Components/blocks/ProcessFlow.svelte';
+  import FutureVision from '@/Components/blocks/FutureVision.svelte';
   import CallToAction from '@/Components/blocks/CallToAction.svelte';
-  
+
   // Data passed from controller
   let { systemName = 'SecureCAT' } = $props();
 </script>
 
 <svelte:head>
   <title>{systemName} - Computerized Admission & Testing</title>
-  <meta name="description" content="Digitizing the complete student admission lifecycle from application to consultation" />
+  <meta name="description" content="From application to consultation—apply and track your progress as a student, or manage admissions end-to-end as staff. Digitizing the complete student admission lifecycle." />
 </svelte:head>
 
 <main class="min-h-screen">
-  <Hero 
+  <Hero
     title="SecureCAT: Computerized Admission & Testing"
-    subtitle="Digitizing the complete student admission lifecycle from application to consultation"
+    subtitle="From application to consultation—for students: apply and track your progress. For staff: manage admissions end-to-end."
+    primaryAction={{ label: 'Apply Online', href: '/apply' }}
+    secondaryAction={{ label: 'Staff Login', href: '/login' }}
   />
-  
+
   <Benefits />
-  
+
   <PerspectiveSection />
-  
+
+  <StudentPerspectiveSection />
+
   <ProcessFlow />
-  
-  <CallToAction 
-    title="Ready to streamline your admission process?"
-    description="Join the digital transformation of student admissions with SecureCAT"
+
+  <FutureVision />
+
+  <CallToAction
+    title="Ready to get started?"
+    description="Apply online, log in to the applicant portal, or sign in as staff."
+    actions={[
+      { label: 'Apply Online', href: '/apply', variant: 'default' },
+      { label: 'Applicant Portal', href: '/portal/login', variant: 'outline' },
+      { label: 'Staff Login', href: '/login', variant: 'outline' },
+    ]}
   />
 </main>
 
@@ -43,6 +56,8 @@
     </p>
     <p>
       <Link href="/apply" class="text-primary hover:underline">Apply online</Link>
+      {' | '}
+      <Link href="/portal/login" class="text-primary hover:underline">Applicant portal</Link>
       {' | '}
       <Link href="/login" class="text-primary hover:underline">Staff login</Link>
     </p>

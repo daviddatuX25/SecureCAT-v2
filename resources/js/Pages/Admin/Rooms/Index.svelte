@@ -144,7 +144,7 @@
             </Table.Row>
           </Table.Header>
           <Table.Body>
-            {#each rooms.data as room}
+            {#each rooms.data as room (room.id)}
               <Table.Row>
                 <Table.Cell class="px-4 py-3">{room.name}</Table.Cell>
                 <Table.Cell class="px-4 py-3">{room.building}</Table.Cell>
@@ -196,7 +196,7 @@
       >
         {#if (rooms?.data ?? []).length > 0}
           <ul class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3" role="list">
-            {#each (rooms?.data ?? []) as room}
+            {#each (rooms?.data ?? []) as room (room.id)}
               <li
                 class="flex flex-col gap-3 rounded-lg border border-border bg-card p-4"
               >

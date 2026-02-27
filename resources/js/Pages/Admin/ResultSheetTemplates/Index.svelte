@@ -69,7 +69,7 @@
             </Table.Row>
           </Table.Header>
           <Table.Body>
-            {#each templates as t}
+            {#each templates as t (t.id)}
               <Table.Row>
                 <Table.Cell class="px-4 py-3">{t.name}</Table.Cell>
                 <Table.Cell class="px-4 py-3">{t.mode ?? 'html'}</Table.Cell>

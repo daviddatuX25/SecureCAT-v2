@@ -1,9 +1,10 @@
 <?php
 
+use App\Http\Middleware\EnsureUserHasRole;
+use App\Http\Middleware\HandleInertiaRequests;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
-use Illuminate\Http\Request;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -13,18 +14,11 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->web(append: [
-            \App\Http\Middleware\HandleInertiaRequests::class,
+            HandleInertiaRequests::class,
         ]);
-
         $middleware->alias([
-            'role' => \App\Http\Middleware\EnsureUserHasRole::class,
-            'portal.guest' => \App\Http\Middleware\RedirectIfApplicantAuthenticated::class,
+            'role' => EnsureUserHasRole::class,
         ]);
-
-        // When unauthenticated on portal routes, redirect to portal login
-        $middleware->redirectGuestsTo(fn (Request $request) => $request->is('portal', 'portal/*')
-            ? route('portal.login')
-            : route('login'));
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //

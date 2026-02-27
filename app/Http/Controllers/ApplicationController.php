@@ -9,6 +9,7 @@ use App\Models\Applicant;
 use App\Models\Application;
 use App\Models\Appointment;
 use App\Models\Course;
+use App\Models\Season;
 use App\Services\AdmissionSlipService;
 use Carbon\Carbon;
 use Illuminate\Http\RedirectResponse;
@@ -28,8 +29,20 @@ class ApplicationController extends Controller
     {
         $this->authorize('viewAny', Application::class);
 
+        $activeSeason = Season::active();
+        $seasonId = $request->input('season_id');
+        if ($seasonId !== null && $seasonId !== '') {
+            $querySeasonId = (int) $seasonId;
+        } else {
+            $querySeasonId = $activeSeason?->id;
+        }
+
         $query = Application::query()
-            ->with(['coursePreference1:id,name,code', 'coursePreference2:id,name,code', 'coursePreference3:id,name,code']);
+            ->with(['coursePreference1:id,name,code', 'coursePreference2:id,name,code', 'coursePreference3:id,name,code', 'season:id,academic_year,semester']);
+
+        if ($querySeasonId !== null) {
+            $query->forSeason($querySeasonId);
+        }
 
         if ($search = $request->input('search')) {
             $query->where(function ($q) use ($search) {
@@ -41,7 +54,7 @@ class ApplicationController extends Controller
         }
 
         if ($status = $request->input('status')) {
-            if (in_array($status, ['pending', 'accepted', 'rejected'], true)) {
+            if (in_array($status, ['pending', 'accepted', 'rejected', 'expired'], true)) {
                 $query->where('status', $status);
             }
         }
@@ -76,13 +89,18 @@ class ApplicationController extends Controller
             ];
         });
 
+        $seasons = Season::query()->orderByDesc('academic_year')->orderBy('semester')->get(['id', 'academic_year', 'semester', 'is_active']);
+
         return Inertia::render('Applications/Index', [
             'applications' => $applications,
-            'filters' => $request->only(['search', 'status', 'date_from', 'date_to']),
+            'filters' => $request->only(['search', 'status', 'date_from', 'date_to', 'season_id']),
+            'seasons' => $seasons,
+            'active_season_id' => $activeSeason?->id,
             'statuses' => [
                 ['value' => 'pending', 'label' => 'Pending'],
                 ['value' => 'accepted', 'label' => 'Accepted'],
                 ['value' => 'rejected', 'label' => 'Rejected'],
+                ['value' => 'expired', 'label' => 'Expired'],
             ],
         ]);
     }
@@ -143,17 +161,27 @@ class ApplicationController extends Controller
 
     public function create(): Response
     {
+        $activeSeason = Season::active();
         $courses = $this->getCourses();
         $appointments = $this->getAppointments();
+
+        $allowApply = $activeSeason !== null && $activeSeason->isApplicationWindowOpen();
 
         return Inertia::render('Applications/Apply', [
             'courses' => $courses,
             'appointments' => $appointments,
+            'active_season' => $activeSeason ? ['id' => $activeSeason->id, 'academic_year' => $activeSeason->academic_year, 'semester' => $activeSeason->semester] : null,
+            'allow_apply' => $allowApply,
         ]);
     }
 
     public function store(StoreApplicationRequest $request): RedirectResponse
     {
+        $activeSeason = Season::active();
+        if ($activeSeason === null || ! $activeSeason->isApplicationWindowOpen()) {
+            abort(422, 'The application window is currently closed. Please try again later or contact the office.');
+        }
+
         $validated = $request->validated();
 
         $birthdate = Carbon::parse($validated['birthdate']);
@@ -162,6 +190,7 @@ class ApplicationController extends Controller
         $referenceNumber = Application::nextReferenceNumber();
 
         $application = Application::create([
+            'season_id' => $activeSeason->id,
             'reference_number' => $referenceNumber,
             'first_name' => $validated['first_name'],
             'middle_name' => $validated['middle_name'] ?? null,

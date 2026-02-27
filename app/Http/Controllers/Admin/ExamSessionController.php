@@ -9,6 +9,7 @@ use App\Http\Requests\UpdateExamSessionRequest;
 use App\Models\Applicant;
 use App\Models\ExamSession;
 use App\Models\Room;
+use App\Models\Season;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
@@ -36,10 +37,22 @@ class ExamSessionController extends Controller
         $user = $request->user();
         $isProctorView = $user->hasAnyRole(['proctor']) && ! $user->hasAnyRole(['super_admin', 'admin']);
 
+        $activeSeason = Season::active();
+        $seasonId = $request->input('season_id');
+        if ($seasonId !== null && $seasonId !== '') {
+            $querySeasonId = (int) $seasonId;
+        } else {
+            $querySeasonId = $activeSeason?->id;
+        }
+
         $query = ExamSession::query()
-            ->with(['room:id,name,building,capacity', 'proctors:id,name'])
+            ->with(['room:id,name,building,capacity', 'proctors:id,name', 'season:id,academic_year,semester'])
             ->orderBy('date')
             ->orderBy('start_time');
+
+        if ($querySeasonId !== null) {
+            $query->forSeason($querySeasonId);
+        }
 
         if ($isProctorView) {
             $query->whereHas('proctors', fn ($q) => $q->where('users.id', $user->id));
@@ -63,9 +76,13 @@ class ExamSessionController extends Controller
 
         $sessions = $query->paginate(15)->withQueryString();
 
+        $seasons = Season::query()->orderByDesc('academic_year')->orderBy('semester')->get(['id', 'academic_year', 'semester', 'is_active']);
+
         return Inertia::render('Admin/ExamSessions/Index', [
             'sessions' => $sessions,
-            'filters' => $request->only(['search', 'status', 'date_from', 'date_to']),
+            'filters' => $request->only(['search', 'status', 'date_from', 'date_to', 'season_id']),
+            'seasons' => $seasons,
+            'active_season_id' => $activeSeason?->id,
             'statuses' => self::statusesList(),
             'view' => $isProctorView ? 'proctor' : 'admin',
         ]);
@@ -75,12 +92,16 @@ class ExamSessionController extends Controller
     {
         $this->authorize('create', ExamSession::class);
 
+        $activeSeason = Season::active();
         $rooms = Room::query()->where('is_active', true)->orderBy('building')->orderBy('name')->get(['id', 'name', 'building', 'capacity']);
         $proctors = User::query()->whereHas('roles', fn ($q) => $q->where('name', 'proctor'))->orderBy('name')->get(['id', 'name']);
+        $seasons = Season::query()->orderByDesc('academic_year')->orderBy('semester')->get(['id', 'academic_year', 'semester', 'is_active']);
 
         return Inertia::render('Admin/ExamSessions/Create', [
             'rooms' => $rooms,
             'proctors' => $proctors,
+            'seasons' => $seasons,
+            'active_season_id' => $activeSeason?->id,
         ]);
     }
 
@@ -90,7 +111,10 @@ class ExamSessionController extends Controller
 
         $validated = $request->validated();
 
+        $seasonId = $validated['season_id'] ?? Season::active()?->id;
+
         $session = ExamSession::create([
+            'season_id' => $seasonId,
             'room_id' => $validated['room_id'],
             'date' => $validated['date'],
             'start_time' => $validated['start_time'],
@@ -168,7 +192,7 @@ class ExamSessionController extends Controller
         $this->authorize('update', $exam_session);
 
         $validated = $request->validated();
-        $sessionData = collect($validated)->only(['room_id', 'date', 'start_time', 'end_time'])->filter()->all();
+        $sessionData = collect($validated)->only(['season_id', 'room_id', 'date', 'start_time', 'end_time'])->filter()->all();
         if (! empty($sessionData)) {
             $exam_session->update($sessionData);
         }
@@ -304,5 +328,33 @@ class ExamSessionController extends Controller
 
         return redirect()->route('admin.exam-sessions.show', $exam_session)
             ->with('success', 'Session reopened. Proctors can continue marking attendance and submissions.');
+    }
+
+    public function monitoring(Request $request): Response
+    {
+        $this->authorize('viewAny', ExamSession::class);
+
+        $user = $request->user();
+        $isProctorView = $user->hasAnyRole(['proctor']) && ! $user->hasAnyRole(['super_admin', 'admin']);
+        $activeSeason = Season::active();
+
+        $query = ExamSession::query()
+            ->with(['room:id,name,building,capacity', 'proctors:id,name'])
+            ->whereIn('status', [ExamSession::STATUS_PUBLISHED, ExamSession::STATUS_IN_PROGRESS])
+            ->orderBy('date')
+            ->orderBy('start_time');
+
+        if ($activeSeason !== null) {
+            $query->forSeason($activeSeason);
+        }
+        if ($isProctorView) {
+            $query->whereHas('proctors', fn ($q) => $q->where('users.id', $user->id));
+        }
+
+        $sessions = $query->get();
+
+        return Inertia::render('Admin/ExamSessions/Monitoring', [
+            'sessions' => $sessions,
+        ]);
     }
 }

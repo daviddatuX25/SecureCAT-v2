@@ -110,7 +110,7 @@
               </Table.Row>
             </Table.Header>
             <Table.Body>
-              {#each applicants as app}
+              {#each applicants as app (app.applicant_id)}
                 <Table.Row>
                   <Table.Cell class="px-4 py-3">{app.reference}</Table.Cell>
                   <Table.Cell class="px-4 py-3">{app.name}</Table.Cell>

@@ -7,6 +7,7 @@ use App\Http\Requests\StoreUserRequest;
 use App\Http\Requests\UpdateUserRequest;
 use App\Models\Role;
 use App\Models\User;
+use App\Services\AuditService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -61,6 +62,12 @@ class UserController extends Controller
         $user->roles()->sync($roleIds);
 
         Log::info('User created', ['user_id' => $user->id, 'actor_id' => $request->user()->id]);
+        app(AuditService::class)->log('user.created', User::class, $user->id, [], [
+            'user_id' => $user->id,
+            'name' => $user->name,
+            'email' => $user->email,
+            'roles' => $validated['roles'],
+        ], "User {$user->email} created");
 
         return redirect()->route('admin.users.index')->with('success', 'User created.');
     }
@@ -103,6 +110,12 @@ class UserController extends Controller
         }
 
         Log::info('User updated', ['user_id' => $user->id, 'actor_id' => $request->user()->id]);
+        app(AuditService::class)->log('user.updated', User::class, $user->id, [], [
+            'user_id' => $user->id,
+            'name' => $user->name,
+            'email' => $user->email,
+            'roles' => $validated['roles'] ?? null,
+        ], "User {$user->email} updated");
 
         return redirect()->route('admin.users.index')->with('success', 'User updated.');
     }
@@ -113,10 +126,14 @@ class UserController extends Controller
             abort(403, 'Cannot delete your own account.');
         }
 
+        $email = $user->email;
         $user->roles()->detach();
         $user->delete();
 
         Log::info('User deleted', ['user_id' => $user->id, 'actor_id' => $request->user()->id]);
+        app(AuditService::class)->log('user.deleted', User::class, $user->id, [
+            'email' => $email,
+        ], [], "User {$email} deleted");
 
         return redirect()->route('admin.users.index')->with('success', 'User deleted.');
     }

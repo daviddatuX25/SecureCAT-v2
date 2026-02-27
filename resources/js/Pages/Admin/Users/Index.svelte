@@ -136,7 +136,7 @@
             </tr>
           </thead>
           <tbody>
-            {#each users.data as user}
+            {#each users.data as user (user.id)}
               <tr class="border-t border-border hover:bg-muted/30">
                 <td class="px-4 py-3">{user.name}</td>
                 <td class="px-4 py-3">{user.email}</td>

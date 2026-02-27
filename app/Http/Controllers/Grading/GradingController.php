@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreGradingSessionRequest;
 use App\Models\ExamSession;
 use App\Models\GradingSession;
+use App\Models\Season;
 use App\Services\GradingSessionService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -20,11 +21,16 @@ class GradingController extends Controller
 
     public function index(Request $request): Response
     {
-        $gradingSessions = GradingSession::query()
-            ->with(['examSession.room'])
+        $activeSeason = Season::active();
+
+        $gradingQuery = GradingSession::query()
+            ->with(['examSession.room', 'examSession.season'])
             ->withCount('applicants')
-            ->orderByDesc('opened_at')
-            ->get()
+            ->orderByDesc('opened_at');
+        if ($activeSeason !== null) {
+            $gradingQuery->whereHas('examSession', fn ($q) => $q->forSeason($activeSeason));
+        }
+        $gradingSessions = $gradingQuery->get()
             ->map(function (GradingSession $gs) {
                 $scored = $gs->applicantScores()->distinct()->count('applicant_id');
                 return [
@@ -41,13 +47,16 @@ class GradingController extends Controller
                 ];
             });
 
-        $completedWithoutGrading = ExamSession::query()
+        $completedQuery = ExamSession::query()
             ->where('status', ExamSession::STATUS_COMPLETED)
             ->whereDoesntHave('gradingSession')
             ->with('room')
             ->withCount('applicants')
-            ->orderByDesc('date')
-            ->get()
+            ->orderByDesc('date');
+        if ($activeSeason !== null) {
+            $completedQuery->forSeason($activeSeason);
+        }
+        $completedWithoutGrading = $completedQuery->get()
             ->map(fn ($es) => [
                 'id' => $es->id,
                 'exam_date' => $es->date?->format('Y-m-d'),

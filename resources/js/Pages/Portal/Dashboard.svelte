@@ -1,17 +1,20 @@
 <script>
-  import { router } from '@inertiajs/svelte';
+  import { Link, router } from '@inertiajs/svelte';
   import PortalLayout from '@/Layouts/PortalLayout.svelte';
   import * as Card from '@/Components/ui/card';
   import { Button } from '@/Components/ui/button';
 
   let {
     applicant = {},
-    status_tracker = [],
+    status_tracker,
     exam_schedule = null,
     score_release = null,
     consultation = { status: 'pending', summary: null },
-    notifications = [],
+    ai_companion_enabled = false,
+    notifications,
   } = $props();
+  const safeStatusTracker = $derived(Array.isArray(status_tracker) ? status_tracker : []);
+  const safeNotifications = $derived(Array.isArray(notifications) ? notifications : []);
 
   function markRead(id) {
     router.post(`/portal/notifications/${id}/read`, {}, { preserveScroll: true, onSuccess: () => router.reload() });
@@ -31,9 +34,9 @@
         <Card.Description>Your admission progress</Card.Description>
       </Card.Header>
       <Card.Content>
-        {#if status_tracker.length > 0}
+        {#if safeStatusTracker.length > 0}
           <ul class="space-y-2">
-            {#each status_tracker as stage}
+            {#each safeStatusTracker as stage}
               <li class="flex items-center gap-2">
                 {#if stage.completed}
                   <span class="text-green-600 dark:text-green-400">✓</span>
@@ -87,7 +90,21 @@
       </Card.Root>
     {/if}
 
-    {#if notifications.length > 0}
+    {#if ai_companion_enabled && consultation.status === 'released'}
+      <Card.Root>
+        <Card.Header>
+          <Card.Title>Chat with advisor</Card.Title>
+          <Card.Description>Ask questions about your results and course fit. Advice is based on your scores and institutional data.</Card.Description>
+        </Card.Header>
+        <Card.Content>
+          <Link href="/portal/ai-companion">
+            <Button class="min-h-[44px]">Open chat</Button>
+          </Link>
+        </Card.Content>
+      </Card.Root>
+    {/if}
+
+    {#if safeNotifications.length > 0}
       <Card.Root>
         <Card.Header>
           <Card.Title>Notifications</Card.Title>
@@ -95,7 +112,7 @@
         </Card.Header>
         <Card.Content>
           <ul class="space-y-3">
-            {#each notifications as notif}
+            {#each safeNotifications as notif}
               <li class="flex items-start justify-between gap-3 {notif.read ? 'opacity-70' : ''}">
                 <span class="text-sm min-w-0 flex-1">{notif.message}</span>
                 {#if !notif.read}

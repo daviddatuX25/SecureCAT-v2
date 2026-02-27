@@ -21,6 +21,7 @@ export default defineConfig({
         },
     },
     server: {
+        port: process.env.VITE_PORT ? parseInt(process.env.VITE_PORT, 10) : 5173,
         watch: {
             ignored: ['**/storage/framework/views/**'],
         },

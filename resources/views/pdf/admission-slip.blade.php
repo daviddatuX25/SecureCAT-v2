@@ -56,7 +56,11 @@
 
     <div class="section" style="margin-top: 32px;">
         <p style="color: #6b7280; font-size: 10px;">Exam schedule and room assignment will be provided after publication.</p>
+        @if(isset($qrCodeDataUri))
+        <img src="{{ $qrCodeDataUri }}" alt="QR Code" width="80" height="80" style="margin-top: 12px; display: inline-block;" />
+        @else
         <div class="qr-placeholder" style="margin-top: 12px;">QR Code</div>
+        @endif
     </div>
 </body>
 </html>

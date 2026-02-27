@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 class Application extends Model
 {
     protected $fillable = [
+        'season_id',
         'reference_number',
         'first_name',
         'middle_name',
@@ -40,9 +41,23 @@ class Application extends Model
         'submitted_at' => 'datetime',
     ];
 
+    public function season(): BelongsTo
+    {
+        return $this->belongsTo(Season::class);
+    }
+
     public function appointment(): BelongsTo
     {
         return $this->belongsTo(Appointment::class);
+    }
+
+    public function scopeForSeason($query, $season): void
+    {
+        if ($season instanceof Season) {
+            $query->where('season_id', $season->id);
+        } elseif ($season !== null) {
+            $query->where('season_id', $season);
+        }
     }
 
     public function coursePreference1(): BelongsTo

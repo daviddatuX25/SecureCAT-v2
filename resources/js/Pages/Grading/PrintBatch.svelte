@@ -143,7 +143,7 @@
               </Table.Row>
             </Table.Header>
             <Table.Body>
-              {#each applicants as app}
+              {#each applicants as app (app.applicant_id)}
                 <Table.Row>
                   <Table.Cell class="px-4 py-3">
                     <button type="button" onclick={() => toggleOne(app.applicant_id)} aria-label="Toggle select">

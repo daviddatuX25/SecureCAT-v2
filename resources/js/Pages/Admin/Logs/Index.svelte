@@ -1,0 +1,354 @@
+<script>
+  import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.svelte';
+  import { Link, router } from '@inertiajs/svelte';
+  import { usePage } from '@inertiajs/svelte';
+  import * as Table from '@/Components/ui/table';
+  import { Button } from '@/Components/ui/button';
+  import { Input } from '@/Components/ui/input';
+  import { ChevronDown, Filter, Download, ChevronRight, X } from 'lucide-svelte';
+
+  let { logs, filters = {}, events = [], categories = [], scopeLabel = 'Activity log', showActorFilter = false } = $props();
+
+  const page = usePage();
+  const error = $derived($page.props.flash?.error ?? null);
+
+  let filterEvent = $state('');
+  let filterCategory = $state('');
+  let filterActorId = $state('');
+  let filterDateFrom = $state('');
+  let filterDateTo = $state('');
+  let mobileFiltersDetails = $state(null);
+  let detailLog = $state(null);
+  let exportLoading = $state(false);
+  let exportError = $state(null);
+
+  $effect(() => {
+    filterEvent = filters.event ?? '';
+    filterCategory = filters.category ?? '';
+    filterActorId = filters.actor_id !== undefined && filters.actor_id !== null ? String(filters.actor_id) : '';
+    filterDateFrom = filters.date_from ?? '';
+    filterDateTo = filters.date_to ?? '';
+  });
+
+  function applyFilters() {
+    if (mobileFiltersDetails) mobileFiltersDetails.open = false;
+    router.get('/admin/logs', {
+      event: filterEvent || undefined,
+      category: filterCategory || undefined,
+      actor_id: filterActorId ? parseInt(filterActorId, 10) : undefined,
+      date_from: filterDateFrom || undefined,
+      date_to: filterDateTo || undefined,
+      page: 1,
+    }, { preserveState: true });
+  }
+
+  function actorDisplay(log) {
+    if (!log.actor) return '—';
+    return log.actor.name ?? log.actor.email ?? `#${log.actor_id}`;
+  }
+
+  function eventLabel(value) {
+    return events.find((e) => e.value === value)?.label ?? value;
+  }
+
+  function categoryLabel(value) {
+    return categories.find((c) => c.value === value)?.label ?? value;
+  }
+
+  function formatPayload(obj) {
+    if (obj == null || (typeof obj === 'object' && Object.keys(obj).length === 0)) return '—';
+    return JSON.stringify(obj, null, 2);
+  }
+
+  async function doExport() {
+    exportError = null;
+    exportLoading = true;
+    const params = new URLSearchParams();
+    if (filterEvent) params.set('event', filterEvent);
+    if (filterCategory) params.set('category', filterCategory);
+    if (filterActorId) params.set('actor_id', filterActorId);
+    if (filterDateFrom) params.set('date_from', filterDateFrom);
+    if (filterDateTo) params.set('date_to', filterDateTo);
+    try {
+      const res = await fetch(`/admin/logs/export?${params.toString()}`, { credentials: 'same-origin' });
+      if (!res.ok) {
+        const text = await res.text();
+        exportError = res.status === 429 ? 'Too many export requests. Please try again in a minute.' : (text || 'Export failed.');
+        return;
+      }
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `audit-log-${new Date().toISOString().slice(0, 10)}.csv`;
+      a.click();
+      URL.revokeObjectURL(url);
+    } finally {
+      exportLoading = false;
+    }
+  }
+</script>
+
+<svelte:head>
+  <title>Audit log - SecureCAT</title>
+</svelte:head>
+
+<AuthenticatedLayout>
+  <div class="space-y-6 min-w-0">
+    <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+      <div>
+        <h1 class="text-2xl font-bold">Audit log</h1>
+        <p class="mt-1 text-sm text-muted-foreground">{scopeLabel}</p>
+      </div>
+      <Button
+        variant="outline"
+        class="min-h-[44px]"
+        onclick={doExport}
+        disabled={exportLoading}
+      >
+        <Download class="mr-2 h-4 w-4" />
+        {exportLoading ? 'Exporting…' : 'Export CSV'}
+      </Button>
+    </div>
+
+    {#if error || exportError}
+      <div class="rounded-lg bg-destructive/10 px-4 py-3 text-sm text-destructive">
+        {exportError ?? error}
+      </div>
+    {/if}
+
+    <!-- Filters -->
+    <div class="flex flex-col gap-3">
+      <div class="hidden md:flex flex-wrap items-center gap-3">
+        <label for="filter-event-desk" class="sr-only">Event</label>
+        <select
+          id="filter-event-desk"
+          class="flex h-10 rounded-md border border-input bg-background px-3 py-2 text-sm min-w-[160px]"
+          bind:value={filterEvent}
+        >
+          <option value="">All events</option>
+          {#each events as e}
+            <option value={e.value}>{e.label}</option>
+          {/each}
+        </select>
+        <label for="filter-category-desk" class="sr-only">Category</label>
+        <select
+          id="filter-category-desk"
+          class="flex h-10 rounded-md border border-input bg-background px-3 py-2 text-sm min-w-[140px]"
+          bind:value={filterCategory}
+        >
+          <option value="">All categories</option>
+          {#each categories as c}
+            <option value={c.value}>{c.label}</option>
+          {/each}
+        </select>
+        {#if showActorFilter}
+          <Input
+            type="number"
+            placeholder="Actor ID"
+            bind:value={filterActorId}
+            class="min-w-[100px] max-w-[120px] h-10"
+            min="1"
+          />
+        {/if}
+        <div class="flex items-center gap-2">
+          <label for="filter-date-from-desk" class="text-sm text-muted-foreground whitespace-nowrap">From</label>
+          <input
+            id="filter-date-from-desk"
+            type="date"
+            bind:value={filterDateFrom}
+            class="flex h-10 rounded-md border border-input bg-background px-3 py-2 text-sm"
+          />
+          <label for="filter-date-to-desk" class="text-sm text-muted-foreground whitespace-nowrap">To</label>
+          <input
+            id="filter-date-to-desk"
+            type="date"
+            bind:value={filterDateTo}
+            class="flex h-10 rounded-md border border-input bg-background px-3 py-2 text-sm"
+          />
+        </div>
+        <Button onclick={applyFilters} class="min-h-[40px]">Apply</Button>
+      </div>
+
+      <div class="flex flex-col gap-2 md:hidden">
+        <div class="flex items-center gap-3">
+          <details class="relative group" bind:this={mobileFiltersDetails}>
+            <summary class="list-none flex items-center gap-2 min-h-[44px] px-4 rounded-md border border-input bg-background text-sm font-medium cursor-pointer hover:bg-muted/50">
+              <Filter class="h-4 w-4" />
+              <span>Filters</span>
+              <ChevronDown class="h-4 w-4 transition-transform group-open:rotate-180" />
+            </summary>
+            <div class="absolute right-0 top-full z-10 mt-1 w-[min(320px,calc(100vw-2rem))] rounded-lg border border-border bg-card p-4 shadow-lg flex flex-col gap-3">
+              <div>
+                <label for="filter-event-mob" class="text-sm font-medium block mb-1">Event</label>
+                <select
+                  id="filter-event-mob"
+                  class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                  bind:value={filterEvent}
+                >
+                  <option value="">All events</option>
+                  {#each events as e}
+                    <option value={e.value}>{e.label}</option>
+                  {/each}
+                </select>
+              </div>
+              <div>
+                <label for="filter-category-mob" class="text-sm font-medium block mb-1">Category</label>
+                <select
+                  id="filter-category-mob"
+                  class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                  bind:value={filterCategory}
+                >
+                  <option value="">All categories</option>
+                  {#each categories as c}
+                    <option value={c.value}>{c.label}</option>
+                  {/each}
+                </select>
+              </div>
+              {#if showActorFilter}
+                <div>
+                  <label for="filter-actor-mob" class="text-sm font-medium block mb-1">Actor ID</label>
+                  <Input
+                    id="filter-actor-mob"
+                    type="number"
+                    bind:value={filterActorId}
+                    class="w-full"
+                    min="1"
+                  />
+                </div>
+              {/if}
+              <div>
+                <span class="text-sm font-medium block mb-1">Date range</span>
+                <div class="flex items-center gap-2">
+                  <input
+                    id="filter-date-from-mob"
+                    type="date"
+                    bind:value={filterDateFrom}
+                    class="flex h-10 flex-1 min-w-0 rounded-md border border-input bg-background px-3 py-2 text-sm"
+                  />
+                  <span class="text-muted-foreground">–</span>
+                  <input
+                    id="filter-date-to-mob"
+                    type="date"
+                    bind:value={filterDateTo}
+                    class="flex h-10 flex-1 min-w-0 rounded-md border border-input bg-background px-3 py-2 text-sm"
+                  />
+                </div>
+              </div>
+            </div>
+          </details>
+        </div>
+        <Button onclick={applyFilters} class="min-h-[44px] w-full">Apply</Button>
+      </div>
+    </div>
+
+    <div class="rounded-lg border border-border overflow-hidden min-w-0 max-w-full">
+      <Table.Root class="w-full min-w-0">
+        <Table.Header class="bg-muted/50">
+          <Table.Row>
+            <Table.Head class="px-4 py-3">Time</Table.Head>
+            <Table.Head class="px-4 py-3">Event</Table.Head>
+            <Table.Head class="px-4 py-3">Category</Table.Head>
+            <Table.Head class="px-4 py-3">Summary</Table.Head>
+            <Table.Head class="px-4 py-3">Actor</Table.Head>
+            <Table.Head class="px-4 py-3">IP</Table.Head>
+            <Table.Head class="px-4 py-3 text-right">Details</Table.Head>
+          </Table.Row>
+        </Table.Header>
+        <Table.Body>
+          {#each (logs?.data ?? []) as log (log.id)}
+            <Table.Row class="border-t border-border hover:bg-muted/30">
+              <Table.Cell class="px-4 py-3 text-muted-foreground whitespace-nowrap">
+                {log.created_at ? new Date(log.created_at).toLocaleString() : '—'}
+              </Table.Cell>
+              <Table.Cell class="px-4 py-3">{eventLabel(log.event)}</Table.Cell>
+              <Table.Cell class="px-4 py-3">{categoryLabel(log.category)}</Table.Cell>
+              <Table.Cell class="px-4 py-3 max-w-[200px] truncate" title={log.summary ?? ''}>
+                {log.summary ?? '—'}
+              </Table.Cell>
+              <Table.Cell class="px-4 py-3">{actorDisplay(log)}</Table.Cell>
+              <Table.Cell class="px-4 py-3 text-muted-foreground font-mono text-xs">{log.ip_address ?? '—'}</Table.Cell>
+              <Table.Cell class="px-4 py-3 text-right">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  class="min-h-[36px]"
+                  onclick={() => (detailLog = log)}
+                  aria-label="View details"
+                >
+                  <ChevronRight class="h-4 w-4" />
+                </Button>
+              </Table.Cell>
+            </Table.Row>
+          {:else}
+            <Table.Row>
+              <Table.Cell colspan={7} class="px-4 py-12 text-center text-muted-foreground">
+                No audit entries match the filters.
+              </Table.Cell>
+            </Table.Row>
+          {/each}
+        </Table.Body>
+      </Table.Root>
+      {#if logs?.last_page > 1}
+        <div class="flex items-center justify-between border-t border-border px-4 py-2">
+          <p class="text-sm text-muted-foreground">
+            Page {logs.current_page} of {logs.last_page}
+          </p>
+          <div class="flex gap-2">
+            {#if logs.prev_page_url}
+              <Link href={logs.prev_page_url}>
+                <Button variant="outline" size="sm">Previous</Button>
+              </Link>
+            {/if}
+            {#if logs.next_page_url}
+              <Link href={logs.next_page_url}>
+                <Button variant="outline" size="sm">Next</Button>
+              </Link>
+            {/if}
+          </div>
+        </div>
+      {/if}
+    </div>
+  </div>
+
+  {#if detailLog}
+    <div
+      class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="detail-title"
+    >
+      <div class="rounded-lg bg-card p-6 shadow-lg max-w-2xl w-full max-h-[90vh] overflow-hidden flex flex-col">
+        <div class="flex items-center justify-between mb-4">
+          <h2 id="detail-title" class="text-lg font-semibold">Audit entry #{detailLog.id}</h2>
+          <Button variant="ghost" size="icon" aria-label="Close" onclick={() => (detailLog = null)}>
+            <X class="h-4 w-4" />
+          </Button>
+        </div>
+        <div class="grid grid-cols-2 gap-2 text-sm mb-4">
+          <span class="text-muted-foreground">Event</span>
+          <span>{eventLabel(detailLog.event)}</span>
+          <span class="text-muted-foreground">Time</span>
+          <span>{detailLog.created_at ? new Date(detailLog.created_at).toLocaleString() : '—'}</span>
+          <span class="text-muted-foreground">Actor</span>
+          <span>{actorDisplay(detailLog)}</span>
+          <span class="text-muted-foreground">IP</span>
+          <span class="font-mono text-xs">{detailLog.ip_address ?? '—'}</span>
+        </div>
+        <div class="flex-1 min-h-0 overflow-auto space-y-4">
+          <div>
+            <h3 class="text-sm font-medium mb-1">Before (old_values)</h3>
+            <pre class="rounded bg-muted p-3 text-xs overflow-x-auto">{formatPayload(detailLog.old_values)}</pre>
+          </div>
+          <div>
+            <h3 class="text-sm font-medium mb-1">After (new_values)</h3>
+            <pre class="rounded bg-muted p-3 text-xs overflow-x-auto">{formatPayload(detailLog.new_values)}</pre>
+          </div>
+        </div>
+        <div class="mt-4 flex justify-end">
+          <Button variant="outline" onclick={() => (detailLog = null)}>Close</Button>
+        </div>
+      </div>
+    </div>
+  {/if}
+</AuthenticatedLayout>

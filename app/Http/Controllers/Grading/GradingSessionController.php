@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Grading;
 
 use App\Http\Controllers\Controller;
 use App\Models\GradingSession;
+use App\Services\AuditService;
 use App\Services\GradingSessionService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -54,6 +55,15 @@ class GradingSessionController extends Controller
         $status = $request->validate(['status' => ['required', 'in:in_progress,finalized']])['status'];
         $backendStatus = $status === 'finalized' ? GradingSession::STATUS_FINALIZED : GradingSession::STATUS_IN_PROGRESS;
         $this->gradingService->updateWorkflowStatus($grading_session, $backendStatus);
+
+        if ($backendStatus === GradingSession::STATUS_FINALIZED) {
+            app(AuditService::class)->log('grading_session.finalized', GradingSession::class, $grading_session->id, [
+                'status' => GradingSession::STATUS_IN_PROGRESS,
+            ], [
+                'status' => GradingSession::STATUS_FINALIZED,
+                'actor_id' => $request->user()->id,
+            ], "Grading session {$grading_session->id} finalized");
+        }
 
         return redirect()->back()->with('success', 'Status updated.');
     }

@@ -1,0 +1,59 @@
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Model;
+
+class KnowledgeDocument extends Model
+{
+    public const SOURCE_MANUAL = 'manual';
+
+    public const SOURCE_CSV_IMPORT = 'csv_import';
+
+    protected $fillable = [
+        'title',
+        'content',
+        'metadata',
+        'source',
+        'is_active',
+    ];
+
+    protected function casts(): array
+    {
+        return [
+            'metadata' => 'array',
+            'is_active' => 'boolean',
+        ];
+    }
+
+    /**
+     * Scope: only active docs (for retrieval).
+     */
+    public function scopeActive($query)
+    {
+        return $query->where('is_active', true);
+    }
+
+    /**
+     * Compact metadata for display (e.g. "Engineering · 2024").
+     */
+    public function getMetadataSummaryAttribute(): string
+    {
+        if (! is_array($this->metadata) || empty($this->metadata)) {
+            return '—';
+        }
+
+        $parts = [];
+        if (! empty($this->metadata['category'])) {
+            $parts[] = $this->metadata['category'];
+        }
+        if (! empty($this->metadata['year'])) {
+            $parts[] = $this->metadata['year'];
+        }
+        if (! empty($this->metadata['description'])) {
+            $parts[] = \Illuminate\Support\Str::limit($this->metadata['description'], 30);
+        }
+
+        return $parts === [] ? '—' : implode(' · ', $parts);
+    }
+}
