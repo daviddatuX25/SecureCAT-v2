@@ -3,6 +3,8 @@
 use App\Http\Controllers\Admin\AdmissionSlipTemplateController;
 use App\Http\Controllers\Admin\AuditLogController;
 use App\Http\Controllers\Admin\CourseController;
+use App\Http\Controllers\Admin\ExamDomainController;
+use App\Http\Controllers\Admin\ExamSchedulingAssistantController;
 use App\Http\Controllers\Admin\ExamSessionController;
 use App\Http\Controllers\Admin\KnowledgeDocumentController;
 use App\Http\Controllers\Admin\ResultSheetTemplateController;
@@ -94,11 +96,13 @@ Route::middleware(['auth'])->group(function () {
         Route::get('exam-sessions', [ExamSessionController::class, 'index'])->name('exam-sessions.index');
         Route::get('exam-sessions/create', [ExamSessionController::class, 'create'])->name('exam-sessions.create');
         Route::get('exam-sessions/monitoring', [ExamSessionController::class, 'monitoring'])->name('exam-sessions.monitoring');
-        Route::get('exam-sessions/schedule-assistant', fn () => redirect()->route('admin.exam-sessions.index'))->name('exam-sessions.schedule-assistant');
+        Route::get('exam-sessions/schedule-assistant', fn () => redirect()->route('admin.exam-sessions.index'))->name('exam-sessions.schedule-assistant.index');
         Route::get('exam-sessions/{exam_session}', [ExamSessionController::class, 'show'])->name('exam-sessions.show');
     });
 
-    Route::middleware('role:super_admin,admin,counselor')->prefix('admin')->name('admin.')->group(function () {
+    Route::middleware('role:super_admin,admin,test_administrator')->prefix('admin')->name('admin.')->group(function () {
+        Route::post('exam-sessions/schedule-assistant/chat', [ExamSchedulingAssistantController::class, 'chat'])->name('exam-sessions.schedule-assistant.chat');
+        Route::post('exam-sessions/schedule-assistant/apply-schedule', [ExamSchedulingAssistantController::class, 'applySchedule'])->name('exam-sessions.schedule-assistant.apply');
         Route::post('exam-sessions/{exam_session}/assign-applicants', [ExamSessionController::class, 'assignApplicants'])->name('exam-sessions.assign-applicants');
         Route::post('exam-sessions/{exam_session}/remove-applicant', [ExamSessionController::class, 'removeApplicant'])->name('exam-sessions.remove-applicant');
         Route::post('exam-sessions/{exam_session}/publish', [ExamSessionController::class, 'publish'])->name('exam-sessions.publish');
@@ -109,18 +113,20 @@ Route::middleware(['auth'])->group(function () {
         Route::put('exam-sessions/{exam_session}', [ExamSessionController::class, 'update'])->name('exam-sessions.update');
         Route::resource('seasons', SeasonController::class)->except('show', 'destroy')->parameters(['seasons' => 'season']);
         Route::post('seasons/{season}/activate', [SeasonController::class, 'activate'])->name('seasons.activate');
+        Route::resource('exam-domains', ExamDomainController::class)->except('show', 'destroy')->parameters(['exam_domains' => 'exam_domain']);
         Route::resource('courses', CourseController::class)->except('show')->parameters(['courses' => 'course']);
         Route::resource('rooms', RoomController::class)->except('show')->parameters(['rooms' => 'room']);
         Route::post('result-sheet-templates/preview', [ResultSheetTemplateController::class, 'preview'])->name('result-sheet-templates.preview');
         Route::resource('result-sheet-templates', ResultSheetTemplateController::class)->except('show')->parameters(['result_sheet_templates' => 'result_sheet_template']);
     });
 
-    Route::get('/applications', [ApplicationController::class, 'index'])->name('applications.index')->middleware('role:super_admin,staff,admin,counselor');
-    Route::get('/applications/{application}', [ApplicationController::class, 'show'])->name('applications.show')->middleware('role:super_admin,staff,admin,counselor');
+    Route::get('/applications', [ApplicationController::class, 'index'])->name('applications.index')->middleware('role:super_admin,staff,admin,test_administrator');
+    Route::get('/applications/{application}', [ApplicationController::class, 'show'])->name('applications.show')->middleware('role:super_admin,staff,admin,test_administrator');
     Route::put('/applications/{application}/accept', [ApplicationController::class, 'accept'])->name('applications.accept')->middleware('role:super_admin,staff,admin');
     Route::post('/applications/{application}/resend-setup-email', [ApplicationController::class, 'resendSetupEmail'])->name('applications.resend-setup-email')->middleware('role:super_admin,staff,admin');
-    Route::put('/applications/{application}/reject', [ApplicationController::class, 'reject'])->name('applications.reject')->middleware('role:super_admin,staff,admin');
-    Route::get('/applications/{application}/admission-slip', [ApplicationController::class, 'admissionSlip'])->name('applications.admission-slip')->middleware('role:super_admin,staff,admin,counselor');
+    Route::put('/applications/{application}/dismiss', [ApplicationController::class, 'dismiss'])->name('applications.dismiss')->middleware('role:super_admin,staff,admin');
+    Route::put('/applications/{application}/incomplete-documents', [ApplicationController::class, 'setIncompleteDocuments'])->name('applications.set-incomplete-documents')->middleware('role:super_admin,staff,admin');
+    Route::get('/applications/{application}/admission-slip', [ApplicationController::class, 'admissionSlip'])->name('applications.admission-slip')->middleware('role:super_admin,staff,admin,test_administrator');
     Route::get('/proctor', fn () => redirect()->route('admin.exam-sessions.index'))->middleware('role:super_admin,proctor');
     Route::middleware('role:super_admin,admin,proctor')->prefix('proctor')->name('proctor.')->group(function () {
         Route::get('sessions/{exam_session}', [SessionRosterController::class, 'show'])->name('sessions.show');
@@ -131,7 +137,7 @@ Route::middleware(['auth'])->group(function () {
         Route::post('sessions/{exam_session}/close', [SessionRosterController::class, 'close'])->name('sessions.close');
     });
     // Grading
-    Route::middleware('role:super_admin,grader')->prefix('grading')->name('grading.')->group(function () {
+    Route::middleware('role:super_admin,test_administrator')->prefix('grading')->name('grading.')->group(function () {
         Route::get('/', [GradingController::class, 'index']);
         Route::post('/', [GradingController::class, 'store']);
         Route::get('/sessions/{grading_session}', [GradingSessionController::class, 'show'])->name('sessions.show');
@@ -143,8 +149,8 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/sessions/{grading_session}/print-bulk', [GradingPrintController::class, 'printBulk'])->name('sessions.print-bulk');
         Route::get('/sessions/{grading_session}/applicants/{applicant}/result-sheet', [GradingPrintController::class, 'resultSheet'])->name('sessions.result-sheet');
     });
-    // Consultation
-    Route::middleware('role:super_admin,counselor')->prefix('consultation')->name('consultation.')->group(function () {
+    // Consultation (link always visible for role; access enforced by consultation.enabled)
+    Route::middleware(['role:super_admin,test_administrator', 'consultation.enabled'])->prefix('consultation')->name('consultation.')->group(function () {
         Route::get('/', [ConsultationController::class, 'index'])->name('index');
         Route::get('/schedule', [ConsultationScheduleController::class, 'index'])->name('schedule.index');
         Route::post('/schedule', [ConsultationScheduleController::class, 'store'])->name('schedule.store');

@@ -56,7 +56,7 @@
       </div>
     {/if}
 
-    <div class="rounded-lg border border-border overflow-hidden min-w-0 max-w-full">
+    <div class="glass-panel rounded-2xl overflow-hidden min-w-0 max-w-full p-6">
       <div class="w-full min-w-0">
         <Table.Root class="w-full min-w-[640px]">
           <Table.Header class="bg-muted/50">

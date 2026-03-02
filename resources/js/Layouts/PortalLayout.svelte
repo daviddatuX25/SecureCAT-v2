@@ -1,7 +1,12 @@
 <script>
   import { Link, usePage, router } from '@inertiajs/svelte';
   import { Button } from '@/Components/ui/button';
-  import { Bell, LogOut } from 'lucide-svelte';
+  import { Bell, LogOut, Sun, Moon } from 'lucide-svelte';
+
+  function toggleTheme() {
+    document.documentElement.classList.toggle('dark');
+    localStorage.setItem('theme', document.documentElement.classList.contains('dark') ? 'dark' : 'light');
+  }
 
   let { children } = $props();
   const page = usePage();
@@ -39,13 +44,17 @@
   <title>Portal - SecureCAT</title>
 </svelte:head>
 
-<div class="min-h-screen flex flex-col bg-background">
-  <header class="sticky top-0 z-10 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+<div class="min-h-screen flex flex-col">
+  <header class="sticky top-0 z-10 glass-panel border-b">
     <div class="container flex h-14 items-center justify-between px-4">
       <Link href="/portal" class="font-semibold text-foreground no-underline hover:text-primary">
         SecureCAT <span class="text-muted-foreground font-normal">Portal</span>
       </Link>
       <div class="flex items-center gap-2">
+        <Button variant="ghost" size="icon" onclick={toggleTheme} aria-label="Toggle theme" class="rounded-full min-h-[44px] min-w-[44px]">
+          <Sun class="h-5 w-5 dark:hidden" />
+          <Moon class="h-5 w-5 hidden dark:block" />
+        </Button>
         {#if applicant}
           <span class="text-sm text-muted-foreground max-w-[140px] truncate sm:max-w-none" title={applicant.email}>
             {applicant.name}

@@ -41,6 +41,24 @@ Conventions and patterns to keep the codebase consistent. Add new items when est
 
 - Use **Lucide Svelte** (`lucide-svelte`) only. No emojis or other icon sets (see developing-gotchas → UI Best Practices).
 
+### Glass panels
+
+- **When to use:** Sidebar, main header, and content blocks (dashboard stat cards, list tables, quick actions). Use for a consistent branded look with backdrop blur and semi-opaque surfaces.
+- **CSS class:** Apply `glass-panel` from global CSS (defined in `resources/css/app.css`). Often combined with `rounded-2xl` and `p-6` for content blocks.
+- **Card variant:** For shadcn Card, use `variant="glass"` so the card uses the glass style: `<Card variant="glass">`. Use default variant when you need a solid background (e.g. dropdowns, popovers use `bg-card-solid`).
+
+### Stat cards
+
+- **Component:** Use `StatCard` from `@/Components/StatCard.svelte` for overview metrics (e.g. Dashboard, Grading Dashboard).
+- **Props:** `label`, `value`, `icon` (Lucide component), optional `trend` (`'up' | 'down' | 'neutral'`), `trendLabel`, `href` (makes the card a link), `accent` (`'primary' | 'blue' | 'purple' | 'orange'`).
+- **Usage:** Renders a glass panel with hover lift, decorative circle, and optional trend line. Use for dashboard KPIs.
+
+### Theme (dark mode)
+
+- **Mechanism:** Dark mode is class-based: `class="dark"` on `<html>`. Tailwind uses `dark:` variants.
+- **Toggle:** Layouts (AuthenticatedLayout, PortalLayout, GuestLayout, PortalGuestLayout) include a theme toggle button (Sun/Moon). Toggle calls `document.documentElement.classList.toggle('dark')` and persists to `localStorage.setItem('theme', 'light' | 'dark')`.
+- **Initial load:** `app.blade.php` runs an inline script before paint that reads `localStorage` and applies `dark` to avoid flash. No backend or route required.
+
 ---
 
 ## Status and state display

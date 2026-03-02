@@ -10,16 +10,17 @@ return new class extends Migration
     public function up(): void
     {
         // For MySQL enum, we need to recreate the column with the new allowed value.
-        Schema::table('applications', function (Blueprint $table) {
+        // SQLite uses string/varchar for enum(); no migration needed for new value.
+        if (Schema::getConnection()->getDriverName() === 'mysql') {
             DB::statement("ALTER TABLE applications MODIFY COLUMN status ENUM('pending','accepted','rejected','expired') DEFAULT 'pending'");
-        });
+        }
     }
 
     public function down(): void
     {
-        Schema::table('applications', function (Blueprint $table) {
+        if (Schema::getConnection()->getDriverName() === 'mysql') {
             DB::statement("ALTER TABLE applications MODIFY COLUMN status ENUM('pending','accepted','rejected') DEFAULT 'pending'");
-        });
+        }
     }
 };
 

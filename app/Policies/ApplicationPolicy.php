@@ -9,16 +9,16 @@ class ApplicationPolicy
 {
     /**
      * Roles that can view applications list and details.
-     * Per 05-SECURITY-CONTROLS: staff, admin, counselor, super_admin.
+     * Per 05-SECURITY-CONTROLS: staff, admin, test_administrator, super_admin.
      */
     public function viewAny(User $user): bool
     {
-        return $user->hasAnyRole(['super_admin', 'staff', 'admin', 'counselor']);
+        return $user->hasAnyRole(['super_admin', 'staff', 'admin', 'test_administrator']);
     }
 
     public function view(User $user, Application $application): bool
     {
-        return $user->hasAnyRole(['super_admin', 'staff', 'admin', 'counselor']);
+        return $user->hasAnyRole(['super_admin', 'staff', 'admin', 'test_administrator']);
     }
 
     /**
@@ -30,9 +30,17 @@ class ApplicationPolicy
     }
 
     /**
-     * Per 08-API-SPEC-PHASE1: staff can reject.
+     * Staff can dismiss an application (within application window enforced in controller).
      */
-    public function reject(User $user, Application $application): bool
+    public function dismiss(User $user, Application $application): bool
+    {
+        return $user->hasAnyRole(['super_admin', 'staff', 'admin']);
+    }
+
+    /**
+     * Staff can set application to incomplete documents (within window enforced in controller).
+     */
+    public function setIncompleteDocuments(User $user, Application $application): bool
     {
         return $user->hasAnyRole(['super_admin', 'staff', 'admin']);
     }
@@ -51,6 +59,6 @@ class ApplicationPolicy
      */
     public function admissionSlip(User $user, Application $application): bool
     {
-        return $user->hasAnyRole(['super_admin', 'staff', 'admin', 'counselor']);
+        return $user->hasAnyRole(['super_admin', 'staff', 'admin', 'test_administrator']);
     }
 }

@@ -2,7 +2,7 @@
   import { Users, ClipboardList, Shield } from 'lucide-svelte';
 </script>
 
-<section class="bg-background">
+<section class="border-t border-border/60 bg-background">
   <div class="mx-auto max-w-6xl px-4 py-16 space-y-8">
     <header class="max-w-3xl space-y-2">
       <p class="text-sm font-semibold uppercase tracking-wide text-primary">One system, three views</p>
@@ -17,7 +17,7 @@
 
     <div class="grid gap-6 md:grid-cols-3">
       <article class="flex flex-col gap-3 rounded-lg border border-border bg-card p-5 shadow-sm">
-        <div class="inline-flex items-center justify-center rounded-full bg-primary/10 p-2 text-primary">
+        <div class="inline-flex size-10 shrink-0 items-center justify-center rounded-lg text-primary ring-1 ring-primary/20">
           <Users class="h-5 w-5" />
         </div>
         <h3 class="text-sm font-semibold sm:text-base">Applicant perspective</h3>
@@ -28,7 +28,7 @@
       </article>
 
       <article class="flex flex-col gap-3 rounded-lg border border-border bg-card p-5 shadow-sm">
-        <div class="inline-flex items-center justify-center rounded-full bg-primary/10 p-2 text-primary">
+        <div class="inline-flex size-10 shrink-0 items-center justify-center rounded-lg text-primary ring-1 ring-primary/20">
           <ClipboardList class="h-5 w-5" />
         </div>
         <h3 class="text-sm font-semibold sm:text-base">Admissions & testing staff</h3>
@@ -39,7 +39,7 @@
       </article>
 
       <article class="flex flex-col gap-3 rounded-lg border border-border bg-card p-5 shadow-sm">
-        <div class="inline-flex items-center justify-center rounded-full bg-primary/10 p-2 text-primary">
+        <div class="inline-flex size-10 shrink-0 items-center justify-center rounded-lg text-primary ring-1 ring-primary/20">
           <Shield class="h-5 w-5" />
         </div>
         <h3 class="text-sm font-semibold sm:text-base">Leadership & compliance</h3>

@@ -42,26 +42,6 @@ class SeasonController extends Controller
             ];
         });
 
-        // #region agent log
-        @file_put_contents(
-            base_path('.cursor/debug-065a6c.log'),
-            json_encode([
-                'sessionId' => '065a6c',
-                'runId' => 'pre-fix',
-                'hypothesisId' => 'H1',
-                'location' => 'SeasonController@index',
-                'message' => 'Seasons paginator payload',
-                'data' => [
-                    'total' => $seasons->total(),
-                    'count' => $seasons->count(),
-                    'first' => $seasons->first(),
-                ],
-                'timestamp' => (int) round(microtime(true) * 1000),
-            ]) . PHP_EOL,
-            FILE_APPEND
-        );
-        // #endregion
-
         return Inertia::render('Admin/Seasons/Index', [
             'seasons' => $seasons,
         ]);
@@ -77,12 +57,17 @@ class SeasonController extends Controller
     public function store(StoreSeasonRequest $request): RedirectResponse
     {
         $data = $request->validated();
+        $dates = $request->only(['application_start_date', 'application_end_date']);
+        $start = $data['application_start_date'] ?? $dates['application_start_date'] ?? null;
+        $end = $data['application_end_date'] ?? $dates['application_end_date'] ?? null;
+        $startStr = $start ? (\is_string($start) ? $start : $start->format('Y-m-d')) : null;
+        $endStr = $end ? (\is_string($end) ? $end : $end->format('Y-m-d')) : null;
 
         Season::create([
             'academic_year' => $data['academic_year'],
             'semester' => $data['semester'],
-            'application_start_date' => $data['application_start_date'] ?? null,
-            'application_end_date' => $data['application_end_date'] ?? null,
+            'application_start_date' => $startStr,
+            'application_end_date' => $endStr,
             'is_active' => false,
         ]);
 
@@ -92,27 +77,6 @@ class SeasonController extends Controller
     public function edit(Season $season): Response
     {
         $this->authorize('update', $season);
-
-        // #region agent log
-        @file_put_contents(
-            base_path('.cursor/debug-065a6c.log'),
-            json_encode([
-                'sessionId' => '065a6c',
-                'runId' => 'pre-fix',
-                'hypothesisId' => 'H2',
-                'location' => 'SeasonController@edit',
-                'message' => 'Season edit payload',
-                'data' => [
-                    'id' => $season->id,
-                    'academic_year' => $season->academic_year,
-                    'semester' => $season->semester,
-                    'is_active' => $season->is_active,
-                ],
-                'timestamp' => (int) round(microtime(true) * 1000),
-            ]) . PHP_EOL,
-            FILE_APPEND
-        );
-        // #endregion
 
         return Inertia::render('Admin/Seasons/Edit', [
             'season' => [
@@ -129,52 +93,18 @@ class SeasonController extends Controller
     public function update(UpdateSeasonRequest $request, Season $season): RedirectResponse
     {
         $validated = $request->validated();
+        $dates = $request->only(['application_start_date', 'application_end_date']);
+        $start = $validated['application_start_date'] ?? $dates['application_start_date'] ?? null;
+        $end = $validated['application_end_date'] ?? $dates['application_end_date'] ?? null;
+        $startStr = $start ? (\is_string($start) ? $start : $start->format('Y-m-d')) : null;
+        $endStr = $end ? (\is_string($end) ? $end : $end->format('Y-m-d')) : null;
 
-        // #region agent log
-        @file_put_contents(
-            base_path('.cursor/debug-065a6c.log'),
-            json_encode([
-                'sessionId' => '065a6c',
-                'runId' => 'debug-update',
-                'location' => 'SeasonController@update:before',
-                'message' => 'Update request data',
-                'data' => [
-                    'validated' => $validated,
-                    'all_input' => $request->all(),
-                    'season_before' => [
-                        'id' => $season->id,
-                        'application_start_date' => $season->application_start_date?->toDateString(),
-                        'application_end_date' => $season->application_end_date?->toDateString(),
-                    ],
-                ],
-                'timestamp' => (int) round(microtime(true) * 1000),
-            ]) . PHP_EOL,
-            FILE_APPEND
-        );
-        // #endregion
-
-        $season->update($validated);
-
-        // #region agent log
-        @file_put_contents(
-            base_path('.cursor/debug-065a6c.log'),
-            json_encode([
-                'sessionId' => '065a6c',
-                'runId' => 'debug-update',
-                'location' => 'SeasonController@update:after',
-                'message' => 'Season after update',
-                'data' => [
-                    'season_after' => [
-                        'id' => $season->id,
-                        'application_start_date' => $season->fresh()->application_start_date?->toDateString(),
-                        'application_end_date' => $season->fresh()->application_end_date?->toDateString(),
-                    ],
-                ],
-                'timestamp' => (int) round(microtime(true) * 1000),
-            ]) . PHP_EOL,
-            FILE_APPEND
-        );
-        // #endregion
+        $season->update([
+            'academic_year' => $validated['academic_year'],
+            'semester' => $validated['semester'],
+            'application_start_date' => $startStr,
+            'application_end_date' => $endStr,
+        ]);
 
         return redirect()->route('admin.seasons.index')->with('success', 'Season updated.');
     }

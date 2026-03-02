@@ -6,25 +6,6 @@
 
   let { season } = $props();
 
-  // #region agent log
-  fetch('http://127.0.0.1:7704/ingest/019ffe20-6045-42a6-b368-0da6704ea64c', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'X-Debug-Session-Id': '065a6c',
-    },
-    body: JSON.stringify({
-      sessionId: '065a6c',
-      runId: 'pre-fix',
-      hypothesisId: 'H2',
-      location: 'Admin/Seasons/Edit.svelte:after-props',
-      message: 'Season edit props',
-      data: { season },
-      timestamp: Date.now(),
-    }),
-  }).catch(() => {});
-  // #endregion
-
   const form = useForm({
     academic_year: season.academic_year,
     semester: season.semester,
@@ -34,28 +15,6 @@
 
   function submitForm(e) {
     e.preventDefault();
-
-    // #region agent log
-    fetch('http://127.0.0.1:7704/ingest/019ffe20-6045-42a6-b368-0da6704ea64c', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-Debug-Session-Id': '065a6c',
-      },
-      body: JSON.stringify({
-        sessionId: '065a6c',
-        runId: 'debug-submit',
-        location: 'Admin/Seasons/Edit.svelte:submitForm',
-        message: 'Form data before submission',
-        data: {
-          form_data: $form.data(),
-          season_id: season.id,
-        },
-        timestamp: Date.now(),
-      }),
-    }).catch(() => {});
-    // #endregion
-
     $form.put(`/admin/seasons/${season.id}`);
   }
 </script>

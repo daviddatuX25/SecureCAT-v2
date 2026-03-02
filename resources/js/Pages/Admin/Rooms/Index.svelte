@@ -122,7 +122,7 @@
       </div>
     </div>
 
-    <div class="rounded-lg border border-border overflow-hidden min-w-0 max-w-full">
+    <div class="glass-panel rounded-2xl overflow-hidden min-w-0 max-w-full p-6">
       <!-- Table view: single scroll container (Table.Root inner div); outer only constrains width -->
       <div
         class="w-full min-w-0 {viewMode === 'cards'

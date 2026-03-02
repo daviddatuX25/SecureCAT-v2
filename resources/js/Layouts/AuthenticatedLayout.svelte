@@ -1,7 +1,7 @@
 <script>
   import { Link, router } from '@inertiajs/svelte';
   import { usePage } from '@inertiajs/svelte';
-  import { ChevronDown, Menu, LayoutDashboard, Users, FileText, Calendar, DoorOpen, GraduationCap, BookOpen, Settings, MessageSquare, Gavel, CalendarCheck, UsersRound, ScrollText, FileStack, Activity, CalendarRange } from 'lucide-svelte';
+  import { ChevronDown, Menu, LayoutDashboard, Users, FileText, Calendar, DoorOpen, GraduationCap, BookOpen, Settings, MessageSquare, ScrollText, FileStack, Activity, CalendarRange, Layers, ShieldCheck, Sun, Moon, Bell, Search } from 'lucide-svelte';
   import { Button } from '@/Components/ui/button';
 
   let { children } = $props();
@@ -9,9 +9,22 @@
   const page = usePage();
   const user = $derived($page.props.auth?.user ?? null);
   const roles = $derived(user?.roles?.map((r) => r.name) ?? []);
-  const consultationEnabled = $derived($page.props.consultation_enabled ?? true);
+  const pageTitle = $derived($page.props.pageTitle ?? 'Dashboard');
   let sidebarOpen = $state(false);
   let userDropdownOpen = $state(false);
+  let darkMode = $state(typeof document !== 'undefined' && document.documentElement.classList.contains('dark'));
+
+  function toggleTheme() {
+    document.documentElement.classList.toggle('dark');
+    darkMode = document.documentElement.classList.contains('dark');
+    localStorage.setItem('theme', darkMode ? 'dark' : 'light');
+  }
+
+  $effect(() => {
+    if (typeof document !== 'undefined' && document.documentElement) {
+      darkMode = document.documentElement.classList.contains('dark');
+    }
+  });
 
   function hasRole(r) {
     return roles.includes(r);
@@ -20,7 +33,6 @@
   function canSee(requiredRoles, item) {
     if (requiredRoles.includes('*')) return true;
     if (!requiredRoles.some((r) => hasRole(r))) return false;
-    if (item?.requiresConsultation && !consultationEnabled) return false;
     return true;
   }
 
@@ -39,20 +51,18 @@
     ]},
     { label: 'Registrar', items: [
       { href: '/admin/seasons', label: 'Seasons', icon: CalendarRange, roles: ['super_admin', 'admin'] },
-      { href: '/applications', label: 'Applications', icon: FileText, roles: ['super_admin', 'staff', 'admin', 'counselor'] },
+      { href: '/applications', label: 'Applications', icon: FileText, roles: ['super_admin', 'staff', 'admin', 'test_administrator'] },
       { href: '/admin/courses', label: 'Courses', icon: BookOpen, roles: ['super_admin', 'admin'] },
       { href: '/admin/rooms', label: 'Rooms', icon: DoorOpen, roles: ['super_admin', 'admin'] },
-      { href: '/admin/exam-sessions', label: 'Exam Sessions', icon: Calendar, roles: ['super_admin', 'admin'] },
+      { href: '/admin/exam-sessions', label: 'Exam Scheduling', icon: Calendar, roles: ['super_admin', 'admin'] },
     ]},
     { label: 'Guidance', items: [
       { href: '/admin/exam-sessions', label: 'My Sessions', icon: Calendar, roles: ['proctor'] },
       { href: '/admin/exam-sessions/monitoring', label: 'Session monitor', icon: Activity, roles: ['super_admin', 'admin', 'proctor'] },
-      { href: '/grading', label: 'Grading', icon: GraduationCap, roles: ['super_admin', 'grader'] },
-      { href: '/admin/result-sheet-templates', label: 'Result templates', icon: FileText, roles: ['super_admin', 'admin', 'counselor'] },
-      { href: '/consultation', label: 'Consultation', icon: MessageSquare, roles: ['super_admin', 'counselor'], requiresConsultation: true },
-      { href: '/consultation/rules', label: 'Decision rules', icon: Gavel, roles: ['super_admin', 'counselor'], requiresConsultation: true },
-      { href: '/consultation/day', label: 'Live consultation', icon: UsersRound, roles: ['super_admin', 'counselor'], requiresConsultation: true },
-      { href: '/consultation/schedule', label: 'Schedule consultation', icon: CalendarCheck, roles: ['super_admin', 'counselor'], requiresConsultation: true },
+      { href: '/admin/exam-domains', label: 'Exam pillars', icon: Layers, roles: ['super_admin', 'test_administrator'] },
+      { href: '/grading', label: 'Grading', icon: GraduationCap, roles: ['super_admin', 'test_administrator'] },
+      { href: '/admin/result-sheet-templates', label: 'Result templates', icon: FileText, roles: ['super_admin', 'admin', 'test_administrator'] },
+      { href: '/consultation', label: 'Consultation', icon: MessageSquare, roles: ['super_admin', 'test_administrator'] },
     ]},
   ].map((section) => ({
     ...section,
@@ -63,13 +73,19 @@
     userDropdownOpen = false;
     sidebarOpen = false;
   }
+
+  function isNavActive(href) {
+    const url = $page.url;
+    if (href === '/dashboard') return url === '/dashboard' || url === '/dashboard/';
+    return url === href || url.startsWith(href + '/');
+  }
 </script>
 
 <svelte:head>
   <title>SecureCAT</title>
 </svelte:head>
 
-<div class="min-h-screen w-full max-w-[100vw] bg-background flex overflow-x-hidden">
+<div class="min-h-screen w-full max-w-[100vw] flex overflow-x-hidden">
   <!-- Sidebar backdrop (mobile) - only show when sidebar is open -->
   {#if sidebarOpen}
   <button
@@ -82,81 +98,118 @@
 
   <!-- Sidebar -->
   <aside
-    class="fixed inset-y-0 left-0 z-50 w-64 bg-card border-r border-border transform transition-transform duration-200 ease-in-out lg:translate-x-0 {sidebarOpen
-      ? 'translate-x-0'
-      : '-translate-x-full lg:translate-x-0'}"
+    class="fixed inset-y-0 left-0 z-50 w-64 flex-shrink-0 glass-panel border-r flex flex-col justify-between transform transition-transform duration-200 ease-in-out -translate-x-full md:translate-x-0 {sidebarOpen ? 'translate-x-0' : ''}"
   >
-    <div class="flex h-16 items-center justify-between px-4 border-b border-border lg:justify-center">
-      <Link href="/dashboard" class="font-bold text-primary text-lg">SecureCAT</Link>
-      <Button variant="ghost" size="icon" class="lg:hidden" onclick={() => (sidebarOpen = !sidebarOpen)} aria-label="Close menu">
-        <Menu class="h-5 w-5" />
-      </Button>
-    </div>
-    <nav class="flex flex-col gap-4 p-4">
-      {#each navSections as section}
-        <div class="flex flex-col gap-1">
-          {#if section.label}
-            <p class="px-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">{section.label}</p>
-          {/if}
-          {#each section.items as item}
-            <Link
-              href={item.href}
-              class="flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground hover:bg-accent hover:text-accent-foreground transition-colors"
-              onclick={closeDropdowns}
-            >
-              <item.icon class="h-4 w-4 shrink-0" />
-              {item.label}
-            </Link>
-          {/each}
-        </div>
-      {/each}
-    </nav>
-  </aside>
+    <div>
+      <div class="h-20 flex items-center px-6 border-b border-border/50">
+        <Link href="/dashboard" class="flex items-center gap-3" onclick={closeDropdowns}>
+          <div class="w-10 h-10 rounded-xl bg-primary flex items-center justify-center text-primary-foreground shadow-lg shadow-primary/30">
+            <ShieldCheck class="w-6 h-6" />
+          </div>
+          <span class="font-bold text-xl tracking-tight text-foreground">SecureCAT</span>
+        </Link>
+        <Button variant="ghost" size="icon" class="md:hidden ml-auto" onclick={() => (sidebarOpen = !sidebarOpen)} aria-label="Close menu">
+          <Menu class="h-5 w-5" />
+        </Button>
+      </div>
 
-  <div class="flex min-w-0 flex-1 flex-col lg:pl-64 overflow-x-hidden">
-    <!-- Header -->
-    <header class="sticky top-0 z-30 flex h-16 items-center justify-between border-b border-border bg-background px-4 lg:px-8">
-      <Button variant="ghost" size="icon" class="lg:hidden" onclick={() => (sidebarOpen = true)} aria-label="Open menu">
-        <Menu class="h-5 w-5" />
-      </Button>
-      <div class="flex-1"></div>
+      <nav class="p-4 space-y-2 mt-4">
+        {#each navSections as section}
+          <div class="space-y-2">
+            {#if section.label}
+              <p class="px-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">{section.label}</p>
+            {/if}
+            {#each section.items as item}
+              <Link
+                href={item.href}
+                class="nav-item flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition-all duration-300 {isNavActive(item.href)
+                  ? 'bg-primary text-primary-foreground shadow-md shadow-primary/40'
+                  : 'text-foreground/80 hover:text-foreground hover:bg-accent hover:translate-x-1'}"
+                onclick={closeDropdowns}
+              >
+                <item.icon class="w-5 h-5 shrink-0" />
+                {item.label}
+              </Link>
+            {/each}
+          </div>
+        {/each}
+      </nav>
+    </div>
+
+    <!-- User block in sidebar footer -->
+    <div class="p-4 border-t border-border/50">
       <div class="relative">
         <button
           type="button"
-          class="flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium hover:bg-accent transition-colors min-h-[44px] min-w-[44px]"
-          onclick={() => {
-            userDropdownOpen = !userDropdownOpen;
-          }}
+          class="flex items-center gap-3 px-4 py-3 rounded-xl bg-muted/50 hover:bg-muted w-full text-left transition-colors min-h-[44px]"
+          onclick={() => { userDropdownOpen = !userDropdownOpen; }}
           aria-expanded={userDropdownOpen}
           aria-haspopup="true"
         >
-          <span class="text-foreground">{user?.name ?? 'User'}</span>
-          <ChevronDown class="h-4 w-4 text-muted-foreground" />
+          <div class="w-10 h-10 rounded-full bg-primary/20 border-2 border-primary/20 flex items-center justify-center text-sm font-semibold text-foreground shrink-0">
+            {(user?.name ?? 'U').split(/\s+/).map(n => n[0]).join('').slice(0, 2).toUpperCase()}
+          </div>
+          <div class="flex-1 min-w-0">
+            <p class="text-sm font-semibold truncate text-foreground">{user?.name ?? 'User'}</p>
+            <p class="text-xs text-muted-foreground truncate">{user?.email ?? ''}</p>
+          </div>
+          <ChevronDown class="h-4 w-4 text-muted-foreground shrink-0" />
         </button>
         {#if userDropdownOpen}
           <div
-            class="absolute right-0 top-full mt-1 w-48 rounded-lg border border-border bg-card py-1 shadow-lg z-50"
+            class="absolute left-0 right-0 bottom-full mb-1 rounded-xl border border-border bg-card-solid py-1 shadow-lg z-50"
             role="menu"
           >
             <button
               type="button"
-              class="w-full px-4 py-2 text-left text-sm text-foreground hover:bg-accent transition-colors min-h-[44px]"
+              class="w-full px-4 py-2 text-left text-sm text-foreground hover:bg-accent transition-colors min-h-[44px] rounded-lg mx-1"
               role="menuitem"
-              onclick={() => {
-                logout();
-                userDropdownOpen = false;
-              }}
+              onclick={() => { logout(); userDropdownOpen = false; }}
             >
               Sign out
             </button>
           </div>
         {/if}
       </div>
+    </div>
+  </aside>
+
+  <div class="flex min-w-0 flex-1 flex-col md:pl-64 overflow-x-hidden relative">
+    <!-- Header -->
+    <header class="sticky top-0 z-20 h-20 glass-panel border-b border-l-0 flex items-center justify-between px-4 lg:px-8">
+      <div class="flex items-center gap-4">
+        <Button variant="ghost" size="icon" class="md:hidden" onclick={() => (sidebarOpen = true)} aria-label="Open menu">
+          <Menu class="h-5 w-5" />
+        </Button>
+        <h1 class="text-2xl font-semibold tracking-tight text-foreground">{pageTitle}</h1>
+      </div>
+
+      <div class="flex items-center gap-2 sm:gap-4">
+        <div class="relative hidden sm:block">
+          <Search class="w-5 h-5 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none" />
+          <input
+            type="text"
+            placeholder="Search..."
+            class="pl-10 pr-4 py-2 bg-muted/50 border border-border/50 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all w-48 lg:w-64"
+            readonly
+            tabindex="-1"
+            aria-label="Search"
+          />
+        </div>
+        <Button variant="ghost" size="icon" onclick={toggleTheme} aria-label={darkMode ? 'Switch to light mode' : 'Switch to dark mode'} class="rounded-full min-h-[44px] min-w-[44px]">
+          <Sun class="h-5 w-5 dark:hidden" />
+          <Moon class="h-5 w-5 hidden dark:block" />
+        </Button>
+        <button type="button" class="relative p-2 rounded-full hover:bg-muted text-foreground/80 transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center" aria-label="Notifications">
+          <Bell class="w-5 h-5" />
+          <span class="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full" aria-hidden="true"></span>
+        </button>
+      </div>
     </header>
 
-    <!-- Main content: min-w-0 so table containers can shrink and scroll horizontally on mobile -->
-    <main class="flex-1 min-w-0 overflow-x-hidden p-4 lg:p-8">
-      <div class="min-w-0 w-full max-w-full overflow-x-hidden">
+    <!-- Main content -->
+    <main class="flex-1 min-w-0 overflow-x-hidden overflow-y-auto p-4 lg:p-8 scroll-smooth">
+      <div class="min-w-0 w-full max-w-full">
         {@render children?.()}
       </div>
     </main>

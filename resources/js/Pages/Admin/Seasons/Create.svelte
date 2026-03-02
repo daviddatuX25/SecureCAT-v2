@@ -28,6 +28,12 @@
       <h1 class="text-2xl font-bold">Add Season</h1>
     </div>
 
+    {#if Object.keys($form.errors || {}).length > 0 && !$form.processing}
+      <div class="rounded-lg border border-destructive/50 bg-destructive/10 px-4 py-3 text-sm text-destructive">
+        Please fix the errors below.
+      </div>
+    {/if}
+
     <form onsubmit={submitForm} class="space-y-4 rounded-lg border border-border bg-card p-6">
       <div class="space-y-2">
         <label for="academic_year" class="text-sm font-medium">Academic year</label>

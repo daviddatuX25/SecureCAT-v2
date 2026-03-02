@@ -7,6 +7,7 @@ use App\Http\Requests\AssignApplicantsRequest;
 use App\Http\Requests\StoreExamSessionRequest;
 use App\Http\Requests\UpdateExamSessionRequest;
 use App\Models\Applicant;
+use App\Models\ExamSchedulingConversation;
 use App\Models\ExamSession;
 use App\Models\Room;
 use App\Models\Season;
@@ -78,14 +79,85 @@ class ExamSessionController extends Controller
 
         $seasons = Season::query()->orderByDesc('academic_year')->orderBy('semester')->get(['id', 'academic_year', 'semester', 'is_active']);
 
-        return Inertia::render('Admin/ExamSessions/Index', [
+        $payload = [
             'sessions' => $sessions,
             'filters' => $request->only(['search', 'status', 'date_from', 'date_to', 'season_id']),
             'seasons' => $seasons,
             'active_season_id' => $activeSeason?->id,
             'statuses' => self::statusesList(),
             'view' => $isProctorView ? 'proctor' : 'admin',
-        ]);
+        ];
+
+        if (! $isProctorView) {
+            $payload['schedule_assistant'] = self::scheduleAssistantPayload($request, $querySeasonId ?? $activeSeason?->id);
+        }
+
+        return Inertia::render('Admin/ExamSessions/Index', $payload);
+    }
+
+    /**
+     * Payload for the schedule assistant modal (rooms, draft sessions, messages, etc.).
+     * Same data as ExamSchedulingAssistantController::index for consistent behavior.
+     */
+    private static function scheduleAssistantPayload(Request $request, ?int $seasonId): array
+    {
+        $applicantCount = Applicant::query()
+            ->whereHas('application', fn ($q) => $q->where('status', 'accepted'))
+            ->whereDoesntHave('examSessions')
+            ->count();
+
+        $rooms = Room::query()
+            ->where('is_active', true)
+            ->orderBy('building')
+            ->orderBy('name')
+            ->get(['id', 'name', 'building', 'capacity'])
+            ->map(fn ($r) => [
+                'id' => $r->id,
+                'name' => $r->name,
+                'building' => $r->building,
+                'capacity' => $r->capacity,
+            ])
+            ->values()
+            ->all();
+
+        $draftSessions = [];
+        if ($seasonId !== null) {
+            $draftSessions = ExamSession::query()
+                ->where('status', ExamSession::STATUS_DRAFT)
+                ->forSeason($seasonId)
+                ->with('room:id,name,building,capacity')
+                ->get()
+                ->map(fn ($s) => [
+                    'id' => $s->id,
+                    'room_id' => $s->room_id,
+                    'room' => $s->room ? [
+                        'id' => $s->room->id,
+                        'name' => $s->room->name,
+                        'building' => $s->room->building,
+                        'capacity' => $s->room->capacity,
+                    ] : null,
+                    'date' => $s->date?->format('Y-m-d'),
+                    'start_time' => $s->start_time,
+                    'end_time' => $s->end_time,
+                    'current_count' => $s->applicants()->count(),
+                    'capacity' => $s->room?->capacity ?? 0,
+                ])
+                ->values()
+                ->all();
+        }
+
+        $conversation = ExamSchedulingConversation::query()
+            ->latestForUser($request->user()->id)
+            ->first();
+
+        return [
+            'applicant_count' => $applicantCount,
+            'rooms' => $rooms,
+            'draft_sessions' => $draftSessions,
+            'messages' => $conversation?->messages ?? [],
+            'openrouter_configured' => (bool) config('services.openrouter.key'),
+            'csrf_token' => csrf_token(),
+        ];
     }
 
     public function create(): Response

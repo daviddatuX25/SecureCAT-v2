@@ -7,31 +7,6 @@
 
   let { seasons } = $props();
 
-  // #region agent log
-  fetch('http://127.0.0.1:7704/ingest/019ffe20-6045-42a6-b368-0da6704ea64c', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'X-Debug-Session-Id': '065a6c',
-    },
-    body: JSON.stringify({
-      sessionId: '065a6c',
-      runId: 'pre-fix',
-      hypothesisId: 'H1',
-      location: 'Admin/Seasons/Index.svelte:after-props',
-      message: 'Seasons index props',
-      data: {
-        seasonsSummary: {
-          hasSeasons: !!seasons,
-          keys: seasons ? Object.keys(seasons) : null,
-          firstItem: seasons && seasons.data && seasons.data.length > 0 ? seasons.data[0] : null,
-        },
-      },
-      timestamp: Date.now(),
-    }),
-  }).catch(() => {});
-  // #endregion
-
   const page = usePage();
   const success = $derived($page.props.flash?.success ?? null);
   const list = $derived(seasons?.data ?? []);
@@ -62,7 +37,7 @@
       </div>
     {/if}
 
-    <div class="rounded-lg border border-border overflow-hidden min-w-0 max-w-full">
+    <div class="glass-panel rounded-2xl overflow-hidden min-w-0 max-w-full p-6">
       <div class="w-full min-w-0 overflow-x-auto">
         <table class="w-full min-w-[520px] text-sm">
           <thead class="bg-muted/50">

@@ -4,6 +4,7 @@
 	let {
 		ref = $bindable(null),
 		class: className,
+		variant = 'default',
 		children,
 		...restProps
 	} = $props();
@@ -13,7 +14,8 @@
 	bind:this={ref}
 	data-slot="card"
 	class={cn(
-		"bg-card text-card-foreground flex flex-col gap-6 rounded-xl border py-6 shadow-sm",
+		"text-card-foreground flex flex-col gap-6 py-6",
+		variant === 'glass' ? 'glass-panel rounded-2xl border border-border/50 shadow-sm' : 'bg-card rounded-xl border shadow-sm',
 		className
 	)}
 	{...restProps}

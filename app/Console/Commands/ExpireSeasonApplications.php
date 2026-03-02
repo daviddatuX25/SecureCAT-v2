@@ -10,7 +10,7 @@ class ExpireSeasonApplications extends Command
 {
     protected $signature = 'seasons:expire-applications';
 
-    protected $description = 'Mark pending applications as expired when their season application window has ended.';
+    protected $description = 'Mark pending applications as dismissed when their season application window has ended.';
 
     public function handle(): int
     {
@@ -29,9 +29,12 @@ class ExpireSeasonApplications extends Command
         $affected = Application::query()
             ->whereIn('season_id', $seasonIds)
             ->where('status', 'pending')
-            ->update(['status' => 'expired']);
+            ->update([
+                'status' => 'dismissed',
+                'rejection_reason' => 'Application window closed',
+            ]);
 
-        $this->info("Expired {$affected} pending applications.");
+        $this->info("Dismissed {$affected} pending applications.");
 
         return self::SUCCESS;
     }

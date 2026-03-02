@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('roles', function (Blueprint $table) {
             $table->id();
-            $table->string('name', 50)->unique()->comment('Unique role identifier: super_admin, staff, admin, proctor, grader, counselor');
+            $table->string('name', 50)->unique()->comment('Unique role identifier: super_admin, staff, admin, proctor, test_administrator');
             $table->string('display_name', 100)->comment('Human-readable role name');
             $table->text('description')->nullable();
             $table->timestamps();

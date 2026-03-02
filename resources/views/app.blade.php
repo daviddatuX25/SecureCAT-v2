@@ -1,6 +1,18 @@
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" class="">
     <head>
+        <script>
+            (function() {
+                const key = 'theme';
+                const stored = localStorage.getItem(key);
+                const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+                if (stored === 'dark' || (!stored && prefersDark)) {
+                    document.documentElement.classList.add('dark');
+                } else {
+                    document.documentElement.classList.remove('dark');
+                }
+            })();
+        </script>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
 
@@ -16,6 +28,11 @@
         @inertiaHead
     </head>
     <body class="font-sans antialiased">
+        <noscript>
+            <div style="padding: 2rem; text-align: center; font-family: sans-serif;">
+                <p><strong>SecureCAT</strong> requires JavaScript. Please enable it and reload.</p>
+            </div>
+        </noscript>
         @inertia
     </body>
 </html>

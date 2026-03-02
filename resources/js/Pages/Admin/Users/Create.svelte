@@ -6,8 +6,8 @@
 
   let { roles = [] } = $props();
 
-  // Only roles allowed by StoreUserRequest (staff, admin, proctor, grader, counselor)
-  const allowedRoleNames = ['staff', 'admin', 'proctor', 'grader', 'counselor'];
+  // Only roles allowed by StoreUserRequest (staff, admin, proctor, test_administrator)
+  const allowedRoleNames = ['staff', 'admin', 'proctor', 'test_administrator'];
   const selectableRoles = $derived(roles.filter((r) => allowedRoleNames.includes(r.name)));
 
   let selectedRoles = $state([]);

@@ -1,4 +1,9 @@
-/** Exam pillars (subjects) — shared across grading, consultation, rules. */
+/**
+ * Legacy/fallback exam pillars (subjects).
+ * The source of truth is the backend: exam_domains table, managed at Admin → Exam pillars.
+ * Grading, consultation rules, and result templates receive domains from the API.
+ * Use this constant only when backend domains are not available (e.g. static fallback).
+ */
 export const EXAM_PILLARS = [
   { id: 1, name: 'Spatial Awareness', code: 'SA', max_score: 25 },
   { id: 2, name: 'Numerical Ability', code: 'NA', max_score: 25 },

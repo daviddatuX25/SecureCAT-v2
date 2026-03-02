@@ -25,18 +25,18 @@
     selectedFile = input.files?.[0] ?? null;
   }
 
-  function submitForm(e: Event) {
+  function submitForm(e) {
     e.preventDefault();
     if (!selectedFile) return;
     const tags = tagsInput
       ? tagsInput.split(',').map((t) => t.trim()).filter(Boolean)
       : [];
-    form.transform((data) => ({
+    $form.transform((data) => ({
       ...data,
       file: selectedFile,
       metadata: { ...data.metadata, tags },
     }));
-    form.post('/admin/knowledge-documents/import', { forceFormData: true });
+    $form.post('/admin/knowledge-documents/import', { forceFormData: true });
   }
 </script>
 

@@ -99,7 +99,7 @@
       <Button onclick={applyFilters} class="min-h-[44px]">Apply</Button>
     </div>
 
-    <div class="rounded-lg border border-border overflow-hidden min-w-0">
+    <div class="glass-panel rounded-2xl overflow-hidden min-w-0 p-6">
       <Table.Root class="w-full min-w-[640px]">
         <Table.Header class="bg-muted/50">
           <Table.Row>

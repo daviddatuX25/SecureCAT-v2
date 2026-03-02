@@ -4,17 +4,17 @@ namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class RejectApplicationRequest extends FormRequest
+class DismissApplicationRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return $this->user()->can('reject', $this->route('application'));
+        return $this->user()->can('dismiss', $this->route('application'));
     }
 
     public function rules(): array
     {
         return [
-            'reason' => ['required', 'string', 'max:500'],
+            'reason' => ['nullable', 'string', 'max:500'],
         ];
     }
 }

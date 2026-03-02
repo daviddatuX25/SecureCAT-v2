@@ -9,8 +9,11 @@
 :root {
     --background: oklch(0.97 0.01 87.41);
     --foreground: oklch(0.31 0.02 148.20);
-    --card: oklch(0.97 0.01 87.41);
+    --card: oklch(1 0 0 / 0.7);
+    --card-solid: oklch(0.97 0.01 87.41);
     --card-foreground: oklch(0.30 0.04 29.20);
+    --glass-panel-bg: oklch(1 0 0 / 0.7);
+    --glass-panel-border: oklch(0.88 0 0 / 0.5);
     --popover: oklch(0.97 0.01 87.41);
     --popover-foreground: oklch(0.30 0.04 29.20);
     --primary: oklch(0.52 0.13 144.33);
@@ -60,8 +63,11 @@
 .dark {
     --background: oklch(0.31 0.03 149.96);
     --foreground: oklch(0.84 0.01 145.30);
-    --card: oklch(0.35 0.03 148.55);
+    --card: oklch(0.35 0.03 148.55 / 0.6);
+    --card-solid: oklch(0.35 0.03 148.55);
     --card-foreground: oklch(0.84 0.01 145.30);
+    --glass-panel-bg: oklch(0.35 0.03 148.55 / 0.6);
+    --glass-panel-border: oklch(0.39 0.03 143.09 / 0.3);
     --popover: oklch(0.33 0.03 146.53);
     --popover-foreground: oklch(0.94 0.01 72.65);
     --primary: oklch(0.67 0.16 144.06);
@@ -105,6 +111,7 @@
     --color-background: var(--background);
     --color-foreground: var(--foreground);
     --color-card: var(--card);
+    --color-card-solid: var(--card-solid);
     --color-card-foreground: var(--card-foreground);
     --color-popover: var(--popover);
     --color-popover-foreground: var(--popover-foreground);
@@ -162,4 +169,33 @@ body {
     background-color: var(--background);
     color: var(--foreground);
     font-family: var(--font-sans);
+    min-height: 100vh;
+    background-image:
+        radial-gradient(at 0% 0%, hsla(144, 40%, 85%, 1) 0px, transparent 50%),
+        radial-gradient(at 100% 0%, hsla(147, 40%, 85%, 1) 0px, transparent 50%);
+    background-attachment: fixed;
+    transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease;
+}
+
+.dark body {
+    background-image:
+        radial-gradient(at 0% 0%, hsla(144, 40%, 20%, 1) 0px, transparent 50%),
+        radial-gradient(at 100% 100%, hsla(147, 40%, 15%, 1) 0px, transparent 50%);
+}
+
+.glass-panel {
+    background: var(--glass-panel-bg);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid var(--glass-panel-border);
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+}
+
+.stat-card {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.stat-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
 }

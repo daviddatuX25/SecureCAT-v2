@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Grading;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreGradingSessionRequest;
+use App\Models\ExamDomain;
 use App\Models\ExamSession;
 use App\Models\GradingSession;
 use App\Models\Season;
@@ -65,11 +66,14 @@ class GradingController extends Controller
                 'applicants_count' => $es->applicants_count ?? 0,
             ]);
 
+        $examDomainsCount = ExamDomain::where('is_active', true)->count();
+
         return Inertia::render('Grading/Dashboard', [
             'title' => 'Grading',
             'description' => 'Input and manage exam scores.',
             'grading_sessions' => $gradingSessions->values()->all(),
             'completed_exams_without_grading' => $completedWithoutGrading->values()->all(),
+            'exam_domains_count' => $examDomainsCount,
         ]);
     }
 

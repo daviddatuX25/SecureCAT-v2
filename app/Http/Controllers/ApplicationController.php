@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\RejectApplicationRequest;
+use App\Http\Requests\DismissApplicationRequest;
 use App\Http\Requests\StoreApplicationRequest;
 use App\Jobs\SendApplicantSetupEmail;
 use App\Models\Applicant;
@@ -54,7 +54,7 @@ class ApplicationController extends Controller
         }
 
         if ($status = $request->input('status')) {
-            if (in_array($status, ['pending', 'accepted', 'rejected', 'expired'], true)) {
+            if (in_array($status, ['pending', 'accepted', 'dismissed', 'incomplete_documents'], true)) {
                 $query->where('status', $status);
             }
         }
@@ -99,8 +99,8 @@ class ApplicationController extends Controller
             'statuses' => [
                 ['value' => 'pending', 'label' => 'Pending'],
                 ['value' => 'accepted', 'label' => 'Accepted'],
-                ['value' => 'rejected', 'label' => 'Rejected'],
-                ['value' => 'expired', 'label' => 'Expired'],
+                ['value' => 'dismissed', 'label' => 'Dismissed'],
+                ['value' => 'incomplete_documents', 'label' => 'Incomplete Documents'],
             ],
         ]);
     }
@@ -112,7 +112,7 @@ class ApplicationController extends Controller
     {
         $this->authorize('view', $application);
 
-        $application->load(['coursePreference1:id,name,code', 'coursePreference2:id,name,code', 'coursePreference3:id,name,code', 'appointment']);
+        $application->load(['coursePreference1:id,name,code', 'coursePreference2:id,name,code', 'coursePreference3:id,name,code', 'appointment', 'season:id,application_start_date,application_end_date']);
 
         $courses = $this->getCourses();
 
@@ -121,6 +121,10 @@ class ApplicationController extends Controller
             $apt = $application->appointment;
             $appointmentLabel = $apt->date->format('Y-m-d') . ' ' . substr($apt->time_slot, 0, 5);
         }
+
+        $season = $application->season;
+        $withinApplicationWindow = $season?->isApplicationWindowOpen() ?? false;
+        $applicationWindowLabel = $season?->applicationWindowLabel() ?? null;
 
         $applicationData = [
             'id' => $application->id,
@@ -156,6 +160,8 @@ class ApplicationController extends Controller
         return Inertia::render('Applications/Show', [
             'application' => $applicationData,
             'courses' => $courses,
+            'within_application_window' => $withinApplicationWindow,
+            'application_window_label' => $applicationWindowLabel,
         ]);
     }
 
@@ -206,8 +212,8 @@ class ApplicationController extends Controller
             'province' => $validated['province'] ?? null,
             'zip_code' => $validated['zip_code'] ?? null,
             'course_preference_1' => $validated['course_preference_1'],
-            'course_preference_2' => $validated['course_preference_2'],
-            'course_preference_3' => $validated['course_preference_3'],
+            'course_preference_2' => ! empty($validated['course_preference_2']) ? (int) $validated['course_preference_2'] : null,
+            'course_preference_3' => ! empty($validated['course_preference_3']) ? (int) $validated['course_preference_3'] : null,
             'status' => 'pending',
             'appointment_id' => $validated['appointment_id'] ?? null,
             'submitted_at' => now(),
@@ -239,15 +245,24 @@ class ApplicationController extends Controller
 
     /**
      * Accept application. Per 08-API-SPEC-PHASE1: create applicant, send setup email, audit.
+     * Allowed from pending, dismissed, or incomplete_documents only when within application window.
      */
     public function accept(Application $application): RedirectResponse
     {
         $this->authorize('accept', $application);
 
-        if ($application->status !== 'pending') {
+        $allowedStatuses = ['pending', 'dismissed', 'incomplete_documents'];
+        if (! in_array($application->status, $allowedStatuses, true)) {
             return redirect()
                 ->back()
-                ->with('error', 'Application has already been processed.');
+                ->with('error', 'Application has already been accepted.');
+        }
+
+        $withinWindow = $application->season?->isApplicationWindowOpen() ?? false;
+        if (! $withinWindow) {
+            return redirect()
+                ->back()
+                ->with('error', 'Status can only be changed while the application window is open.');
         }
 
         DB::transaction(function () use ($application) {
@@ -257,17 +272,18 @@ class ApplicationController extends Controller
                 'processed_at' => now(),
             ]);
 
-            $setupToken = Applicant::generateSetupToken();
-            $expiresAt = now()->addHours(72);
-
-            $applicant = Applicant::create([
-                'application_id' => $application->id,
-                'email' => $application->email,
-                'setup_token' => $setupToken,
-                'setup_token_expires_at' => $expiresAt,
-            ]);
-
-            SendApplicantSetupEmail::dispatch($applicant);
+            $applicant = Applicant::where('application_id', $application->id)->first();
+            if (! $applicant) {
+                $setupToken = Applicant::generateSetupToken();
+                $expiresAt = now()->addHours(72);
+                $applicant = Applicant::create([
+                    'application_id' => $application->id,
+                    'email' => $application->email,
+                    'setup_token' => $setupToken,
+                    'setup_token_expires_at' => $expiresAt,
+                ]);
+                SendApplicantSetupEmail::dispatch($applicant);
+            }
 
             Log::info('Application accepted', [
                 'application_id' => $application->id,
@@ -326,14 +342,22 @@ class ApplicationController extends Controller
     }
 
     /**
-     * Reject application. Per 08-API-SPEC-PHASE1.
+     * Dismiss application. Allowed only when within application window. From pending or incomplete_documents.
      */
-    public function reject(RejectApplicationRequest $request, Application $application): RedirectResponse
+    public function dismiss(DismissApplicationRequest $request, Application $application): RedirectResponse
     {
-        if ($application->status !== 'pending') {
+        $withinWindow = $application->season?->isApplicationWindowOpen() ?? false;
+        if (! $withinWindow) {
             return redirect()
                 ->back()
-                ->with('error', 'Application has already been processed.');
+                ->with('error', 'Dismiss is only allowed while the application window is open.');
+        }
+
+        $allowedStatuses = ['pending', 'incomplete_documents'];
+        if (! in_array($application->status, $allowedStatuses, true)) {
+            return redirect()
+                ->back()
+                ->with('error', 'Application cannot be dismissed from its current status.');
         }
 
         if ($application->appointment_id) {
@@ -341,13 +365,13 @@ class ApplicationController extends Controller
         }
 
         $application->update([
-            'status' => 'rejected',
+            'status' => 'dismissed',
             'rejection_reason' => $request->validated('reason'),
             'processed_by' => auth()->id(),
             'processed_at' => now(),
         ]);
 
-        Log::info('Application rejected', [
+        Log::info('Application dismissed', [
             'application_id' => $application->id,
             'reference_number' => $application->reference_number,
             'processed_by' => auth()->id(),
@@ -355,7 +379,45 @@ class ApplicationController extends Controller
 
         return redirect()
             ->route('applications.show', $application)
-            ->with('success', 'Application has been rejected.');
+            ->with('success', 'Application has been dismissed.');
+    }
+
+    /**
+     * Set application status to incomplete documents. Allowed only when within application window.
+     */
+    public function setIncompleteDocuments(Application $application): RedirectResponse
+    {
+        $this->authorize('setIncompleteDocuments', $application);
+
+        $withinWindow = $application->season?->isApplicationWindowOpen() ?? false;
+        if (! $withinWindow) {
+            return redirect()
+                ->back()
+                ->with('error', 'Status can only be changed while the application window is open.');
+        }
+
+        $allowedStatuses = ['pending', 'dismissed'];
+        if (! in_array($application->status, $allowedStatuses, true)) {
+            return redirect()
+                ->back()
+                ->with('error', 'Application cannot be set to incomplete documents from its current status.');
+        }
+
+        $application->update([
+            'status' => 'incomplete_documents',
+            'processed_by' => auth()->id(),
+            'processed_at' => now(),
+        ]);
+
+        Log::info('Application set to incomplete documents', [
+            'application_id' => $application->id,
+            'reference_number' => $application->reference_number,
+            'processed_by' => auth()->id(),
+        ]);
+
+        return redirect()
+            ->route('applications.show', $application)
+            ->with('success', 'Application has been marked as incomplete documents.');
     }
 
     /**
@@ -386,7 +448,7 @@ class ApplicationController extends Controller
         if (DB::getSchemaBuilder()->hasTable('courses')) {
             $rows = Course::where('is_active', true)->orderBy('name')->get(['id', 'name', 'code']);
             if ($rows->isNotEmpty()) {
-                return $rows->map(fn ($r) => ['id' => $r->id, 'name' => $r->name, 'code' => $r->code])->all();
+                return $rows->unique('id')->values()->map(fn ($r) => ['id' => $r->id, 'name' => $r->name, 'code' => $r->code])->all();
             }
         }
 

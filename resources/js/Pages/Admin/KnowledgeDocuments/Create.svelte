@@ -11,7 +11,7 @@
       category: '',
       year: '',
       description: '',
-      tags: [] as string[],
+      tags: [],
     },
   });
 
@@ -63,7 +63,7 @@
           rows="10"
           class="flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm min-h-[120px]"
           required
-        />
+        ></textarea>
         {#if $form.errors?.content}
           <p class="text-sm text-destructive">{$form.errors.content}</p>
         {/if}

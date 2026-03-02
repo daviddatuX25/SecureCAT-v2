@@ -223,18 +223,38 @@ class PortalAuthController extends Controller
     }
 
     /**
-     * Portal dashboard (placeholder until BD-2b3 full dashboard).
+     * Portal dashboard with process status tracker, exam schedule, and score release.
      */
     public function dashboard(): Response
     {
         $applicant = Auth::guard('applicant')->user();
-        $applicant->load(['application', 'consultationSummary']);
+        $applicant->load([
+            'application',
+            'consultationSummary',
+            'examSessions' => fn ($q) => $q->with(['room', 'gradingSession'])->orderBy('date'),
+        ]);
 
         $application = $applicant->application;
         $name = $application
             ? trim(($application->first_name ?? '') . ' ' . ($application->middle_name ?? '') . ' ' . ($application->last_name ?? ''))
             : $applicant->email;
         $referenceNumber = $application?->reference_number ?? '—';
+
+        $primarySession = $applicant->examSessions->first();
+        $pivot = $primarySession?->pivot;
+        $gradingSession = $primarySession?->gradingSession;
+        $summary = $applicant->consultationSummary;
+
+        $statusTracker = $this->buildStatusTracker(
+            $applicant,
+            $application,
+            $primarySession,
+            $pivot,
+            $gradingSession,
+            $summary
+        );
+        $examSchedule = $this->buildExamSchedule($primarySession);
+        $scoreRelease = $this->buildScoreRelease($primarySession);
 
         $notifications = $applicant->notifications()
             ->orderBy('created_at', 'desc')
@@ -250,7 +270,6 @@ class PortalAuthController extends Controller
             ->values()
             ->all();
 
-        $summary = $applicant->consultationSummary;
         $consultation = [
             'status' => $summary?->status ?? 'pending',
             'summary' => $summary && $summary->status === 'released' ? [
@@ -265,13 +284,132 @@ class PortalAuthController extends Controller
                 'reference_number' => $referenceNumber,
                 'email' => $applicant->email,
             ],
-            'status_tracker' => [],
-            'exam_schedule' => null,
-            'score_release' => null,
+            'status_tracker' => $statusTracker,
+            'exam_schedule' => $examSchedule,
+            'score_release' => $scoreRelease,
             'consultation' => $consultation,
             'ai_companion_enabled' => SystemSetting::aiCompanionEnabled(),
             'notifications' => $notifications,
         ]);
+    }
+
+    /**
+     * Build ordered process stages for the applicant (portal status tracker).
+     *
+     * @return array<int, array{stage: string, completed: bool, timestamp: string|null}>
+     */
+    private function buildStatusTracker(
+        Applicant $applicant,
+        ?\App\Models\Application $application,
+        ?\App\Models\ExamSession $primarySession,
+        $pivot,
+        ?\App\Models\GradingSession $gradingSession,
+        ?\App\Models\ConsultationSummary         $summary
+    ): array {
+        $stages = [];
+
+        $stages[] = [
+            'stage' => 'Application submitted',
+            'completed' => $application && $application->submitted_at !== null,
+            'timestamp' => $application?->submitted_at?->format('M j, Y g:i A'),
+        ];
+
+        $stages[] = [
+            'stage' => 'Successfully admitted',
+            'completed' => $application && $application->status === 'accepted',
+            'timestamp' => $application && $application->status === 'accepted' ? $application->processed_at?->format('M j, Y g:i A') : null,
+        ];
+
+        $stages[] = [
+            'stage' => 'Account set up',
+            'completed' => $applicant->hasCompletedSetup(),
+            'timestamp' => $applicant->hasCompletedSetup() ? ($application?->processed_at?->format('M j, Y g:i A') ?? null) : null,
+        ];
+
+        $assigned = $primarySession !== null;
+        $stages[] = [
+            'stage' => 'Scheduled for exam',
+            'completed' => $assigned,
+            'timestamp' => $assigned ? $primarySession->published_at?->format('M j, Y g:i A') ?? $primarySession->date?->format('M j, Y') : null,
+        ];
+
+        $attendanceConfirmed = $pivot && $pivot->attendance_status !== 'pending';
+        $stages[] = [
+            'stage' => 'Attendance confirmed',
+            'completed' => (bool) $attendanceConfirmed,
+            'timestamp' => $pivot?->attendance_marked_at?->format('M j, Y g:i A'),
+        ];
+
+        $examSubmitted = $pivot && $pivot->submission_status === 'submitted';
+        $stages[] = [
+            'stage' => 'Exam submitted',
+            'completed' => (bool) $examSubmitted,
+            'timestamp' => $pivot?->submitted_at?->format('M j, Y g:i A'),
+        ];
+
+        $scoresFinalized = $gradingSession && $gradingSession->status === \App\Models\GradingSession::STATUS_FINALIZED;
+        $stages[] = [
+            'stage' => 'Scores processed',
+            'completed' => (bool) $scoresFinalized,
+            'timestamp' => $scoresFinalized ? $gradingSession->finalized_at?->format('M j, Y g:i A') : null,
+        ];
+
+        $resultsAvailable = ($summary && $summary->status === 'released')
+            || ($primarySession && $primarySession->score_release_date && $primarySession->score_release_date->isPast());
+        $stages[] = [
+            'stage' => 'Results available',
+            'completed' => (bool) $resultsAvailable,
+            'timestamp' => $summary && $summary->status === 'released'
+                ? $summary->released_at?->format('M j, Y g:i A')
+                : ($primarySession?->score_release_date?->format('M j, Y')),
+        ];
+
+        $stages[] = [
+            'stage' => 'Consultation released',
+            'completed' => $summary && $summary->status === 'released',
+            'timestamp' => $summary && $summary->status === 'released' ? $summary->released_at?->format('M j, Y g:i A') : null,
+        ];
+
+        return $stages;
+    }
+
+    /**
+     * Build exam schedule payload for the primary assigned session.
+     *
+     * @return array{assigned: bool, room: string, building: string, date: string, time: string}|null
+     */
+    private function buildExamSchedule(?\App\Models\ExamSession $session): ?array
+    {
+        if (! $session) {
+            return null;
+        }
+
+        $room = $session->room;
+
+        return [
+            'assigned' => true,
+            'room' => $room?->name ?? '—',
+            'building' => $room?->building ?? '—',
+            'date' => $session->date?->format('M j, Y') ?? '—',
+            'time' => $session->start_time ? \Carbon\Carbon::parse($session->start_time)->format('g:i A') : '—',
+        ];
+    }
+
+    /**
+     * Build score release payload from the primary session.
+     *
+     * @return array{date_set: bool, release_date: string}|null
+     */
+    private function buildScoreRelease(?\App\Models\ExamSession $session): ?array
+    {
+        if (! $session || ! $session->score_release_date) {
+            return null;
+        }
+
+        return [
+            'date_set' => true,
+            'release_date' => $session->score_release_date->format('M j, Y'),
+        ];
     }
 
     /**

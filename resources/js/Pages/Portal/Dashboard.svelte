@@ -3,6 +3,7 @@
   import PortalLayout from '@/Layouts/PortalLayout.svelte';
   import * as Card from '@/Components/ui/card';
   import { Button } from '@/Components/ui/button';
+  import ApplicationStatusTimeline from '@/Components/ApplicationStatusTimeline.svelte';
 
   let {
     applicant = {},
@@ -23,35 +24,27 @@
 
 <PortalLayout>
   <div class="space-y-6">
-    <div>
-      <h1 class="text-2xl font-semibold tracking-tight">Welcome, {applicant.name ?? 'Applicant'}</h1>
-      <p class="text-muted-foreground">Reference: {applicant.reference_number ?? '—'}</p>
+    <div class="rounded-xl bg-primary/10 border border-primary/20 px-4 py-4 sm:px-6">
+      <h1 class="text-2xl font-semibold tracking-tight text-foreground">
+        Welcome, {applicant.name ?? 'Applicant'}
+      </h1>
+      <p class="mt-1 text-sm text-muted-foreground font-mono">
+        Reference: {applicant.reference_number ?? '—'}
+      </p>
     </div>
 
-    <Card.Root>
-      <Card.Header>
-        <Card.Title>Application status</Card.Title>
+    <Card.Root class="overflow-hidden">
+      <Card.Header class="pb-2">
+        <Card.Title class="text-lg">Application status</Card.Title>
         <Card.Description>Your admission progress</Card.Description>
       </Card.Header>
-      <Card.Content>
+      <Card.Content class="pt-0">
         {#if safeStatusTracker.length > 0}
-          <ul class="space-y-2">
-            {#each safeStatusTracker as stage}
-              <li class="flex items-center gap-2">
-                {#if stage.completed}
-                  <span class="text-green-600 dark:text-green-400">✓</span>
-                {:else}
-                  <span class="text-muted-foreground">○</span>
-                {/if}
-                {stage.stage}
-                {#if stage.timestamp}
-                  <span class="text-sm text-muted-foreground">— {stage.timestamp}</span>
-                {/if}
-              </li>
-            {/each}
-          </ul>
+          <ApplicationStatusTimeline stages={safeStatusTracker} />
         {:else}
-          <p class="text-muted-foreground">Your status will appear here once your application is processed.</p>
+          <p class="text-muted-foreground py-4">
+            Your progress will appear here once your application has been submitted and processed.
+          </p>
         {/if}
       </Card.Content>
     </Card.Root>

@@ -27,8 +27,8 @@ class StoreApplicationRequest extends FormRequest
             'province' => ['nullable', 'string', 'max:100'],
             'zip_code' => ['nullable', 'string', 'max:10'],
             'course_preference_1' => ['required', 'integer', 'exists:courses,id'],
-            'course_preference_2' => ['required', 'integer', 'exists:courses,id', 'different:course_preference_1'],
-            'course_preference_3' => ['required', 'integer', 'exists:courses,id', 'different:course_preference_1', 'different:course_preference_2'],
+            'course_preference_2' => ['nullable', 'integer', 'exists:courses,id', 'different:course_preference_1'],
+            'course_preference_3' => ['nullable', 'integer', 'exists:courses,id', 'different:course_preference_1', 'different:course_preference_2'],
             'appointment_id' => ['nullable', 'integer', 'exists:appointments,id'],
         ];
     }

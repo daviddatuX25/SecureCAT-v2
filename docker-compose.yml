@@ -10,7 +10,9 @@ services:
             - 'host.docker.internal:host-gateway'
         ports:
             - '${APP_PORT:-80}:80'
-            - '${VITE_PORT:-5173}:5173'
+            # Vite dev server: host 5174 (VITE_PORT) and 5176 (fallback)
+            - '${VITE_PORT:-5173}:${VITE_PORT:-5173}'
+            - '5176:5176'
         environment:
             WWWUSER: '${WWWUSER:-1000}'
             LARAVEL_SAIL: 1

@@ -3,18 +3,39 @@
   import { Link, router } from '@inertiajs/svelte';
   import { usePage } from '@inertiajs/svelte';
   import * as ToggleGroup from '@/Components/ui/toggle-group';
+  import * as Dialog from '@/Components/ui/dialog';
   import { Button } from '@/Components/ui/button';
   import { Badge } from '@/Components/ui/badge';
   import { Input } from '@/Components/ui/input';
-  import { Plus, LayoutGrid, Table2, MonitorSmartphone, Eye, Pencil, ChevronDown, Filter, ClipboardList } from 'lucide-svelte';
+  import ScheduleAssistantPanel from '@/Components/ScheduleAssistantPanel.svelte';
+  import { Plus, LayoutGrid, Table2, MonitorSmartphone, Eye, Pencil, ChevronDown, Filter, ClipboardList, Sparkles } from 'lucide-svelte';
 
-  let { sessions, filters = {}, statuses = [], view = 'admin' } = $props();
+  let { sessions, filters = {}, statuses = [], view = 'admin', schedule_assistant = null } = $props();
 
   const page = usePage();
   const success = $derived($page.props.flash?.success ?? null);
   const isProctorView = $derived(view === 'proctor');
-  const pageTitle = $derived(isProctorView ? 'My Sessions' : 'Exam Sessions');
+  const pageTitle = $derived(isProctorView ? 'My Sessions' : 'Exam Scheduling');
   const pageDescription = $derived(isProctorView ? 'View assigned exam sessions.' : 'Schedule and manage exam sessions');
+
+  let assistantOpen = $state(false);
+
+  $effect(() => {
+    if (schedule_assistant && typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get('open') === 'schedule-assistant') {
+        assistantOpen = true;
+        const url = new URL(window.location.href);
+        url.searchParams.delete('open');
+        window.history.replaceState({}, '', url.pathname + url.search);
+      }
+    }
+  });
+
+  function onScheduleApplied() {
+    assistantOpen = false;
+    router.reload();
+  }
 
   let filterSearch = $state('');
   let filterStatus = $state('');
@@ -83,11 +104,10 @@
 </svelte:head>
 
 <AuthenticatedLayout>
-  <div class="space-y-6 min-w-0">
+    <div class="space-y-6 min-w-0">
     <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
       <div>
-        <h1 class="text-2xl font-bold">{pageTitle}</h1>
-        <p class="mt-1 text-sm text-muted-foreground">{pageDescription}</p>
+        <p class="text-sm text-muted-foreground">{pageDescription}</p>
       </div>
       <div class="flex flex-wrap items-center gap-3">
         <ToggleGroup.Root
@@ -111,7 +131,15 @@
             <span class="hidden md:inline">Cards</span>
           </ToggleGroup.Item>
         </ToggleGroup.Root>
-        {#if !isProctorView}
+        {#if !isProctorView && schedule_assistant}
+          <Button
+            variant="outline"
+            class="min-h-[44px]"
+            onclick={() => (assistantOpen = true)}
+          >
+            <Sparkles class="mr-2 h-4 w-4" />
+            Schedule with AI
+          </Button>
           <Link href="/admin/exam-sessions/create">
             <Button class="min-h-[44px]">
               <Plus class="mr-2 h-4 w-4" />
@@ -222,7 +250,7 @@
       </div>
     </div>
 
-    <div class="rounded-lg border border-border overflow-hidden min-w-0 max-w-full">
+    <div class="glass-panel rounded-2xl overflow-hidden min-w-0 max-w-full p-6">
       <div
         class="w-full min-w-0 overflow-x-scroll overscroll-x-contain {viewMode === 'cards'
           ? 'hidden'
@@ -372,4 +400,28 @@
       {/if}
     </div>
   </div>
+
+  {#if schedule_assistant}
+    <Dialog.Root bind:open={assistantOpen}>
+      <Dialog.Content class="w-[95vw] max-w-6xl max-h-[90vh] overflow-y-auto" aria-describedby="schedule-assistant-description">
+        <Dialog.Header>
+          <Dialog.Title>AI Exam Scheduler</Dialog.Title>
+          <Dialog.Description id="schedule-assistant-description">
+            Describe your scheduling needs (e.g. morning slots, dates, number of rooms). The assistant suggests a plan; generate and apply to create exam sessions and assign applicants.
+          </Dialog.Description>
+        </Dialog.Header>
+        <div class="mt-4">
+          <ScheduleAssistantPanel
+            applicant_count={schedule_assistant.applicant_count}
+            rooms={schedule_assistant.rooms}
+            draft_sessions={schedule_assistant.draft_sessions}
+            messages={schedule_assistant.messages}
+            openrouter_configured={schedule_assistant.openrouter_configured}
+            csrf_token={schedule_assistant.csrf_token}
+            onApplied={onScheduleApplied}
+          />
+        </div>
+      </Dialog.Content>
+    </Dialog.Root>
+  {/if}
 </AuthenticatedLayout>

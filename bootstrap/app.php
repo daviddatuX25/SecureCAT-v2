@@ -18,6 +18,8 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
         $middleware->alias([
             'role' => EnsureUserHasRole::class,
+            'consultation.enabled' => \App\Http\Middleware\EnsureConsultationEnabled::class,
+            'portal.guest' => \App\Http\Middleware\RedirectIfApplicantAuthenticated::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

@@ -9,6 +9,7 @@ use App\Models\Applicant;
 use App\Models\SystemSetting;
 use App\Services\AiCompanionService;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
@@ -24,7 +25,7 @@ class AiCompanionController extends Controller
     /**
      * Show chat page. Redirect to dashboard if companion disabled or results not released.
      */
-    public function index(Request $request): Response|JsonResponse
+    public function index(Request $request): Response|JsonResponse|RedirectResponse
     {
         if (! SystemSetting::aiCompanionEnabled()) {
             return redirect()->route('portal.dashboard')->with('error', 'AI companion is not available.');

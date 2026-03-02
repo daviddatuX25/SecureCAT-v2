@@ -25,7 +25,7 @@ class DashboardService
 
         $activeSeason = Season::active();
 
-        if ($user->hasAnyRole(['super_admin', 'admin', 'staff', 'counselor'])) {
+        if ($user->hasAnyRole(['super_admin', 'admin', 'staff', 'test_administrator'])) {
             $pendingQuery = Application::query()->where('status', 'pending');
             if ($activeSeason !== null) {
                 $pendingQuery->forSeason($activeSeason);
@@ -59,7 +59,7 @@ class DashboardService
             ];
         }
 
-        if ($user->hasAnyRole(['super_admin', 'grader'])) {
+        if ($user->hasAnyRole(['super_admin', 'test_administrator'])) {
             $activeGrading = GradingSession::query()
                 ->whereIn('status', [GradingSession::STATUS_OPEN, GradingSession::STATUS_IN_PROGRESS])
                 ->count();
@@ -71,7 +71,7 @@ class DashboardService
             ];
         }
 
-        if ($user->hasAnyRole(['super_admin', 'counselor'])) {
+        if ($user->hasAnyRole(['super_admin', 'test_administrator'])) {
             $consultationPending = ConsultationSummary::query()->where('status', ConsultationSummary::STATUS_PENDING)->count();
             $stats[] = [
                 'key' => 'consultation_pending',

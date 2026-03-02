@@ -1,6 +1,6 @@
 <script>
   import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.svelte';
-  import { router, useForm, usePage } from '@inertiajs/svelte';
+  import { useForm, usePage } from '@inertiajs/svelte';
   import { Button } from '@/Components/ui/button';
   import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/Components/ui/card';
   import Switch from '@/Components/ui/switch/switch.svelte';
@@ -30,12 +30,17 @@
   function submitSettings(e) {
     e.preventDefault();
     saving = true;
-    // Explicitly send all settings so backend always receives them (avoids omitted boolean false)
-    router.put('/admin/settings', {
-      ai_exam_companion_enabled: Boolean($form.ai_exam_companion_enabled),
-      ai_companion_persona: String($form.ai_companion_persona ?? ''),
-      consultation_enabled: Boolean($form.consultation_enabled ?? true),
-    }, { preserveScroll: true, onFinish: () => { saving = false; } });
+    $form.transform((data) => ({
+      ai_exam_companion_enabled: !!data.ai_exam_companion_enabled,
+      ai_companion_persona: String(data.ai_companion_persona ?? ''),
+      consultation_enabled: !!data.consultation_enabled,
+    }));
+    $form.put('/admin/settings', {
+      preserveScroll: true,
+      onFinish: () => {
+        saving = false;
+      },
+    });
   }
 </script>
 
@@ -84,7 +89,7 @@
             Consultation
           </CardTitle>
           <CardDescription>
-            When enabled, counselors can access the consultation dashboard, decision rules, live consultation, and schedule. When disabled, consultation links are hidden from the sidebar.
+            When enabled, counselors can access the consultation dashboard in the sidebar. When disabled, the Consultation link is hidden.
           </CardDescription>
         </CardHeader>
         <CardContent class="flex items-center gap-4">

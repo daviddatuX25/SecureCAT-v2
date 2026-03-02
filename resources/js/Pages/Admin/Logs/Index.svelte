@@ -242,7 +242,7 @@
       </div>
     </div>
 
-    <div class="rounded-lg border border-border overflow-hidden min-w-0 max-w-full">
+    <div class="glass-panel rounded-2xl overflow-hidden min-w-0 max-w-full p-6">
       <Table.Root class="w-full min-w-0">
         <Table.Header class="bg-muted/50">
           <Table.Row>

@@ -34,7 +34,7 @@
       {
         number: 5,
         name: 'Results & Consultation',
-        description: 'Counselors review analytics, override recommendations, and release results.',
+        description: 'Test administrators review analytics, override recommendations, and release results.',
         office: 'Guidance',
         color: '#C87A1A'
       }
