@@ -16,31 +16,36 @@ class ConsultationScheduleController extends Controller
     {
         $gradingSessions = GradingSession::query()
             ->where('status', GradingSession::STATUS_FINALIZED)
-            ->with('examSession.room')
+            ->with([
+                'examSession.room',
+                'applicants' => fn ($q) => $q->whereNotNull('grading_session_applicant.result_printed_at')
+                    ->with('application'),
+            ])
+            ->withCount([
+                'applicants',
+                'applicants as printed_count' => fn ($q) => $q->whereNotNull('grading_session_applicant.result_printed_at'),
+            ])
             ->get();
 
         $batches = [];
         $applicantsByBatch = [];
         foreach ($gradingSessions as $gs) {
-            $total = $gs->applicants()->count();
-            $printedCount = $gs->applicants()->wherePivotNotNull('result_printed_at')->count();
             $batches[] = [
                 'id' => $gs->id,
-                'name' => 'Batch ' . $gs->id,
+                'name' => 'Batch '.$gs->id,
                 'exam_date' => $gs->examSession?->date?->format('Y-m-d'),
-                'printed_count' => $printedCount,
-                'total' => $total,
+                'printed_count' => $gs->printed_count ?? 0,
+                'total' => $gs->applicants_count ?? 0,
             ];
-            $applicants = $gs->applicants()
-                ->wherePivotNotNull('result_printed_at')
-                ->with('application')
-                ->get()
+            $applicants = $gs->applicants
                 ->map(fn ($a) => [
                     'applicant_id' => $a->id,
                     'name' => $a->application ? trim(implode(' ', array_filter([$a->application->first_name, $a->application->middle_name, $a->application->last_name, $a->application->suffix]))) : '—',
                     'reference' => $a->application?->reference_number ?? '—',
                     'printed' => true,
-                ])->values()->all();
+                ])
+                ->values()
+                ->all();
             $applicantsByBatch[$gs->id] = $applicants;
         }
 
