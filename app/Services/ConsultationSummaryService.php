@@ -11,6 +11,11 @@ use Illuminate\Support\Facades\DB;
 
 class ConsultationSummaryService
 {
+    public function __construct(
+        private AuditService $auditService
+    ) {}
+
+
     public function getOrCreateForApplicant(int $applicantId): ConsultationSummary
     {
         $summary = ConsultationSummary::firstOrCreate(
@@ -29,6 +34,15 @@ class ConsultationSummaryService
                 'released_at' => now(),
                 'released_by' => $user->id,
             ]);
+
+            $this->auditService->log(
+                'consultation.released',
+                ConsultationSummary::class,
+                $summary->id,
+                ['status' => ConsultationSummary::STATUS_PENDING],
+                ['status' => ConsultationSummary::STATUS_RELEASED],
+                "Consultation released for applicant {$summary->applicant_id}"
+            );
         });
     }
 }
