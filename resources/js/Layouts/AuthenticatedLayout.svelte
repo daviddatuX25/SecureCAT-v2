@@ -33,6 +33,7 @@
   function canSee(requiredRoles, item) {
     if (requiredRoles.includes('*')) return true;
     if (!requiredRoles.some((r) => hasRole(r))) return false;
+    if (item.featureFlag && !$page.props[item.featureFlag]) return false;
     return true;
   }
 
@@ -62,7 +63,7 @@
       { href: '/admin/exam-domains', label: 'Exam pillars', icon: Layers, roles: ['super_admin', 'test_administrator'] },
       { href: '/grading', label: 'Grading', icon: GraduationCap, roles: ['super_admin', 'test_administrator'] },
       { href: '/admin/result-sheet-templates', label: 'Result templates', icon: FileText, roles: ['super_admin', 'admin', 'test_administrator'] },
-      { href: '/consultation', label: 'Consultation', icon: MessageSquare, roles: ['super_admin', 'test_administrator'] },
+      { href: '/consultation', label: 'Consultation', icon: MessageSquare, roles: ['super_admin', 'test_administrator'], featureFlag: 'consultation_enabled' },
     ]},
   ].map((section) => ({
     ...section,
