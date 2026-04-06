@@ -3,7 +3,7 @@
   import { Link, router, usePage } from '@inertiajs/svelte';
   import { Button } from '@/Components/ui/button';
   import { Badge } from '@/Components/ui/badge';
-  import { Plus, Pencil, CheckCircle } from 'lucide-svelte';
+  import { Plus, Pencil, CheckCircle, BookOpen } from 'lucide-svelte';
 
   let { seasons } = $props();
 
@@ -23,12 +23,20 @@
         <h1 class="text-2xl font-bold">Seasons</h1>
         <p class="mt-1 text-sm text-muted-foreground">Academic periods. Only one season is active; new applications attach to it.</p>
       </div>
-      <Link href="/admin/seasons/create">
-        <Button class="min-h-[44px]">
-          <Plus class="mr-2 h-4 w-4" />
-          Add Season
-        </Button>
-      </Link>
+      <div class="flex flex-wrap gap-3">
+        <Link href="/admin/seasons/create">
+          <Button class="min-h-[44px]">
+            <Plus class="mr-2 h-4 w-4" />
+            Add Season
+          </Button>
+        </Link>
+        <Link href="/admin/courses">
+          <Button variant="outline" class="min-h-[44px]">
+            <BookOpen class="mr-2 h-4 w-4" />
+            Add Course
+          </Button>
+        </Link>
+      </div>
     </div>
 
     {#if success}
