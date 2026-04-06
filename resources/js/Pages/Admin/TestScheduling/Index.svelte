@@ -8,7 +8,7 @@
   import { Badge } from '@/Components/ui/badge';
   import { Input } from '@/Components/ui/input';
   import ScheduleAssistantPanel from '@/Components/ScheduleAssistantPanel.svelte';
-  import { Plus, LayoutGrid, Table2, MonitorSmartphone, Eye, Pencil, ChevronDown, Filter, ClipboardList, Sparkles } from 'lucide-svelte';
+  import { Plus, LayoutGrid, Table2, MonitorSmartphone, Eye, Pencil, ChevronDown, Filter, ClipboardList, Sparkles, DoorOpen } from 'lucide-svelte';
 
   let { sessions, filters = {}, statuses = [], view = 'admin', schedule_assistant = null } = $props();
 
@@ -140,10 +140,18 @@
             <Sparkles class="mr-2 h-4 w-4" />
             Schedule with AI
           </Button>
+        {/if}
+        {#if !isProctorView}
           <Link href="/admin/test-scheduling/create">
             <Button class="min-h-[44px]">
               <Plus class="mr-2 h-4 w-4" />
               Create Session
+            </Button>
+          </Link>
+          <Link href="/admin/rooms">
+            <Button variant="outline" class="min-h-[44px]">
+              <DoorOpen class="mr-2 h-4 w-4" />
+              Add Room
             </Button>
           </Link>
         {/if}
