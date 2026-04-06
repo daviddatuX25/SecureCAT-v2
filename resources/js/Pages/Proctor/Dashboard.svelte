@@ -3,16 +3,17 @@
   import { Calendar } from 'lucide-svelte';
 
   let { title = 'My Sessions', description = 'View assigned exam sessions.' } = $props();
+
+  const breadcrumbs = $derived([{ label: title }]);
 </script>
 
 <svelte:head>
   <title>Proctor - SecureCAT</title>
 </svelte:head>
 
-<AuthenticatedLayout>
+<AuthenticatedLayout breadcrumbs={breadcrumbs}>
   <div class="space-y-6">
     <div>
-      <h1 class="text-2xl font-bold">{title}</h1>
       <p class="mt-1 text-sm text-muted-foreground">{description}</p>
     </div>
     <div class="rounded-lg border border-dashed border-border bg-muted/30 p-12 text-center">
