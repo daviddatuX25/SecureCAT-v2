@@ -3,6 +3,7 @@
 namespace Tests\Unit\Services;
 
 use App\Models\Applicant;
+use App\Models\AuditLog;
 use App\Models\ConsultationSummary;
 use App\Models\User;
 use App\Services\AuditService;
@@ -75,12 +76,15 @@ class ConsultationSummaryServiceTest extends TestCase
 
         $this->service->release($summary, $user);
 
-        $this->assertDatabaseHas('audit_logs', [
-            'auditable_type' => ConsultationSummary::class,
-            'auditable_id' => $summary->id,
-            'event' => 'consultation.released',
-            'old_values' => json_encode(['status' => ConsultationSummary::STATUS_PENDING]),
-            'new_values' => json_encode(['status' => ConsultationSummary::STATUS_RELEASED]),
-        ]);
+        $log = AuditLog::where('auditable_type', ConsultationSummary::class)
+            ->where('auditable_id', $summary->id)
+            ->where('event', 'consultation.released')
+            ->first();
+
+        $this->assertNotNull($log, 'Audit log entry was not created');
+        $oldValues = is_string($log->old_values) ? json_decode($log->old_values, true) : $log->old_values;
+        $newValues = is_string($log->new_values) ? json_decode($log->new_values, true) : $log->new_values;
+        $this->assertEquals(ConsultationSummary::STATUS_PENDING, $oldValues['status'] ?? null);
+        $this->assertEquals(ConsultationSummary::STATUS_RELEASED, $newValues['status'] ?? null);
     }
 }
