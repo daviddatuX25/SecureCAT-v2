@@ -10,6 +10,12 @@
   let { sessionId = '1', session = {}, applicants = [] } = $props();
   const sid = $derived(String(sessionId));
 
+  const breadcrumbs = $derived([
+    { label: 'Grading', href: '/grading' },
+    { label: 'Session #' + sid, href: `/grading/sessions/${sid}` },
+    { label: 'Print Batch' }
+  ]);
+
   let selected = $state(new Set());
 
   const allSelected = $derived(applicants.length > 0 && selected.size === applicants.length);
@@ -76,18 +82,8 @@
   <title>Print batch - SecureCAT</title>
 </svelte:head>
 
-<AuthenticatedLayout>
+<AuthenticatedLayout breadcrumbs={breadcrumbs}>
   <div class="space-y-6 min-w-0">
-    <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-      <Link
-        href={`/grading/sessions/${sid}`}
-        class="text-sm text-muted-foreground hover:text-foreground inline-flex items-center gap-1 min-h-[44px] items-center"
-      >
-        <ArrowLeft class="h-4 w-4" />
-        Back to session
-      </Link>
-    </div>
-
     <Card>
       <CardHeader>
         <CardTitle class="flex items-center gap-2">
