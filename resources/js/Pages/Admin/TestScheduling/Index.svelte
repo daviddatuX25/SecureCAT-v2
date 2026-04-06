@@ -18,6 +18,12 @@
   const pageTitle = $derived(isProctorView ? 'My Sessions' : 'Exam Scheduling');
   const pageDescription = $derived(isProctorView ? 'View assigned exam sessions.' : 'Schedule and manage exam sessions');
 
+  const breadcrumbs = $derived(
+    view === 'proctor'
+      ? [{ label: 'My Sessions' }]
+      : [{ label: 'Test Scheduling' }]
+  );
+
   let assistantOpen = $state(false);
 
   $effect(() => {
@@ -103,13 +109,9 @@
   <title>{pageTitle} - SecureCAT</title>
 </svelte:head>
 
-<AuthenticatedLayout>
+<AuthenticatedLayout breadcrumbs={breadcrumbs}>
     <div class="space-y-6 min-w-0">
-    <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-      <div>
-        <p class="text-sm text-muted-foreground">{pageDescription}</p>
-      </div>
-      <div class="flex flex-wrap items-center gap-3">
+    <div class="flex flex-wrap items-center gap-3">
         <ToggleGroup.Root
           type="single"
           bind:value={viewMode}
