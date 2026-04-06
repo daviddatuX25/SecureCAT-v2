@@ -92,7 +92,7 @@ class ExamSessionController extends Controller
             $payload['schedule_assistant'] = self::scheduleAssistantPayload($request, $querySeasonId ?? $activeSeason?->id);
         }
 
-        return Inertia::render('Admin/ExamSessions/Index', $payload);
+        return Inertia::render('Admin/TestScheduling/Index', $payload);
     }
 
     /**
@@ -169,7 +169,7 @@ class ExamSessionController extends Controller
         $proctors = User::query()->whereHas('roles', fn ($q) => $q->where('name', 'proctor'))->orderBy('name')->get(['id', 'name']);
         $seasons = Season::query()->orderByDesc('academic_year')->orderBy('semester')->get(['id', 'academic_year', 'semester', 'is_active']);
 
-        return Inertia::render('Admin/ExamSessions/Create', [
+        return Inertia::render('Admin/TestScheduling/Create', [
             'rooms' => $rooms,
             'proctors' => $proctors,
             'seasons' => $seasons,
@@ -235,7 +235,7 @@ class ExamSessionController extends Controller
 
         $proctors = $isProctorView ? [] : User::query()->whereHas('roles', fn ($q) => $q->where('name', 'proctor'))->orderBy('name')->get(['id', 'name']);
 
-        return Inertia::render('Admin/ExamSessions/Show', [
+        return Inertia::render('Admin/TestScheduling/Show', [
             'session' => $exam_session,
             'assigned_applicants' => $assigned_applicants,
             'available_applicants' => $available_applicants,
@@ -252,7 +252,7 @@ class ExamSessionController extends Controller
         $rooms = Room::query()->where('is_active', true)->orderBy('building')->orderBy('name')->get(['id', 'name', 'building', 'capacity']);
         $proctors = User::query()->whereHas('roles', fn ($q) => $q->where('name', 'proctor'))->orderBy('name')->get(['id', 'name']);
 
-        return Inertia::render('Admin/ExamSessions/Edit', [
+        return Inertia::render('Admin/TestScheduling/Edit', [
             'session' => $exam_session,
             'rooms' => $rooms,
             'proctors' => $proctors,
@@ -565,7 +565,7 @@ class ExamSessionController extends Controller
 
         $sessions = $query->get();
 
-        return Inertia::render('Admin/ExamSessions/Monitoring', [
+        return Inertia::render('Admin/TestScheduling/Monitoring', [
             'sessions' => $sessions,
         ]);
     }
