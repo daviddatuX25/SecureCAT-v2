@@ -61,17 +61,18 @@
 
   const list = $derived(applications?.data ?? []);
   let viewMode = $state('responsive');
+
+  const breadcrumbs = $derived([{ label: 'Applications' }]);
 </script>
 
 <svelte:head>
   <title>Applications - SecureCAT</title>
 </svelte:head>
 
-<AuthenticatedLayout>
+<AuthenticatedLayout breadcrumbs={breadcrumbs}>
   <div class="space-y-6 min-w-0">
     <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
       <div>
-        <h1 class="text-2xl font-bold">Applications</h1>
         <p class="mt-1 text-sm text-muted-foreground">View and manage applications by season</p>
       </div>
       <div class="flex flex-wrap items-center gap-3">
