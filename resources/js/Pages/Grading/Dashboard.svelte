@@ -37,19 +37,16 @@
   function openGradingSession(examSessionId) {
     router.post('/grading', { exam_session_id: examSessionId });
   }
+
+  const breadcrumbs = $derived([{ label: 'Grading' }]);
 </script>
 
 <svelte:head>
   <title>Grading - SecureCAT</title>
 </svelte:head>
 
-<AuthenticatedLayout>
+<AuthenticatedLayout breadcrumbs={breadcrumbs}>
   <div class="space-y-6 min-w-0">
-    <div>
-      <h1 class="text-2xl font-bold">{title}</h1>
-      <p class="mt-1 text-sm text-muted-foreground">{description}</p>
-    </div>
-
     {#if success}
       <div class="rounded-lg bg-primary/10 px-4 py-3 text-sm text-primary">{success}</div>
     {/if}
