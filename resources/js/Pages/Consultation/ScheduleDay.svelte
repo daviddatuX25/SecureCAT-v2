@@ -7,15 +7,17 @@
 
   let { batches = [], flash = {} } = $props();
 
-  let expandedBatch = $state(null);
-  let selectedDate = $state('');
+  const breadcrumbs = $derived([
+  { label: 'Release & Consultation', href: '/consultation' },
+  { label: 'Schedule Consultations' }
+]);
 </script>
 
 <svelte:head>
   <title>Consultation Schedule - SecureCAT</title>
 </svelte:head>
 
-<AuthenticatedLayout>
+<AuthenticatedLayout breadcrumbs={breadcrumbs}>
 <div class="space-y-8 pb-8">
   {#if flash?.success}
     <div class="glass-panel p-4 rounded-xl border border-success/20 bg-success/5 text-success text-sm shadow-sm flex items-center gap-2">
@@ -33,13 +35,6 @@
       {flash.error}
     </div>
   {/if}
-
-  <div class="flex items-center justify-between">
-    <div>
-      <h1 class="text-2xl font-bold tracking-tight text-foreground">Schedule Consultations</h1>
-      <p class="text-muted-foreground text-sm mt-1">Assign release dates for finalized examination batches.</p>
-    </div>
-  </div>
 
   <Card class="overflow-hidden border-border/50 shadow-sm glass-panel bg-card/60">
     <div class="p-0 divide-y divide-border/50">
