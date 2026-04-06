@@ -246,7 +246,7 @@
   <div class="space-y-6">
     <div class="flex items-center gap-4">
       <Link
-        href="/admin/exam-sessions"
+        href="/admin/test-scheduling"
         class="text-sm text-muted-foreground hover:text-foreground inline-flex items-center gap-1"
       >
         <ArrowLeft class="h-4 w-4" /> Back to my sessions
