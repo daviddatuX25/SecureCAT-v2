@@ -10,6 +10,12 @@
   const sid = $derived(String(sessionId));
   const isReadOnly = $derived(workflowStatus === 'completed');
 
+  const breadcrumbs = $derived([
+    { label: 'Grading', href: '/grading' },
+    { label: 'Session #' + sid, href: `/grading/sessions/${sid}` },
+    { label: applicant?.name ?? 'Applicant' }
+  ]);
+
   const initialScores = $derived.by(() => {
     const arr = [];
     for (const d of domains) {
@@ -75,18 +81,8 @@
   <title>Score input - {applicant.name} - SecureCAT</title>
 </svelte:head>
 
-<AuthenticatedLayout>
+<AuthenticatedLayout breadcrumbs={breadcrumbs}>
   <div class="space-y-6 min-w-0 max-w-2xl">
-    <div class="flex items-center gap-4">
-      <Link
-        href={`/grading/sessions/${sid}`}
-        class="text-sm text-muted-foreground hover:text-foreground inline-flex items-center gap-1 min-h-[44px] items-center"
-      >
-        <ArrowLeft class="h-4 w-4" />
-        Back to session
-      </Link>
-    </div>
-
     <Card>
       <CardHeader>
         <CardTitle class="flex items-center gap-2">
