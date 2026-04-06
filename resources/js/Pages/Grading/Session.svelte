@@ -14,6 +14,11 @@
   const success = $derived($page.props.flash?.success ?? null);
   const sid = $derived(String(sessionId));
 
+  const breadcrumbs = $derived([
+    { label: 'Grading', href: '/grading' },
+    { label: session?.exam_session_id ? 'Session #' + session.exam_session_id : 'Session' }
+  ]);
+
   const progress_stats = $derived({
     total: applicants.length,
     scored: applicants.filter((a) => a.scored).length,
@@ -46,20 +51,8 @@
   <title>Grading session - SecureCAT</title>
 </svelte:head>
 
-<AuthenticatedLayout>
+<AuthenticatedLayout breadcrumbs={breadcrumbs}>
   <div class="space-y-6 min-w-0">
-    <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-      <div class="flex items-center gap-4">
-        <Link
-          href="/grading"
-          class="text-sm text-muted-foreground hover:text-foreground inline-flex items-center gap-1 min-h-[44px] items-center"
-        >
-          <ArrowLeft class="h-4 w-4" />
-          Back to grading
-        </Link>
-      </div>
-    </div>
-
     {#if success}
       <div class="rounded-lg bg-primary/10 px-4 py-3 text-sm text-primary">{success}</div>
     {/if}
