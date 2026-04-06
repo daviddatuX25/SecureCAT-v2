@@ -5,10 +5,22 @@
   import { Button } from '@/Components/ui/button';
   import { Badge } from '@/Components/ui/badge';
   import { Input } from '@/Components/ui/input';
-  import { ArrowLeft, UserPlus, UserMinus, Send, ClipboardList, RotateCcw } from 'lucide-svelte';
+  import { UserPlus, UserMinus, Send, ClipboardList, RotateCcw } from 'lucide-svelte';
 
   let { session, assigned_applicants = [], available_applicants = [], proctors = [], view = 'admin' } = $props();
   const isProctorView = $derived(view === 'proctor');
+
+  const breadcrumbs = $derived(
+    view === 'proctor'
+      ? [
+          { label: 'My Sessions', href: '/admin/test-scheduling?view=proctor' },
+          { label: session?.id ? 'Session #' + session.id : 'Session' }
+        ]
+      : [
+          { label: 'Test Scheduling', href: '/admin/test-scheduling' },
+          { label: session?.id ? 'Session #' + session.id : 'Session' }
+        ]
+  );
 
   const page = usePage();
   const success = $derived($page.props.flash?.success ?? null);
@@ -98,14 +110,8 @@
   <title>Exam Session - SecureCAT</title>
 </svelte:head>
 
-<AuthenticatedLayout>
+<AuthenticatedLayout breadcrumbs={breadcrumbs}>
   <div class="space-y-6">
-    <div class="flex items-center gap-4">
-      <Link href="/admin/test-scheduling" class="text-sm text-muted-foreground hover:text-foreground inline-flex items-center gap-1">
-        <ArrowLeft class="h-4 w-4" /> {isProctorView ? 'Back to my sessions' : 'Back to exam sessions'}
-      </Link>
-    </div>
-
     {#if success}
       <div class="rounded-lg bg-primary/10 px-4 py-3 text-sm text-primary">
         {success}
