@@ -79,6 +79,10 @@
     router.post(`/admin/exam-sessions/${session.id}/publish`, {}, { onSuccess: () => router.reload() });
   }
 
+  function unpublish() {
+    router.post(`/admin/exam-sessions/${session.id}/unpublish`, {}, { onSuccess: () => router.reload() });
+  }
+
   function reopenSession() {
     router.post(`/admin/exam-sessions/${session.id}/reopen`, {}, { onSuccess: () => router.reload() });
   }
@@ -265,12 +269,11 @@
         <div>
           <Button
             class="min-h-[44px]"
-            variant={session.status === 'published' ? 'outline' : 'default'}
-            disabled={session.status === 'published'}
-            onclick={publish}
+            variant={session.status === 'published' ? 'destructive' : 'default'}
+            onclick={session.status === 'published' ? unpublish : publish}
           >
             <Send class="h-4 w-4 mr-2" />
-            {session.status === 'published' ? 'Published' : 'Publish session'}
+            {session.status === 'published' ? 'Unpublish' : 'Publish session'}
           </Button>
           <p class="mt-1 text-xs text-muted-foreground">Notify assigned applicants and lock schedule.</p>
         </div>

@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "mcp__plugin_honcho_honcho__chat",
+      "mcp__plugin_honcho_honcho__search"
+    ]
+  }
+}

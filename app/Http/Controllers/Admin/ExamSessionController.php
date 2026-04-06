@@ -359,6 +359,22 @@ class ExamSessionController extends Controller
         return redirect()->route('admin.exam-sessions.show', $exam_session)->with('success', 'Session published.');
     }
 
+    public function unpublish(ExamSession $exam_session): RedirectResponse
+    {
+        if ($exam_session->status !== ExamSession::STATUS_PUBLISHED) {
+            return redirect()->route('admin.exam-sessions.show', $exam_session)
+                ->with('error', 'Only published sessions can be unpublished.');
+        }
+        $this->authorize('unpublish', $exam_session);
+
+        $exam_session->update([
+            'status' => ExamSession::STATUS_DRAFT,
+            'published_at' => null,
+        ]);
+
+        return redirect()->route('admin.exam-sessions.show', $exam_session)->with('success', 'Session unpublished.');
+    }
+
     public function releaseDate(Request $request, ExamSession $exam_session): RedirectResponse
     {
         if ($redirect = $this->redirectIfCompleted($exam_session, 'You cannot change the release date of a completed exam session.')) {
@@ -400,6 +416,130 @@ class ExamSessionController extends Controller
 
         return redirect()->route('admin.exam-sessions.show', $exam_session)
             ->with('success', 'Session reopened. Proctors can continue marking attendance and submissions.');
+    }
+
+    /**
+     * Session list for Test Administrators.
+     * - test_administrator: sessions where they are assigned as a proctor.
+     * - admin / super_admin: all sessions.
+     */
+    public function testAdminIndex(Request $request): Response
+    {
+        $user = $request->user();
+        $isTestAdminOnly = $user->hasAnyRole(['test_administrator']) && ! $user->hasAnyRole(['super_admin', 'admin']);
+
+        $activeSeason  = Season::active();
+        $querySeasonId = $activeSeason?->id;
+        if ($request->filled('season_id')) {
+            $querySeasonId = (int) $request->input('season_id');
+        }
+
+        $query = ExamSession::query()
+            ->with(['room:id,name,building,capacity', 'proctors:id,name', 'season:id,academic_year,semester'])
+            ->orderBy('date')
+            ->orderBy('start_time');
+
+        if ($querySeasonId !== null) {
+            $query->forSeason($querySeasonId);
+        }
+
+        if ($isTestAdminOnly) {
+            $query->whereHas('proctors', fn ($q) => $q->where('users.id', $user->id));
+        }
+
+        if ($request->filled('status')) {
+            $query->where('status', $request->get('status'));
+        }
+
+        $sessions = $query->paginate(15)->withQueryString();
+        $seasons  = Season::query()->orderByDesc('academic_year')->orderBy('semester')->get(['id', 'academic_year', 'semester', 'is_active']);
+
+        return Inertia::render('Admin/TestAdmin/Index', [
+            'sessions'         => $sessions,
+            'filters'          => $request->only(['status', 'season_id']),
+            'seasons'          => $seasons,
+            'active_season_id' => $activeSeason?->id,
+            'statuses'         => self::statusesList(),
+        ]);
+    }
+
+    /**
+     * Full session roster for Test Administrators (and Admin / Super Admin).
+     * Passes fullPermissions (all flags true) to the shared SessionRoster component.
+     */
+    public function testAdminRoster(ExamSession $exam_session, Request $request): Response
+    {
+        $user = $request->user();
+
+        // Authorization: must be admin/super_admin OR be an assigned proctor on this session.
+        if (! $user->hasAnyRole(['super_admin', 'admin'])) {
+            $assigned = $exam_session->proctors()->where('users.id', $user->id)->exists();
+            abort_unless($assigned, 403, 'You are not assigned to this session.');
+        }
+
+        $exam_session->load(['room:id,name,building,capacity', 'proctors:id,name']);
+
+        $applicants = $exam_session->applicants()
+            ->with('application:id,reference_number,first_name,middle_name,last_name,suffix')
+            ->get()
+            ->map(fn ($a) => [
+                'id'                   => $a->id,
+                'session_applicant_id' => $a->pivot->id,
+                'name'                 => trim(implode(' ', array_filter([
+                    $a->application?->first_name,
+                    $a->application?->middle_name,
+                    $a->application?->last_name,
+                    $a->application?->suffix,
+                ]))),
+                'reference_number'     => $a->application?->reference_number ?? '',
+                'attendance_status'    => $a->pivot->attendance_status ?? 'pending',
+                'submission_status'    => $a->pivot->submission_status ?? 'pending',
+                'attendance_marked_at' => $a->pivot->attendance_marked_at
+                    ? \Carbon\Carbon::parse($a->pivot->attendance_marked_at)->toIso8601String()
+                    : null,
+                'submitted_at'         => $a->pivot->submitted_at
+                    ? \Carbon\Carbon::parse($a->pivot->submitted_at)->toIso8601String()
+                    : null,
+            ]);
+
+        $stats = [
+            'total'                    => $applicants->count(),
+            'present'                  => $applicants->where('attendance_status', 'present')->count(),
+            'absent'                   => $applicants->where('attendance_status', 'absent')->count(),
+            'pending'                  => $applicants->where('attendance_status', 'pending')->count(),
+            'submitted'                => $applicants->where('submission_status', 'submitted')->count(),
+            'present_pending_submission' => $applicants
+                ->where('attendance_status', 'present')
+                ->where('submission_status', 'pending')
+                ->count(),
+        ];
+
+        $isWithinStartWindow = $exam_session->isWithinStartWindow();
+        // Test administrators also have override capability (same as admin).
+        $canOverrideSchedule = true;
+
+        $fullPermissions = [
+            'canStart'           => true,
+            'canClose'           => true,
+            'canMarkAttendance'  => true,
+            'canLogSubmission'   => true,
+            'canBulkSubmit'      => true,
+            'canOverrideSchedule' => true,
+            'canRemoveApplicant' => true,
+            'canReassignRoom'    => true,
+            'canAddApplicant'    => true,
+            'showAnalytics'      => true,
+        ];
+
+        return Inertia::render('Admin/TestAdmin/Roster', [
+            'session'    => array_merge($exam_session->toArray(), [
+                'is_within_start_window' => $isWithinStartWindow,
+                'can_override_schedule'  => $canOverrideSchedule,
+            ]),
+            'applicants' => $applicants->values()->all(),
+            'stats'      => $stats,
+            'permissions' => $fullPermissions,
+        ]);
     }
 
     public function monitoring(Request $request): Response

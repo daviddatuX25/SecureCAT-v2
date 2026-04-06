@@ -74,4 +74,13 @@ class ExamSessionPolicy
         }
         return $user->hasAnyRole(['super_admin', 'admin']);
     }
+
+    /** Unpublish a published session (set back to draft). Admin/super_admin only; session must be published. */
+    public function unpublish(User $user, ExamSession $examSession): bool
+    {
+        if ($examSession->status !== ExamSession::STATUS_PUBLISHED) {
+            return false;
+        }
+        return $user->hasAnyRole(['super_admin', 'admin']);
+    }
 }

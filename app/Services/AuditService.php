@@ -99,6 +99,7 @@ class AuditService
             'consultation' => 'consultation',
             'role' => 'user_management',
             'audit_log' => 'system',
+            'exam_session' => 'exam_session',
         ];
         return $map[$prefix] ?? 'other';
     }

@@ -120,7 +120,13 @@
     </div>
   </header>
 
-  <main class="flex-1 container px-4 py-6">
+  <main class="flex-1 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
     {@render children?.()}
   </main>
+
+  <footer class="border-t bg-muted/40 py-6 mt-auto">
+    <div class="flex items-center justify-center container px-4 text-center text-sm text-muted-foreground">
+      <p>&copy; {new Date().getFullYear()} SecureCAT. All rights reserved.</p>
+    </div>
+  </footer>
 </div>

@@ -43,14 +43,14 @@ class HandleInertiaRequests extends Middleware
             ];
         }
 
-        return [
-            ...parent::share($request),
+        return array_merge(parent::share($request), [
             'auth' => [
                 'user' => $authUser,
             ],
+            'csrf_token' => $request->session()->token(),
             'consultation_enabled' => SystemSetting::consultationEnabled(),
             'pageTitle' => $this->defaultPageTitle($request),
-        ];
+        ]);
     }
 
     /**

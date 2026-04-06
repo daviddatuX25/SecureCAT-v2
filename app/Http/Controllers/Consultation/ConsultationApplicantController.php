@@ -67,6 +67,36 @@ class ConsultationApplicantController extends Controller
         return redirect()->route('consultation.index')->with('success', 'Consultation released.');
     }
 
+    public function releaseBulk(\Illuminate\Http\Request $request): \Illuminate\Http\RedirectResponse
+    {
+        $validated = $request->validate([
+            'applicant_ids' => 'required|array',
+            'applicant_ids.*' => 'integer|exists:applicants,id',
+        ]);
+
+        $count = 0;
+        foreach ($validated['applicant_ids'] as $applicantId) {
+            $applicant = Applicant::find($applicantId);
+            if ($applicant) {
+                // Ensure applicant is in consultation scope.
+                $hasFinalizedScores = GradingSession::query()
+                    ->where('status', GradingSession::STATUS_FINALIZED)
+                    ->whereHas('applicantScores', fn ($q) => $q->where('applicant_id', $applicant->id))
+                    ->exists();
+
+                if ($hasFinalizedScores) {
+                    $summary = $this->summaryService->getOrCreateForApplicant($applicant->id);
+                    if ($summary->status !== \App\Models\ConsultationSummary::STATUS_RELEASED) {
+                        $this->summaryService->release($summary, $request->user());
+                        $count++;
+                    }
+                }
+            }
+        }
+
+        return redirect()->back()->with('success', "{$count} consultations released successfully.");
+    }
+
     private function ensureApplicantInConsultationScope(Applicant $applicant): void
     {
         $hasFinalizedScores = GradingSession::query()

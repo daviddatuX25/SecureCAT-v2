@@ -4,7 +4,7 @@
 
 <section class="border-t border-border/60 bg-background">
   <div class="mx-auto max-w-6xl px-4 py-16 space-y-8">
-    <header class="max-w-3xl space-y-2">
+    <header class="max-w-3xl mx-auto text-center space-y-2">
       <p class="text-sm font-semibold uppercase tracking-wide text-primary">One system, three views</p>
       <h2 class="text-2xl font-bold tracking-tight sm:text-3xl">
         Designed for applicants, staff, and leadership

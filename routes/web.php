@@ -30,11 +30,10 @@ use App\Http\Controllers\Proctor\SessionRosterController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
-Route::get('/', function () {
-    return Inertia::render('Home', [
-        'systemName' => 'SecureCAT',
-    ]);
-});
+use App\Http\Controllers\HomeController;
+
+Route::get('/', [HomeController::class, 'index'])->name('home');
+Route::get('/about', [HomeController::class, 'about'])->name('about');
 
 Route::middleware('guest')->group(function () {
     Route::get('/login', [AuthController::class, 'create'])->name('login');
@@ -105,6 +104,7 @@ Route::middleware(['auth'])->group(function () {
         Route::post('exam-sessions/{exam_session}/assign-applicants', [ExamSessionController::class, 'assignApplicants'])->name('exam-sessions.assign-applicants');
         Route::post('exam-sessions/{exam_session}/remove-applicant', [ExamSessionController::class, 'removeApplicant'])->name('exam-sessions.remove-applicant');
         Route::post('exam-sessions/{exam_session}/publish', [ExamSessionController::class, 'publish'])->name('exam-sessions.publish');
+        Route::post('exam-sessions/{exam_session}/unpublish', [ExamSessionController::class, 'unpublish'])->name('exam-sessions.unpublish');
         Route::put('exam-sessions/{exam_session}/release-date', [ExamSessionController::class, 'releaseDate'])->name('exam-sessions.release-date');
         Route::post('exam-sessions/{exam_session}/reopen', [ExamSessionController::class, 'reopen'])->name('exam-sessions.reopen');
         Route::post('exam-sessions', [ExamSessionController::class, 'store'])->name('exam-sessions.store');
@@ -127,13 +127,20 @@ Route::middleware(['auth'])->group(function () {
     Route::put('/applications/{application}/incomplete-documents', [ApplicationController::class, 'setIncompleteDocuments'])->name('applications.set-incomplete-documents')->middleware('role:super_admin,staff,admin');
     Route::get('/applications/{application}/admission-slip', [ApplicationController::class, 'admissionSlip'])->name('applications.admission-slip')->middleware('role:super_admin,staff,admin,test_administrator');
     Route::get('/proctor', fn () => redirect()->route('admin.exam-sessions.index'))->middleware('role:super_admin,proctor');
-    Route::middleware('role:super_admin,admin,proctor')->prefix('proctor')->name('proctor.')->group(function () {
+    Route::middleware('role:super_admin,admin,proctor,test_administrator')->prefix('proctor')->name('proctor.')->group(function () {
         Route::get('sessions/{exam_session}', [SessionRosterController::class, 'show'])->name('sessions.show');
         Route::post('sessions/{exam_session}/attendance', [SessionRosterController::class, 'storeAttendance'])->name('sessions.attendance');
+        Route::post('sessions/{exam_session}/scan-attendance', [SessionRosterController::class, 'scanAttendance'])->name('sessions.scan-attendance');
         Route::post('sessions/{exam_session}/submission', [SessionRosterController::class, 'storeSubmission'])->name('sessions.submission');
         Route::post('sessions/{exam_session}/submission-bulk', [SessionRosterController::class, 'storeSubmissionBulk'])->name('sessions.submission-bulk');
         Route::post('sessions/{exam_session}/start', [SessionRosterController::class, 'start'])->name('sessions.start');
         Route::post('sessions/{exam_session}/close', [SessionRosterController::class, 'close'])->name('sessions.close');
+    });
+
+    // Test Admin session management — dedicated index + roster with full permissions
+    Route::middleware('role:super_admin,admin,test_administrator')->prefix('admin/test-admin')->name('admin.test-admin.')->group(function () {
+        Route::get('sessions', [ExamSessionController::class, 'testAdminIndex'])->name('sessions.index');
+        Route::get('sessions/{exam_session}/roster', [ExamSessionController::class, 'testAdminRoster'])->name('sessions.roster');
     });
     // Grading
     Route::middleware('role:super_admin,test_administrator')->prefix('grading')->name('grading.')->group(function () {
@@ -155,6 +162,7 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/schedule', [ConsultationScheduleController::class, 'store'])->name('schedule.store');
         Route::get('/day', [ConsultationDayController::class, 'index'])->name('day.index');
         Route::get('/applicants/{applicant}', [ConsultationApplicantController::class, 'show'])->name('applicants.show');
+        Route::post('/applicants/bulk-release', [ConsultationApplicantController::class, 'releaseBulk'])->name('applicants.bulk-release');
         Route::post('/applicants/{applicant}/release', [ConsultationApplicantController::class, 'release'])->name('applicants.release');
     });
 });

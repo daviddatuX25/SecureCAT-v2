@@ -66,15 +66,19 @@
           'X-CSRF-TOKEN': csrfToken,
         },
       })
-        .then((r) => r.json())
-        .then((data) => {
-          if (data.error) {
-            previewError = data.error;
-            previewHtml = '';
-          } else {
-            previewHtml = data.html || '';
-            previewError = null;
+        .then((r) => {
+          if (!r.ok) {
+            return r.text().then((text) => {
+              let msg = 'Preview failed';
+              try { msg = JSON.parse(text)?.error ?? msg; } catch {}
+              throw new Error(msg + ` (${r.status})`);
+            });
           }
+          return r.json();
+        })
+        .then((data) => {
+          previewHtml = data.html || '';
+          previewError = null;
         })
         .catch((err) => {
           previewError = err.message || 'Preview failed';

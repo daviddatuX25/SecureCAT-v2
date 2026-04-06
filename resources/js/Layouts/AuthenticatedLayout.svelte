@@ -63,7 +63,7 @@
       { href: '/admin/exam-domains', label: 'Exam pillars', icon: Layers, roles: ['super_admin', 'test_administrator'] },
       { href: '/grading', label: 'Grading', icon: GraduationCap, roles: ['super_admin', 'test_administrator'] },
       { href: '/admin/result-sheet-templates', label: 'Result templates', icon: FileText, roles: ['super_admin', 'admin', 'test_administrator'] },
-      { href: '/consultation', label: 'Consultation', icon: MessageSquare, roles: ['super_admin', 'test_administrator'], featureFlag: 'consultation_enabled' },
+      { href: '/consultation', label: 'Release & Consultation', icon: MessageSquare, roles: ['super_admin', 'test_administrator'], featureFlag: 'consultation_enabled' },
     ]},
   ].map((section) => ({
     ...section,
@@ -99,10 +99,10 @@
 
   <!-- Sidebar -->
   <aside
-    class="fixed inset-y-0 left-0 z-50 w-64 flex-shrink-0 glass-panel border-r flex flex-col justify-between transform transition-transform duration-200 ease-in-out -translate-x-full md:translate-x-0 {sidebarOpen ? 'translate-x-0' : ''}"
+    class="fixed inset-y-0 left-0 z-50 w-64 flex-shrink-0 glass-panel border-r flex flex-col transform transition-transform duration-200 ease-in-out -translate-x-full md:translate-x-0 {sidebarOpen ? 'translate-x-0' : ''}"
   >
-    <div>
-      <div class="h-20 flex items-center px-6 border-b border-border/50">
+    <div class="flex flex-col h-full overflow-hidden">
+      <div class="h-20 flex items-center px-6 border-b border-border/50 shrink-0">
         <Link href="/dashboard" class="flex items-center gap-3" onclick={closeDropdowns}>
           <div class="w-10 h-10 rounded-xl bg-primary flex items-center justify-center text-primary-foreground shadow-lg shadow-primary/30">
             <ShieldCheck class="w-6 h-6" />
@@ -114,7 +114,7 @@
         </Button>
       </div>
 
-      <nav class="p-4 space-y-2 mt-4">
+      <nav class="flex-1 overflow-y-auto scrollbar-hide p-4 space-y-2">
         {#each navSections as section}
           <div class="space-y-2">
             {#if section.label}
@@ -138,7 +138,7 @@
     </div>
 
     <!-- User block in sidebar footer -->
-    <div class="p-4 border-t border-border/50">
+    <div class="p-4 border-t border-border/50 shrink-0">
       <div class="relative">
         <button
           type="button"
@@ -216,3 +216,13 @@
     </main>
   </div>
 </div>
+
+<style>
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+</style>

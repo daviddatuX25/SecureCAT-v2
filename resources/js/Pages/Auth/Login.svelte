@@ -1,101 +1,252 @@
 <script>
-  import GuestLayout from '@/Layouts/GuestLayout.svelte';
+  import HomeLayout from '@/Layouts/HomeLayout.svelte';
   import { useForm, usePage, Link } from '@inertiajs/svelte';
   import { Button } from '@/Components/ui/button';
   import { Input } from '@/Components/ui/input';
   import * as Card from '@/Components/ui/card';
 
-  const form = useForm({
+  let activeTab = $state('applicant'); // 'applicant' or 'staff'
+
+  // Applicant form pointing to portal
+  const applicantForm = useForm({
+    email: '',
+    password: '',
+    remember: false,
+  });
+
+  // Staff form pointing to default staff auth
+  const staffForm = useForm({
     email: '',
     password: '',
     remember: false,
   });
 
   const page = usePage();
-  const errors = $derived({ ...($page.props.errors ?? {}), ...($form.errors ?? {}) });
+  const errors = $derived({ 
+    ...($page.props.errors ?? {}), 
+    ...(activeTab === 'applicant' ? $applicantForm.errors : $staffForm.errors ?? {}) 
+  });
   const flash = $derived($page.props.flash ?? {});
 
-  function handleSubmit(e) {
+  function handleSubmitApplicant(e) {
     e.preventDefault();
-    $form.post('/login');
+    $applicantForm.post('/portal/login');
+  }
+
+  function handleSubmitStaff(e) {
+    e.preventDefault();
+    $staffForm.post('/login');
   }
 </script>
 
-<GuestLayout>
-  <Card.Root class="shadow-lg">
-    <Card.Header>
-      <Card.Title class="text-xl">Staff login</Card.Title>
-      <Card.Description>
-        Sign in to manage applications, exam sessions, grading, and consultation.
-      </Card.Description>
-    </Card.Header>
-    <Card.Content class="space-y-4">
-      {#if flash.success}
-        <p class="text-sm text-green-600 dark:text-green-400">{flash.success}</p>
-      {/if}
-      {#if flash.error}
-        <p class="text-sm text-destructive">{flash.error}</p>
-      {/if}
+<svelte:head>
+  <title>Login - SecureCAT</title>
+</svelte:head>
 
-      <form onsubmit={handleSubmit} class="space-y-4">
-        <div class="space-y-2">
-          <label for="email" class="text-sm font-medium leading-none">Email</label>
-          <Input
-            id="email"
-            type="email"
-            bind:value={$form.email}
-            placeholder="you@example.com"
-            autocomplete="email"
-            required
-            aria-invalid={!!errors?.email}
-            class="min-h-[44px]"
-          />
-          {#if errors?.email}
-            <p class="text-sm text-destructive">
-              {typeof errors.email === 'string' ? errors.email : errors.email[0]}
-            </p>
+<HomeLayout>
+  <div class="flex items-center justify-center min-h-[calc(100vh-8rem)] py-12 px-4 sm:px-6 lg:px-8 bg-background relative overflow-hidden">
+    <!-- Decorative backdrop for the elegant login -->
+    <div class="absolute -top-[10%] -right-[10%] h-[400px] w-[400px] rounded-full bg-gradient-to-tr from-primary/10 to-blue-500/10 blur-3xl animate-in fade-in duration-1000" aria-hidden="true"></div>
+    <div class="absolute bottom-[10%] -left-[10%] h-[500px] w-[500px] rounded-full bg-gradient-to-bl from-emerald-500/10 to-primary/10 blur-3xl animate-in fade-in duration-1000 delay-300" aria-hidden="true"></div>
+    
+    <div class="w-full max-w-md relative z-10 animate-in fade-in slide-in-from-bottom-4 duration-700">
+      
+      <!-- Prominent Tab Switcher -->
+      <div class="bg-muted/50 p-1.5 rounded-2xl mb-6 flex items-center shadow-inner border border-border/50 relative">
+        <!-- Active Tab Background Indicator -->
+        <div 
+          class="absolute top-1.5 left-1.5 bottom-1.5 w-[calc(50%-6px)] bg-background rounded-xl shadow-sm border border-border/60 transition-transform duration-300 ease-in-out"
+          style="transform: translateX({activeTab === 'applicant' ? '0' : '100%'});"
+        ></div>
+        
+        <button
+          type="button"
+          class="flex-1 py-3 text-sm font-bold relative z-10 transition-colors flex items-center justify-center gap-2 {activeTab === 'applicant' ? 'text-primary' : 'text-muted-foreground hover:text-foreground'}"
+          onclick={() => (activeTab = 'applicant')}
+        >
+          <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 14l9-5-9-5-9 5 9 5z M12 14v7M5 10v7a7 7 0 0014 0v-7" />
+          </svg>
+          Applicant Portal
+        </button>
+        
+        <button
+          type="button"
+          class="flex-1 py-3 text-sm font-bold relative z-10 transition-colors flex items-center justify-center gap-2 {activeTab === 'staff' ? 'text-primary' : 'text-muted-foreground hover:text-foreground'}"
+          onclick={() => (activeTab = 'staff')}
+        >
+          <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+          </svg>
+          Staff & Admin
+        </button>
+      </div>
+
+      <Card.Root class="shadow-2xl shadow-primary/5 bg-card/80 backdrop-blur-xl border-border/60 rounded-3xl overflow-hidden">
+        
+        <Card.Header class="pt-8 pb-4 text-center">
+          <div class="h-16 w-16 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-primary/20 to-primary/5 text-primary flex items-center justify-center border border-primary/10 shadow-sm animate-pulse">
+            {#if activeTab === 'applicant'}
+              <svg class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+              </svg>
+            {:else}
+              <svg class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+              </svg>
+            {/if}
+          </div>
+          <Card.Title class="text-3xl font-extrabold tracking-tight text-foreground">
+            {activeTab === 'applicant' ? 'Applicant Login' : 'Staff Login'}
+          </Card.Title>
+          <Card.Description class="text-balance mt-3 text-base font-medium">
+            {activeTab === 'applicant' 
+              ? 'Sign in to your dashboard to check admission status, view exam scores, and schedule consultations.' 
+              : 'Securely access the system to manage exams, applicants, and administrative settings.'}
+          </Card.Description>
+        </Card.Header>
+        
+        <Card.Content class="space-y-4 pb-8 px-8">
+          {#if flash.success}
+            <div class="glass-panel p-4 rounded-xl border border-success/30 bg-success/10 text-success text-sm flex items-center gap-3 font-semibold">
+              <svg class="h-5 w-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+              {flash.success}
+            </div>
           {/if}
-        </div>
-
-        <div class="space-y-2">
-          <label for="password" class="text-sm font-medium leading-none">Password</label>
-          <Input
-            id="password"
-            type="password"
-            bind:value={$form.password}
-            placeholder="••••••••"
-            autocomplete="current-password"
-            required
-            aria-invalid={!!errors?.password}
-            class="min-h-[44px]"
-          />
-          {#if errors?.password}
-            <p class="text-sm text-destructive">
-              {typeof errors.password === 'string' ? errors.password : errors.password[0]}
-            </p>
+          {#if flash.error}
+            <div class="glass-panel p-4 rounded-xl border border-destructive/30 bg-destructive/10 text-destructive text-sm flex items-center gap-3 font-semibold">
+              <svg class="h-5 w-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+              {flash.error}
+            </div>
           {/if}
+
+          <!-- APPLICANT FORM -->
+          {#if activeTab === 'applicant'}
+            <form onsubmit={handleSubmitApplicant} class="space-y-6 animate-in fade-in duration-300">
+              <div class="space-y-2">
+                <label for="app_email" class="text-sm font-bold text-foreground">Email Address</label>
+                <Input
+                  id="app_email"
+                  type="email"
+                  bind:value={$applicantForm.email}
+                  placeholder="applicant@example.com"
+                  autocomplete="email"
+                  required
+                  aria-invalid={!!errors?.email}
+                  class="min-h-[48px] shadow-sm bg-background/50 focus:bg-background rounded-xl border-border/60"
+                />
+                {#if errors?.email}
+                  <p class="text-sm text-destructive font-bold">{typeof errors.email === 'string' ? errors.email : errors.email[0]}</p>
+                {/if}
+              </div>
+
+              <div class="space-y-2">
+                <div class="flex items-center justify-between">
+                  <label for="app_password" class="text-sm font-bold text-foreground">Password</label>
+                  <Link href="/portal/forgot-password" class="text-xs font-bold text-primary hover:underline hover:text-primary/80 transition-colors">Forgot password?</Link>
+                </div>
+                <Input
+                  id="app_password"
+                  type="password"
+                  bind:value={$applicantForm.password}
+                  placeholder="••••••••"
+                  autocomplete="current-password"
+                  required
+                  aria-invalid={!!errors?.password}
+                  class="min-h-[48px] shadow-sm bg-background/50 focus:bg-background rounded-xl border-border/60"
+                />
+                {#if errors?.password}
+                  <p class="text-sm text-destructive font-bold">{typeof errors.password === 'string' ? errors.password : errors.password[0]}</p>
+                {/if}
+              </div>
+
+              <div class="flex items-center gap-3 pt-1">
+                <label class="inline-flex items-center gap-3 text-sm text-muted-foreground font-semibold cursor-pointer group">
+                  <input
+                    type="checkbox"
+                    checked={$applicantForm.remember}
+                    onchange={(e) => applicantForm.setData('remember', e.currentTarget.checked)}
+                    class="h-5 w-5 rounded border-muted-foreground/30 text-primary shadow-sm focus:ring-primary focus:ring-offset-background transition-all"
+                  />
+                  <span class="group-hover:text-foreground transition-colors">Keep me signed in</span>
+                </label>
+              </div>
+
+              <Button type="submit" class="w-full h-14 text-lg font-bold shadow-xl shadow-primary/20 hover:shadow-2xl hover:-translate-y-0.5 transition-all rounded-xl mt-2 {!$applicantForm.processing ? 'bg-gradient-to-r from-primary to-blue-600 hover:from-primary/90 hover:to-blue-600/90 border-0' : ''}" disabled={$applicantForm.processing}>
+                {$applicantForm.processing ? 'Authenticating…' : 'Access Applicant Portal'}
+              </Button>
+            </form>
+          {/if}
+
+          <!-- STAFF FORM -->
+          {#if activeTab === 'staff'}
+            <form onsubmit={handleSubmitStaff} class="space-y-6 animate-in fade-in duration-300">
+              <div class="space-y-2">
+                <label for="staff_email" class="text-sm font-bold text-foreground">Staff Email</label>
+                <Input
+                  id="staff_email"
+                  type="email"
+                  bind:value={$staffForm.email}
+                  placeholder="admin@example.com"
+                  autocomplete="email"
+                  required
+                  aria-invalid={!!errors?.email}
+                  class="min-h-[48px] shadow-sm bg-background/50 focus:bg-background rounded-xl border-border/60"
+                />
+                {#if errors?.email}
+                  <p class="text-sm text-destructive font-bold">{typeof errors.email === 'string' ? errors.email : errors.email[0]}</p>
+                {/if}
+              </div>
+
+              <div class="space-y-2">
+                <label for="staff_password" class="text-sm font-bold text-foreground">Password</label>
+                <Input
+                  id="staff_password"
+                  type="password"
+                  bind:value={$staffForm.password}
+                  placeholder="••••••••"
+                  autocomplete="current-password"
+                  required
+                  aria-invalid={!!errors?.password}
+                  class="min-h-[48px] shadow-sm bg-background/50 focus:bg-background rounded-xl border-border/60"
+                />
+                {#if errors?.password}
+                  <p class="text-sm text-destructive font-bold">{typeof errors.password === 'string' ? errors.password : errors.password[0]}</p>
+                {/if}
+              </div>
+
+              <div class="flex items-center gap-3 pt-1">
+                <label class="inline-flex items-center gap-3 text-sm text-muted-foreground font-semibold cursor-pointer group">
+                  <input
+                    type="checkbox"
+                    checked={$staffForm.remember}
+                    onchange={(e) => staffForm.setData('remember', e.currentTarget.checked)}
+                    class="h-5 w-5 rounded border-muted-foreground/30 text-primary shadow-sm focus:ring-primary focus:ring-offset-background transition-all"
+                  />
+                  <span class="group-hover:text-foreground transition-colors">Remember my computer</span>
+                </label>
+              </div>
+
+              <Button variant="secondary" type="submit" class="w-full h-14 text-lg font-bold shadow-md hover:shadow-lg hover:-translate-y-0.5 transition-all rounded-xl mt-2 border border-border/50" disabled={$staffForm.processing}>
+                {$staffForm.processing ? 'Authenticating…' : 'Sign in as Staff'}
+              </Button>
+            </form>
+          {/if}
+
+        </Card.Content>
+      </Card.Root>
+      
+      {#if activeTab === 'applicant'}
+        <div class="text-center mt-8 animate-in fade-in duration-500 delay-200">
+          <p class="text-base text-muted-foreground font-medium">
+            Don't have an application account yet?
+          </p>
+          <Link href="/apply" class="mt-2 inline-flex items-center justify-center h-12 px-6 rounded-full bg-card border border-border/60 text-foreground font-bold shadow-sm hover:bg-muted transition-colors group">
+            Start Your Application Now
+            <svg class="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
+          </Link>
         </div>
-
-        <div class="flex items-center justify-between gap-2">
-          <label class="inline-flex items-center gap-2 text-sm text-muted-foreground">
-            <input
-              type="checkbox"
-              checked={$form.remember}
-              onchange={(e) => form.setData('remember', e.currentTarget.checked)}
-            />
-            <span>Remember me on this device</span>
-          </label>
-        </div>
-
-        <Button type="submit" class="w-full min-h-[44px]" disabled={$form.processing}>
-          {$form.processing ? 'Signing in…' : 'Sign in'}
-        </Button>
-      </form>
-
-      <p class="mt-2 text-xs text-muted-foreground">
-        For demo data, use <span class="font-mono">admin@example.com</span> with the password you configured.
-      </p>
-    </Card.Content>
-  </Card.Root>
-</GuestLayout>
-
+      {/if}
+    </div>
+  </div>
+</HomeLayout>

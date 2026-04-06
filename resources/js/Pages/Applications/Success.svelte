@@ -23,9 +23,21 @@
         Appointment: {appointment_details}
       </p>
     {/if}
-    <p class="mt-6 text-sm text-muted-foreground">
-      Please save this reference number. You will receive further instructions via email.
-    </p>
+    <div class="mt-8 mb-4 text-left p-6 bg-muted/30 rounded-xl border border-border shadow-sm">
+      <h3 class="font-bold text-lg mb-2 text-foreground">Next Steps</h3>
+      <p class="text-sm text-muted-foreground mb-4">
+        Please take a screenshot or write down your reference number. To proceed with your application and test scheduling, you must personally submit the following requirements to the Registrar's Office:
+      </p>
+      <ul class="list-disc list-inside text-sm text-foreground space-y-1.5 ml-2 mb-4">
+        <li>Form 138 (Report Card) or Transcript of Records</li>
+        <li>Certificate of Good Moral Character</li>
+        <li>2 pcs Recent 2x2 ID Pictures with nametag</li>
+        <li>Photocopy of PSA Birth Certificate</li>
+      </ul>
+      <p class="text-sm text-muted-foreground italic">
+        * You will receive your portal login and finalized exam schedule via email once the registrar verifies your documents.
+      </p>
+    </div>
     <div class="mt-8 flex justify-center gap-4">
       <Link href="/">
         <Button>Back to Home</Button>

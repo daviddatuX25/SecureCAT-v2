@@ -41,17 +41,15 @@ class QrCodeService
      */
     public function dataUri(string $data, int $size = 80): string
     {
-        $builder = new Builder(
-            writer: new PngWriter(),
-            data: $data,
-            encoding: new Encoding('UTF-8'),
-            errorCorrectionLevel: ErrorCorrectionLevel::Low,
-            size: $size,
-            margin: 2,
-            roundBlockSizeMode: RoundBlockSizeMode::Margin
-        );
-
-        $result = $builder->build();
+        $result = Builder::create()
+            ->writer(new PngWriter())
+            ->data($data)
+            ->encoding(new Encoding('UTF-8'))
+            ->errorCorrectionLevel(ErrorCorrectionLevel::Low)
+            ->size($size)
+            ->margin(2)
+            ->roundBlockSizeMode(RoundBlockSizeMode::Margin)
+            ->build();
 
         return $result->getDataUri();
     }

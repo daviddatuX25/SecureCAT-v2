@@ -52,13 +52,20 @@
   }
 
   let saving = $state(false);
+  let saveError = $state('');
   function saveScores() {
     saving = true;
-    const s = {};
-    for (const sc of scores) {
-      s[sc.domain_id] = { raw_score: sc.raw_score, max_score: sc.max_score };
-    }
+    saveError = '';
+    const s = scores.map((sc) => ({
+      domain_id: sc.domain_id,
+      raw_score: sc.raw_score,
+      max_score: sc.max_score,
+    }));
     router.put(`/grading/sessions/${sid}/applicants/${applicantId}/scores`, { scores: s }, {
+      onError: (err) => {
+        saving = false;
+        saveError = Object.values(err).flat().join(', ') || 'Failed to save scores.';
+      },
       onFinish: () => (saving = false),
     });
   }
@@ -114,6 +121,10 @@
             </div>
           {/each}
         </div>
+
+        {#if saveError}
+          <p class="text-sm text-destructive">{saveError}</p>
+        {/if}
 
         <div class="flex flex-wrap gap-3 pt-2">
           {#if !isReadOnly}
