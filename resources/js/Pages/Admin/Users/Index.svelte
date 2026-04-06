@@ -43,16 +43,17 @@
       router.delete(`/admin/users/${deleteId}`, { onSuccess: () => (deleteId = null) });
     }
   }
+
+  const breadcrumbs = $derived([{ label: 'Users' }]);
 </script>
 
 <svelte:head>
   <title>Users - SecureCAT</title>
 </svelte:head>
 
-<AuthenticatedLayout>
+<AuthenticatedLayout breadcrumbs={breadcrumbs}>
   <div class="space-y-6 min-w-0">
     <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-      <h1 class="text-2xl font-bold">User Management</h1>
       <Link href="/admin/users/create">
         <Button class="min-h-[44px]">
           <Plus class="mr-2 h-4 w-4" />
