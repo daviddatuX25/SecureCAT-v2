@@ -31,7 +31,7 @@
       room_id: data.room_id ? parseInt(data.room_id, 10) : null,
       proctor_ids: selectedProctorIds,
     }));
-    $form.post('/admin/exam-sessions');
+    $form.post('/admin/test-scheduling');
   }
 </script>
 
@@ -42,7 +42,7 @@
 <AuthenticatedLayout>
   <div class="max-w-lg space-y-6">
     <div class="flex items-center gap-4">
-      <Link href="/admin/exam-sessions" class="text-sm text-muted-foreground hover:text-foreground">Back to exam sessions</Link>
+      <Link href="/admin/test-scheduling" class="text-sm text-muted-foreground hover:text-foreground">Back to exam sessions</Link>
       <h1 class="text-2xl font-bold">Create Exam Session</h1>
     </div>
 
@@ -114,7 +114,7 @@
         <Button type="submit" disabled={$form.processing}>
           {$form.processing ? 'Creating...' : 'Create Session'}
         </Button>
-        <Link href="/admin/exam-sessions">
+        <Link href="/admin/test-scheduling">
           <Button type="button" variant="outline">Cancel</Button>
         </Link>
       </div>

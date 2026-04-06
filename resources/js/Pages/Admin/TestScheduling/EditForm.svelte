@@ -29,7 +29,7 @@
       room_id: data.room_id ? parseInt(data.room_id, 10) : null,
       proctor_ids: selectedProctorIds,
     }));
-    $form.put(`/admin/exam-sessions/${session.id}`);
+    $form.put(`/admin/test-scheduling/${session.id}`);
   }
 </script>
 
@@ -101,7 +101,7 @@
     <Button type="submit" disabled={$form.processing}>
       {$form.processing ? 'Saving...' : 'Save'}
     </Button>
-    <Link href={`/admin/exam-sessions/${session?.id}`}>
+    <Link href={`/admin/test-scheduling/${session?.id}`}>
       <Button type="button" variant="outline">Cancel</Button>
     </Link>
   </div>

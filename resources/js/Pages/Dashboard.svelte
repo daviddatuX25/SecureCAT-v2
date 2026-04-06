@@ -67,8 +67,8 @@
     (hasRole('admin') || hasRole('staff') || hasRole('test_administrator')) && { href: '/applications', label: 'Applications', icon: FileText },
     (hasRole('super_admin') || hasRole('admin')) && { href: '/admin/courses', label: 'Courses', icon: BookOpen },
     (hasRole('super_admin') || hasRole('admin')) && { href: '/admin/rooms', label: 'Rooms', icon: DoorOpen },
-    (hasRole('super_admin') || hasRole('admin')) && { href: '/admin/exam-sessions', label: 'Exam Scheduling', icon: Calendar },
-    hasRole('proctor') && { href: '/admin/exam-sessions', label: 'My Sessions', icon: Calendar },
+    (hasRole('super_admin') || hasRole('admin')) && { href: '/admin/test-scheduling', label: 'Exam Scheduling', icon: Calendar },
+    hasRole('proctor') && { href: '/admin/test-scheduling', label: 'My Sessions', icon: Calendar },
     (hasRole('super_admin') || hasRole('test_administrator')) && { href: '/grading', label: 'Grading', icon: GraduationCap },
     (hasRole('super_admin') || hasRole('test_administrator')) && { href: '/consultation', label: 'Consultation', icon: MessageSquare },
   ].filter(Boolean));
@@ -76,7 +76,7 @@
   const quickLinks = $derived(quickLinksRaw.filter((link) => !statHrefs.has(link.href)));
 
   const quickActionsRaw = $derived([
-    (hasRole('super_admin') || hasRole('admin')) && { href: '/admin/exam-sessions/create', label: 'New Session', icon: PlusCircle },
+    (hasRole('super_admin') || hasRole('admin')) && { href: '/admin/test-scheduling/create', label: 'New Session', icon: PlusCircle },
     (hasRole('super_admin') || hasRole('admin')) && { href: '/admin/knowledge-documents/import', label: 'Import Data', icon: UploadCloud },
     (hasRole('super_admin') || hasRole('grader')) && { href: '/grading', label: 'Grade Sheets', icon: FileCheck },
     (hasRole('admin') || hasRole('staff') || hasRole('counselor')) && { href: '/applications/print-slips', label: 'Print Slips', icon: Printer },
@@ -160,7 +160,7 @@
               Plan exam sessions with AI: describe dates, rooms, and capacity. The assistant suggests a schedule; apply to create sessions and assign applicants.
             </p>
             <Link
-              href="/admin/exam-sessions?open=schedule-assistant"
+              href="/admin/test-scheduling?open=schedule-assistant"
               class="inline-flex items-center justify-center rounded-lg border border-primary bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground hover:bg-primary/90 transition-colors w-full"
             >
               Open AI Scheduler

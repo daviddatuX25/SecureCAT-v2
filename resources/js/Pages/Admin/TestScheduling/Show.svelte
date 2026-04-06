@@ -65,32 +65,32 @@
 
   function assignSelected() {
     if (selectedAvailable.length === 0) return;
-    router.post(`/admin/exam-sessions/${session.id}/assign-applicants`, { applicant_ids: selectedAvailable }, {
+    router.post(`/admin/test-scheduling/${session.id}/assign-applicants`, { applicant_ids: selectedAvailable }, {
       onSuccess: () => (selectedAvailable = []),
     });
   }
 
   function removeAssigned(rowOrId) {
     const sessionApplicantId = typeof rowOrId === 'object' && rowOrId !== null ? rowOrId.session_applicant_id : rowOrId;
-    router.post(`/admin/exam-sessions/${session.id}/remove-applicant`, { session_applicant_id: sessionApplicantId });
+    router.post(`/admin/test-scheduling/${session.id}/remove-applicant`, { session_applicant_id: sessionApplicantId });
   }
 
   function publish() {
-    router.post(`/admin/exam-sessions/${session.id}/publish`, {}, { onSuccess: () => router.reload() });
+    router.post(`/admin/test-scheduling/${session.id}/publish`, {}, { onSuccess: () => router.reload() });
   }
 
   function unpublish() {
-    router.post(`/admin/exam-sessions/${session.id}/unpublish`, {}, { onSuccess: () => router.reload() });
+    router.post(`/admin/test-scheduling/${session.id}/unpublish`, {}, { onSuccess: () => router.reload() });
   }
 
   function reopenSession() {
-    router.post(`/admin/exam-sessions/${session.id}/reopen`, {}, { onSuccess: () => router.reload() });
+    router.post(`/admin/test-scheduling/${session.id}/reopen`, {}, { onSuccess: () => router.reload() });
   }
 
   function submitReleaseDate(e) {
     e.preventDefault();
     releaseDateForm.transform((data) => data);
-    $releaseDateForm.put(`/admin/exam-sessions/${session.id}/release-date`);
+    $releaseDateForm.put(`/admin/test-scheduling/${session.id}/release-date`);
   }
 </script>
 
@@ -101,7 +101,7 @@
 <AuthenticatedLayout>
   <div class="space-y-6">
     <div class="flex items-center gap-4">
-      <Link href="/admin/exam-sessions" class="text-sm text-muted-foreground hover:text-foreground inline-flex items-center gap-1">
+      <Link href="/admin/test-scheduling" class="text-sm text-muted-foreground hover:text-foreground inline-flex items-center gap-1">
         <ArrowLeft class="h-4 w-4" /> {isProctorView ? 'Back to my sessions' : 'Back to exam sessions'}
       </Link>
     </div>

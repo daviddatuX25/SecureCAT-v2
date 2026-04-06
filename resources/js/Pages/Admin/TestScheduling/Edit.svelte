@@ -13,7 +13,7 @@
 <AuthenticatedLayout>
   <div class="max-w-lg space-y-6">
     <div class="flex items-center gap-4">
-      <Link href="/admin/exam-sessions" class="text-sm text-muted-foreground hover:text-foreground">Back to exam sessions</Link>
+      <Link href="/admin/test-scheduling" class="text-sm text-muted-foreground hover:text-foreground">Back to exam sessions</Link>
       <h1 class="text-2xl font-bold">Edit Exam Session</h1>
     </div>
 

@@ -86,7 +86,7 @@
 
   function applyFilters() {
     if (mobileFiltersDetails) mobileFiltersDetails.open = false;
-    router.get('/admin/exam-sessions', {
+    router.get('/admin/test-scheduling', {
       search: filterSearch || undefined,
       status: filterStatus || undefined,
       date_from: filterDateFrom || undefined,
@@ -140,7 +140,7 @@
             <Sparkles class="mr-2 h-4 w-4" />
             Schedule with AI
           </Button>
-          <Link href="/admin/exam-sessions/create">
+          <Link href="/admin/test-scheduling/create">
             <Button class="min-h-[44px]">
               <Plus class="mr-2 h-4 w-4" />
               Create Session
@@ -289,7 +289,7 @@
                 </td>
                 <td class="px-4 py-3 text-right">
                   <div class="flex justify-end gap-2">
-                    <Link href={`/admin/exam-sessions/${session.id}`}>
+                    <Link href={`/admin/test-scheduling/${session.id}`}>
                       <Button variant="ghost" size="icon" aria-label="View">
                         <Eye class="h-4 w-4" />
                       </Button>
@@ -302,7 +302,7 @@
                       </Link>
                     {/if}
                     {#if !isProctorView && session.status !== 'completed'}
-                      <Link href={`/admin/exam-sessions/${session.id}/edit`}>
+                      <Link href={`/admin/test-scheduling/${session.id}/edit`}>
                         <Button variant="ghost" size="icon" aria-label="Edit">
                           <Pencil class="h-4 w-4" />
                         </Button>
@@ -348,7 +348,7 @@
                   </dd>
                 </dl>
                 <div class="mt-auto flex flex-wrap gap-2 pt-2">
-                  <Link href={`/admin/exam-sessions/${session.id}`} class="flex-1 min-w-0">
+                  <Link href={`/admin/test-scheduling/${session.id}`} class="flex-1 min-w-0">
                     <Button variant="outline" size="sm" class="w-full min-h-[44px]">
                       <Eye class="h-4 w-4 mr-1.5" />
                       View
@@ -363,7 +363,7 @@
                     </Link>
                   {/if}
                   {#if !isProctorView && session.status !== 'completed'}
-                    <Link href={`/admin/exam-sessions/${session.id}/edit`}>
+                    <Link href={`/admin/test-scheduling/${session.id}/edit`}>
                       <Button variant="outline" size="sm" class="min-h-[44px]">
                         <Pencil class="h-4 w-4 mr-1.5" />
                         Edit

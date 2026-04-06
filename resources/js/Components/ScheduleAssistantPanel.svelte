@@ -89,7 +89,7 @@
     if (requestStructured) generating = true;
 
     try {
-      const res = await fetch('/admin/exam-sessions/schedule-assistant/chat', {
+      const res = await fetch('/admin/test-scheduling/schedule-assistant/chat', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -152,7 +152,7 @@
     applyError = '';
 
     try {
-      const res = await fetch('/admin/exam-sessions/schedule-assistant/apply-schedule', {
+      const res = await fetch('/admin/test-scheduling/schedule-assistant/apply-schedule', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -176,7 +176,7 @@
       } else if (data.redirect_url) {
         router.visit(data.redirect_url, { preserveState: false });
       } else {
-        router.visit('/admin/exam-sessions', { preserveState: false });
+        router.visit('/admin/test-scheduling', { preserveState: false });
       }
     } catch (e) {
       applyError = 'Network error. Please try again.';
