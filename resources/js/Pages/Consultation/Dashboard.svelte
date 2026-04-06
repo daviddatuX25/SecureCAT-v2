@@ -37,6 +37,8 @@
     selected = new Set(selected);
   }
 
+  const breadcrumbs = $derived([{ label: 'Release & Consultation' }]);
+
   let isReleasing = $state(false);
   function releaseBulk() {
     if (selected.size === 0 || isReleasing) return;
@@ -56,7 +58,7 @@
   <title>Release & Consultation - SecureCAT</title>
 </svelte:head>
 
-<AuthenticatedLayout>
+<AuthenticatedLayout breadcrumbs={breadcrumbs}>
   <div class="space-y-8 pb-8">
     {#if flash.success}
       <div class="glass-panel p-4 rounded-xl border border-success/20 bg-success/5 text-success text-sm shadow-sm flex items-center gap-2">
