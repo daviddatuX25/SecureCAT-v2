@@ -1,7 +1,7 @@
 <script>
   import { Link, router } from '@inertiajs/svelte';
   import { usePage } from '@inertiajs/svelte';
-  import { ChevronDown, Menu, LayoutDashboard, Users, FileText, Calendar, DoorOpen, GraduationCap, BookOpen, Settings, MessageSquare, ScrollText, FileStack, Activity, CalendarRange, Layers, ShieldCheck, Sun, Moon, Bell, Search } from 'lucide-svelte';
+  import { ChevronDown, Menu, LayoutDashboard, Users, FileText, Calendar, GraduationCap, BookOpen, Settings, MessageSquare, ScrollText, FileStack, Activity, CalendarRange, Layers, ShieldCheck, Sun, Moon, Bell, Search } from 'lucide-svelte';
   import { Button } from '@/Components/ui/button';
 
   let { children } = $props();
@@ -13,6 +13,7 @@
   let sidebarOpen = $state(false);
   let userDropdownOpen = $state(false);
   let darkMode = $state(typeof document !== 'undefined' && document.documentElement.classList.contains('dark'));
+  let adminExpanded = $state(true);
 
   function toggleTheme() {
     document.documentElement.classList.toggle('dark');
@@ -43,27 +44,25 @@
 
   const navSections = $derived([
     { label: null, items: [{ href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard, roles: ['*'] }] },
-    { label: 'System', items: [
+    { label: 'Registrar Office', items: [
+      { href: '/admin/seasons', label: 'Seasons', icon: CalendarRange, roles: ['super_admin', 'admin'] },
+      { href: '/applications', label: 'Applications', icon: FileText, roles: ['super_admin', 'admin', 'staff', 'test_administrator'] },
+      { href: '/admin/test-scheduling', label: 'Test Scheduling', icon: Calendar, roles: ['super_admin', 'admin'] },
+    ]},
+    { label: 'Guidance Office', items: [
+      { href: '/admin/test-scheduling', label: 'My Sessions', icon: Calendar, roles: ['proctor'] },
+      { href: '/admin/test-scheduling/monitoring', label: 'Session Monitor', icon: Activity, roles: ['super_admin', 'test_administrator', 'proctor'] },
+      { href: '/grading', label: 'Grading', icon: GraduationCap, roles: ['super_admin', 'test_administrator'] },
+      { href: '/consultation', label: 'Release & Consultation', icon: MessageSquare, roles: ['super_admin', 'test_administrator'], featureFlag: 'consultation_enabled' },
+    ]},
+    { label: 'Administration', collapsible: true, items: [
       { href: '/admin/users', label: 'Users', icon: Users, roles: ['super_admin'] },
       { href: '/admin/settings', label: 'Settings', icon: Settings, roles: ['super_admin'] },
-      { href: '/admin/logs', label: 'Audit log', icon: ScrollText, roles: ['super_admin'] },
-      { href: '/admin/knowledge-documents', label: 'Knowledge docs', icon: BookOpen, roles: ['super_admin'] },
-      { href: '/admin/admission-slip-templates', label: 'Admission slip templates', icon: FileStack, roles: ['super_admin', 'admin'] },
-    ]},
-    { label: 'Registrar', items: [
-      { href: '/admin/seasons', label: 'Seasons', icon: CalendarRange, roles: ['super_admin', 'admin'] },
-      { href: '/applications', label: 'Applications', icon: FileText, roles: ['super_admin', 'staff', 'admin', 'test_administrator'] },
-      { href: '/admin/courses', label: 'Courses', icon: BookOpen, roles: ['super_admin', 'admin'] },
-      { href: '/admin/rooms', label: 'Rooms', icon: DoorOpen, roles: ['super_admin', 'admin'] },
-      { href: '/admin/exam-sessions', label: 'Exam Scheduling', icon: Calendar, roles: ['super_admin', 'admin'] },
-    ]},
-    { label: 'Guidance', items: [
-      { href: '/admin/exam-sessions', label: 'My Sessions', icon: Calendar, roles: ['proctor'] },
-      { href: '/admin/exam-sessions/monitoring', label: 'Session monitor', icon: Activity, roles: ['super_admin', 'admin', 'proctor'] },
-      { href: '/admin/exam-domains', label: 'Exam pillars', icon: Layers, roles: ['super_admin', 'test_administrator'] },
-      { href: '/grading', label: 'Grading', icon: GraduationCap, roles: ['super_admin', 'test_administrator'] },
-      { href: '/admin/result-sheet-templates', label: 'Result templates', icon: FileText, roles: ['super_admin', 'admin', 'test_administrator'] },
-      { href: '/consultation', label: 'Release & Consultation', icon: MessageSquare, roles: ['super_admin', 'test_administrator'], featureFlag: 'consultation_enabled' },
+      { href: '/admin/logs', label: 'Audit Log', icon: ScrollText, roles: ['super_admin'] },
+      { href: '/admin/knowledge-documents', label: 'Knowledge Docs', icon: BookOpen, roles: ['super_admin'] },
+      { href: '/admin/exam-domains', label: 'Exam Domains', icon: Layers, roles: ['super_admin'] },
+      { href: '/admin/admission-slip-templates', label: 'Admission Slip Templates', icon: FileStack, roles: ['super_admin'] },
+      { href: '/admin/result-sheet-templates', label: 'Result Templates', icon: FileText, roles: ['super_admin'] },
     ]},
   ].map((section) => ({
     ...section,
@@ -118,20 +117,58 @@
         {#each navSections as section}
           <div class="space-y-2">
             {#if section.label}
-              <p class="px-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">{section.label}</p>
+              {#if section.collapsible}
+                <button
+                  type="button"
+                  class="w-full flex items-center justify-between px-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2 hover:text-foreground transition-colors"
+                  onclick={() => { adminExpanded = !adminExpanded; }}
+                >
+                  {section.label}
+                  <ChevronDown class="h-4 w-4 transition-transform {adminExpanded ? 'rotate-180' : ''}" />
+                </button>
+                {#if adminExpanded}
+                  {#each section.items as item}
+                    <Link
+                      href={item.href}
+                      class="nav-item flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition-all duration-300 {isNavActive(item.href)
+                        ? 'bg-primary text-primary-foreground shadow-md shadow-primary/40'
+                        : 'text-foreground/80 hover:text-foreground hover:bg-accent hover:translate-x-1'}"
+                      onclick={closeDropdowns}
+                    >
+                      <item.icon class="w-5 h-5 shrink-0" />
+                      {item.label}
+                    </Link>
+                  {/each}
+                {/if}
+              {:else}
+                <p class="px-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">{section.label}</p>
+                {#each section.items as item}
+                  <Link
+                    href={item.href}
+                    class="nav-item flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition-all duration-300 {isNavActive(item.href)
+                      ? 'bg-primary text-primary-foreground shadow-md shadow-primary/40'
+                      : 'text-foreground/80 hover:text-foreground hover:bg-accent hover:translate-x-1'}"
+                    onclick={closeDropdowns}
+                  >
+                    <item.icon class="w-5 h-5 shrink-0" />
+                    {item.label}
+                  </Link>
+                {/each}
+              {/if}
+            {:else}
+              {#each section.items as item}
+                <Link
+                  href={item.href}
+                  class="nav-item flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition-all duration-300 {isNavActive(item.href)
+                    ? 'bg-primary text-primary-foreground shadow-md shadow-primary/40'
+                    : 'text-foreground/80 hover:text-foreground hover:bg-accent hover:translate-x-1'}"
+                  onclick={closeDropdowns}
+                >
+                  <item.icon class="w-5 h-5 shrink-0" />
+                  {item.label}
+                </Link>
+              {/each}
             {/if}
-            {#each section.items as item}
-              <Link
-                href={item.href}
-                class="nav-item flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition-all duration-300 {isNavActive(item.href)
-                  ? 'bg-primary text-primary-foreground shadow-md shadow-primary/40'
-                  : 'text-foreground/80 hover:text-foreground hover:bg-accent hover:translate-x-1'}"
-                onclick={closeDropdowns}
-              >
-                <item.icon class="w-5 h-5 shrink-0" />
-                {item.label}
-              </Link>
-            {/each}
           </div>
         {/each}
       </nav>
