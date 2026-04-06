@@ -66,7 +66,7 @@ class HandleInertiaRequests extends Middleware
             'portal.dashboard' => 'Portal',
             'dashboard' => 'Overview',
             'grading.index' => 'Grading',
-            'admin.exam-sessions.index' => 'Exam Sessions',
+            'admin.test-scheduling.index' => 'Test Scheduling',
             'admin.courses.index' => 'Courses',
             'admin.rooms.index' => 'Rooms',
             'admin.users.index' => 'Users',

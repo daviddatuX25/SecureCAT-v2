@@ -45,7 +45,7 @@ class DashboardService
                 'key' => 'exam_sessions',
                 'label' => $user->hasRole('proctor') ? 'My sessions' : 'Exam sessions',
                 'value' => $examSessionsCount,
-                'href' => '/admin/exam-sessions',
+                'href' => '/admin/test-scheduling',
             ];
         }
 

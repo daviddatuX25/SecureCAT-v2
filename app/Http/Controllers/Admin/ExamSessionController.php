@@ -198,7 +198,7 @@ class ExamSessionController extends Controller
             $session->proctors()->sync($validated['proctor_ids']);
         }
 
-        return redirect()->route('admin.exam-sessions.index')->with('success', 'Exam session created.');
+        return redirect()->route('admin.test-scheduling.index')->with('success', 'Exam session created.');
     }
 
     public function show(ExamSession $exam_session): Response
@@ -272,13 +272,13 @@ class ExamSessionController extends Controller
             $exam_session->proctors()->sync($validated['proctor_ids'] ?? []);
         }
 
-        return redirect()->route('admin.exam-sessions.show', $exam_session)->with('success', 'Exam session updated.');
+        return redirect()->route('admin.test-scheduling.show', $exam_session)->with('success', 'Exam session updated.');
     }
 
     private function redirectIfCompleted(ExamSession $exam_session, string $actionMessage): ?RedirectResponse
     {
         if ($exam_session->status === ExamSession::STATUS_COMPLETED) {
-            return redirect()->route('admin.exam-sessions.show', $exam_session)->with('error', $actionMessage);
+            return redirect()->route('admin.test-scheduling.show', $exam_session)->with('error', $actionMessage);
         }
         return null;
     }
@@ -290,10 +290,10 @@ class ExamSessionController extends Controller
     private function redirectIfNotPublishable(ExamSession $exam_session, string $actionMessage): ?RedirectResponse
     {
         if ($exam_session->status === ExamSession::STATUS_IN_PROGRESS) {
-            return redirect()->route('admin.exam-sessions.show', $exam_session)->with('error', $actionMessage);
+            return redirect()->route('admin.test-scheduling.show', $exam_session)->with('error', $actionMessage);
         }
         if ($exam_session->status === ExamSession::STATUS_CANCELLED) {
-            return redirect()->route('admin.exam-sessions.show', $exam_session)->with('error', $actionMessage);
+            return redirect()->route('admin.test-scheduling.show', $exam_session)->with('error', $actionMessage);
         }
         return null;
     }
@@ -320,7 +320,7 @@ class ExamSessionController extends Controller
                 'assigned_count' => $exam_session->applicants_count,
             ], 200);
         }
-        return redirect()->route('admin.exam-sessions.show', $exam_session)->with('success', 'Applicants assigned.');
+        return redirect()->route('admin.test-scheduling.show', $exam_session)->with('success', 'Applicants assigned.');
     }
 
     public function removeApplicant(Request $request, ExamSession $exam_session): RedirectResponse
@@ -333,7 +333,7 @@ class ExamSessionController extends Controller
         $pivotId = (int) $data['session_applicant_id'];
         \Illuminate\Support\Facades\DB::table('exam_session_applicant')->where('id', $pivotId)->where('exam_session_id', $exam_session->id)->delete();
 
-        return redirect()->route('admin.exam-sessions.show', $exam_session)->with('success', 'Applicant removed.');
+        return redirect()->route('admin.test-scheduling.show', $exam_session)->with('success', 'Applicant removed.');
     }
 
     public function publish(ExamSession $exam_session): RedirectResponse
@@ -347,7 +347,7 @@ class ExamSessionController extends Controller
         $this->authorize('update', $exam_session);
 
         if ($exam_session->applicants()->count() === 0) {
-            return redirect()->route('admin.exam-sessions.show', $exam_session)
+            return redirect()->route('admin.test-scheduling.show', $exam_session)
                 ->with('error', 'Assign at least one applicant before publishing.');
         }
 
@@ -356,13 +356,13 @@ class ExamSessionController extends Controller
             'published_at' => now(),
         ]);
 
-        return redirect()->route('admin.exam-sessions.show', $exam_session)->with('success', 'Session published.');
+        return redirect()->route('admin.test-scheduling.show', $exam_session)->with('success', 'Session published.');
     }
 
     public function unpublish(ExamSession $exam_session): RedirectResponse
     {
         if ($exam_session->status !== ExamSession::STATUS_PUBLISHED) {
-            return redirect()->route('admin.exam-sessions.show', $exam_session)
+            return redirect()->route('admin.test-scheduling.show', $exam_session)
                 ->with('error', 'Only published sessions can be unpublished.');
         }
         $this->authorize('unpublish', $exam_session);
@@ -372,7 +372,7 @@ class ExamSessionController extends Controller
             'published_at' => null,
         ]);
 
-        return redirect()->route('admin.exam-sessions.show', $exam_session)->with('success', 'Session unpublished.');
+        return redirect()->route('admin.test-scheduling.show', $exam_session)->with('success', 'Session unpublished.');
     }
 
     public function releaseDate(Request $request, ExamSession $exam_session): RedirectResponse
@@ -386,7 +386,7 @@ class ExamSessionController extends Controller
         $this->authorize('update', $exam_session);
         $request->validate(['score_release_date' => 'required|date']);
         $exam_session->update(['score_release_date' => $request->input('score_release_date')]);
-        return redirect()->route('admin.exam-sessions.show', $exam_session)->with('success', 'Release date set.');
+        return redirect()->route('admin.test-scheduling.show', $exam_session)->with('success', 'Release date set.');
     }
 
     /**
@@ -399,13 +399,13 @@ class ExamSessionController extends Controller
         $this->authorize('reopen', $exam_session);
 
         if ($exam_session->status !== ExamSession::STATUS_COMPLETED) {
-            return redirect()->route('admin.exam-sessions.show', $exam_session)
+            return redirect()->route('admin.test-scheduling.show', $exam_session)
                 ->with('error', 'Only completed sessions can be reopened.');
         }
 
         $gradingSession = $exam_session->gradingSession;
         if ($gradingSession && $gradingSession->status === \App\Models\GradingSession::STATUS_FINALIZED) {
-            return redirect()->route('admin.exam-sessions.show', $exam_session)
+            return redirect()->route('admin.test-scheduling.show', $exam_session)
                 ->with('error', 'Cannot reopen: grading for this exam is already finalized.');
         }
 
@@ -414,7 +414,7 @@ class ExamSessionController extends Controller
             'closed_at' => null,
         ]);
 
-        return redirect()->route('admin.exam-sessions.show', $exam_session)
+        return redirect()->route('admin.test-scheduling.show', $exam_session)
             ->with('success', 'Session reopened. Proctors can continue marking attendance and submissions.');
     }
 

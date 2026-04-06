@@ -88,28 +88,28 @@ Route::middleware(['auth'])->group(function () {
         Route::delete('knowledge-documents/{knowledge_document}', [KnowledgeDocumentController::class, 'destroy'])->name('knowledge-documents.destroy');
     });
 
-    // Exam sessions: index & show for proctors too (proctor view = assigned only)
+    // Test scheduling: index & show for proctors too (proctor view = assigned only)
     // Create must be registered before {exam_session} so /create is not matched as an id
     Route::middleware('role:super_admin,admin,proctor')->prefix('admin')->name('admin.')->group(function () {
-        Route::get('exam-sessions', [ExamSessionController::class, 'index'])->name('exam-sessions.index');
-        Route::get('exam-sessions/create', [ExamSessionController::class, 'create'])->name('exam-sessions.create');
-        Route::get('exam-sessions/monitoring', [ExamSessionController::class, 'monitoring'])->name('exam-sessions.monitoring');
-        Route::get('exam-sessions/schedule-assistant', fn () => redirect()->route('admin.exam-sessions.index'))->name('exam-sessions.schedule-assistant.index');
-        Route::get('exam-sessions/{exam_session}', [ExamSessionController::class, 'show'])->name('exam-sessions.show');
+        Route::get('test-scheduling', [ExamSessionController::class, 'index'])->name('test-scheduling.index');
+        Route::get('test-scheduling/create', [ExamSessionController::class, 'create'])->name('test-scheduling.create');
+        Route::get('test-scheduling/monitoring', [ExamSessionController::class, 'monitoring'])->name('test-scheduling.monitoring');
+        Route::get('test-scheduling/schedule-assistant', fn () => redirect()->route('admin.test-scheduling.index'))->name('test-scheduling.schedule-assistant.index');
+        Route::get('test-scheduling/{exam_session}', [ExamSessionController::class, 'show'])->name('test-scheduling.show');
     });
 
     Route::middleware('role:super_admin,admin,test_administrator')->prefix('admin')->name('admin.')->group(function () {
-        Route::post('exam-sessions/schedule-assistant/chat', [ExamSchedulingAssistantController::class, 'chat'])->name('exam-sessions.schedule-assistant.chat');
-        Route::post('exam-sessions/schedule-assistant/apply-schedule', [ExamSchedulingAssistantController::class, 'applySchedule'])->name('exam-sessions.schedule-assistant.apply');
-        Route::post('exam-sessions/{exam_session}/assign-applicants', [ExamSessionController::class, 'assignApplicants'])->name('exam-sessions.assign-applicants');
-        Route::post('exam-sessions/{exam_session}/remove-applicant', [ExamSessionController::class, 'removeApplicant'])->name('exam-sessions.remove-applicant');
-        Route::post('exam-sessions/{exam_session}/publish', [ExamSessionController::class, 'publish'])->name('exam-sessions.publish');
-        Route::post('exam-sessions/{exam_session}/unpublish', [ExamSessionController::class, 'unpublish'])->name('exam-sessions.unpublish');
-        Route::put('exam-sessions/{exam_session}/release-date', [ExamSessionController::class, 'releaseDate'])->name('exam-sessions.release-date');
-        Route::post('exam-sessions/{exam_session}/reopen', [ExamSessionController::class, 'reopen'])->name('exam-sessions.reopen');
-        Route::post('exam-sessions', [ExamSessionController::class, 'store'])->name('exam-sessions.store');
-        Route::get('exam-sessions/{exam_session}/edit', [ExamSessionController::class, 'edit'])->name('exam-sessions.edit');
-        Route::put('exam-sessions/{exam_session}', [ExamSessionController::class, 'update'])->name('exam-sessions.update');
+        Route::post('test-scheduling/schedule-assistant/chat', [ExamSchedulingAssistantController::class, 'chat'])->name('test-scheduling.schedule-assistant.chat');
+        Route::post('test-scheduling/schedule-assistant/apply-schedule', [ExamSchedulingAssistantController::class, 'applySchedule'])->name('test-scheduling.schedule-assistant.apply');
+        Route::post('test-scheduling/{exam_session}/assign-applicants', [ExamSessionController::class, 'assignApplicants'])->name('test-scheduling.assign-applicants');
+        Route::post('test-scheduling/{exam_session}/remove-applicant', [ExamSessionController::class, 'removeApplicant'])->name('test-scheduling.remove-applicant');
+        Route::post('test-scheduling/{exam_session}/publish', [ExamSessionController::class, 'publish'])->name('test-scheduling.publish');
+        Route::post('test-scheduling/{exam_session}/unpublish', [ExamSessionController::class, 'unpublish'])->name('test-scheduling.unpublish');
+        Route::put('test-scheduling/{exam_session}/release-date', [ExamSessionController::class, 'releaseDate'])->name('test-scheduling.release-date');
+        Route::post('test-scheduling/{exam_session}/reopen', [ExamSessionController::class, 'reopen'])->name('test-scheduling.reopen');
+        Route::post('test-scheduling', [ExamSessionController::class, 'store'])->name('test-scheduling.store');
+        Route::get('test-scheduling/{exam_session}/edit', [ExamSessionController::class, 'edit'])->name('test-scheduling.edit');
+        Route::put('test-scheduling/{exam_session}', [ExamSessionController::class, 'update'])->name('test-scheduling.update');
         Route::resource('seasons', SeasonController::class)->except('show', 'destroy')->parameters(['seasons' => 'season']);
         Route::post('seasons/{season}/activate', [SeasonController::class, 'activate'])->name('seasons.activate');
         Route::resource('exam-domains', ExamDomainController::class)->except('show', 'destroy')->parameters(['exam_domains' => 'exam_domain']);
@@ -126,7 +126,7 @@ Route::middleware(['auth'])->group(function () {
     Route::put('/applications/{application}/dismiss', [ApplicationController::class, 'dismiss'])->name('applications.dismiss')->middleware('role:super_admin,staff,admin');
     Route::put('/applications/{application}/incomplete-documents', [ApplicationController::class, 'setIncompleteDocuments'])->name('applications.set-incomplete-documents')->middleware('role:super_admin,staff,admin');
     Route::get('/applications/{application}/admission-slip', [ApplicationController::class, 'admissionSlip'])->name('applications.admission-slip')->middleware('role:super_admin,staff,admin,test_administrator');
-    Route::get('/proctor', fn () => redirect()->route('admin.exam-sessions.index'))->middleware('role:super_admin,proctor');
+    Route::get('/proctor', fn () => redirect()->route('admin.test-scheduling.index'))->middleware('role:super_admin,proctor');
     Route::middleware('role:super_admin,admin,proctor,test_administrator')->prefix('proctor')->name('proctor.')->group(function () {
         Route::get('sessions/{exam_session}', [SessionRosterController::class, 'show'])->name('sessions.show');
         Route::post('sessions/{exam_session}/attendance', [SessionRosterController::class, 'storeAttendance'])->name('sessions.attendance');
