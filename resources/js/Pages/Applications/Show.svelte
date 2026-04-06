@@ -82,66 +82,19 @@
   const canSetIncomplete = $derived(
     within_application_window && application && ['pending', 'dismissed'].includes(application.status)
   );
+
+  const breadcrumbs = $derived([
+    { label: 'Applications', href: '/applications' },
+    { label: application?.reference_number ?? 'Application' }
+  ]);
 </script>
 
 <svelte:head>
   <title>Application {application?.reference_number ?? ''} - SecureCAT</title>
 </svelte:head>
 
-<AuthenticatedLayout>
+<AuthenticatedLayout breadcrumbs={breadcrumbs}>
   <div class="space-y-6 min-w-0">
-    <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-      <div class="flex items-center gap-3">
-        <Link href="/applications">
-          <Button variant="ghost" size="icon" class="min-h-[44px] min-w-[44px]" aria-label="Back to list">
-            <ArrowLeft class="h-4 w-4" />
-          </Button>
-        </Link>
-        <div>
-          <h1 class="text-2xl font-bold">{application?.reference_number ?? 'Application'}</h1>
-          <p class="mt-1 text-sm text-muted-foreground">{fullName}</p>
-        </div>
-      </div>
-      <div class="flex flex-wrap items-center gap-2">
-        <Badge variant={statusVariant(application?.status)}>{statusLabel(application?.status)}</Badge>
-        {#if application_window_label}
-          <span class="text-xs text-muted-foreground">Window: {application_window_label}</span>
-        {/if}
-        {#if canAccept}
-          <Button
-            variant="outline"
-            class="min-h-[44px] border-emerald-300 bg-emerald-50/80 text-emerald-800 hover:bg-emerald-100/80 hover:border-emerald-400 dark:border-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-200 dark:hover:bg-emerald-900/40"
-            onclick={accept}
-          >
-            <CheckCircle class="mr-2 h-4 w-4" />
-            Accept
-          </Button>
-        {/if}
-        {#if canDismiss}
-          <Button
-            variant="outline"
-            class="min-h-[44px] border-red-300 bg-red-50/80 text-red-800 hover:bg-red-100/80 hover:border-red-400 dark:border-red-800 dark:bg-red-950/40 dark:text-red-200 dark:hover:bg-red-900/40"
-            onclick={openDismiss}
-          >
-            <XCircle class="mr-2 h-4 w-4" />
-            Dismiss
-          </Button>
-        {/if}
-        {#if canSetIncomplete}
-          <Button variant="outline" class="min-h-[44px]" onclick={setIncompleteDocuments}>
-            <FileX2 class="mr-2 h-4 w-4" />
-            Set incomplete documents
-          </Button>
-        {/if}
-        {#if application?.status === 'accepted'}
-          <Button variant="outline" class="min-h-[44px]" onclick={resendSetupEmail}>
-            <Mail class="mr-2 h-4 w-4" />
-            Resend setup email
-          </Button>
-        {/if}
-      </div>
-    </div>
-
     {#if success}
       <div class="rounded-lg bg-primary/10 px-4 py-3 text-sm text-primary">
         {success}
