@@ -28,6 +28,11 @@
     });
   }
 
+  const breadcrumbs = $derived([
+  { label: 'Release & Consultation', href: '/consultation' },
+  { label: applicant?.name ?? 'Applicant' }
+]);
+
   function getBarClass(pct) {
     if (pct >= 85) return "bg-emerald-500";
     if (pct >= 70) return "bg-blue-500";
@@ -40,13 +45,8 @@
   <title>Release & Consultation - SecureCAT</title>
 </svelte:head>
 
-<AuthenticatedLayout>
+<AuthenticatedLayout breadcrumbs={breadcrumbs}>
 <div class="space-y-8 pb-8">
-  <!-- Back link -->
-  <Link href="/consultation" class="text-sm border border-transparent text-muted-foreground hover:text-foreground inline-flex items-center gap-1 transition-colors px-3 py-1.5 rounded-full hover:bg-muted/50">
-    ← Back to Dashboard
-  </Link>
-
   <!-- Header Card (Frosted Profile) -->
   <div class="relative overflow-hidden rounded-2xl glass-panel p-6 border bg-card/50 shadow-sm flex items-start justify-between">
     <div class="absolute inset-0 bg-gradient-to-r from-primary/5 to-transparent pointer-events-none"></div>
