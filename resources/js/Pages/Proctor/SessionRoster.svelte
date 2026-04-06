@@ -236,23 +236,19 @@
       return '—';
     }
   }
+
+  const breadcrumbs = $derived([
+    { label: 'My Sessions', href: '/admin/test-scheduling?view=proctor' },
+    { label: session?.id ? 'Session #' + session.id : 'Session' }
+  ]);
 </script>
 
 <svelte:head>
   <title>Session Roster - SecureCAT</title>
 </svelte:head>
 
-<AuthenticatedLayout>
+<AuthenticatedLayout breadcrumbs={breadcrumbs}>
   <div class="space-y-6">
-    <div class="flex items-center gap-4">
-      <Link
-        href="/admin/test-scheduling"
-        class="text-sm text-muted-foreground hover:text-foreground inline-flex items-center gap-1"
-      >
-        <ArrowLeft class="h-4 w-4" /> Back to my sessions
-      </Link>
-    </div>
-
     {#if success}
       <div class="rounded-lg bg-primary/10 px-4 py-3 text-sm text-primary">{success}</div>
     {/if}
