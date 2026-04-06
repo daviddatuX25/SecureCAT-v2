@@ -7,6 +7,9 @@
 
   let { batches = [], flash = {} } = $props();
 
+  let expandedBatch = $state(null);
+  let selectedDate = $state('');
+
   const breadcrumbs = $derived([
   { label: 'Release & Consultation', href: '/consultation' },
   { label: 'Schedule Consultations' }
