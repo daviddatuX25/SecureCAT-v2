@@ -29,6 +29,11 @@
       : applicants
   );
 
+  const breadcrumbs = $derived([
+  { label: 'Release & Consultation', href: '/consultation' },
+  { label: "Today's Consultations" }
+]);
+
   function getScoreColor(pct) {
     if (pct >= 85) return "text-emerald-600 bg-emerald-500/10 border-emerald-500/20";
     if (pct >= 70) return "text-blue-600 bg-blue-500/10 border-blue-500/20";
@@ -41,11 +46,9 @@
   <title>Release & Consultation - SecureCAT</title>
 </svelte:head>
 
-<AuthenticatedLayout>
+<AuthenticatedLayout breadcrumbs={breadcrumbs}>
 <div class="space-y-8 pb-8">
-  <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-    <h1 class="text-2xl font-bold tracking-tight text-foreground">Today's Consultations</h1>
-    <!-- Search -->
+  <div class="flex flex-col sm:flex-row sm:items-center justify-end gap-4">
     <Input
       type="search"
       placeholder="Search name or ref (min 2 chars)..."
