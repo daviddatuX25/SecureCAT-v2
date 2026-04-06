@@ -62,24 +62,18 @@
     });
   }
 
+  const breadcrumbs = $derived([
+    { label: 'Applications', href: '/applications' },
+    { label: 'Print Slips' }
+  ]);
 </script>
 
 <svelte:head>
   <title>Print admission slips - SecureCAT</title>
 </svelte:head>
 
-<AuthenticatedLayout>
+<AuthenticatedLayout breadcrumbs={breadcrumbs}>
   <div class="space-y-6 min-w-0">
-    <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-      <Link
-        href="/applications"
-        class="text-sm text-muted-foreground hover:text-foreground inline-flex items-center gap-1 min-h-[44px] items-center"
-      >
-        <ArrowLeft class="h-4 w-4" />
-        Back to applications
-      </Link>
-    </div>
-
     <Card>
       <CardHeader>
         <CardTitle class="flex items-center gap-2">
