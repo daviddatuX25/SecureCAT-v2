@@ -1,10 +1,10 @@
 <script>
   import { Link, router } from '@inertiajs/svelte';
   import { usePage } from '@inertiajs/svelte';
-  import { ChevronDown, Menu, LayoutDashboard, Users, FileText, Calendar, GraduationCap, BookOpen, Settings, MessageSquare, ScrollText, FileStack, Activity, CalendarRange, Layers, ShieldCheck, Sun, Moon, Bell, Search } from 'lucide-svelte';
+  import { ChevronDown, ChevronRight, Menu, LayoutDashboard, Users, FileText, Calendar, GraduationCap, BookOpen, Settings, MessageSquare, ScrollText, FileStack, Activity, CalendarRange, Layers, ShieldCheck, Sun, Moon, Bell, Search } from 'lucide-svelte';
   import { Button } from '@/Components/ui/button';
 
-  let { children } = $props();
+  let { children, breadcrumbs = [] } = $props();
 
   const page = usePage();
   const user = $derived($page.props.auth?.user ?? null);
@@ -219,7 +219,34 @@
         <Button variant="ghost" size="icon" class="md:hidden" onclick={() => (sidebarOpen = true)} aria-label="Open menu">
           <Menu class="h-5 w-5" />
         </Button>
-        <h1 class="text-2xl font-semibold tracking-tight text-foreground">{pageTitle}</h1>
+        {#if breadcrumbs.length === 0}
+          <h1 class="text-2xl font-semibold tracking-tight text-foreground">{pageTitle}</h1>
+        {:else if breadcrumbs.length === 1}
+          <h1 class="text-2xl font-semibold tracking-tight text-foreground">{breadcrumbs[0].label}</h1>
+        {:else}
+          <nav class="flex items-center gap-2 text-sm" aria-label="Breadcrumb">
+            {#each breadcrumbs as crumb, i}
+              {#if i > 0}
+                <ChevronRight class="h-4 w-4 text-muted-foreground/50 shrink-0" aria-hidden="true" />
+              {/if}
+              {#if crumb.href && i < breadcrumbs.length - 1}
+                <Link
+                  href={crumb.href}
+                  class="text-muted-foreground hover:text-foreground transition-colors font-medium shrink-0"
+                >
+                  {crumb.label}
+                </Link>
+              {:else}
+                <span
+                  class="font-semibold text-foreground truncate max-w-[180px] sm:max-w-none"
+                  aria-current={i === breadcrumbs.length - 1 ? 'page' : undefined}
+                >
+                  {crumb.label}
+                </span>
+              {/if}
+            {/each}
+          </nav>
+        {/if}
       </div>
 
       <div class="flex items-center gap-2 sm:gap-4">
