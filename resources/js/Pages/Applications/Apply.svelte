@@ -87,7 +87,7 @@
           <CardTitle>Submit an application</CardTitle>
           <CardDescription>
             {#if active_season}
-              A.Y. {active_season.academic_year}
+              A.Y. {active_season.academic_year} – {active_season.semester}
             {:else}
               Fill in your details below.
             {/if}

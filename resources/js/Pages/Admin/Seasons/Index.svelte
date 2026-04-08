@@ -13,14 +13,14 @@
 </script>
 
 <svelte:head>
-  <title>Seasons - SecureCAT</title>
+  <title>Academic Years - SecureCAT</title>
 </svelte:head>
 
 <AuthenticatedLayout>
   <div class="space-y-6 min-w-0">
     <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
       <div>
-        <h1 class="text-2xl font-bold">Seasons</h1>
+        <h1 class="text-2xl font-bold">Academic Years</h1>
         <p class="mt-1 text-sm text-muted-foreground">Academic periods. Only one season is active; new applications attach to it.</p>
       </div>
       <div class="flex flex-wrap gap-3">
@@ -50,7 +50,7 @@
         <table class="w-full min-w-[520px] text-sm">
           <thead class="bg-muted/50">
             <tr>
-              <th class="px-4 py-3 text-left font-medium">Season</th>
+              <th class="px-4 py-3 text-left font-medium">Academic Year</th>
               <th class="px-4 py-3 text-left font-medium">Application window</th>
               <th class="px-4 py-3 text-left font-medium">Status</th>
               <th class="px-4 py-3 text-left font-medium">Applications</th>
