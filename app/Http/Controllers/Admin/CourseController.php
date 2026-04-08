@@ -41,8 +41,6 @@ class CourseController extends Controller
             'department_id' => $validated['department_id'],
             'name' => $validated['name'],
             'code' => $validated['code'],
-            'quota' => $validated['quota'] ?? null,
-            'score_cutoff' => $validated['score_cutoff'] ?? null,
             'is_active' => true,
         ]);
 
@@ -78,4 +76,3 @@ class CourseController extends Controller
         return redirect()->route('admin.courses.index')->with('success', 'Course activated.');
     }
 }
-

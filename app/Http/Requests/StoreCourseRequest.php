@@ -17,8 +17,6 @@ class StoreCourseRequest extends FormRequest
             'department_id' => ['required', 'integer', 'exists:departments,id'],
             'name' => ['required', 'string', 'max:255'],
             'code' => ['required', 'string', 'max:50'],
-            'quota' => ['nullable', 'integer', 'min:0'],
-            'score_cutoff' => ['nullable', 'integer', 'min:0'],
         ];
     }
 }

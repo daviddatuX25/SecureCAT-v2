@@ -14,8 +14,6 @@ class Course extends Model
         'department_id',
         'name',
         'code',
-        'quota',
-        'score_cutoff',
         'is_active',
     ];
 

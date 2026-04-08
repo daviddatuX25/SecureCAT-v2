@@ -12,8 +12,6 @@
       department_id: String(c.department_id),
       name: c.name,
       code: c.code,
-      quota: c.quota === null || c.quota === undefined ? '' : String(c.quota),
-      score_cutoff: c.score_cutoff === null || c.score_cutoff === undefined ? '' : String(c.score_cutoff),
       is_active: c.is_active,
     });
   })();
@@ -23,8 +21,6 @@
     $form.transform((data) => ({
       ...data,
       department_id: parseInt(data.department_id, 10) || null,
-      quota: data.quota === '' ? null : parseInt(data.quota, 10),
-      score_cutoff: data.score_cutoff === '' ? null : parseFloat(data.score_cutoff),
     }));
     $form.put(`/admin/courses/${course.id}`);
   }
@@ -76,23 +72,6 @@
         {/if}
       </div>
 
-      <div class="grid gap-4 sm:grid-cols-2">
-        <div class="space-y-2">
-          <label for="quota" class="text-sm font-medium">Quota (optional)</label>
-          <Input id="quota" type="number" min="1" bind:value={$form.quota} placeholder="Unlimited if blank" />
-          {#if $form.errors?.quota}
-            <p class="text-sm text-destructive">{$form.errors.quota}</p>
-          {/if}
-        </div>
-        <div class="space-y-2">
-          <label for="score_cutoff" class="text-sm font-medium">Score cutoff (optional)</label>
-          <Input id="score_cutoff" type="number" min="0" step="0.01" bind:value={$form.score_cutoff} placeholder="e.g., 75.00" />
-          {#if $form.errors?.score_cutoff}
-            <p class="text-sm text-destructive">{$form.errors.score_cutoff}</p>
-          {/if}
-        </div>
-      </div>
-
       <div class="space-y-2">
         <label class="flex items-center gap-2 cursor-pointer">
           <input
@@ -116,4 +95,3 @@
     </form>
   </div>
 </AuthenticatedLayout>
-

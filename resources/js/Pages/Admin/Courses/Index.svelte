@@ -11,7 +11,6 @@
   const page = usePage();
   const success = $derived($page.props.flash?.success ?? null);
 
-  // 'responsive' = cards on small, table on md+; 'table' | 'cards' = explicit override
   let viewMode = $state('responsive');
   let deleteId = $state(null);
   let activateId = $state(null);
@@ -32,18 +31,6 @@
 
   function doActivate(id) {
     router.post(`/admin/courses/${id}/activate`, { onSuccess: () => (activateId = null) });
-  }
-
-  function formatQuota(q) {
-    if (q === null || q === undefined) return 'Unlimited';
-    return String(q);
-  }
-
-  function formatCutoff(v) {
-    if (v === null || v === undefined) return '—';
-    const num = typeof v === 'string' ? parseFloat(v) : v;
-    if (Number.isNaN(num)) return '—';
-    return num.toFixed(2);
   }
 </script>
 
@@ -96,7 +83,6 @@
     {/if}
 
     <div class="glass-panel rounded-2xl overflow-hidden min-w-0 max-w-full p-6">
-      <!-- Table view -->
       <div
         class="w-full min-w-0 overflow-x-scroll overscroll-x-contain {viewMode === 'cards'
           ? 'hidden'
@@ -110,8 +96,6 @@
               <th class="px-4 py-3 text-left font-medium">Code</th>
               <th class="px-4 py-3 text-left font-medium">Name</th>
               <th class="px-4 py-3 text-left font-medium">Department</th>
-              <th class="px-4 py-3 text-left font-medium">Quota</th>
-              <th class="px-4 py-3 text-left font-medium">Cutoff</th>
               <th class="px-4 py-3 text-left font-medium">Status</th>
               <th class="px-4 py-3 text-right font-medium">Actions</th>
             </tr>
@@ -121,9 +105,7 @@
               <tr class="border-t border-border hover:bg-muted/30">
                 <td class="px-4 py-3 font-mono">{course.code}</td>
                 <td class="px-4 py-3">{course.name}</td>
-                <td class="px-4 py-3">{course.department?.code ?? '—'}</td>
-                <td class="px-4 py-3">{formatQuota(course.quota)}</td>
-                <td class="px-4 py-3">{formatCutoff(course.score_cutoff)}</td>
+                <td class="px-4 py-3">{course.department?.code ?? '�'}</td>
                 <td class="px-4 py-3">
                   <Badge variant={course.is_active ? 'success' : 'muted'}>{course.is_active ? 'Active' : 'Inactive'}</Badge>
                 </td>
@@ -160,7 +142,7 @@
               </tr>
             {:else}
               <tr>
-                <td colspan="7" class="px-4 py-12 text-center text-muted-foreground">
+                <td colspan="5" class="px-4 py-12 text-center text-muted-foreground">
                   No courses yet. Create one to get started.
                 </td>
               </tr>
@@ -169,7 +151,6 @@
         </table>
       </div>
 
-      <!-- Card view -->
       <div
         class="{viewMode === 'table'
           ? 'hidden'
@@ -190,11 +171,7 @@
                 </div>
                 <dl class="grid grid-cols-2 gap-x-4 gap-y-1 text-sm">
                   <dt class="text-muted-foreground">Department</dt>
-                  <dd>{course.department?.code ?? '—'}</dd>
-                  <dt class="text-muted-foreground">Quota</dt>
-                  <dd>{formatQuota(course.quota)}</dd>
-                  <dt class="text-muted-foreground">Cutoff</dt>
-                  <dd>{formatCutoff(course.score_cutoff)}</dd>
+                  <dd>{course.department?.code ?? '�'}</dd>
                 </dl>
                 <div class="mt-auto flex gap-2 pt-2">
                   <Link href={`/admin/courses/${course.id}/edit`} class="flex-1">

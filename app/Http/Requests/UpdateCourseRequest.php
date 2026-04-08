@@ -17,8 +17,6 @@ class UpdateCourseRequest extends FormRequest
             'department_id' => ['sometimes', 'integer', 'exists:departments,id'],
             'name' => ['sometimes', 'string', 'max:255'],
             'code' => ['sometimes', 'string', 'max:50'],
-            'quota' => ['nullable', 'integer', 'min:0'],
-            'score_cutoff' => ['nullable', 'integer', 'min:0'],
         ];
     }
 }
