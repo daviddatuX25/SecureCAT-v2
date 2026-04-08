@@ -42,7 +42,6 @@
     <p class="text-sm text-muted-foreground">
         Live status of in-progress exam sessions. Data refreshes every 15 seconds.
       </p>
-    </div>
 
     {#if sessions.length === 0}
       <div class="rounded-lg border border-border bg-card p-8 text-center text-muted-foreground">

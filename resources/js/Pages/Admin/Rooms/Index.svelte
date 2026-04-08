@@ -47,7 +47,10 @@
 
   function doActivate(id) {
     router.post(`/admin/rooms/${id}/activate`, {
-      onSuccess: () => (activateId = null),
+      onSuccess: () => {
+        activateId = null;
+        router.reload();
+      },
     });
   }
 

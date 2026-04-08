@@ -6,7 +6,7 @@
   import { Input } from '@/Components/ui/input';
   import * as Table from '@/Components/ui/table';
   import * as ToggleGroup from '@/Components/ui/toggle-group';
-  import { Eye, Filter, ChevronDown, Table2, LayoutGrid, MonitorSmartphone } from 'lucide-svelte';
+  import { Eye, Filter, ChevronDown, Table2, LayoutGrid, MonitorSmartphone, CheckCircle, XCircle } from 'lucide-svelte';
 
   let { applications, filters = {}, seasons = [], active_season_id = null, statuses = [] } = $props();
 
@@ -52,6 +52,20 @@
   function statusLabel(value) {
     const s = statuses.find((x) => x.value === value);
     return s?.label ?? value;
+  }
+
+  function doAccept(id) {
+    router.put(`/applications/${id}/accept`, {}, {
+      onSuccess: () => {},
+    });
+  }
+
+  function doDismiss(id) {
+    if (confirm('Are you sure you want to dismiss this application?')) {
+      router.put(`/applications/${id}/dismiss`, {}, {
+        onSuccess: () => {},
+      });
+    }
   }
 
   function seasonLabel(season) {
@@ -202,12 +216,34 @@
                     {app.submitted_at ? new Date(app.submitted_at).toLocaleDateString() : '—'}
                   </Table.Cell>
                   <Table.Cell class="px-4 py-3 text-right">
-                    <Link href={`/applications/${app.id}`}>
-                      <Button variant="ghost" size="sm" class="min-h-[44px]">
-                        <Eye class="mr-1.5 h-4 w-4" />
-                        View
-                      </Button>
-                    </Link>
+                    <div class="flex justify-end gap-2">
+                      {#if app.status === 'pending' || app.status === 'incomplete_documents'}
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          class="min-h-[44px] text-primary hover:text-primary"
+                          onclick={() => doAccept(app.id)}
+                        >
+                          <CheckCircle class="mr-1.5 h-4 w-4" />
+                          Accept
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          class="min-h-[44px] text-destructive hover:text-destructive"
+                          onclick={() => doDismiss(app.id)}
+                        >
+                          <XCircle class="mr-1.5 h-4 w-4" />
+                          Dismiss
+                        </Button>
+                      {/if}
+                      <Link href={`/applications/${app.id}`}>
+                        <Button variant="ghost" size="sm" class="min-h-[44px]">
+                          <Eye class="mr-1.5 h-4 w-4" />
+                          View
+                        </Button>
+                      </Link>
+                    </div>
                   </Table.Cell>
                 </Table.Row>
               {:else}
@@ -256,12 +292,34 @@
             <p class="mt-1 text-xs text-muted-foreground">
               {app.submitted_at ? new Date(app.submitted_at).toLocaleDateString() : '—'}
             </p>
-            <Link href={`/applications/${app.id}`} class="mt-3 inline-block">
-              <Button variant="outline" size="sm" class="min-h-[44px]">
-                <Eye class="mr-1.5 h-4 w-4" />
-                View
-              </Button>
-            </Link>
+            <div class="mt-3 flex flex-wrap gap-2">
+              {#if app.status === 'pending' || app.status === 'incomplete_documents'}
+                <Button
+                  variant="outline"
+                  size="sm"
+                  class="min-h-[44px] text-primary border-primary/30 hover:border-primary hover:bg-primary/10"
+                  onclick={() => doAccept(app.id)}
+                >
+                  <CheckCircle class="mr-1.5 h-4 w-4" />
+                  Accept
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  class="min-h-[44px] text-destructive border-destructive/30 hover:border-destructive hover:bg-destructive/10"
+                  onclick={() => doDismiss(app.id)}
+                >
+                  <XCircle class="mr-1.5 h-4 w-4" />
+                  Dismiss
+                </Button>
+              {/if}
+              <Link href={`/applications/${app.id}`} class="inline-block">
+                <Button variant="outline" size="sm" class="min-h-[44px]">
+                  <Eye class="mr-1.5 h-4 w-4" />
+                  View
+                </Button>
+              </Link>
+            </div>
           </div>
         {:else}
           <div class="col-span-full rounded-xl border border-dashed border-border bg-muted/20 py-12 text-center text-muted-foreground">

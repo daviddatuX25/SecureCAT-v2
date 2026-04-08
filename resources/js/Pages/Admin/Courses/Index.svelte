@@ -30,7 +30,12 @@
   }
 
   function doActivate(id) {
-    router.post(`/admin/courses/${id}/activate`, { onSuccess: () => (activateId = null) });
+    router.post(`/admin/courses/${id}/activate`, {
+      onSuccess: () => {
+        activateId = null;
+        router.reload();
+      },
+    });
   }
 const breadcrumbs = [{ label: 'Courses' }];
 </script>
