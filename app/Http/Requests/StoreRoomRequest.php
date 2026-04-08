@@ -18,7 +18,6 @@ class StoreRoomRequest extends FormRequest
             'building' => ['required', 'string', 'max:255'],
             'floor' => ['nullable', 'string', 'max:50'],
             'capacity' => ['required', 'integer', 'min:1'],
-            'facilities' => ['nullable', 'array'],
         ];
     }
 }

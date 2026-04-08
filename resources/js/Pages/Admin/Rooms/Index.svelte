@@ -51,14 +51,6 @@
     });
   }
 
-  function formatFacilities(facilities) {
-    if (!facilities || typeof facilities !== 'object') return '—';
-    const items = Object.entries(facilities)
-      .filter(([, v]) => v)
-      .map(([k]) => k.replace(/_/g, ' '));
-    return items.length ? items.join(', ') : '—';
-  }
-
   // 'responsive' = cards on small, table on md+; 'table' | 'cards' = explicit override
   let viewMode = $state('responsive');
 </script>
@@ -146,7 +138,6 @@
               <Table.Head class="px-4 py-3">Building</Table.Head>
               <Table.Head class="px-4 py-3">Floor</Table.Head>
               <Table.Head class="px-4 py-3">Capacity</Table.Head>
-              <Table.Head class="px-4 py-3">Facilities</Table.Head>
               <Table.Head class="px-4 py-3">Status</Table.Head>
               <Table.Head class="px-4 py-3 text-right">Actions</Table.Head>
             </Table.Row>
@@ -158,7 +149,6 @@
                 <Table.Cell class="px-4 py-3">{room.building}</Table.Cell>
                 <Table.Cell class="px-4 py-3">{room.floor ?? '—'}</Table.Cell>
                 <Table.Cell class="px-4 py-3">{room.capacity}</Table.Cell>
-                <Table.Cell class="px-4 py-3">{formatFacilities(room.facilities)}</Table.Cell>
                 <Table.Cell class="px-4 py-3">
                   <Badge variant={room.is_active ? 'success' : 'muted'}>{room.is_active ? 'Active' : 'Inactive'}</Badge>
                 </Table.Cell>
@@ -195,7 +185,7 @@
               </Table.Row>
             {:else}
               <Table.Row>
-                <Table.Cell colspan={7} class="px-4 py-12 text-center text-muted-foreground">
+                <Table.Cell colspan={6} class="px-4 py-12 text-center text-muted-foreground">
                   No rooms yet. Create one to get started.
                 </Table.Cell>
               </Table.Row>
@@ -229,8 +219,6 @@
                   <dd>{room.floor ?? '—'}</dd>
                   <dt class="text-muted-foreground">Capacity</dt>
                   <dd>{room.capacity}</dd>
-                  <dt class="text-muted-foreground">Facilities</dt>
-                  <dd class="col-span-1">{formatFacilities(room.facilities)}</dd>
                 </dl>
                 <div class="mt-auto flex gap-2 pt-2">
                   <Link href={`/admin/rooms/${room.id}/edit`} class="flex-1">

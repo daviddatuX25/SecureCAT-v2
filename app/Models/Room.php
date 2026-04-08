@@ -13,12 +13,10 @@ class Room extends Model
         'building',
         'floor',
         'capacity',
-        'facilities',
         'is_active',
     ];
 
     protected $casts = [
-        'facilities' => 'array',
         'is_active' => 'boolean',
     ];
 

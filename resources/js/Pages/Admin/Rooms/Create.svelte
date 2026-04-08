@@ -11,14 +11,11 @@
     capacity: '',
   });
 
-  let facilities = $state({ projector: false, ac: false, whiteboard: false });
-
   function submitForm(e) {
     e.preventDefault();
     $form.transform((data) => ({
       ...data,
       capacity: parseInt(data.capacity, 10) || 0,
-      facilities,
     }));
     $form.post('/admin/rooms');
   }
@@ -73,39 +70,6 @@
         {#if $form.errors?.capacity}
           <p class="text-sm text-destructive">{$form.errors.capacity}</p>
         {/if}
-      </div>
-
-      <div class="space-y-2">
-        <p class="text-sm font-medium">Facilities</p>
-        <div class="flex flex-wrap gap-4 pt-2">
-          <label class="flex items-center gap-2 cursor-pointer">
-            <input
-              type="checkbox"
-              checked={facilities.projector}
-              onchange={(e) => (facilities = { ...facilities, projector: e.target.checked })}
-              class="h-4 w-4 rounded border-input accent-primary"
-            />
-            <span class="text-sm">Projector</span>
-          </label>
-          <label class="flex items-center gap-2 cursor-pointer">
-            <input
-              type="checkbox"
-              checked={facilities.ac}
-              onchange={(e) => (facilities = { ...facilities, ac: e.target.checked })}
-              class="h-4 w-4 rounded border-input accent-primary"
-            />
-            <span class="text-sm">Air conditioning</span>
-          </label>
-          <label class="flex items-center gap-2 cursor-pointer">
-            <input
-              type="checkbox"
-              checked={facilities.whiteboard}
-              onchange={(e) => (facilities = { ...facilities, whiteboard: e.target.checked })}
-              class="h-4 w-4 rounded border-input accent-primary"
-            />
-            <span class="text-sm">Whiteboard</span>
-          </label>
-        </div>
       </div>
 
       <div class="flex gap-2 pt-4">

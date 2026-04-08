@@ -47,7 +47,6 @@ class RoomController extends Controller
             'building' => $validated['building'],
             'floor' => $validated['floor'] ?? null,
             'capacity' => $validated['capacity'],
-            'facilities' => $validated['facilities'] ?? null,
             'is_active' => true,
         ]);
 

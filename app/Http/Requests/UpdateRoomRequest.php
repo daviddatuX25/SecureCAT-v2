@@ -18,7 +18,6 @@ class UpdateRoomRequest extends FormRequest
             'building' => ['sometimes', 'string', 'max:255'],
             'floor' => ['nullable', 'string', 'max:50'],
             'capacity' => ['sometimes', 'integer', 'min:1'],
-            'facilities' => ['nullable', 'array'],
         ];
     }
 }
