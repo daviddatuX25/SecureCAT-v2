@@ -16,10 +16,6 @@
 ]);
 </script>
 
-<svelte:head>
-  <title>Consultation Schedule - SecureCAT</title>
-</svelte:head>
-
 <AuthenticatedLayout breadcrumbs={breadcrumbs}>
 <div class="space-y-8 pb-8">
   {#if flash?.success}

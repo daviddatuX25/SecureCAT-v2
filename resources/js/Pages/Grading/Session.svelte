@@ -47,10 +47,6 @@
   }
 </script>
 
-<svelte:head>
-  <title>Grading session - SecureCAT</title>
-</svelte:head>
-
 <AuthenticatedLayout breadcrumbs={breadcrumbs}>
   <div class="space-y-6 min-w-0">
     {#if success}

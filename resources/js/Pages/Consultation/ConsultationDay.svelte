@@ -42,10 +42,6 @@
   }
 </script>
 
-<svelte:head>
-  <title>Release & Consultation - SecureCAT</title>
-</svelte:head>
-
 <AuthenticatedLayout breadcrumbs={breadcrumbs}>
 <div class="space-y-8 pb-8">
   <div class="flex flex-col sm:flex-row sm:items-center justify-end gap-4">

@@ -77,10 +77,6 @@
   }
 </script>
 
-<svelte:head>
-  <title>Score input - {applicant.name} - SecureCAT</title>
-</svelte:head>
-
 <AuthenticatedLayout breadcrumbs={breadcrumbs}>
   <div class="space-y-6 min-w-0 max-w-2xl">
     <Card>

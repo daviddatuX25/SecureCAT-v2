@@ -41,10 +41,6 @@
   }
 </script>
 
-<svelte:head>
-  <title>Release & Consultation - SecureCAT</title>
-</svelte:head>
-
 <AuthenticatedLayout breadcrumbs={breadcrumbs}>
 <div class="space-y-8 pb-8">
   <!-- Header Card (Frosted Profile) -->
