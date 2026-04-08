@@ -15,6 +15,13 @@
       : 'SecureCAT'
   );
   let sidebarOpen = $state(false);
+  let breadcrumbOpen = $state(false);
+
+  $effect(() => {
+    $page.url; // re-runs whenever the URL changes
+    breadcrumbOpen = false;
+  });
+
   let userDropdownOpen = $state(false);
   let darkMode = $state(typeof document !== 'undefined' && document.documentElement.classList.contains('dark'));
   let adminExpanded = $state(true);
@@ -218,7 +225,7 @@
 
   <div class="flex min-w-0 flex-1 flex-col md:pl-64 overflow-x-hidden relative">
     <!-- Header -->
-    <header class="sticky top-0 z-20 h-20 glass-panel border-b border-l-0 flex items-center justify-between px-4 lg:px-8">
+    <header class="sticky top-0 z-20 h-20 glass-panel border-b border-l-0 flex items-center justify-between px-4 lg:px-8 relative">
       <div class="flex items-center gap-4">
         <Button variant="ghost" size="icon" class="md:hidden" onclick={() => (sidebarOpen = true)} aria-label="Open menu">
           <Menu class="h-5 w-5" />
@@ -228,7 +235,8 @@
         {:else if breadcrumbs.length === 1}
           <h1 class="text-2xl font-semibold tracking-tight text-foreground">{breadcrumbs[0].label}</h1>
         {:else}
-          <nav class="flex items-center gap-2 text-sm" aria-label="Breadcrumb">
+          <!-- Desktop (md+): full inline trail, always visible -->
+          <nav class="hidden md:flex items-center gap-2 text-sm" aria-label="Breadcrumb">
             {#each breadcrumbs as crumb, i}
               {#if i > 0}
                 <ChevronRight class="h-4 w-4 text-muted-foreground/50 shrink-0" aria-hidden="true" />
@@ -250,6 +258,52 @@
               {/if}
             {/each}
           </nav>
+
+          <!-- Mobile (< md): collapsed ••• › Current ▾ with dropdown -->
+          <div class="flex items-center md:hidden">
+            <button
+              type="button"
+              class="flex items-center gap-2 text-sm"
+              onclick={() => (breadcrumbOpen = !breadcrumbOpen)}
+              aria-expanded={breadcrumbOpen}
+              aria-label="Breadcrumb navigation"
+            >
+              <span class="rounded bg-muted px-2 py-0.5 text-xs font-semibold text-muted-foreground">•••</span>
+              <ChevronRight class="h-4 w-4 text-muted-foreground/50 shrink-0" aria-hidden="true" />
+              <span class="font-semibold text-foreground">{breadcrumbs[breadcrumbs.length - 1].label}</span>
+              <ChevronDown class="h-4 w-4 text-muted-foreground ml-1 transition-transform {breadcrumbOpen ? 'rotate-180' : ''}" />
+            </button>
+
+            {#if breadcrumbOpen}
+              <!-- Invisible backdrop: tapping anywhere outside the dropdown closes it -->
+              <button
+                type="button"
+                class="fixed inset-0 z-10"
+                aria-label="Close breadcrumb trail"
+                onclick={() => (breadcrumbOpen = false)}
+              ></button>
+
+              <!-- Dropdown panel: appears directly below the sticky header bar -->
+              <div class="absolute left-0 right-0 top-full z-20 border-b border-border bg-card shadow-lg">
+                {#each breadcrumbs as crumb, i}
+                  <div class="flex items-center gap-3 border-b border-border/50 px-5 py-3 last:border-0">
+                    <div class="h-1.5 w-1.5 shrink-0 rounded-full {i === breadcrumbs.length - 1 ? 'bg-primary' : 'bg-muted-foreground/30'}"></div>
+                    {#if crumb.href && i < breadcrumbs.length - 1}
+                      <Link
+                        href={crumb.href}
+                        class="text-sm text-muted-foreground hover:text-foreground transition-colors"
+                        onclick={() => (breadcrumbOpen = false)}
+                      >
+                        {crumb.label}
+                      </Link>
+                    {:else}
+                      <span class="text-sm font-semibold text-foreground">{crumb.label}</span>
+                    {/if}
+                  </div>
+                {/each}
+              </div>
+            {/if}
+          </div>
         {/if}
       </div>
 
