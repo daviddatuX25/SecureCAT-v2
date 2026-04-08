@@ -15,13 +15,10 @@
   const page = usePage();
   const success = $derived($page.props.flash?.success ?? null);
   const isProctorView = $derived(view === 'proctor');
-  const pageTitle = $derived(isProctorView ? 'My Sessions' : 'Exam Scheduling');
-  const pageDescription = $derived(isProctorView ? 'View assigned exam sessions.' : 'Schedule and manage exam sessions');
-
   const breadcrumbs = $derived(
     view === 'proctor'
       ? [{ label: 'My Sessions' }]
-      : [{ label: 'Test Scheduling' }]
+      : [{ label: 'Exam Scheduling' }]
   );
 
   let assistantOpen = $state(false);
@@ -104,10 +101,6 @@
   let viewMode = $state('responsive');
   const list = $derived(sessions?.data ?? []);
 </script>
-
-<svelte:head>
-  <title>{pageTitle} - SecureCAT</title>
-</svelte:head>
 
 <AuthenticatedLayout breadcrumbs={breadcrumbs}>
     <div class="space-y-6 min-w-0">
