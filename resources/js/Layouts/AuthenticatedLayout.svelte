@@ -45,13 +45,13 @@
   const navSections = $derived([
     { label: null, items: [{ href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard, roles: ['*'] }] },
     { label: 'Registrar Office', items: [
-      { href: '/admin/seasons', label: 'Seasons', icon: CalendarRange, roles: ['super_admin', 'admin'] },
+      { href: '/admin/seasons', label: 'Academic Years', icon: CalendarRange, roles: ['super_admin', 'admin'] },
       { href: '/applications', label: 'Applications', icon: FileText, roles: ['super_admin', 'admin', 'staff', 'test_administrator'] },
-      { href: '/admin/test-scheduling', label: 'Test Scheduling', icon: Calendar, roles: ['super_admin', 'admin'] },
+      { href: '/admin/test-scheduling', label: 'Exam Scheduling', icon: Calendar, roles: ['super_admin', 'admin'] },
     ]},
     { label: 'Guidance Office', items: [
       { href: '/admin/test-scheduling', label: 'My Sessions', icon: Calendar, roles: ['proctor'] },
-      { href: '/admin/test-scheduling/monitoring', label: 'Session Monitor', icon: Activity, roles: ['super_admin', 'test_administrator', 'proctor'] },
+      { href: '/admin/test-scheduling/monitoring', label: 'Exam Monitoring', icon: Activity, roles: ['super_admin', 'test_administrator', 'proctor'] },
       { href: '/grading', label: 'Grading', icon: GraduationCap, roles: ['super_admin', 'test_administrator'] },
       { href: '/consultation', label: 'Release & Consultation', icon: MessageSquare, roles: ['super_admin', 'test_administrator'], featureFlag: 'consultation_enabled' },
     ]},
@@ -59,10 +59,10 @@
       { href: '/admin/users', label: 'Users', icon: Users, roles: ['super_admin'] },
       { href: '/admin/settings', label: 'Settings', icon: Settings, roles: ['super_admin'] },
       { href: '/admin/logs', label: 'Audit Log', icon: ScrollText, roles: ['super_admin'] },
-      { href: '/admin/knowledge-documents', label: 'Knowledge Docs', icon: BookOpen, roles: ['super_admin'] },
-      { href: '/admin/exam-domains', label: 'Exam Domains', icon: Layers, roles: ['super_admin'] },
+      { href: '/admin/knowledge-documents', label: 'Knowledge Documents', icon: BookOpen, roles: ['super_admin'] },
+      { href: '/admin/exam-domains', label: 'Aptitude Areas', icon: Layers, roles: ['super_admin'] },
       { href: '/admin/admission-slip-templates', label: 'Admission Slip Templates', icon: FileStack, roles: ['super_admin'] },
-      { href: '/admin/result-sheet-templates', label: 'Result Templates', icon: FileText, roles: ['super_admin'] },
+      { href: '/admin/result-sheet-templates', label: 'Result Sheet Templates', icon: FileText, roles: ['super_admin'] },
     ]},
   ].map((section) => ({
     ...section,
