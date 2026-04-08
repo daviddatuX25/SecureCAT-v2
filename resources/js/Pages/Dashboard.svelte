@@ -22,6 +22,7 @@
   } from 'lucide-svelte';
 
   let { user, stats } = $props();
+  const breadcrumbs = [{ label: 'Dashboard' }];
   const safeStats = $derived(Array.isArray(stats) ? stats : []);
   const page = usePage();
   const authUser = $derived($page.props.auth?.user ?? null);
@@ -87,11 +88,7 @@
   const showAiExamScheduler = $derived(hasRole('super_admin') || hasRole('admin'));
 </script>
 
-<svelte:head>
-  <title>Dashboard - SecureCAT</title>
-</svelte:head>
-
-<AuthenticatedLayout>
+<AuthenticatedLayout {breadcrumbs}>
   <div class="space-y-8 min-w-0">
     <p class="text-muted-foreground">
       Welcome back, {user?.name ?? 'User'}.
