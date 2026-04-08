@@ -87,4 +87,11 @@ class RoomController extends Controller
 
         return redirect()->route('admin.rooms.index')->with('success', 'Room deactivated.');
     }
+
+    public function activate(Room $room): RedirectResponse
+    {
+        $room->update(['is_active' => true]);
+
+        return redirect()->route('admin.rooms.index')->with('success', 'Room activated.');
+    }
 }

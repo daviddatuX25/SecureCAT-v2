@@ -7,7 +7,7 @@
   import { Badge } from '@/Components/ui/badge';
   import { Input } from '@/Components/ui/input';
   import * as Table from '@/Components/ui/table';
-  import { Plus, Pencil, Trash2, LayoutGrid, Table2, MonitorSmartphone } from 'lucide-svelte';
+  import { Plus, Pencil, Trash2, LayoutGrid, Table2, MonitorSmartphone, CheckCircle } from 'lucide-svelte';
 
   let { rooms, filters = {} } = $props();
 
@@ -41,6 +41,14 @@
     if (deleteId) {
       router.delete(`/admin/rooms/${deleteId}`, { onSuccess: () => (deleteId = null) });
     }
+  }
+
+  let activateId = $state(null);
+
+  function doActivate(id) {
+    router.post(`/admin/rooms/${id}/activate`, {
+      onSuccess: () => (activateId = null),
+    });
   }
 
   function formatFacilities(facilities) {
@@ -171,6 +179,16 @@
                       >
                         <Trash2 class="h-4 w-4" />
                       </Button>
+                    {:else}
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        aria-label="Activate"
+                        class="text-primary hover:text-primary"
+                        onclick={() => doActivate(room.id)}
+                      >
+                        <CheckCircle class="h-4 w-4" />
+                      </Button>
                     {/if}
                   </div>
                 </Table.Cell>
@@ -230,6 +248,16 @@
                       onclick={() => confirmDelete(room.id)}
                     >
                       <Trash2 class="h-4 w-4" />
+                    </Button>
+                  {:else}
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      class="min-h-[44px] text-primary hover:text-primary"
+                      aria-label="Activate"
+                      onclick={() => doActivate(room.id)}
+                    >
+                      <CheckCircle class="h-4 w-4" />
                     </Button>
                   {/if}
                 </div>
