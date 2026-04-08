@@ -4,19 +4,12 @@
   import EditForm from './EditForm.svelte';
 
   let { room } = $props();
+
+  const breadcrumbs = [{ label: 'Rooms', href: '/admin/rooms' }, { label: 'Edit' }];
 </script>
 
-<svelte:head>
-  <title>Edit Room - SecureCAT</title>
-</svelte:head>
-
-<AuthenticatedLayout>
+<AuthenticatedLayout {breadcrumbs}>
   <div class="max-w-lg space-y-6">
-    <div class="flex items-center gap-4">
-      <Link href="/admin/rooms" class="text-sm text-muted-foreground hover:text-foreground">Back to rooms</Link>
-      <h1 class="text-2xl font-bold">Edit Room</h1>
-    </div>
-
     {#key room?.id}
       <EditForm {room} />
     {/key}
