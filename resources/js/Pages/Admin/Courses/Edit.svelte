@@ -4,24 +4,16 @@
   import { Button } from '@/Components/ui/button';
   import { Input } from '@/Components/ui/input';
 
-  const { course, departments = [] } = $props();
+  const { course } = $props();
 
-  const form = (() => {
-    const c = course;
-    return useForm({
-      department_id: String(c.department_id),
-      name: c.name,
-      code: c.code,
-      is_active: c.is_active,
-    });
-  })();
+  const form = useForm({
+    name: course.name,
+    code: course.code,
+    is_active: course.is_active,
+  });
 
   function submitForm(e) {
     e.preventDefault();
-    $form.transform((data) => ({
-      ...data,
-      department_id: parseInt(data.department_id, 10) || null,
-    }));
     $form.put(`/admin/courses/${course.id}`);
   }
 </script>
@@ -38,24 +30,6 @@
     </div>
 
     <form onsubmit={submitForm} class="space-y-4 rounded-lg border border-border bg-card p-6">
-      <div class="space-y-2">
-        <label for="department_id" class="text-sm font-medium">Department</label>
-        <select
-          id="department_id"
-          bind:value={$form.department_id}
-          required
-          class="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-        >
-          <option value="">Select</option>
-          {#each departments as d}
-            <option value={String(d.id)}>{d.code} — {d.name}</option>
-          {/each}
-        </select>
-        {#if $form.errors?.department_id}
-          <p class="text-sm text-destructive">{$form.errors.department_id}</p>
-        {/if}
-      </div>
-
       <div class="space-y-2">
         <label for="code" class="text-sm font-medium">Course code</label>
         <Input id="code" bind:value={$form.code} required maxlength="20" />

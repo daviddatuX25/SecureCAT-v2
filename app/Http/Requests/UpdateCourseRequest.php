@@ -14,7 +14,6 @@ class UpdateCourseRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'department_id' => ['sometimes', 'integer', 'exists:departments,id'],
             'name' => ['sometimes', 'string', 'max:255'],
             'code' => ['sometimes', 'string', 'max:50'],
         ];

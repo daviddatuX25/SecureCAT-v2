@@ -6,7 +6,6 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreCourseRequest;
 use App\Http\Requests\UpdateCourseRequest;
 use App\Models\Course;
-use App\Models\Department;
 use Illuminate\Http\RedirectResponse;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -16,7 +15,6 @@ class CourseController extends Controller
     public function index(): Response
     {
         $courses = Course::query()
-            ->with('department:id,name,code')
             ->orderBy('code')
             ->paginate(15)
             ->withQueryString();
@@ -28,9 +26,7 @@ class CourseController extends Controller
 
     public function create(): Response
     {
-        return Inertia::render('Admin/Courses/Create', [
-            'departments' => Department::query()->orderBy('name')->get(['id', 'name', 'code']),
-        ]);
+        return Inertia::render('Admin/Courses/Create');
     }
 
     public function store(StoreCourseRequest $request): RedirectResponse
@@ -38,9 +34,8 @@ class CourseController extends Controller
         $validated = $request->validated();
 
         Course::create([
-            'department_id' => $validated['department_id'],
-            'name' => $validated['name'],
-            'code' => $validated['code'],
+            'name'      => $validated['name'],
+            'code'      => $validated['code'],
             'is_active' => true,
         ]);
 
@@ -50,8 +45,7 @@ class CourseController extends Controller
     public function edit(Course $course): Response
     {
         return Inertia::render('Admin/Courses/Edit', [
-            'course' => $course->load('department:id,name,code'),
-            'departments' => Department::query()->orderBy('name')->get(['id', 'name', 'code']),
+            'course' => $course,
         ]);
     }
 

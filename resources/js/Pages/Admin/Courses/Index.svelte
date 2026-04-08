@@ -95,7 +95,6 @@
             <tr>
               <th class="px-4 py-3 text-left font-medium">Code</th>
               <th class="px-4 py-3 text-left font-medium">Name</th>
-              <th class="px-4 py-3 text-left font-medium">Department</th>
               <th class="px-4 py-3 text-left font-medium">Status</th>
               <th class="px-4 py-3 text-right font-medium">Actions</th>
             </tr>
@@ -105,7 +104,6 @@
               <tr class="border-t border-border hover:bg-muted/30">
                 <td class="px-4 py-3 font-mono">{course.code}</td>
                 <td class="px-4 py-3">{course.name}</td>
-                <td class="px-4 py-3">{course.department?.code ?? '—'}</td>
                 <td class="px-4 py-3">
                   <Badge variant={course.is_active ? 'success' : 'muted'}>{course.is_active ? 'Active' : 'Inactive'}</Badge>
                 </td>
@@ -142,7 +140,7 @@
               </tr>
             {:else}
               <tr>
-                <td colspan="5" class="px-4 py-12 text-center text-muted-foreground">
+                <td colspan="4" class="px-4 py-12 text-center text-muted-foreground">
                   No courses yet. Create one to get started.
                 </td>
               </tr>
@@ -169,10 +167,6 @@
                   </div>
                   <Badge variant={course.is_active ? 'success' : 'muted'}>{course.is_active ? 'Active' : 'Inactive'}</Badge>
                 </div>
-                <dl class="grid grid-cols-2 gap-x-4 gap-y-1 text-sm">
-                  <dt class="text-muted-foreground">Department</dt>
-                  <dd>{course.department?.code ?? '—'}</dd>
-                </dl>
                 <div class="mt-auto flex gap-2 pt-2">
                   <Link href={`/admin/courses/${course.id}/edit`} class="flex-1">
                     <Button variant="outline" size="sm" class="w-full min-h-[44px]">

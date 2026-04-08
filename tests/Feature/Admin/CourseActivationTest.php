@@ -3,7 +3,6 @@
 namespace Tests\Feature\Admin;
 
 use App\Models\Course;
-use App\Models\Department;
 use App\Models\Role;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -28,13 +27,10 @@ class CourseActivationTest extends TestCase
 
     public function test_admin_can_activate_inactive_course(): void
     {
-        $department = Department::factory()->create();
-
         $course = Course::create([
-            'name'          => 'Bachelor of Science in IT',
-            'code'          => 'BSIT',
-            'department_id' => $department->id,
-            'is_active'     => false,
+            'name'      => 'Bachelor of Science in IT',
+            'code'      => 'BSIT',
+            'is_active' => false,
         ]);
 
         $response = $this->actingAs($this->admin())
@@ -50,13 +46,10 @@ class CourseActivationTest extends TestCase
         $user = User::factory()->create();
         $user->roles()->attach(Role::where('name', 'proctor')->first());
 
-        $department = Department::factory()->create();
-
         $course = Course::create([
-            'name'          => 'Bachelor of Science in IT',
-            'code'          => 'BSIT',
-            'department_id' => $department->id,
-            'is_active'     => false,
+            'name'      => 'Bachelor of Science in IT',
+            'code'      => 'BSIT',
+            'is_active' => false,
         ]);
 
         $response = $this->actingAs($user)
