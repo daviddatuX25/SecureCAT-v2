@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\View;
 class AdmissionSlipService
 {
     /**
-     * Generate PDF admission slip. Per 08-API-SPEC-PHASE1: ref number, name, photo placeholder, QR placeholder.
+     * Generate PDF admission slip.
      */
     public function generatePdf(Application $application): \Barryvdh\DomPDF\PDF
     {
@@ -28,23 +28,17 @@ class AdmissionSlipService
             $application->coursePreference3?->name ?? '—',
         ];
 
-        $qrService = app(QrCodeService::class);
-        $qrCodeDataUri = $qrService->admissionSlipDataUri($application->reference_number);
-
-        $pdf = Pdf::loadView('pdf.admission-slip', [
+        return Pdf::loadView('pdf.admission-slip', [
             'referenceNumber' => $application->reference_number,
-            'fullName' => $fullName,
-            'birthdate' => $application->birthdate->format('F j, Y'),
-            'sex' => ucfirst($application->sex),
-            'courseLabels' => $courseLabels,
-            'qrCodeDataUri' => $qrCodeDataUri,
+            'fullName'        => $fullName,
+            'birthdate'       => $application->birthdate->format('F j, Y'),
+            'sex'             => ucfirst($application->sex),
+            'courseLabels'    => $courseLabels,
         ]);
-
-        return $pdf;
     }
 
     /**
-     * Render admission slip as HTML for browser print (Inertia). Same data as generatePdf.
+     * Render admission slip as HTML for browser print.
      */
     public function renderHtml(Application $application): string
     {
@@ -63,16 +57,12 @@ class AdmissionSlipService
             $application->coursePreference3?->name ?? '—',
         ];
 
-        $qrService = app(QrCodeService::class);
-        $qrCodeDataUri = $qrService->admissionSlipDataUri($application->reference_number);
-
         return View::make('pdf.admission-slip', [
             'referenceNumber' => $application->reference_number,
-            'fullName' => $fullName,
-            'birthdate' => $application->birthdate->format('F j, Y'),
-            'sex' => ucfirst($application->sex),
-            'courseLabels' => $courseLabels,
-            'qrCodeDataUri' => $qrCodeDataUri,
+            'fullName'        => $fullName,
+            'birthdate'       => $application->birthdate->format('F j, Y'),
+            'sex'             => ucfirst($application->sex),
+            'courseLabels'    => $courseLabels,
         ])->render();
     }
 }

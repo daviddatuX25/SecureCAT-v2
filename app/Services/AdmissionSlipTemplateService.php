@@ -179,19 +179,8 @@ class AdmissionSlipTemplateService
 
     protected function qrPlaceholder(string $reference): string
     {
-        if ($reference === '' || $reference === '—') {
-            return sprintf(
-                '<div class="qr-placeholder" style="width:80px;height:80px;border:2px dashed #9ca3af;display:inline-block;text-align:center;line-height:80px;color:#9ca3af;font-size:10px;">QR Code<br />%s</div>',
-                htmlspecialchars($reference ?: '—')
-            );
-        }
-
-        $qrService = app(QrCodeService::class);
-        $dataUri = $qrService->admissionSlipDataUri($reference);
-
         return sprintf(
-            '<img src="%s" alt="QR Code" width="80" height="80" style="display:inline-block;vertical-align:middle;" />',
-            htmlspecialchars($dataUri)
+            '<div class="qr-placeholder" style="width:80px;height:80px;border:2px dashed #9ca3af;display:inline-block;text-align:center;line-height:80px;color:#9ca3af;font-size:10px;">QR Code</div>'
         );
     }
 

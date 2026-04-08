@@ -237,20 +237,7 @@ class ResultSheetTemplateService
 
     protected function qrPlaceholder(string $reference): string
     {
-        if ($reference === '' || $reference === '—') {
-            return sprintf(
-                '<div class="w-20 h-20 border-2 border-dashed border-muted-foreground/50 rounded flex items-center justify-center text-xs text-muted-foreground text-center px-1">QR Code<br />%s</div>',
-                htmlspecialchars($reference ?: '—')
-            );
-        }
-
-        $qrService = app(QrCodeService::class);
-        $dataUri = $qrService->consultationDataUri($reference);
-
-        return sprintf(
-            '<img src="%s" alt="QR Code" width="80" height="80" class="inline-block align-middle rounded" />',
-            htmlspecialchars($dataUri)
-        );
+        return '<div class="w-20 h-20 border-2 border-dashed border-muted-foreground/50 rounded flex items-center justify-center text-xs text-muted-foreground text-center px-1">QR Code</div>';
     }
 
     protected function sampleApplicantData(): array
