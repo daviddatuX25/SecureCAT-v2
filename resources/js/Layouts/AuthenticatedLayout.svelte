@@ -9,7 +9,11 @@
   const page = usePage();
   const user = $derived($page.props.auth?.user ?? null);
   const roles = $derived(user?.roles?.map((r) => r.name) ?? []);
-  const pageTitle = $derived($page.props.pageTitle ?? 'Dashboard');
+  const headTitle = $derived(
+    breadcrumbs.length > 0
+      ? `${breadcrumbs[breadcrumbs.length - 1].label} - SecureCAT`
+      : 'SecureCAT'
+  );
   let sidebarOpen = $state(false);
   let userDropdownOpen = $state(false);
   let darkMode = $state(typeof document !== 'undefined' && document.documentElement.classList.contains('dark'));
@@ -82,7 +86,7 @@
 </script>
 
 <svelte:head>
-  <title>SecureCAT</title>
+  <title>{headTitle}</title>
 </svelte:head>
 
 <div class="min-h-screen w-full max-w-[100vw] flex overflow-x-hidden">
@@ -220,7 +224,7 @@
           <Menu class="h-5 w-5" />
         </Button>
         {#if breadcrumbs.length === 0}
-          <h1 class="text-2xl font-semibold tracking-tight text-foreground">{pageTitle}</h1>
+          <span class="text-2xl font-semibold tracking-tight text-foreground">SecureCAT</span>
         {:else if breadcrumbs.length === 1}
           <h1 class="text-2xl font-semibold tracking-tight text-foreground">{breadcrumbs[0].label}</h1>
         {:else}
