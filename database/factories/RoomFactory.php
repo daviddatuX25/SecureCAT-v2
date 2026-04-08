@@ -27,11 +27,6 @@ class RoomFactory extends Factory
             'building' => $building,
             'floor' => fake()->optional(0.7)->randomElement(['1st Floor', '2nd Floor', '3rd Floor']),
             'capacity' => fake()->numberBetween(20, 100),
-            'facilities' => [
-                'projector' => fake()->boolean(0.7),
-                'ac' => fake()->boolean(0.9),
-                'whiteboard' => fake()->boolean(0.8),
-            ],
             'is_active' => true,
         ];
     }
