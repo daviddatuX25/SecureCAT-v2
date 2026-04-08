@@ -16,9 +16,9 @@ class StoreExamSessionRequest extends FormRequest
         return [
             'season_id' => ['sometimes', 'nullable', 'integer', 'exists:seasons,id'],
             'room_id' => ['required', 'integer', 'exists:rooms,id'],
-            'date' => ['required', 'date'],
-            'start_time' => ['required', 'string'],
-            'end_time' => ['nullable', 'string'],
+            'date' => ['required', 'date', 'after_or_equal:today'],
+            'start_time' => ['required', 'string', 'date_format:H:i'],
+            'end_time' => ['nullable', 'string', 'date_format:H:i'],
             'proctor_ids' => ['sometimes', 'array'],
             'proctor_ids.*' => ['integer', 'exists:users,id'],
         ];
