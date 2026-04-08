@@ -17,15 +17,11 @@
     e.preventDefault();
     $form.post('/admin/exam-domains');
   }
-const breadcrumbs = [{ label: 'Exam Pillars', href: '/admin/exam-domains' }, { label: 'Add Exam Pillar' }];
+const breadcrumbs = [{ label: 'Aptitude Areas', href: '/admin/exam-domains' }, { label: 'Create' }];
 </script>
 
 <AuthenticatedLayout {breadcrumbs}>
   <div class="max-w-lg space-y-6">
-    <div class="flex items-center gap-4">
-      <Link href="/admin/exam-domains" class="text-sm text-muted-foreground hover:text-foreground">Back to exam pillars</Link>
-    </div>
-
     <form onsubmit={submitForm} class="space-y-4 rounded-lg border border-border bg-card p-6">
       <div class="space-y-2">
         <label for="name" class="text-sm font-medium">Name</label>

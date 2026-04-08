@@ -33,15 +33,11 @@
     }));
     $form.post('/admin/test-scheduling');
   }
-const breadcrumbs = [{ label: 'Exam Sessions', href: '/admin/test-scheduling' }, { label: 'Create Exam Session' }];
+const breadcrumbs = [{ label: 'Exam Scheduling', href: '/admin/test-scheduling' }, { label: 'Create' }];
 </script>
 
 <AuthenticatedLayout {breadcrumbs}>
   <div class="max-w-lg space-y-6">
-    <div class="flex items-center gap-4">
-      <Link href="/admin/test-scheduling" class="text-sm text-muted-foreground hover:text-foreground">Back to exam sessions</Link>
-    </div>
-
     <form onsubmit={submitForm} class="space-y-4 rounded-lg border border-border bg-card p-6">
       <div class="space-y-2">
         <label for="room_id" class="text-sm font-medium">Room</label>

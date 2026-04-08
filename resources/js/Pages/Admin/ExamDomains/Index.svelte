@@ -10,7 +10,7 @@
   const page = usePage();
   const success = $derived($page.props.flash?.success ?? null);
   const list = $derived(Array.isArray(exam_domains) ? exam_domains : []);
-const breadcrumbs = [{ label: 'Exam Pillars' }];
+const breadcrumbs = [{ label: 'Aptitude Areas' }];
 </script>
 
 <AuthenticatedLayout {breadcrumbs}>

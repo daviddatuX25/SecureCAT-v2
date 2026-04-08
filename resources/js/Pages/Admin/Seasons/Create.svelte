@@ -15,15 +15,11 @@
     e.preventDefault();
     $form.post('/admin/seasons');
   }
-const breadcrumbs = [{ label: 'Academic Years', href: '/admin/seasons' }, { label: 'Add Season' }];
+const breadcrumbs = [{ label: 'Academic Years', href: '/admin/seasons' }, { label: 'Create' }];
 </script>
 
 <AuthenticatedLayout {breadcrumbs}>
   <div class="max-w-lg space-y-6">
-    <div class="flex items-center gap-4">
-      <Link href="/admin/seasons" class="text-sm text-muted-foreground hover:text-foreground">Back to seasons</Link>
-    </div>
-
     {#if Object.keys($form.errors || {}).length > 0 && !$form.processing}
       <div class="rounded-lg border border-destructive/50 bg-destructive/10 px-4 py-3 text-sm text-destructive">
         Please fix the errors below.

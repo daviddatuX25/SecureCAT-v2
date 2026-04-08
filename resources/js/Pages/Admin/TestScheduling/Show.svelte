@@ -17,7 +17,7 @@
           { label: session?.id ? 'Session #' + session.id : 'Session' }
         ]
       : [
-          { label: 'Exam Sessions', href: '/admin/test-scheduling' },
+          { label: 'Exam Scheduling', href: '/admin/test-scheduling' },
           { label: session?.id ? 'Session #' + session.id : 'Session' }
         ]
   );
