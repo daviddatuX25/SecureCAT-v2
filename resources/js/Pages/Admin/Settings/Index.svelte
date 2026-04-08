@@ -46,12 +46,12 @@
 
 <svelte:head>
   <title>Settings - SecureCAT</title>
-</svelte:head>
+const breadcrumbs = [{ label: 'Settings' }];
+</script>
 
-<AuthenticatedLayout>
+<AuthenticatedLayout {breadcrumbs}>
   <div class="space-y-6 min-w-0">
     <div>
-      <h1 class="text-2xl font-bold">Settings</h1>
       <p class="mt-1 text-sm text-muted-foreground">System-wide feature toggles and configuration.</p>
     </div>
 
