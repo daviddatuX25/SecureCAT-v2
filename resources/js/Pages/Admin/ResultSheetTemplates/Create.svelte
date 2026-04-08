@@ -4,6 +4,11 @@
   import { Button } from '@/Components/ui/button';
   import { Input } from '@/Components/ui/input';
 
+  const breadcrumbs = [
+    { label: 'Result Sheet Templates', href: '/admin/result-sheet-templates' },
+    { label: 'Create' },
+  ];
+
   let {
     placeholders = [],
     domainPlaceholders = [],
@@ -102,17 +107,8 @@
   });
 </script>
 
-<svelte:head>
-  <title>Create result sheet template - SecureCAT</title>
-</svelte:head>
-
-<AuthenticatedLayout>
+<AuthenticatedLayout {breadcrumbs}>
   <div class="max-w-6xl space-y-6">
-    <div class="flex items-center gap-4">
-      <Link href="/admin/result-sheet-templates" class="text-sm text-muted-foreground hover:text-foreground">Back</Link>
-      <h1 class="text-2xl font-bold">Create result sheet template</h1>
-    </div>
-
     <p class="text-sm text-muted-foreground">Common placeholders: {placeholders.slice(0, 6).join(', ')}…</p>
 
     <div class="grid gap-6 lg:grid-cols-2">
