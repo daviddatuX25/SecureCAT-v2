@@ -70,5 +70,12 @@ class CourseController extends Controller
 
         return redirect()->route('admin.courses.index')->with('success', 'Course deactivated.');
     }
+
+    public function activate(Course $course): RedirectResponse
+    {
+        $course->update(['is_active' => true]);
+
+        return redirect()->route('admin.courses.index')->with('success', 'Course activated.');
+    }
 }
 

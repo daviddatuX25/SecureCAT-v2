@@ -114,6 +114,7 @@ Route::middleware(['auth'])->group(function () {
         Route::post('seasons/{season}/activate', [SeasonController::class, 'activate'])->name('seasons.activate');
         Route::resource('exam-domains', ExamDomainController::class)->except('show', 'destroy')->parameters(['exam_domains' => 'exam_domain']);
         Route::resource('courses', CourseController::class)->except('show')->parameters(['courses' => 'course']);
+        Route::post('courses/{course}/activate', [CourseController::class, 'activate'])->name('courses.activate');
         Route::resource('rooms', RoomController::class)->except('show')->parameters(['rooms' => 'room']);
         Route::post('rooms/{room}/activate', [RoomController::class, 'activate'])->name('rooms.activate');
         Route::post('result-sheet-templates/preview', [ResultSheetTemplateController::class, 'preview'])->name('result-sheet-templates.preview');

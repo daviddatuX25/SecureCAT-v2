@@ -3,7 +3,7 @@
   import { Link, router, usePage } from '@inertiajs/svelte';
   import { Button } from '@/Components/ui/button';
   import { Badge } from '@/Components/ui/badge';
-  import { Plus, Pencil, Trash2, Table2, LayoutGrid, MonitorSmartphone } from 'lucide-svelte';
+  import { Plus, Pencil, Trash2, Table2, LayoutGrid, MonitorSmartphone, CheckCircle } from 'lucide-svelte';
   import * as ToggleGroup from '@/Components/ui/toggle-group';
 
   let { courses } = $props();
@@ -14,6 +14,7 @@
   // 'responsive' = cards on small, table on md+; 'table' | 'cards' = explicit override
   let viewMode = $state('responsive');
   let deleteId = $state(null);
+  let activateId = $state(null);
 
   function confirmDelete(id) {
     deleteId = id;
@@ -27,6 +28,10 @@
     if (deleteId) {
       router.delete(`/admin/courses/${deleteId}`, { onSuccess: () => (deleteId = null) });
     }
+  }
+
+  function doActivate(id) {
+    router.post(`/admin/courses/${id}/activate`, { onSuccess: () => (activateId = null) });
   }
 
   function formatQuota(q) {
@@ -139,6 +144,16 @@
                       >
                         <Trash2 class="h-4 w-4" />
                       </Button>
+                    {:else}
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        aria-label="Activate"
+                        class="text-primary hover:text-primary"
+                        onclick={() => doActivate(course.id)}
+                      >
+                        <CheckCircle class="h-4 w-4" />
+                      </Button>
                     {/if}
                   </div>
                 </td>
@@ -197,6 +212,16 @@
                       onclick={() => confirmDelete(course.id)}
                     >
                       <Trash2 class="h-4 w-4" />
+                    </Button>
+                  {:else}
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      class="min-h-[44px] text-primary hover:text-primary"
+                      aria-label="Activate"
+                      onclick={() => doActivate(course.id)}
+                    >
+                      <CheckCircle class="h-4 w-4" />
                     </Button>
                   {/if}
                 </div>
