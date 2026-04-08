@@ -15,17 +15,13 @@
     e.preventDefault();
     $form.post('/admin/seasons');
   }
+const breadcrumbs = [{ label: 'Academic Years', href: '/admin/seasons' }, { label: 'Add Season' }];
 </script>
 
-<svelte:head>
-  <title>Add Season - SecureCAT</title>
-</svelte:head>
-
-<AuthenticatedLayout>
+<AuthenticatedLayout {breadcrumbs}>
   <div class="max-w-lg space-y-6">
     <div class="flex items-center gap-4">
       <Link href="/admin/seasons" class="text-sm text-muted-foreground hover:text-foreground">Back to seasons</Link>
-      <h1 class="text-2xl font-bold">Add Season</h1>
     </div>
 
     {#if Object.keys($form.errors || {}).length > 0 && !$form.processing}

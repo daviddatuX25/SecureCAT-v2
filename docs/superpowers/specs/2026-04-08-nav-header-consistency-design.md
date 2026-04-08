@@ -40,7 +40,7 @@ These labels are used in sidebar nav, breadcrumbs, and `<svelte:head><title>` â€
 | Result Templates | **Result Sheet Templates** |
 | Admission Slip Templates | **Admission Slip Templates** *(unchanged)* |
 | My Sessions | **My Sessions** *(unchanged)* |
-| Session Monitor | **Session Monitor** *(unchanged)* |
+| Session Monitor | **Exam Monitoring** |
 | Applications | **Applications** *(unchanged)* |
 | Grading | **Grading** *(unchanged)* |
 | Users | **Users** *(unchanged)* |
@@ -86,12 +86,13 @@ type Crumb = { label: string; href?: string };
 In `navSections`, update labels:
 
 ```js
-{ href: '/admin/seasons',              label: 'Academic Years' }
-{ href: '/admin/test-scheduling',      label: 'Exam Scheduling' }       // Registrar Office
-{ href: '/admin/test-scheduling',      label: 'Exam Scheduling' }       // Guidance Office (My Sessions stays)
-{ href: '/admin/exam-domains',         label: 'Aptitude Areas' }
-{ href: '/admin/knowledge-documents',  label: 'Knowledge Documents' }
-{ href: '/admin/result-sheet-templates', label: 'Result Sheet Templates' }
+{ href: '/admin/seasons',                    label: 'Academic Years' }
+{ href: '/admin/test-scheduling',            label: 'Exam Scheduling' }        // Registrar Office
+{ href: '/admin/test-scheduling',            label: 'Exam Scheduling' }        // Guidance Office (My Sessions stays)
+{ href: '/admin/test-scheduling/monitoring', label: 'Exam Monitoring' }        // top-level, not nested under Exam Scheduling
+{ href: '/admin/exam-domains',               label: 'Aptitude Areas' }
+{ href: '/admin/knowledge-documents',        label: 'Knowledge Documents' }
+{ href: '/admin/result-sheet-templates',     label: 'Result Sheet Templates' }
 ```
 
 #### B. Mobile breadcrumb dropdown
@@ -155,7 +156,7 @@ For every affected page:
 | `Admin/TestScheduling/Show` | `[{ label: 'Exam Scheduling', href: '/admin/test-scheduling' }, { label: 'View' }]` |
 | `Admin/TestScheduling/Create` | `[{ label: 'Exam Scheduling', href: '/admin/test-scheduling' }, { label: 'Create' }]` |
 | `Admin/TestScheduling/Edit` | `[{ label: 'Exam Scheduling', href: '/admin/test-scheduling' }, { label: 'Edit' }]` |
-| `Admin/TestScheduling/Monitoring` | `[{ label: 'Exam Scheduling', href: '/admin/test-scheduling' }, { label: 'Session Monitor' }]` |
+| `Admin/TestScheduling/Monitoring` | `[{ label: 'Exam Monitoring' }]` |
 | `Admin/ExamDomains/Index` | `[{ label: 'Aptitude Areas' }]` |
 | `Admin/ExamDomains/Create` | `[{ label: 'Aptitude Areas', href: '/admin/exam-domains' }, { label: 'Create' }]` |
 | `Admin/ExamDomains/Edit` | `[{ label: 'Aptitude Areas', href: '/admin/exam-domains' }, { label: 'Edit' }]` |

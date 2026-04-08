@@ -16,6 +16,7 @@
 
   const page = usePage();
   const flash = $derived($page.props.flash ?? {});
+  const breadcrumbs = [{ label: 'Settings' }];
   let saving = $state(false);
 
   $effect(() => {
@@ -42,11 +43,6 @@
       },
     });
   }
-</script>
-
-<svelte:head>
-  <title>Settings - SecureCAT</title>
-const breadcrumbs = [{ label: 'Settings' }];
 </script>
 
 <AuthenticatedLayout {breadcrumbs}>

@@ -10,19 +10,13 @@
   const page = usePage();
   const success = $derived($page.props.flash?.success ?? null);
   const list = $derived(Array.isArray(exam_domains) ? exam_domains : []);
+const breadcrumbs = [{ label: 'Exam Pillars' }];
 </script>
 
-<svelte:head>
-  <title>Exam pillars - SecureCAT</title>
-</svelte:head>
-
-<AuthenticatedLayout>
+<AuthenticatedLayout {breadcrumbs}>
   <div class="space-y-6 min-w-0">
     <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
       <div>
-        <h1 class="text-2xl font-bold">Exam pillars</h1>
-        <p class="mt-1 text-sm text-muted-foreground">Grade exam domains (pillars) used for scoring and consultation. Only active pillars appear in grading and result templates.</p>
-      </div>
       <Link href="/admin/exam-domains/create">
         <Button class="min-h-[44px]">
           <Plus class="mr-2 h-4 w-4" />

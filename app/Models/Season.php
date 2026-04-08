@@ -71,6 +71,15 @@ class Season extends Model
         return sprintf('Until %s', $end);
     }
 
+    public function semesterLabel(): string
+    {
+        return match ($this->semester) {
+            '1' => '1st Semester',
+            '2' => '2nd Semester',
+            default => $this->semester,
+        };
+    }
+
     public function activate(): void
     {
         DB::transaction(function () {

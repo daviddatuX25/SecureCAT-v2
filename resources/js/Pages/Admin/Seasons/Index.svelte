@@ -10,19 +10,13 @@
   const page = usePage();
   const success = $derived($page.props.flash?.success ?? null);
   const list = $derived(seasons?.data ?? []);
+const breadcrumbs = [{ label: 'Academic Years' }];
 </script>
 
-<svelte:head>
-  <title>Academic Years - SecureCAT</title>
-</svelte:head>
-
-<AuthenticatedLayout>
+<AuthenticatedLayout {breadcrumbs}>
   <div class="space-y-6 min-w-0">
     <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
       <div>
-        <h1 class="text-2xl font-bold">Academic Years</h1>
-        <p class="mt-1 text-sm text-muted-foreground">Academic periods. Only one season is active; new applications attach to it.</p>
-      </div>
       <div class="flex flex-wrap gap-3">
         <Link href="/admin/seasons/create">
           <Button class="min-h-[44px]">
@@ -61,7 +55,7 @@
             {#each list as season}
               <tr class="border-t border-border hover:bg-muted/30">
                 <td class="px-4 py-3 font-medium">
-                  {season.label ?? (season.academic_year ?? '—') + ' – ' + (season.semester ?? '—')}
+                  {season.label ?? (season.academic_year ?? '—') + ' – ' + (season.semester_label ?? '—')}
                 </td>
                 <td class="px-4 py-3 text-muted-foreground">
                   {season.application_window ?? '— — —'}

@@ -4,17 +4,13 @@
   import EditForm from './EditForm.svelte';
 
   let { session, rooms = [], proctors = [] } = $props();
+const breadcrumbs = [{ label: 'Exam Sessions', href: '/admin/test-scheduling' }, { label: 'Edit Exam Session' }];
 </script>
 
-<svelte:head>
-  <title>Edit Exam Session - SecureCAT</title>
-</svelte:head>
-
-<AuthenticatedLayout>
+<AuthenticatedLayout {breadcrumbs}>
   <div class="max-w-lg space-y-6">
     <div class="flex items-center gap-4">
       <Link href="/admin/test-scheduling" class="text-sm text-muted-foreground hover:text-foreground">Back to exam sessions</Link>
-      <h1 class="text-2xl font-bold">Edit Exam Session</h1>
     </div>
 
     {#if session?.id}

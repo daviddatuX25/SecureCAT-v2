@@ -47,10 +47,6 @@
   const breadcrumbs = $derived([{ label: 'Users' }]);
 </script>
 
-<svelte:head>
-  <title>Users - SecureCAT</title>
-</svelte:head>
-
 <AuthenticatedLayout breadcrumbs={breadcrumbs}>
   <div class="space-y-6 min-w-0">
     <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">

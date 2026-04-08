@@ -53,19 +53,13 @@
 
   // 'responsive' = cards on small, table on md+; 'table' | 'cards' = explicit override
   let viewMode = $state('responsive');
+const breadcrumbs = [{ label: 'Rooms' }];
 </script>
 
-<svelte:head>
-  <title>Rooms - SecureCAT</title>
-</svelte:head>
-
-<AuthenticatedLayout>
+<AuthenticatedLayout {breadcrumbs}>
   <div class="space-y-6 min-w-0">
     <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
       <div>
-        <h1 class="text-2xl font-bold">Rooms</h1>
-        <p class="mt-1 text-sm text-muted-foreground">Manage exam rooms</p>
-      </div>
       <div class="flex flex-wrap items-center gap-3">
         <ToggleGroup.Root
           type="single"

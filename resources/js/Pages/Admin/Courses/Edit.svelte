@@ -16,17 +16,13 @@
     e.preventDefault();
     $form.put(`/admin/courses/${course.id}`);
   }
+const breadcrumbs = [{ label: 'Courses', href: '/admin/courses' }, { label: 'Edit Course' }];
 </script>
 
-<svelte:head>
-  <title>Edit Course - SecureCAT</title>
-</svelte:head>
-
-<AuthenticatedLayout>
+<AuthenticatedLayout {breadcrumbs}>
   <div class="max-w-lg space-y-6">
     <div class="flex items-center gap-4">
       <Link href="/admin/courses" class="text-sm text-muted-foreground hover:text-foreground">Back to courses</Link>
-      <h1 class="text-2xl font-bold">Edit Course</h1>
     </div>
 
     <form onsubmit={submitForm} class="space-y-4 rounded-lg border border-border bg-card p-6">

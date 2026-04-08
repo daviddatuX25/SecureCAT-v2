@@ -17,7 +17,7 @@
           { label: session?.id ? 'Session #' + session.id : 'Session' }
         ]
       : [
-          { label: 'Test Scheduling', href: '/admin/test-scheduling' },
+          { label: 'Exam Sessions', href: '/admin/test-scheduling' },
           { label: session?.id ? 'Session #' + session.id : 'Session' }
         ]
   );
@@ -106,10 +106,6 @@
   }
 </script>
 
-<svelte:head>
-  <title>Exam Session - SecureCAT</title>
-</svelte:head>
-
 <AuthenticatedLayout breadcrumbs={breadcrumbs}>
   <div class="space-y-6">
     {#if success}
@@ -124,7 +120,6 @@
     {/if}
 
     <div class="rounded-lg border border-border bg-card p-6">
-      <h1 class="text-2xl font-bold">Exam Session</h1>
       <dl class="mt-4 grid gap-3 sm:grid-cols-2">
         <div>
           <dt class="text-sm text-muted-foreground">Date</dt>

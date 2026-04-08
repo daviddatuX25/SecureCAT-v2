@@ -17,17 +17,13 @@
     e.preventDefault();
     $form.put(`/admin/seasons/${season.id}`);
   }
+const breadcrumbs = [{ label: 'Academic Years', href: '/admin/seasons' }, { label: 'Edit Season' }];
 </script>
 
-<svelte:head>
-  <title>Edit Season - SecureCAT</title>
-</svelte:head>
-
-<AuthenticatedLayout>
+<AuthenticatedLayout {breadcrumbs}>
   <div class="max-w-lg space-y-6">
     <div class="flex items-center gap-4">
       <Link href="/admin/seasons" class="text-sm text-muted-foreground hover:text-foreground">Back to seasons</Link>
-      <h1 class="text-2xl font-bold">Edit Season</h1>
     </div>
 
     <form onsubmit={submitForm} class="space-y-4 rounded-lg border border-border bg-card p-6">

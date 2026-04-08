@@ -176,7 +176,7 @@ class ApplicationController extends Controller
         return Inertia::render('Applications/Apply', [
             'courses' => $courses,
             'appointments' => $appointments,
-            'active_season' => $activeSeason ? ['id' => $activeSeason->id, 'academic_year' => $activeSeason->academic_year, 'semester' => $activeSeason->semester] : null,
+            'active_season' => $activeSeason ? ['id' => $activeSeason->id, 'academic_year' => $activeSeason->academic_year, 'semester' => $activeSeason->semester, 'semester_label' => $activeSeason->semesterLabel()] : null,
             'allow_apply' => $allowApply,
         ]);
     }

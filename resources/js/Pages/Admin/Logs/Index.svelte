@@ -11,6 +11,7 @@
 
   const page = usePage();
   const error = $derived($page.props.flash?.error ?? null);
+  const breadcrumbs = [{ label: 'Audit Log' }];
 
   let filterEvent = $state('');
   let filterCategory = $state('');
@@ -87,11 +88,6 @@
       exportLoading = false;
     }
   }
-</script>
-
-<svelte:head>
-  <title>Audit log - SecureCAT</title>
-const breadcrumbs = [{ label: 'Audit Log' }];
 </script>
 
 <AuthenticatedLayout {breadcrumbs}>

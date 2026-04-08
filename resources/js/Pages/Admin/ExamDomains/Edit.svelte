@@ -19,17 +19,13 @@
     e.preventDefault();
     $form.put(`/admin/exam-domains/${exam_domain.id}`);
   }
+const breadcrumbs = [{ label: 'Exam Pillars', href: '/admin/exam-domains' }, { label: 'Edit Exam Pillar' }];
 </script>
 
-<svelte:head>
-  <title>Edit exam pillar - SecureCAT</title>
-</svelte:head>
-
-<AuthenticatedLayout>
+<AuthenticatedLayout {breadcrumbs}>
   <div class="max-w-lg space-y-6">
     <div class="flex items-center gap-4">
       <Link href="/admin/exam-domains" class="text-sm text-muted-foreground hover:text-foreground">Back to exam pillars</Link>
-      <h1 class="text-2xl font-bold">Edit exam pillar</h1>
     </div>
 
     <form onsubmit={submitForm} class="space-y-4 rounded-lg border border-border bg-card p-6">

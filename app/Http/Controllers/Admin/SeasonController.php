@@ -24,7 +24,6 @@ class SeasonController extends Controller
             ->withQueryString();
 
         $seasons->getCollection()->transform(function (Season $s) {
-            $label = sprintf('%s – %s', $s->academic_year, $s->semester);
             $windowLabel = $s->applicationWindowLabel();
             $windowOpen = $s->isApplicationWindowOpen();
 
@@ -32,7 +31,8 @@ class SeasonController extends Controller
                 'id' => $s->id,
                 'academic_year' => $s->academic_year,
                 'semester' => $s->semester,
-                'label' => $label,
+                'semester_label' => $s->semesterLabel(),
+                'label' => sprintf('%s – %s', $s->academic_year, $s->semesterLabel()),
                 'application_start_date' => $s->application_start_date?->toDateString(),
                 'application_end_date' => $s->application_end_date?->toDateString(),
                 'application_window' => $windowLabel,
