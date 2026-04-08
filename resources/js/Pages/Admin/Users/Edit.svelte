@@ -6,6 +6,8 @@
 
   let { user, roles } = $props();
 
+  const breadcrumbs = [{ label: 'Users', href: '/admin/users' }, { label: 'Edit' }];
+
   const initialRoles = (user.roles ?? []).map((r) => r.name);
   let selectedRoles = $state([...initialRoles]);
 
@@ -32,17 +34,8 @@
   }
 </script>
 
-<svelte:head>
-  <title>Edit User - SecureCAT</title>
-</svelte:head>
-
-<AuthenticatedLayout>
+<AuthenticatedLayout {breadcrumbs}>
   <div class="max-w-lg space-y-6">
-    <div class="flex items-center gap-4">
-      <Link href="/admin/users" class="text-sm text-muted-foreground hover:text-foreground">Back to users</Link>
-      <h1 class="text-2xl font-bold">Edit User</h1>
-    </div>
-
     <form onsubmit={submitForm}
       class="space-y-4 rounded-lg border border-border bg-card p-6"
     >

@@ -6,6 +6,8 @@
 
   let { roles = [] } = $props();
 
+  const breadcrumbs = [{ label: 'Users', href: '/admin/users' }, { label: 'Create' }];
+
   // Only roles allowed by StoreUserRequest (staff, admin, proctor, test_administrator)
   const allowedRoleNames = ['staff', 'admin', 'proctor', 'test_administrator'];
   const selectableRoles = $derived(roles.filter((r) => allowedRoleNames.includes(r.name)));
@@ -35,17 +37,8 @@
   }
 </script>
 
-<svelte:head>
-  <title>Create User - SecureCAT</title>
-</svelte:head>
-
-<AuthenticatedLayout>
+<AuthenticatedLayout {breadcrumbs}>
   <div class="max-w-lg space-y-6">
-    <div class="flex items-center gap-4">
-      <Link href="/admin/users" class="text-sm text-muted-foreground hover:text-foreground">Back to users</Link>
-      <h1 class="text-2xl font-bold">Create User</h1>
-    </div>
-
     <form onsubmit={submitForm} class="space-y-4 rounded-lg border border-border bg-card p-6">
       <div class="space-y-2">
         <label for="name" class="text-sm font-medium">Name</label>
