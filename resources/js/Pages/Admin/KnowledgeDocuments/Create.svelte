@@ -4,6 +4,11 @@
   import { Button } from '@/Components/ui/button';
   import { Input } from '@/Components/ui/input';
 
+  const breadcrumbs = [
+    { label: 'Knowledge Documents', href: '/admin/knowledge-documents' },
+    { label: 'Create' },
+  ];
+
   const form = useForm({
     title: '',
     content: '',
@@ -30,17 +35,8 @@
   }
 </script>
 
-<svelte:head>
-  <title>Add knowledge document - SecureCAT</title>
-</svelte:head>
-
-<AuthenticatedLayout>
+<AuthenticatedLayout {breadcrumbs}>
   <div class="max-w-2xl space-y-6">
-    <div class="flex items-center gap-4">
-      <Link href="/admin/knowledge-documents" class="text-sm text-muted-foreground hover:text-foreground">Back to knowledge documents</Link>
-      <h1 class="text-2xl font-bold">Add knowledge document</h1>
-    </div>
-
     <p class="text-sm text-muted-foreground">
       Add text and metadata. Metadata (category, year) defines what this document is and is used for retrieval when the AI answers applicant questions.
     </p>

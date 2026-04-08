@@ -5,6 +5,11 @@
   import { Input } from '@/Components/ui/input';
   import { FileSpreadsheet, Upload } from 'lucide-svelte';
 
+  const breadcrumbs = [
+    { label: 'Knowledge Documents', href: '/admin/knowledge-documents' },
+    { label: 'Import' },
+  ];
+
   const form = useForm({
     file: null,
     title: '',
@@ -40,17 +45,8 @@
   }
 </script>
 
-<svelte:head>
-  <title>Import from CSV - SecureCAT</title>
-</svelte:head>
-
-<AuthenticatedLayout>
+<AuthenticatedLayout {breadcrumbs}>
   <div class="max-w-2xl space-y-6">
-    <div class="flex items-center gap-4">
-      <Link href="/admin/knowledge-documents" class="text-sm text-muted-foreground hover:text-foreground">Back to knowledge documents</Link>
-      <h1 class="text-2xl font-bold">Import from CSV</h1>
-    </div>
-
     <p class="text-sm text-muted-foreground">
       Upload a CSV file. Rows will be converted to factual narrative sentences. <strong>Metadata defines the document</strong>—set category, year, and description so retrieval can find it.
     </p>

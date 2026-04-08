@@ -10,6 +10,8 @@
 
   let { documents, filters = {} } = $props();
 
+  const breadcrumbs = [{ label: 'Knowledge Documents' }];
+
   const page = usePage();
   const success = $derived($page.props.flash?.success ?? null);
 
@@ -55,15 +57,10 @@
   const rows = $derived(documents?.data ?? []);
 </script>
 
-<svelte:head>
-  <title>Knowledge documents - SecureCAT</title>
-</svelte:head>
-
-<AuthenticatedLayout>
+<AuthenticatedLayout {breadcrumbs}>
   <div class="space-y-6 min-w-0">
     <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
       <div>
-        <h1 class="text-2xl font-bold">Knowledge documents</h1>
         <p class="mt-1 text-sm text-muted-foreground">Text and metadata used by the AI companion for data-grounded advice. Metadata defines what each document is (category, year) for retrieval.</p>
       </div>
       <div class="flex gap-2">

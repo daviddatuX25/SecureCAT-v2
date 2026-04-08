@@ -7,6 +7,11 @@
 
   let { document: doc } = $props();
 
+  const breadcrumbs = [
+    { label: 'Knowledge Documents', href: '/admin/knowledge-documents' },
+    { label: 'Edit' },
+  ];
+
   const meta = doc?.metadata ?? {};
   const tagsArray = Array.isArray(meta.tags) ? meta.tags : [];
   const initialTags = tagsArray.join(', ');
@@ -42,17 +47,8 @@
   }
 </script>
 
-<svelte:head>
-  <title>Edit knowledge document - SecureCAT</title>
-</svelte:head>
-
-<AuthenticatedLayout>
+<AuthenticatedLayout {breadcrumbs}>
   <div class="max-w-2xl space-y-6">
-    <div class="flex items-center gap-4">
-      <Link href="/admin/knowledge-documents" class="text-sm text-muted-foreground hover:text-foreground">Back to knowledge documents</Link>
-      <h1 class="text-2xl font-bold">Edit knowledge document</h1>
-    </div>
-
     <form onsubmit={submitForm} class="space-y-4 rounded-lg border border-border bg-card p-6">
       <div class="space-y-2">
         <label for="title">Title</label>
