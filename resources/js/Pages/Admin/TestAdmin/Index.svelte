@@ -7,6 +7,8 @@
 
   let { sessions, filters = {}, seasons = [], active_season_id = null, statuses = [] } = $props();
 
+  const breadcrumbs = [{ label: 'My Sessions' }];
+
   const page = usePage();
   const success = $derived($page.props.flash?.success ?? null);
   const error   = $derived($page.props.flash?.error   ?? null);
@@ -49,15 +51,10 @@
   }
 </script>
 
-<svelte:head>
-  <title>My Sessions - SecureCAT</title>
-</svelte:head>
-
-<AuthenticatedLayout>
+<AuthenticatedLayout {breadcrumbs}>
   <div class="space-y-6">
     <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
       <div>
-        <h1 class="text-2xl font-bold">My Sessions</h1>
         <p class="mt-1 text-sm text-muted-foreground">Exam sessions assigned to you. Click "Open roster" to manage attendance and submissions.</p>
       </div>
     </div>
