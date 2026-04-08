@@ -3,9 +3,11 @@
   import { Link, router } from '@inertiajs/svelte';
   import * as Table from '@/Components/ui/table';
   import ElapsedTime from '@/Components/ElapsedTime.svelte';
-  import { ClipboardList, Activity } from 'lucide-svelte';
+  import { ClipboardList } from 'lucide-svelte';
 
   let { sessions = [] } = $props();
+
+  const breadcrumbs = [{ label: 'Exam Monitoring' }];
 
   $effect(() => {
     const interval = setInterval(() => {
@@ -35,18 +37,9 @@
   }
 </script>
 
-<svelte:head>
-  <title>Session Monitor - SecureCAT</title>
-</svelte:head>
-
-<AuthenticatedLayout>
+<AuthenticatedLayout {breadcrumbs}>
   <div class="space-y-6 min-w-0">
-    <div>
-      <h1 class="text-2xl font-bold flex items-center gap-2">
-        <Activity class="h-6 w-6" />
-        Session Monitor
-      </h1>
-      <p class="mt-1 text-sm text-muted-foreground">
+    <p class="text-sm text-muted-foreground">
         Live status of in-progress exam sessions. Data refreshes every 15 seconds.
       </p>
     </div>
