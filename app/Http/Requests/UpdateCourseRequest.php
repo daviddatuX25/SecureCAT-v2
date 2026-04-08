@@ -16,6 +16,7 @@ class UpdateCourseRequest extends FormRequest
         return [
             'name' => ['sometimes', 'string', 'max:255'],
             'code' => ['sometimes', 'string', 'max:50'],
+            'is_active' => ['sometimes', 'boolean'],
         ];
     }
 }

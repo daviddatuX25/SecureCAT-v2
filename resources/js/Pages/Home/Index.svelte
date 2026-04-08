@@ -17,54 +17,54 @@
 </svelte:head>
 
 <HomeLayout>
-  <!-- Journey / Process Flow Section First -->
-  <ProcessFlow />
-
-  <!-- Hero / CTA Section Second -->
-  <div class="relative overflow-hidden bg-background py-20 sm:py-32">
-    <!-- Dynamic Glassmorphic Blobs -->
-    <div class="absolute -top-[20%] -left-[10%] h-[600px] w-[600px] rounded-full bg-gradient-to-tr from-primary/20 to-blue-500/10 blur-3xl animate-in fade-in duration-1000" aria-hidden="true"></div>
-    <div class="absolute top-[20%] -right-[10%] h-[500px] w-[500px] rounded-full bg-gradient-to-bl from-emerald-500/10 to-primary/10 blur-3xl animate-in fade-in duration-1000 delay-300" aria-hidden="true"></div>
+  <!-- One-screener enforced container -->
+  <div class="relative overflow-hidden bg-background min-h-[calc(100vh-theme(spacing.16))] flex flex-col justify-between">
+    <!-- Dynamic Glassmorphic Background Objects -->
+    <div class="absolute top-[-10%] left-[-10%] h-[50vw] w-[50vw] rounded-full bg-gradient-to-tr from-primary/10 to-blue-500/5 blur-[120px] pointer-events-none animate-in fade-in duration-1000" aria-hidden="true"></div>
+    <div class="absolute bottom-[-10%] right-[-5%] h-[40vw] w-[40vw] rounded-full bg-gradient-to-bl from-emerald-500/10 to-primary/10 blur-[120px] pointer-events-none animate-in fade-in duration-1000 delay-300" aria-hidden="true"></div>
     
-    <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center flex flex-col items-center">
+    <!-- Top Half: Hero and CTA -->
+    <div class="relative z-10 flex flex-col items-center justify-center flex-grow px-4 sm:px-6 lg:px-8 mt-8 md:mt-12">
       
       {#if activeSeason}
-        <Badge variant="outline" class="mb-10 px-4 py-1.5 text-sm font-semibold tracking-wide border-primary/30 bg-primary/5 text-primary shadow-sm animate-in fade-in slide-in-from-bottom-2 duration-500 inline-flex items-center">
+        <Badge variant="outline" class="mb-8 px-5 py-2 text-sm font-bold tracking-wide border-primary/40 bg-primary/10 text-primary shadow-sm animate-in fade-in slide-in-from-top-4 duration-500 inline-flex items-center backdrop-blur-md">
           <span class="mr-2 shrink-0 h-2 w-2 rounded-full bg-primary animate-pulse"></span>
           Admissions are open for {activeSeason.name}
         </Badge>
       {/if}
 
-      <h1 class="text-5xl md:text-7xl font-extrabold tracking-tight text-foreground mb-6 text-balance drop-shadow-sm leading-tight">
-        Take the First Step Toward Your <br class="hidden md:block"/>
-        <span class="text-transparent bg-clip-text bg-gradient-to-r from-primary to-emerald-600">Dream Career</span>
-      </h1>
-      
-      <p class="mt-6 text-xl md:text-2xl leading-relaxed text-muted-foreground max-w-3xl mx-auto text-balance font-medium">
-        Your journey begins here. Join a community of driven learners, discover exceptional academic programs, and apply securely today.
-      </p>
+      <div class="text-center max-w-4xl mx-auto">
+        <h2 class="text-base md:text-lg font-bold text-muted-foreground uppercase tracking-[0.2em] mb-4 animate-in fade-in slide-in-from-bottom-3 duration-700">
+          Ilocos Sur Polytechnic State College<br class="sm:hidden" /> <span class="hidden sm:inline">&mdash;</span> Tagudin Campus
+        </h2>
 
-      <div class="mt-16 w-full max-w-4xl mx-auto z-10">
-        {#if isAuthenticated}
-          <div class="glass-panel p-8 rounded-3xl border border-primary/20 bg-primary/5 w-full flex flex-col items-center justify-center animate-in zoom-in-95 duration-500">
-            <h2 class="text-2xl font-bold text-foreground mb-3">Welcome back!</h2>
-            <p class="text-muted-foreground mb-6">You are securely signed in. Continue managing your profile or check your admission status from your dashboard.</p>
-            <Link href={auth.user ? '/dashboard' : '/portal'} class="w-full sm:w-auto">
-              <Button size="lg" class="h-14 px-8 text-lg font-bold shadow-xl shadow-primary/20 hover:shadow-2xl transition-all rounded-full bg-gradient-to-r from-primary to-blue-600 hover:-translate-y-0.5 border-0">
+        <h1 class="text-4xl md:text-5xl lg:text-6xl font-extrabold tracking-tight text-foreground mb-8 text-balance drop-shadow-sm leading-tight animate-in fade-in slide-in-from-bottom-4 duration-700 delay-100">
+          Secure Your Future.<br class="hidden sm:block" />
+          <span class="text-transparent bg-clip-text bg-gradient-to-r from-primary to-emerald-500">Apply for Admissions Today.</span>
+        </h1>
+
+        <div class="mt-8 w-full flex justify-center z-20 animate-in fade-in slide-in-from-bottom-5 duration-700 delay-150">
+          {#if isAuthenticated}
+            <Link href={auth.user ? '/dashboard' : '/portal'}>
+              <Button size="lg" class="h-14 px-10 text-base font-bold shadow-xl shadow-primary/25 hover:shadow-2xl transition-all rounded-full bg-gradient-to-r from-primary to-blue-600 hover:-translate-y-1 border-0">
                 Go to Dashboard
               </Button>
             </Link>
-          </div>
-        {:else}
-          <div class="flex flex-col sm:flex-row items-center justify-center gap-5 mt-4 animate-in fade-in slide-in-from-bottom-5 duration-700">
-            <Link href="/apply" class="w-full sm:w-auto">
-              <Button size="lg" class="w-full h-16 px-10 text-lg font-bold shadow-xl shadow-primary/20 hover:shadow-2xl hover:-translate-y-0.5 transition-all rounded-full bg-gradient-to-r from-primary to-emerald-600 hover:from-primary/90 hover:to-emerald-600/90 border-0">
-                Join Us & Apply Now
+          {:else}
+            <Link href="/apply">
+              <Button size="lg" class="h-14 px-12 text-lg font-extrabold shadow-xl shadow-primary/30 hover:shadow-primary/50 hover:-translate-y-1 transition-all rounded-full bg-gradient-to-r from-primary to-emerald-600 hover:from-primary/95 hover:to-emerald-500 border-0 uppercase tracking-widest text-primary-foreground">
+                Admissions
               </Button>
             </Link>
-          </div>
-        {/if}
+          {/if}
+        </div>
       </div>
     </div>
+
+    <!-- Bottom Half: Process Flow (Journey) -->
+    <div class="relative z-20 w-full bg-background/40 backdrop-blur-sm animate-in fade-in slide-in-from-bottom-10 duration-1000 delay-300">
+       <ProcessFlow />
+    </div>
+
   </div>
 </HomeLayout>

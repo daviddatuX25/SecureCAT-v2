@@ -115,8 +115,12 @@ Route::middleware(['auth'])->group(function () {
         Route::resource('exam-domains', ExamDomainController::class)->except('show', 'destroy')->parameters(['exam_domains' => 'exam_domain']);
         Route::resource('courses', CourseController::class)->except('show')->parameters(['courses' => 'course']);
         Route::post('courses/{course}/activate', [CourseController::class, 'activate'])->name('courses.activate');
+        Route::post('courses/{course}/deactivate', [CourseController::class, 'deactivate'])->name('courses.deactivate');
+        Route::post('courses/{course}/restore', [CourseController::class, 'restore'])->name('courses.restore');
         Route::resource('rooms', RoomController::class)->except('show')->parameters(['rooms' => 'room']);
         Route::post('rooms/{room}/activate', [RoomController::class, 'activate'])->name('rooms.activate');
+        Route::post('rooms/{room}/deactivate', [RoomController::class, 'deactivate'])->name('rooms.deactivate');
+        Route::post('rooms/{room}/restore', [RoomController::class, 'restore'])->name('rooms.restore');
         Route::post('result-sheet-templates/preview', [ResultSheetTemplateController::class, 'preview'])->name('result-sheet-templates.preview');
         Route::resource('result-sheet-templates', ResultSheetTemplateController::class)->except('show')->parameters(['result_sheet_templates' => 'result_sheet_template']);
     });

@@ -102,6 +102,48 @@
       </div>
     {/if}
 
+    <!-- Status + action bar -->
+    <div class="flex flex-wrap items-center justify-between gap-4 rounded-lg border border-border bg-card px-4 py-3">
+      <div class="flex flex-wrap items-center gap-3">
+        <span class="text-sm text-muted-foreground">Status:</span>
+        <Badge variant={statusVariant(application?.status)}>{statusLabel(application?.status)}</Badge>
+        {#if application_window_label}
+          <span class="text-xs text-muted-foreground">{application_window_label}</span>
+        {/if}
+      </div>
+      <div class="flex flex-wrap gap-2">
+        {#if canAccept}
+          <Button onclick={accept} size="sm" class="min-h-[40px]">
+            <CheckCircle class="mr-1.5 h-4 w-4" />
+            Accept
+          </Button>
+        {/if}
+        {#if canDismiss}
+          <Button
+            onclick={openDismiss}
+            variant="outline"
+            size="sm"
+            class="min-h-[40px] border-red-300 text-red-700 hover:bg-red-50 dark:border-red-800 dark:text-red-300"
+          >
+            <XCircle class="mr-1.5 h-4 w-4" />
+            Dismiss
+          </Button>
+        {/if}
+        {#if canSetIncomplete}
+          <Button onclick={setIncompleteDocuments} variant="outline" size="sm" class="min-h-[40px]">
+            <FileX2 class="mr-1.5 h-4 w-4" />
+            Incomplete Docs
+          </Button>
+        {/if}
+        {#if application?.status === 'accepted'}
+          <Button onclick={resendSetupEmail} variant="outline" size="sm" class="min-h-[40px]">
+            <Mail class="mr-1.5 h-4 w-4" />
+            Resend Setup Email
+          </Button>
+        {/if}
+      </div>
+    </div>
+
     <div class="grid gap-6 md:grid-cols-2">
       <Card>
         <CardHeader>

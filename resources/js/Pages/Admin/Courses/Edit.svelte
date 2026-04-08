@@ -1,8 +1,9 @@
 <script>
   import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.svelte';
-  import { Link, useForm } from '@inertiajs/svelte';
+  import { Link, useForm, router } from '@inertiajs/svelte';
   import { Button } from '@/Components/ui/button';
   import { Input } from '@/Components/ui/input';
+  import Switch from '@/Components/ui/switch/switch.svelte';
 
   const { course } = $props();
 
@@ -15,6 +16,18 @@
   function submitForm(e) {
     e.preventDefault();
     $form.put(`/admin/courses/${course.id}`);
+  }
+
+  function doRestore() {
+    router.post(`/admin/courses/${course.id}/restore`, {}, {
+      onSuccess: () => router.reload(),
+    });
+  }
+
+  function doDelete() {
+    if (confirm('Delete this course? This action cannot be undone.')) {
+      router.delete(`/admin/courses/${course.id}`, { onSuccess: () => window.location.href = '/admin/courses' });
+    }
   }
 const breadcrumbs = [{ label: 'Courses', href: '/admin/courses' }, { label: 'Edit Course' }];
 </script>
@@ -42,17 +55,15 @@ const breadcrumbs = [{ label: 'Courses', href: '/admin/courses' }, { label: 'Edi
         {/if}
       </div>
 
-      <div class="space-y-2">
-        <label class="flex items-center gap-2 cursor-pointer">
-          <input
-            type="checkbox"
-            bind:checked={$form.is_active}
-            class="h-4 w-4 rounded border-input accent-primary"
-          />
-          <span class="text-sm font-medium">Active</span>
-        </label>
-        <p class="text-xs text-muted-foreground">Inactive courses are hidden from the public application form.</p>
+      <div class="flex items-center gap-3">
+        <Switch
+          checked={$form.is_active}
+          onCheckedChange={(checked) => $form.is_active = checked}
+          aria-label="Toggle active"
+        />
+        <span class="text-sm font-medium">{$form.is_active ? 'Active' : 'Inactive'}</span>
       </div>
+      <p class="text-xs text-muted-foreground">Inactive courses are hidden from the public application form.</p>
 
       <div class="flex gap-2 pt-4">
         <Button type="submit" disabled={$form.processing}>
@@ -61,6 +72,14 @@ const breadcrumbs = [{ label: 'Courses', href: '/admin/courses' }, { label: 'Edi
         <Link href="/admin/courses">
           <Button type="button" variant="outline">Cancel</Button>
         </Link>
+        {#if course?.deleted_at}
+          <Button type="button" variant="outline" onclick={doRestore}>
+            Restore
+          </Button>
+        {/if}
+        <Button type="button" variant="destructive" onclick={doDelete}>
+          Delete
+        </Button>
       </div>
     </form>
   </div>

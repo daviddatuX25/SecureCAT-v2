@@ -7,7 +7,7 @@
   import { Badge } from '@/Components/ui/badge';
   import { Input } from '@/Components/ui/input';
   import * as Table from '@/Components/ui/table';
-  import { Plus, Pencil, Trash2, LayoutGrid, Table2, MonitorSmartphone, CheckCircle } from 'lucide-svelte';
+  import { Plus, Pencil, CircleOff, LayoutGrid, Table2, MonitorSmartphone, CheckCircle, Trash2 } from 'lucide-svelte';
 
   let { rooms, filters = {} } = $props();
 
@@ -43,14 +43,25 @@
     }
   }
 
-  let activateId = $state(null);
+  function doToggle(id, currentActive) {
+    if (currentActive) {
+      router.post(`/admin/rooms/${id}/deactivate`, {}, {
+        onSuccess: () => router.reload(),
+      });
+    } else {
+      router.post(`/admin/rooms/${id}/activate`, {}, {
+        onSuccess: () => router.reload(),
+      });
+    }
+  }
 
-  function doActivate(id) {
-    router.post(`/admin/rooms/${id}/activate`, {
-      onSuccess: () => {
-        activateId = null;
-        router.reload();
-      },
+  function doDeletePermanent(id) {
+    router.delete(`/admin/rooms/${id}`, { onSuccess: () => router.reload() });
+  }
+
+  function doRestore(id) {
+    router.post(`/admin/rooms/${id}/restore`, {}, {
+      onSuccess: () => router.reload(),
     });
   }
 
@@ -156,27 +167,19 @@ const breadcrumbs = [{ label: 'Rooms' }];
                         <Pencil class="h-4 w-4" />
                       </Button>
                     </Link>
-                    {#if room.is_active}
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        aria-label="Deactivate"
-                        class="text-destructive hover:text-destructive"
-                        onclick={() => confirmDelete(room.id)}
-                      >
-                        <Trash2 class="h-4 w-4" />
-                      </Button>
-                    {:else}
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        aria-label="Activate"
-                        class="text-primary hover:text-primary"
-                        onclick={() => doActivate(room.id)}
-                      >
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      aria-label={room.is_active ? 'Deactivate' : 'Activate'}
+                      class={room.is_active ? 'text-amber-600 hover:text-amber-600' : 'text-primary hover:text-primary'}
+                      onclick={() => doToggle(room.id, room.is_active)}
+                    >
+                      {#if room.is_active}
+                        <CircleOff class="h-4 w-4" />
+                      {:else}
                         <CheckCircle class="h-4 w-4" />
-                      </Button>
-                    {/if}
+                      {/if}
+                    </Button>
                   </div>
                 </Table.Cell>
               </Table.Row>
@@ -224,27 +227,19 @@ const breadcrumbs = [{ label: 'Rooms' }];
                       Edit
                     </Button>
                   </Link>
-                  {#if room.is_active}
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      class="min-h-[44px] text-destructive hover:text-destructive"
-                      aria-label="Deactivate"
-                      onclick={() => confirmDelete(room.id)}
-                    >
-                      <Trash2 class="h-4 w-4" />
-                    </Button>
-                  {:else}
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      class="min-h-[44px] text-primary hover:text-primary"
-                      aria-label="Activate"
-                      onclick={() => doActivate(room.id)}
-                    >
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    class={room.is_active ? 'min-h-[44px] text-amber-600 hover:text-amber-600' : 'min-h-[44px] text-primary hover:text-primary'}
+                    aria-label={room.is_active ? 'Deactivate' : 'Activate'}
+                    onclick={() => doToggle(room.id, room.is_active)}
+                  >
+                    {#if room.is_active}
+                      <CircleOff class="h-4 w-4" />
+                    {:else}
                       <CheckCircle class="h-4 w-4" />
-                    </Button>
-                  {/if}
+                    {/if}
+                  </Button>
                 </div>
               </li>
             {/each}
@@ -284,13 +279,13 @@ const breadcrumbs = [{ label: 'Rooms' }];
       aria-labelledby="delete-title"
     >
       <div class="rounded-lg bg-card p-6 shadow-lg max-w-sm w-full">
-        <h2 id="delete-title" class="text-lg font-semibold">Deactivate room?</h2>
+        <h2 id="delete-title" class="text-lg font-semibold">Delete room?</h2>
         <p class="mt-2 text-sm text-muted-foreground">
-          The room will be marked inactive. You can reactivate it from the edit page.
+          The room will be soft-deleted and hidden from the list. You can restore it later from the edit page.
         </p>
         <div class="mt-4 flex justify-end gap-2">
           <Button variant="outline" onclick={cancelDelete}>Cancel</Button>
-          <Button variant="destructive" onclick={doDelete}>Deactivate</Button>
+          <Button variant="destructive" onclick={doDelete}>Delete</Button>
         </div>
       </div>
     </div>

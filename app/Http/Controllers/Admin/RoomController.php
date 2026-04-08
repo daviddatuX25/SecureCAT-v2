@@ -68,9 +68,33 @@ class RoomController extends Controller
     }
 
     /**
-     * Deactivate room. Per E-024: Block if room has future exam sessions.
+     * Deactivate room (soft). Block if room has future exam sessions.
      */
     public function destroy(Room $room): RedirectResponse
+    {
+        $hasFutureSessions = ExamSession::query()
+            ->where('room_id', $room->id)
+            ->whereDate('date', '>=', now()->toDateString())
+            ->exists();
+
+        if ($hasFutureSessions) {
+            return redirect()->route('admin.rooms.index')
+                ->with('error', 'Cannot delete: this room has exam sessions scheduled in the future.');
+        }
+
+        $room->delete(); // soft delete
+
+        return redirect()->route('admin.rooms.index')->with('success', 'Room deleted.');
+    }
+
+    public function activate(Room $room): RedirectResponse
+    {
+        $room->update(['is_active' => true]);
+
+        return redirect()->route('admin.rooms.index')->with('success', 'Room activated.');
+    }
+
+    public function deactivate(Room $room): RedirectResponse
     {
         $hasFutureSessions = ExamSession::query()
             ->where('room_id', $room->id)
@@ -87,10 +111,10 @@ class RoomController extends Controller
         return redirect()->route('admin.rooms.index')->with('success', 'Room deactivated.');
     }
 
-    public function activate(Room $room): RedirectResponse
+    public function restore(Room $room): RedirectResponse
     {
-        $room->update(['is_active' => true]);
+        $room->restore();
 
-        return redirect()->route('admin.rooms.index')->with('success', 'Room activated.');
+        return redirect()->route('admin.rooms.index')->with('success', 'Room restored.');
     }
 }

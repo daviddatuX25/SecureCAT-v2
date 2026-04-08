@@ -58,9 +58,9 @@ class CourseController extends Controller
 
     public function destroy(Course $course): RedirectResponse
     {
-        $course->update(['is_active' => false]);
+        $course->delete(); // soft delete
 
-        return redirect()->route('admin.courses.index')->with('success', 'Course deactivated.');
+        return redirect()->route('admin.courses.index')->with('success', 'Course deleted.');
     }
 
     public function activate(Course $course): RedirectResponse
@@ -68,5 +68,19 @@ class CourseController extends Controller
         $course->update(['is_active' => true]);
 
         return redirect()->route('admin.courses.index')->with('success', 'Course activated.');
+    }
+
+    public function deactivate(Course $course): RedirectResponse
+    {
+        $course->update(['is_active' => false]);
+
+        return redirect()->route('admin.courses.index')->with('success', 'Course deactivated.');
+    }
+
+    public function restore(Course $course): RedirectResponse
+    {
+        $course->restore();
+
+        return redirect()->route('admin.courses.index')->with('success', 'Course restored.');
     }
 }

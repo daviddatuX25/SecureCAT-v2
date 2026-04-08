@@ -42,86 +42,77 @@
   } = $props();
 </script>
 
-<section class="py-16 md:py-24 px-4 bg-muted/30">
-  <div class="max-w-7xl mx-auto">
-    <div class="text-center mb-12 animate-in fade-in slide-in-from-bottom-4 duration-700">
-      <h2 class="text-3xl md:text-4xl font-bold mb-4">
-        The Admission Journey
-      </h2>
-      <p class="text-lg text-muted-foreground max-w-2xl mx-auto">
-        Your pathway to joining our academic community is simple and straightforward.
-      </p>
-    </div>
-    
-    <!-- Desktop: Horizontal Timeline -->
-    <div class="hidden lg:block">
-      <div class="relative">
-        <!-- Single connection line spanning all circles -->
-        <div class="absolute top-8 left-0 right-0 h-1 bg-border z-0" style="left: 8%; right: 8%;"></div>
-        
-        <div class="flex justify-between items-start relative">
-          {#each phases as phase, index}
-            <div class="flex-1 flex flex-col items-center px-2 group animate-in zoom-in-95 duration-500" style="animation-delay: {index * 150}ms; animation-fill-mode: both;">
-              <!-- Phase Circle - positioned on the line -->
-              <div 
-                class="w-16 h-16 rounded-full flex items-center justify-center text-white font-bold text-xl relative z-10 shadow-lg transition-transform duration-300 group-hover:scale-110 group-hover:-translate-y-1"
-                style="background-color: {phase.color}"
-              >
+<section class="py-4 md:py-8 px-4 w-full relative z-10">
+  <div class="max-w-[85rem] mx-auto">
+    <!-- Desktop: Premium Glass Cards Timeline -->
+    <div class="hidden lg:flex items-stretch justify-between w-full">
+      {#each phases as phase, index}
+        <div class="flex-1 group relative flex items-center animate-in zoom-in-95 duration-500" style="animation-delay: {index * 100}ms; animation-fill-mode: both;">
+          
+          <!-- The Step Card -->
+          <div class="w-full h-full relative overflow-hidden rounded-[1.5rem] border border-border/40 bg-card/40 backdrop-blur-xl p-6 transition-all duration-500 hover:shadow-[0_8px_30px_rgb(0,0,0,0.12)] hover:border-foreground/20 hover:-translate-y-2 flex flex-col">
+            <!-- Ambient Colored Glow -->
+            <div class="absolute -top-12 -right-12 w-40 h-40 rounded-full opacity-[0.08] blur-3xl transition-opacity duration-500 group-hover:opacity-30" style="background-color: {phase.color}; pointer-events: none;"></div>
+            
+            <!-- Header: Number & Title -->
+            <div class="flex items-start gap-4 mb-4 relative z-10">
+              <div class="w-12 h-12 shrink-0 rounded-2xl flex items-center justify-center text-white font-extrabold text-xl shadow-lg ring-1 ring-white/20 transition-transform duration-500 group-hover:scale-110" style="background-color: {phase.color}; background-image: linear-gradient(to bottom right, rgba(255,255,255,0.2), transparent);">
                 {phase.number}
               </div>
-              
-              <!-- Phase Card -->
-              <div class="mt-6 text-center max-w-[200px] transition-all duration-300 group-hover:translate-y-1">
-                <h3 class="font-bold text-base mb-2 group-hover:text-primary transition-colors">
-                  {phase.name}
-                </h3>
-                <p class="text-xs text-muted-foreground mb-2">
-                  {phase.description}
-                </p>
-                <span 
-                  class="inline-block text-xs font-medium px-3 py-1 rounded-full border border-transparent group-hover:border-current transition-colors"
-                  style="background-color: {phase.color}15; color: {phase.color}"
-                >
-                  {phase.office}
-                </span>
-              </div>
+              <h3 class="font-bold text-base text-foreground leading-tight pt-1.5 group-hover:text-primary transition-colors duration-300">
+                {phase.name}
+              </h3>
             </div>
-          {/each}
-        </div>
-      </div>
-    </div>
-    
-    <!-- Mobile/Tablet: Vertical Timeline -->
-    <div class="lg:hidden space-y-8">
-      {#each phases as phase, index}
-        <div class="flex gap-4 group animate-in fade-in slide-in-from-right-4 duration-500" style="animation-delay: {index * 150}ms; animation-fill-mode: both;">
-          <!-- Left: Phase Circle -->
-          <div class="flex-shrink-0 flex flex-col items-center">
-            <div 
-              class="w-12 h-12 rounded-full flex items-center justify-center text-white font-bold shadow-lg transition-transform duration-300 group-hover:scale-110 group-hover:-translate-y-1"
-              style="background-color: {phase.color}"
-            >
-              {phase.number}
-            </div>
-            {#if index < phases.length - 1}
-              <div class="w-1 flex-1 bg-border mt-2 min-h-[60px] group-hover:bg-primary/20 transition-colors"></div>
-            {/if}
-          </div>
-          
-          <!-- Right: Phase Content -->
-          <div class="flex-1 pb-4 transition-all duration-300 group-hover:translate-x-1">
-            <h3 class="font-bold text-lg mb-2 group-hover:text-primary transition-colors">
-              {phase.name}
-            </h3>
-            <p class="text-sm text-muted-foreground mb-3">
+            
+            <!-- Description -->
+            <p class="text-[13px] text-muted-foreground flex-grow relative z-10 leading-relaxed group-hover:text-foreground/80 transition-colors">
               {phase.description}
             </p>
-            <span 
-              class="inline-block text-xs font-medium px-3 py-1 rounded-full"
-              style="background-color: {phase.color}15; color: {phase.color}"
-            >
-              {phase.office}
-            </span>
+
+            <!-- Footer Badge -->
+            <div class="mt-5 relative z-10">
+              <span class="inline-flex items-center text-[10px] uppercase tracking-widest font-black px-3 py-1.5 rounded-full border border-transparent group-hover:border-current/20 transition-all duration-300" style="background-color: {phase.color}15; color: {phase.color}">
+                {phase.office}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Inline Flex Connector Arrow -->
+        {#if index < phases.length - 1}
+          <div class="flex-shrink-0 w-10 flex items-center justify-center text-border/60 animate-in fade-in duration-700" style="animation-delay: {index * 100 + 50}ms;">
+            <ArrowRight class="w-5 h-5 stroke-[2.5]" />
+          </div>
+        {/if}
+      {/each}
+    </div>
+    
+    <!-- Mobile/Tablet: Vertical Glass Timeline -->
+    <div class="lg:hidden relative space-y-3 pt-2">
+      <!-- Continuous vertical line -->
+      <div class="absolute left-[17px] top-4 bottom-4 w-0.5 bg-border/40 rounded-full z-0"></div>
+      
+      {#each phases as phase, index}
+        <div class="relative z-10 flex gap-3.5 animate-in fade-in slide-in-from-right-4 duration-500" style="animation-delay: {index * 100}ms; animation-fill-mode: both;">
+          <!-- Node -->
+          <div class="shrink-0 mt-1.5">
+            <div class="w-9 h-9 rounded-xl flex items-center justify-center text-white font-black text-sm shadow-sm ring-[3px] ring-background transition-transform duration-300" style="background-color: {phase.color}; background-image: linear-gradient(to bottom right, rgba(255,255,255,0.2), transparent);">
+              {phase.number}
+            </div>
+          </div>
+          
+          <!-- Card -->
+          <div class="flex-1 relative overflow-hidden rounded-[1rem] border border-border/40 bg-card/40 backdrop-blur-xl p-3.5 shadow-sm">
+            <div class="absolute -top-10 -right-10 w-24 h-24 rounded-full opacity-[0.1] blur-2xl pointer-events-none" style="background-color: {phase.color};"></div>
+            
+            <div class="flex items-center justify-between mb-1 relative z-10 gap-2">
+              <h3 class="font-bold text-[15px] text-foreground leading-tight">{phase.name}</h3>
+              <span class="shrink-0 inline-flex items-center text-[9px] uppercase tracking-widest font-bold px-2 py-0.5 rounded-full" style="background-color: {phase.color}15; color: {phase.color}">
+                {phase.office}
+              </span>
+            </div>
+            
+            <p class="text-xs text-muted-foreground relative z-10 leading-snug">{phase.description}</p>
           </div>
         </div>
       {/each}

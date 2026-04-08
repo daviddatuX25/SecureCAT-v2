@@ -1,7 +1,8 @@
 <script>
-  import { Link, useForm } from '@inertiajs/svelte';
+  import { Link, useForm, router } from '@inertiajs/svelte';
   import { Button } from '@/Components/ui/button';
   import { Input } from '@/Components/ui/input';
+  import Switch from '@/Components/ui/switch/switch.svelte';
 
   let { room } = $props();
 
@@ -20,6 +21,18 @@
       capacity: parseInt(data.capacity, 10),
     }));
     $form.put(`/admin/rooms/${room.id}`);
+  }
+
+  function doRestore() {
+    router.post(`/admin/rooms/${room.id}/restore`, {}, {
+      onSuccess: () => router.reload(),
+    });
+  }
+
+  function doDelete() {
+    if (confirm('Delete this room? This action cannot be undone.')) {
+      router.delete(`/admin/rooms/${room.id}`, { onSuccess: () => window.location.href = '/admin/rooms' });
+    }
   }
 </script>
 
@@ -63,17 +76,15 @@
     {/if}
   </div>
 
-  <div class="space-y-2">
-    <label class="flex items-center gap-2 cursor-pointer">
-      <input
-        type="checkbox"
-        bind:checked={$form.is_active}
-        class="h-4 w-4 rounded border-input accent-primary"
-      />
-      <span class="text-sm font-medium">Active</span>
-    </label>
-    <p class="text-xs text-muted-foreground">Inactive rooms are hidden from scheduling.</p>
+  <div class="flex items-center gap-3">
+    <Switch
+      checked={$form.is_active}
+      onCheckedChange={(checked) => $form.is_active = checked}
+      aria-label="Toggle active"
+    />
+    <span class="text-sm font-medium">{$form.is_active ? 'Active' : 'Inactive'}</span>
   </div>
+  <p class="text-xs text-muted-foreground">Inactive rooms are hidden from scheduling.</p>
 
   <div class="flex gap-2 pt-4">
     <Button type="submit" disabled={$form.processing}>
@@ -82,5 +93,13 @@
     <Link href="/admin/rooms">
       <Button type="button" variant="outline">Cancel</Button>
     </Link>
+    {#if room?.deleted_at}
+      <Button type="button" variant="outline" onclick={doRestore}>
+        Restore
+      </Button>
+    {/if}
+    <Button type="button" variant="destructive" onclick={doDelete}>
+      Delete
+    </Button>
   </div>
 </form>
