@@ -28,7 +28,7 @@ class SystemSetting extends Model
         }
 
         $v = $row->value;
-        if (in_array($key, ['ai_exam_companion_enabled', 'online_release_enabled', 'consultation_enabled'], true)) {
+        if (in_array($key, ['ai_exam_companion_enabled', 'online_release_enabled', 'notify_on_publish'], true)) {
             return filter_var($v, FILTER_VALIDATE_BOOLEAN);
         }
 
@@ -55,11 +55,19 @@ class SystemSetting extends Model
     }
 
     /**
-     * Whether the consultation feature is enabled. Default true for backward compatibility.
+     * Returns the result release mode: 'online', 'f2f', or 'both'. Default: 'online'.
      */
-    public static function consultationEnabled(): bool
+    public static function releaseMode(): string
     {
-        return (bool) self::get('consultation_enabled', true);
+        return (string) self::get('release_mode', 'online');
+    }
+
+    /**
+     * Whether to email applicants when their exam session is published. Default: false.
+     */
+    public static function notifyOnPublish(): bool
+    {
+        return (bool) self::get('notify_on_publish', false);
     }
 
     /**
