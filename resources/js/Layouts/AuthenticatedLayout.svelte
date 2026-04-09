@@ -1,7 +1,7 @@
 <script>
   import { Link, router } from '@inertiajs/svelte';
   import { usePage } from '@inertiajs/svelte';
-  import { ChevronDown, ChevronRight, Menu, LayoutDashboard, Users, FileText, Calendar, GraduationCap, BookOpen, Settings, MessageSquare, ScrollText, FileStack, Activity, CalendarRange, Layers, ShieldCheck, Sun, Moon, Bell, Search } from 'lucide-svelte';
+  import { ChevronDown, ChevronRight, Menu, LayoutDashboard, Users, FileText, Calendar, GraduationCap, BookOpen, Settings, ScrollText, FileStack, Activity, CalendarRange, Layers, ShieldCheck, Sun, Moon, Bell, Search, SendHorizonal } from 'lucide-svelte';
   import { Button } from '@/Components/ui/button';
 
   let { children, breadcrumbs = [] } = $props();
@@ -64,7 +64,7 @@
       { href: '/admin/test-scheduling', label: 'My Sessions', icon: Calendar, roles: ['proctor'] },
       { href: '/admin/test-scheduling/monitoring', label: 'Exam Monitoring', icon: Activity, roles: ['super_admin', 'test_administrator', 'proctor'] },
       { href: '/grading', label: 'Grading', icon: GraduationCap, roles: ['super_admin', 'test_administrator'] },
-      { href: '/consultation', label: 'Release & Consultation', icon: MessageSquare, roles: ['super_admin', 'test_administrator'], featureFlag: 'consultation_enabled' },
+      { href: '/release', label: 'Release', icon: SendHorizonal, roles: ['super_admin', 'test_administrator'] },
     ]},
     { label: 'Administration', collapsible: true, items: [
       { href: '/admin/users', label: 'Users', icon: Users, roles: ['super_admin'] },
