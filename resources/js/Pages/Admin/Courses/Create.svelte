@@ -13,7 +13,7 @@
     e.preventDefault();
     $form.post('/admin/courses');
   }
-const breadcrumbs = [{ label: 'Courses', href: '/admin/courses' }, { label: 'Add Course' }];
+const breadcrumbs = [{ label: 'Academic Years', href: '/admin/seasons' }, { label: 'Courses', href: '/admin/courses' }, { label: 'Add Course' }];
 </script>
 
 <AuthenticatedLayout {breadcrumbs}>

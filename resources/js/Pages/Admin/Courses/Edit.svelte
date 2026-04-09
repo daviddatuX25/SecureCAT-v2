@@ -29,7 +29,7 @@
       router.delete(`/admin/courses/${course.id}`, { onSuccess: () => window.location.href = '/admin/courses' });
     }
   }
-const breadcrumbs = [{ label: 'Courses', href: '/admin/courses' }, { label: 'Edit Course' }];
+const breadcrumbs = [{ label: 'Academic Years', href: '/admin/seasons' }, { label: 'Courses', href: '/admin/courses' }, { label: 'Edit Course' }];
 </script>
 
 <AuthenticatedLayout {breadcrumbs}>

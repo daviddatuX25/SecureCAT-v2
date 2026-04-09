@@ -27,7 +27,7 @@ const breadcrumbs = [{ label: 'Academic Years' }];
         <Link href="/admin/courses">
           <Button variant="outline" class="min-h-[44px]">
             <BookOpen class="mr-2 h-4 w-4" />
-            Add Course
+            Manage Courses
           </Button>
         </Link>
       </div>

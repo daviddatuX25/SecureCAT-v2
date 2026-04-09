@@ -17,6 +17,7 @@
     if (currentActive) {
       router.post(`/admin/courses/${id}/deactivate`, {}, {
         onSuccess: () => router.reload(),
+        onError: (errors) => console.error('[Courses] deactivate failed:', errors?.message || errors),
       });
     } else {
       router.post(`/admin/courses/${id}/activate`, {}, {
@@ -24,7 +25,7 @@
       });
     }
   }
-const breadcrumbs = [{ label: 'Courses' }];
+const breadcrumbs = [{ label: 'Academic Years', href: '/admin/seasons' }, { label: 'Courses' }];
 </script>
 
 <AuthenticatedLayout {breadcrumbs}>
