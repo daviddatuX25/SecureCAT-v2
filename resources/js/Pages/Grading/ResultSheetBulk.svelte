@@ -1,5 +1,6 @@
 <script>
   import { onMount } from 'svelte';
+  import { usePage } from '@inertiajs/svelte';
   import { Link, router } from '@inertiajs/svelte';
   import { Button } from '@/Components/ui/button';
   import { ArrowLeft } from 'lucide-svelte';
@@ -16,6 +17,9 @@
     paperOptions = { a4: 'A4', letter: 'Letter' },
   } = $props();
   const sid = $derived(String(sessionId));
+
+  const _page = usePage();
+  const printDisabled = $derived((_page.props.release_mode ?? 'online') === 'online');
 
   let markedAllPrinted = $state(false);
   let paperSize = $state(initialPaperSize);
@@ -127,7 +131,8 @@
       variant="outline"
       onclick={printAll}
       class="min-h-[44px]"
-      disabled={sheetsHtml.length === 0 || !!templateError}
+      disabled={printDisabled || sheetsHtml.length === 0 || !!templateError}
+      title={printDisabled ? 'Switch to F2F or Both release mode in Settings to enable printing.' : undefined}
     >
       Print all {applicants.length} sheets
     </Button>

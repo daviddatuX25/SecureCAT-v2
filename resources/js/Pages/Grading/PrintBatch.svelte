@@ -1,5 +1,6 @@
 <script>
   import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.svelte';
+  import { usePage } from '@inertiajs/svelte';
   import { Link, router } from '@inertiajs/svelte';
   import { Button } from '@/Components/ui/button';
   import { Badge } from '@/Components/ui/badge';
@@ -9,6 +10,9 @@
 
   let { sessionId = '1', session = {}, applicants = [] } = $props();
   const sid = $derived(String(sessionId));
+
+  const _page = usePage();
+  const printDisabled = $derived((_page.props.release_mode ?? 'online') === 'online');
 
   const breadcrumbs = $derived([
     { label: 'Grading', href: '/grading' },
@@ -100,7 +104,7 @@
             {/if}
             {allSelected ? 'Deselect all' : 'Select all'}
           </Button>
-          <Button variant="default" onclick={printBulk} disabled={selected.size === 0} class="min-h-[44px]">
+          <Button variant="default" onclick={printBulk} disabled={printDisabled || selected.size === 0} title={printDisabled ? 'Switch to F2F or Both release mode in Settings to enable printing.' : undefined} class="min-h-[44px]">
             <Printer class="h-4 w-4 mr-2" />
             Print bulk{selected.size > 0 ? ` (${selected.size})` : ''}
           </Button>
@@ -154,7 +158,7 @@
                   <Table.Cell class="px-4 py-3 text-right">
                     <div class="flex justify-end gap-2">
                       <Link href={`/grading/sessions/${sid}/applicants/${app.applicant_id}/result-sheet`} target="_blank">
-                        <Button variant="outline" size="sm" class="min-h-[44px]">
+                        <Button variant="outline" size="sm" disabled={printDisabled} title={printDisabled ? 'Switch to F2F or Both release mode in Settings to enable printing.' : undefined} class="min-h-[44px]">
                           <Printer class="h-4 w-4 mr-1.5" />
                           Print
                         </Button>

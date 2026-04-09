@@ -1,9 +1,13 @@
 <script>
+  import { usePage } from '@inertiajs/svelte';
   import { Link, router } from '@inertiajs/svelte';
   import { Button } from '@/Components/ui/button';
   import { ArrowLeft } from 'lucide-svelte';
 
   let { sessionId = '1', applicantId = '1001', applicant = {}, scores = [], printed = false, templateHtml = null, templateError = null, paperSize = 'a4', orientation = 'portrait', logicalUnit = 'full' } = $props();
+
+  const _page = usePage();
+  const printDisabled = $derived((_page.props.release_mode ?? 'online') === 'online');
   const sid = $derived(String(sessionId));
 
   const overallPct = $derived(scores.length ? Math.round(scores.reduce((a, s) => a + s.pct, 0) / scores.length) : 0);
@@ -37,11 +41,17 @@
     Back to print batch
   </Link>
   <div class="flex flex-wrap gap-3">
-    <Button onclick={printSheet} class="min-h-[44px]">Print this sheet</Button>
+    <Button onclick={printSheet} disabled={printDisabled} title={printDisabled ? 'Switch to F2F or Both release mode in Settings to enable printing.' : undefined} class="min-h-[44px]">Print this sheet</Button>
     <Button variant="outline" onclick={toggleMarkPrinted} class="min-h-[44px]">
       {markedPrinted ? 'Unmark printed' : 'Mark as printed'}
     </Button>
   </div>
+  {#if printDisabled}
+    <p class="text-xs text-muted-foreground">
+      Printing is disabled in online-only release mode.
+      <a href="/admin/settings" class="underline">Change in Settings</a>
+    </p>
+  {/if}
 </div>
 
 <div class="p-6 max-w-[210mm] mx-auto print:p-4 print:max-w-none">
