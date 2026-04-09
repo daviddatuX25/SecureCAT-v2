@@ -15,6 +15,7 @@
     consultation = { status: 'pending', summary: null },
     ai_companion_enabled = false,
     notifications,
+    results_blocked = false,
   } = $props();
   const safeStatusTracker = $derived(Array.isArray(status_tracker) ? status_tracker : []);
   const safeNotifications = $derived(Array.isArray(notifications) ? notifications : []);
@@ -74,6 +75,18 @@
           {/if}
         </Card.Content>
       </Card.Root>
+
+      <!-- Results blocked banner (f2f mode) -->
+      {#if results_blocked}
+        <Card.Root>
+          <Card.Content class="p-6 text-center space-y-2">
+            <p class="font-medium text-foreground">Results will be provided in person</p>
+            <p class="text-sm text-muted-foreground">
+              Please visit the guidance office to receive your exam results.
+            </p>
+          </Card.Content>
+        </Card.Root>
+      {/if}
 
       <!-- Consultation Summary if released -->
       {#if consultation.status === 'released' && consultation.summary}

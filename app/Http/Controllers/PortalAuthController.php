@@ -278,6 +278,12 @@ class PortalAuthController extends Controller
             ] : null,
         ];
 
+        // R7 — If f2f mode, hide result data from the portal
+        $releaseMode = SystemSetting::releaseMode();
+        if ($releaseMode === 'f2f') {
+            $consultation = ['status' => 'pending', 'summary' => null];
+        }
+
         return Inertia::render('Portal/Dashboard', [
             'applicant' => [
                 'name' => $name,
@@ -290,6 +296,7 @@ class PortalAuthController extends Controller
             'consultation' => $consultation,
             'ai_companion_enabled' => SystemSetting::aiCompanionEnabled(),
             'notifications' => $notifications,
+            'results_blocked' => ($releaseMode === 'f2f'),
         ]);
     }
 
