@@ -5,6 +5,7 @@ namespace App\Http\Middleware;
 use App\Models\Applicant;
 use App\Models\SystemSetting;
 use App\Models\User;
+use App\Support\GoogleOAuthConfig;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
 
@@ -49,7 +50,8 @@ class HandleInertiaRequests extends Middleware
             ],
             'csrf_token' => $request->session()->token(),
             'ai_exam_companion_enabled' => SystemSetting::aiCompanionEnabled(),
-            'release_mode'              => SystemSetting::releaseMode(),
+            'googleOAuthEnabled' => GoogleOAuthConfig::isConfigured(),
+            'release_mode' => SystemSetting::releaseMode(),
             'pageTitle' => $this->defaultPageTitle($request),
         ]);
     }
@@ -74,13 +76,13 @@ class HandleInertiaRequests extends Middleware
             'admin.settings.index' => 'Settings',
             'admin.logs.index' => 'Audit log',
             'admin.seasons.index' => 'Seasons',
-            'admin.exam-domains.index' => 'Aptitude Areas',
             'admin.aptitude-areas.index' => 'Aptitude Areas',
             'admin.ai-companion.index' => 'AI Companion',
             'admin.admission-slip-templates.index' => 'Admission slip templates',
             'admin.result-sheet-templates.index' => 'Result templates',
             'applications.index' => 'Applications',
         ];
+
         return $titles[$name] ?? str_replace(['-', '.'], ' ', ucwords(implode(' ', preg_split('/[.-]/', $name))));
     }
 }
