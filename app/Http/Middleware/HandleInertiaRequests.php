@@ -48,7 +48,8 @@ class HandleInertiaRequests extends Middleware
                 'user' => $authUser,
             ],
             'csrf_token' => $request->session()->token(),
-            'consultation_enabled' => SystemSetting::consultationEnabled(),
+            'ai_exam_companion_enabled' => SystemSetting::aiCompanionEnabled(),
+            'release_mode'              => SystemSetting::releaseMode(),
             'pageTitle' => $this->defaultPageTitle($request),
         ]);
     }
@@ -74,7 +75,7 @@ class HandleInertiaRequests extends Middleware
             'admin.logs.index' => 'Audit log',
             'admin.seasons.index' => 'Seasons',
             'admin.exam-domains.index' => 'Exam pillars',
-            'admin.knowledge-documents.index' => 'Knowledge docs',
+            'admin.ai-companion.index' => 'AI Companion',
             'admin.admission-slip-templates.index' => 'Admission slip templates',
             'admin.result-sheet-templates.index' => 'Result templates',
             'applications.index' => 'Applications',
