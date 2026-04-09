@@ -306,7 +306,96 @@ class DefenseDemoSeeder extends Seeder
         }
     }
 
-    private function seedSessionB(CarbonImmutable $today, Season $season, $rooms, array $appMap, array $users, $domains): void {}
+    private function seedSessionB(CarbonImmutable $today, Season $season, $rooms, array $appMap, array $users, $domains): void
+    {
+        $date = $today->subDays(5);
+        $room  = $rooms[2]; // Academic Building Room 201
+
+        $es = ExamSession::query()->updateOrCreate(
+            ['season_id' => $season->id, 'room_id' => $room->id, 'date' => $date->toDateString()],
+            [
+                'start_time'         => '13:00:00',
+                'end_time'           => '15:00:00',
+                'status'             => ExamSession::STATUS_COMPLETED,
+                'published_at'       => $date->subDays(5),
+                'started_at'         => $date->setTimeFromTimeString('13:00:00'),
+                'closed_at'          => $date->setTimeFromTimeString('15:05:00'),
+                'score_release_date' => $date->addDays(7)->toDateString(),
+                'created_by'         => $users['admin']->id,
+            ]
+        );
+
+        $es->proctors()->syncWithoutDetaching([$users['proctor']->id]);
+
+        $sessionApplicants = [
+            $appMap[4]['applicant'], // Rowena
+            $appMap[5]['applicant'], // Danilo
+        ];
+
+        foreach ($sessionApplicants as $applicant) {
+            $this->attachApplicant($es, $applicant, [
+                'attendance_status'    => 'present',
+                'attendance_marked_at' => $date->setTimeFromTimeString('13:05:00'),
+                'attendance_marked_by' => $users['proctor']->id,
+                'submission_status'    => 'submitted',
+                'submitted_at'        => $date->setTimeFromTimeString('14:55:00'),
+                'submitted_to'        => $users['proctor']->id,
+            ]);
+        }
+
+        $gs = GradingSession::query()->updateOrCreate(
+            ['exam_session_id' => $es->id],
+            [
+                'status'    => GradingSession::STATUS_IN_PROGRESS,
+                'opened_at' => $date->addDays(1)->setTimeFromTimeString('08:00:00'),
+                'opened_by' => $users['test_admin']->id,
+            ]
+        );
+
+        foreach ($sessionApplicants as $applicant) {
+            $gs->applicants()->syncWithoutDetaching([$applicant->id]);
+        }
+
+        $partialScores = [
+            0 => ['SA' => 18, 'NA' => 16, 'VR' => 17], // Rowena
+            1 => ['SA' => 20, 'NA' => 19, 'VR' => 18], // Danilo
+        ];
+
+        foreach ($sessionApplicants as $i => $applicant) {
+            foreach ($domains->take(3) as $domain) {
+                $raw = $partialScores[$i][$domain->code] ?? (int) round($domain->max_items * 0.6);
+                ApplicantScore::query()->updateOrCreate(
+                    ['grading_session_id' => $gs->id, 'applicant_id' => $applicant->id, 'domain_id' => $domain->id],
+                    [
+                        'raw_score'        => $raw,
+                        'max_score'        => $domain->max_items,
+                        'normalized_score' => null,
+                        'scored_by'        => $users['test_admin']->id,
+                        'scored_at'        => $date->addDays(1)->setTimeFromTimeString('11:00:00'),
+                    ]
+                );
+            }
+        }
+
+        $bsitId = Course::query()->where('code', 'BSIT')->value('id');
+        $bscsId = Course::query()->where('code', 'BSCS')->value('id');
+
+        foreach ($sessionApplicants as $i => $applicant) {
+            $courseId = $i === 0 ? $bsitId : $bscsId;
+            ConsultationSummary::query()->updateOrCreate(
+                ['applicant_id' => $applicant->id],
+                [
+                    'status'                => ConsultationSummary::STATUS_PENDING,
+                    'recommended_course_id' => $courseId,
+                    'counselor_comments'   => null,
+                    'system_notes'          => ['seed' => 'defense-demo'],
+                    'counselor_id'          => $users['test_admin']->id,
+                    'released_at'           => null,
+                    'released_by'           => null,
+                ]
+            );
+        }
+    }
 
     private function seedSessionC(CarbonImmutable $today, Season $season, $rooms, array $appMap, array $users): void {}
 
