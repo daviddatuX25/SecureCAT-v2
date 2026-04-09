@@ -7,6 +7,7 @@ use App\Http\Requests\StoreUserRequest;
 use App\Http\Requests\UpdateUserRequest;
 use App\Models\Role;
 use App\Models\User;
+use App\Models\UserCredential;
 use App\Services\AuditService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -77,8 +78,9 @@ class UserController extends Controller
         $user->load('roles:id,name,display_name');
 
         return Inertia::render('Admin/Users/Edit', [
-            'user' => $user,
-            'roles' => Role::orderBy('name')->get(['id', 'name', 'display_name']),
+            'user'         => $user,
+            'roles'        => Role::orderBy('name')->get(['id', 'name', 'display_name']),
+            'googleLinked' => $user->hasGoogleLinked(),
         ]);
     }
 
@@ -90,6 +92,11 @@ class UserController extends Controller
             $user->name = $validated['name'];
         }
         if (isset($validated['email'])) {
+            if ($validated['email'] !== $user->email) {
+                $user->credentials()
+                    ->where('provider', UserCredential::PROVIDER_GOOGLE)
+                    ->delete();
+            }
             $user->email = $validated['email'];
         }
         if (! empty($validated['password'] ?? null)) {
