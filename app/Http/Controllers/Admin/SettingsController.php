@@ -37,6 +37,10 @@ class SettingsController extends Controller
             SystemSetting::set('ai_exam_companion_enabled', (bool) $validated['ai_exam_companion_enabled']);
         }
 
+        if (array_key_exists('notify_on_publish', $validated)) {
+            SystemSetting::set('notify_on_publish', (bool) $validated['notify_on_publish']);
+        }
+
         if (array_key_exists('ai_companion_persona', $validated)) {
             SystemSetting::set('ai_companion_persona', $validated['ai_companion_persona'] ?? '');
         }
