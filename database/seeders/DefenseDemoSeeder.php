@@ -51,17 +51,50 @@ class DefenseDemoSeeder extends Seeder
 
     private function seedSeason(CarbonImmutable $today): Season
     {
-        return new Season(); // stub
+        $year = $today->month >= 6 ? $today->year : $today->year - 1;
+        $academicYear = $year . '-' . ($year + 1);
+
+        $season = Season::query()->updateOrCreate(
+            ['academic_year' => $academicYear, 'semester' => '1'],
+            [
+                'is_active'               => true,
+                'application_start_date'  => $today->subDays(45)->toDateString(),
+                'application_end_date'    => $today->addDays(14)->toDateString(),
+            ]
+        );
+
+        // Deactivate all other seasons
+        Season::query()->where('id', '!=', $season->id)->update(['is_active' => false]);
+
+        return $season;
     }
 
     private function seedUsers(): array
     {
-        return []; // stub
+        return [
+            'super_admin'     => $this->upsertUserWithRole('admin@securecat.local',    'Ricardo Dela Cruz', 'super_admin'),
+            'admin'           => $this->upsertUserWithRole('josefina@securecat.local', 'Josefina Gaerlan',  'admin'),
+            'staff'           => $this->upsertUserWithRole('maria@securecat.local',    'Maria Corpuz',      'staff'),
+            'proctor'         => $this->upsertUserWithRole('eduardo@securecat.local',  'Eduardo Fariñas',   'proctor'),
+            'test_admin'      => $this->upsertUserWithRole('analiza@securecat.local',  'Analiza Barroga',   'test_administrator'),
+        ];
     }
 
     private function seedRooms(): \Illuminate\Support\Collection
     {
-        return collect(); // stub
+        $specs = [
+            ['building' => 'Main Building',       'name' => 'Room 101',  'floor' => '1st Floor',    'capacity' => 30],
+            ['building' => 'Main Building',       'name' => 'Room 102',  'floor' => '1st Floor',    'capacity' => 30],
+            ['building' => 'Academic Building',   'name' => 'Room 201',  'floor' => '2nd Floor',    'capacity' => 40],
+            ['building' => 'Vocational Building', 'name' => 'Lab Room 1','floor' => 'Ground Floor','capacity' => 25],
+        ];
+
+        return collect($specs)->map(fn ($r) =>
+            Room::query()->updateOrCreate(
+                ['building' => $r['building'], 'name' => $r['name']],
+                ['floor' => $r['floor'], 'capacity' => $r['capacity'], 'is_active' => true]
+            )
+        );
     }
 
     private function seedApplications(CarbonImmutable $today, Season $season, $courses, array $users): array
