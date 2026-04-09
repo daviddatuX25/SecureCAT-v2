@@ -58,6 +58,7 @@
     $form.transform((data) => ({
       ai_exam_companion_enabled: !!data.ai_exam_companion_enabled,
       notify_on_publish: !!data.notify_on_publish,
+      release_mode: data.release_mode,
     }));
     $form.put('/admin/settings', {
       preserveScroll: true,
@@ -123,6 +124,51 @@
           </span>
         </CardContent>
       </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle class="flex items-center gap-2">
+            <Share2 class="h-5 w-5" />
+            Result release mode
+          </CardTitle>
+          <CardDescription>
+            Controls how exam results are delivered to applicants. At least one mode must be enabled.
+          </CardDescription>
+        </CardHeader>
+        <CardContent class="space-y-4">
+          <div class="flex items-center gap-4">
+            <Switch
+              checked={releaseOnline}
+              onCheckedChange={handleReleaseOnlineChange}
+              aria-label="Enable online release"
+            />
+            <div>
+              <p class="text-sm font-medium">Online release</p>
+              <p class="text-xs text-muted-foreground">Results visible in portal + email delivery</p>
+            </div>
+          </div>
+          <div class="flex items-center gap-4">
+            <Switch
+              checked={releasef2f}
+              onCheckedChange={handleReleaseF2fChange}
+              aria-label="Enable F2F release"
+            />
+            <div>
+              <p class="text-sm font-medium">F2F release</p>
+              <p class="text-xs text-muted-foreground">Results handed in person — portal view disabled for applicants</p>
+            </div>
+          </div>
+          {#if releaseModeInvalid}
+            <p class="text-sm text-destructive">At least one release mode must be enabled.</p>
+          {/if}
+        </CardContent>
+      </Card>
+
+      <div class="flex justify-end">
+        <Button type="submit" disabled={saving || releaseModeInvalid} class="min-h-[44px]">
+          {saving ? 'Saving...' : 'Save'}
+        </Button>
+      </div>
 
           </form>
   </div>
