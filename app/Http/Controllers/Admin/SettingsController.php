@@ -21,6 +21,8 @@ class SettingsController extends Controller
 
         return Inertia::render('Admin/Settings/Index', [
             'ai_exam_companion_enabled' => SystemSetting::aiCompanionEnabled(),
+            'notify_on_publish'         => SystemSetting::notifyOnPublish(),
+            'release_mode'              => SystemSetting::releaseMode(),
         ]);
     }
 
@@ -41,6 +43,10 @@ class SettingsController extends Controller
 
         if (array_key_exists('consultation_enabled', $validated)) {
             SystemSetting::set('consultation_enabled', (bool) $validated['consultation_enabled']);
+        }
+
+        if (array_key_exists('release_mode', $validated)) {
+            SystemSetting::set('release_mode', $validated['release_mode']);
         }
 
         return redirect()->route('admin.settings.index')->with('success', 'Settings saved.');
