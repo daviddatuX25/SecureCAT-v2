@@ -12,7 +12,7 @@ class DecisionRule extends Model
 
     protected $fillable = [
         'course_id',
-        'domain_id',
+        'aptitude_area_id',
         'min_score',
         'max_score',
         'note',
@@ -34,9 +34,9 @@ class DecisionRule extends Model
         return $this->belongsTo(Course::class);
     }
 
-    public function domain(): BelongsTo
+    public function aptitudeArea(): BelongsTo
     {
-        return $this->belongsTo(ExamDomain::class);
+        return $this->belongsTo(AptitudeArea::class);
     }
 
     public function createdByUser(): BelongsTo

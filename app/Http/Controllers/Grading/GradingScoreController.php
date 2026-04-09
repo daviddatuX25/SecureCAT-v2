@@ -5,7 +5,7 @@ namespace App\Http\Controllers\Grading;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\UpdateScoresRequest;
 use App\Models\Applicant;
-use App\Models\ExamDomain;
+use App\Models\AptitudeArea;
 use App\Models\GradingSession;
 use App\Services\AuditService;
 use App\Services\ScoreInputService;
@@ -26,11 +26,11 @@ class GradingScoreController extends Controller
         }
 
         $session = $grading_session->load(['examSession.room']);
-        $domains = ExamDomain::query()->where('is_active', true)->orderBy('display_order')->get();
+        $domains = AptitudeArea::query()->where('is_active', true)->orderBy('display_order')->get();
         $existingScores = $grading_session->applicantScores()
             ->where('applicant_id', $applicant->id)
             ->get()
-            ->keyBy('domain_id');
+            ->keyBy('aptitude_area_id');
 
         $applicant->load('application');
 
@@ -46,7 +46,7 @@ class GradingScoreController extends Controller
                 'room_name' => $session->examSession?->room?->name ?? '—',
             ],
             'domains' => $domains->map(fn ($d) => ['id' => $d->id, 'name' => $d->name, 'code' => $d->code, 'max_items' => $d->max_items])->values()->all(),
-            'existing_scores' => $existingScores->map(fn ($s) => ['domain_id' => $s->domain_id, 'raw_score' => $s->raw_score, 'max_score' => $s->max_score])->values()->all(),
+            'existing_scores' => $existingScores->map(fn ($s) => ['aptitude_area_id' => $s->aptitude_area_id, 'raw_score' => $s->raw_score, 'max_score' => $s->max_score])->values()->all(),
         ]);
     }
 

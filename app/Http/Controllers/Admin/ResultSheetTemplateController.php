@@ -5,7 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreResultSheetTemplateRequest;
 use App\Http\Requests\UpdateResultSheetTemplateRequest;
-use App\Models\ExamDomain;
+use App\Models\AptitudeArea;
 use App\Models\ResultSheetTemplate;
 use App\Services\ResultSheetTemplateService;
 use Illuminate\Http\JsonResponse;
@@ -36,13 +36,13 @@ class ResultSheetTemplateController extends Controller
 
     public function create(): Response
     {
-        $domains = ExamDomain::where('is_active', true)->orderBy('display_order')->get(['id', 'name', 'code']);
+        $domains = AptitudeArea::where('is_active', true)->orderBy('display_order')->get(['id', 'name', 'code']);
         $domainPlaceholders = $domains->map(fn ($d) => [
-            'slug' => $this->templateService->domainSlug($d->name),
+            'slug' => $this->templateService->aptitudeAreaSlug($d->name),
             'name' => $d->name,
             'code' => $d->code,
-            'example' => '{{'.$this->templateService->domainSlug($d->name).'}}',
-            'exampleRaw' => '{{'.$this->templateService->domainSlug($d->name).'_raw}}',
+            'example' => '{{'.$this->templateService->aptitudeAreaSlug($d->name).'}}',
+            'exampleRaw' => '{{'.$this->templateService->aptitudeAreaSlug($d->name).'_raw}}',
         ])->values()->all();
 
         return Inertia::render('Admin/ResultSheetTemplates/Create', [
@@ -92,13 +92,13 @@ class ResultSheetTemplateController extends Controller
 
     public function edit(ResultSheetTemplate $result_sheet_template): Response
     {
-        $domains = ExamDomain::where('is_active', true)->orderBy('display_order')->get(['id', 'name', 'code']);
+        $domains = AptitudeArea::where('is_active', true)->orderBy('display_order')->get(['id', 'name', 'code']);
         $domainPlaceholders = $domains->map(fn ($d) => [
-            'slug' => $this->templateService->domainSlug($d->name),
+            'slug' => $this->templateService->aptitudeAreaSlug($d->name),
             'name' => $d->name,
             'code' => $d->code,
-            'example' => '{{'.$this->templateService->domainSlug($d->name).'}}',
-            'exampleRaw' => '{{'.$this->templateService->domainSlug($d->name).'_raw}}',
+            'example' => '{{'.$this->templateService->aptitudeAreaSlug($d->name).'}}',
+            'exampleRaw' => '{{'.$this->templateService->aptitudeAreaSlug($d->name).'_raw}}',
         ])->values()->all();
 
         return Inertia::render('Admin/ResultSheetTemplates/Edit', [

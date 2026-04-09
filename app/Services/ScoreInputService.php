@@ -11,14 +11,14 @@ class ScoreInputService
     /**
      * Upsert scores for an applicant in a grading session.
      *
-     * @param  array<array{domain_id: int, raw_score: int, max_score: int}>  $scores
+     * @param  array<array{aptitude_area_id: int, raw_score: int, max_score: int}>  $scores
      */
     public function saveScores(GradingSession $gradingSession, int $applicantId, array $scores, User $scoredBy): void
     {
         $now = now();
 
         foreach ($scores as $entry) {
-            $domainId = (int) $entry['domain_id'];
+            $domainId = (int) $entry['aptitude_area_id'];
             $rawScore = (int) $entry['raw_score'];
             $maxScore = (int) $entry['max_score'];
 
@@ -26,7 +26,7 @@ class ScoreInputService
                 [
                     'grading_session_id' => $gradingSession->id,
                     'applicant_id' => $applicantId,
-                    'domain_id' => $domainId,
+                    'aptitude_area_id' => $domainId,
                 ],
                 [
                     'raw_score' => $rawScore,

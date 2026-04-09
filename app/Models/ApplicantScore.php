@@ -10,7 +10,7 @@ class ApplicantScore extends Model
     protected $fillable = [
         'grading_session_id',
         'applicant_id',
-        'domain_id',
+        'aptitude_area_id',
         'raw_score',
         'max_score',
         'normalized_score',
@@ -35,9 +35,9 @@ class ApplicantScore extends Model
         return $this->belongsTo(Applicant::class);
     }
 
-    public function domain(): BelongsTo
+    public function aptitudeArea(): BelongsTo
     {
-        return $this->belongsTo(ExamDomain::class, 'domain_id');
+        return $this->belongsTo(AptitudeArea::class, 'aptitude_area_id');
     }
 
     public function scoredByUser(): BelongsTo

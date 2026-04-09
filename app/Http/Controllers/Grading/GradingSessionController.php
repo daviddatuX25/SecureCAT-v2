@@ -21,9 +21,9 @@ class GradingSessionController extends Controller
     {
         $session = $grading_session->load(['examSession.room', 'applicants.application']);
 
-        $domainsTotal = \App\Models\ExamDomain::where('is_active', true)->count();
+        $domainsTotal = \App\Models\AptitudeArea::where('is_active', true)->count();
         $applicants = $session->applicants->map(function ($a) use ($session, $domainsTotal) {
-            $scoresCount = $session->applicantScores()->where('applicant_id', $a->id)->distinct()->count('domain_id');
+            $scoresCount = $session->applicantScores()->where('applicant_id', $a->id)->distinct()->count('aptitude_area_id');
             $scored = $domainsTotal > 0 && $scoresCount >= $domainsTotal;
             return [
                 'id' => $a->id,

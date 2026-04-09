@@ -2,7 +2,7 @@
 
 namespace App\Services;
 
-use App\Models\ExamDomain;
+use App\Models\AptitudeArea;
 use App\Models\ExamSession;
 use App\Models\GradingSession;
 use App\Models\User;
@@ -56,15 +56,15 @@ class GradingSessionService
      */
     private function ensureAllApplicantsScored(GradingSession $session): void
     {
-        $activeDomainIds = ExamDomain::where('is_active', true)->pluck('id');
+        $activeDomainIds = AptitudeArea::where('is_active', true)->pluck('id');
         $domainCount = $activeDomainIds->count();
 
         foreach ($session->applicants as $applicant) {
             $scoredDomainCount = $session->applicantScores()
                 ->where('applicant_id', $applicant->id)
-                ->whereIn('domain_id', $activeDomainIds)
+                ->whereIn('aptitude_area_id', $activeDomainIds)
                 ->distinct()
-                ->count('domain_id');
+                ->count('aptitude_area_id');
 
             if ($scoredDomainCount < $domainCount) {
                 throw ValidationException::withMessages([

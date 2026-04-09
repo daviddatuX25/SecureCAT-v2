@@ -2,7 +2,7 @@
 
 namespace App\Services;
 
-use App\Models\ExamDomain;
+use App\Models\AptitudeArea;
 use App\Models\ResultSheetTemplate;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
@@ -129,7 +129,7 @@ class ResultSheetTemplateService
     /**
      * Slugify domain name for placeholder key (lowercase, underscores).
      */
-    public function domainSlug(string $name): string
+    public function aptitudeAreaSlug(string $name): string
     {
         return str_replace('-', '_', Str::slug($name, '_'));
     }
@@ -143,7 +143,7 @@ class ResultSheetTemplateService
      */
     protected function addPerDomainReplacements(array &$replacements, array $applicants, array $sample, bool $useSampleData): void
     {
-        $domains = ExamDomain::where('is_active', true)->orderBy('display_order')->get(['id', 'name']);
+        $domains = AptitudeArea::where('is_active', true)->orderBy('display_order')->get(['id', 'name']);
 
         foreach ([1 => 0, 2 => 1] as $slot => $idx) {
             $suffix = $slot === 1 ? '' : '_2';
@@ -153,7 +153,7 @@ class ResultSheetTemplateService
             $scoresByDomain = collect($scores)->keyBy(fn (array $s) => $s['domain'] ?? '');
 
             foreach ($domains as $domain) {
-                $slug = $this->domainSlug($domain->name);
+                $slug = $this->aptitudeAreaSlug($domain->name);
                 $score = $scoresByDomain->get($domain->name);
                 $pct = $score !== null ? (string) ((int) ($score['pct'] ?? 0)) : '—';
                 $raw = $score !== null ? sprintf('%d / %d', (int) ($score['raw'] ?? 0), (int) ($score['max'] ?? 0)) : '—';

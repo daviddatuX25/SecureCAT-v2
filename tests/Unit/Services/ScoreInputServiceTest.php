@@ -4,7 +4,7 @@ namespace Tests\Unit\Services;
 
 use App\Models\ApplicantScore;
 use App\Models\Applicant;
-use App\Models\ExamDomain;
+use App\Models\AptitudeArea;
 use App\Models\GradingSession;
 use App\Models\User;
 use App\Services\ScoreInputService;
@@ -29,13 +29,13 @@ class ScoreInputServiceTest extends TestCase
         $this->gradingSession = GradingSession::factory()->create();
     }
 
-    public function test_save_scores_upserts_single_domain_score()
+    public function test_save_scores_upserts_single_aptitude_area_score()
     {
         // Arrange
-        $domain = ExamDomain::factory()->create();
+        $area = AptitudeArea::factory()->create();
         $scores = [
             [
-                'domain_id' => $domain->id,
+                'aptitude_area_id' => $area->id,
                 'raw_score' => 85,
                 'max_score' => 100,
             ]
@@ -53,21 +53,21 @@ class ScoreInputServiceTest extends TestCase
         $this->assertDatabaseHas('applicant_scores', [
             'grading_session_id' => $this->gradingSession->id,
             'applicant_id' => $this->applicant->id,
-            'domain_id' => $domain->id,
+            'aptitude_area_id' => $area->id,
             'raw_score' => 85,
             'max_score' => 100,
             'scored_by' => $this->scorer->id,
         ]);
     }
 
-    public function test_save_scores_upserts_multiple_domain_scores()
+    public function test_save_scores_upserts_multiple_aptitude_area_scores()
     {
         // Arrange
-        $domain1 = ExamDomain::factory()->create();
-        $domain2 = ExamDomain::factory()->create();
+        $area1 = AptitudeArea::factory()->create();
+        $area2 = AptitudeArea::factory()->create();
         $scores = [
-            ['domain_id' => $domain1->id, 'raw_score' => 85, 'max_score' => 100],
-            ['domain_id' => $domain2->id, 'raw_score' => 92, 'max_score' => 100],
+            ['aptitude_area_id' => $area1->id, 'raw_score' => 85, 'max_score' => 100],
+            ['aptitude_area_id' => $area2->id, 'raw_score' => 92, 'max_score' => 100],
         ];
 
         // Act
@@ -82,13 +82,13 @@ class ScoreInputServiceTest extends TestCase
         $this->assertDatabaseHas('applicant_scores', [
             'grading_session_id' => $this->gradingSession->id,
             'applicant_id' => $this->applicant->id,
-            'domain_id' => $domain1->id,
+            'aptitude_area_id' => $area1->id,
             'raw_score' => 85,
         ]);
         $this->assertDatabaseHas('applicant_scores', [
             'grading_session_id' => $this->gradingSession->id,
             'applicant_id' => $this->applicant->id,
-            'domain_id' => $domain2->id,
+            'aptitude_area_id' => $area2->id,
             'raw_score' => 92,
         ]);
     }
@@ -96,11 +96,11 @@ class ScoreInputServiceTest extends TestCase
     public function test_save_scores_updates_existing_score()
     {
         // Arrange
-        $domain = ExamDomain::factory()->create();
+        $area = AptitudeArea::factory()->create();
         ApplicantScore::create([
             'grading_session_id' => $this->gradingSession->id,
             'applicant_id' => $this->applicant->id,
-            'domain_id' => $domain->id,
+            'aptitude_area_id' => $area->id,
             'raw_score' => 70,
             'max_score' => 100,
             'scored_by' => $this->scorer->id,
@@ -108,7 +108,7 @@ class ScoreInputServiceTest extends TestCase
         ]);
 
         $scores = [
-            ['domain_id' => $domain->id, 'raw_score' => 88, 'max_score' => 100]
+            ['aptitude_area_id' => $area->id, 'raw_score' => 88, 'max_score' => 100]
         ];
 
         // Act
@@ -123,7 +123,7 @@ class ScoreInputServiceTest extends TestCase
         $this->assertDatabaseHas('applicant_scores', [
             'grading_session_id' => $this->gradingSession->id,
             'applicant_id' => $this->applicant->id,
-            'domain_id' => $domain->id,
+            'aptitude_area_id' => $area->id,
             'raw_score' => 88,
         ]);
         // Only one record should exist
@@ -136,9 +136,9 @@ class ScoreInputServiceTest extends TestCase
     public function test_save_scores_records_scored_by_and_scored_at()
     {
         // Arrange
-        $domain = ExamDomain::factory()->create();
+        $area = AptitudeArea::factory()->create();
         $scores = [
-            ['domain_id' => $domain->id, 'raw_score' => 80, 'max_score' => 100]
+            ['aptitude_area_id' => $area->id, 'raw_score' => 80, 'max_score' => 100]
         ];
 
         // Act

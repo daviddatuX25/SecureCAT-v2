@@ -15,7 +15,7 @@ class UpdateDecisionRuleRequest extends FormRequest
     {
         return [
             'course_id' => ['sometimes', 'integer', 'exists:courses,id'],
-            'domain_id' => ['nullable', 'integer', 'exists:exam_domains,id'],
+            'aptitude_area_id' => ['nullable', 'integer', 'exists:aptitude_areas,id'],
             'min_score' => ['sometimes', 'integer', 'min:0', 'max:100'],
             'max_score' => ['sometimes', 'integer', 'min:0', 'max:100'],
             'note' => ['nullable', 'string', 'max:1000'],

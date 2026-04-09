@@ -15,7 +15,7 @@ class UpdateScoresRequest extends FormRequest
     {
         return [
             'scores'              => ['required', 'array'],
-            'scores.*.domain_id'  => ['required', 'integer', 'exists:exam_domains,id'],
+            'scores.*.aptitude_area_id'  => ['required', 'integer', 'exists:aptitude_areas,id'],
             'scores.*.raw_score'  => ['nullable', 'integer', 'min:0'],
             'scores.*.max_score'  => ['nullable', 'integer', 'min:0'],
         ];

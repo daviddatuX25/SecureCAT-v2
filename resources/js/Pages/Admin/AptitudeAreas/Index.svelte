@@ -5,24 +5,26 @@
   import { Badge } from '@/Components/ui/badge';
   import { Plus, Pencil } from 'lucide-svelte';
 
-  let { exam_domains = [] } = $props();
+  let { aptitude_areas = [] } = $props();
 
   const page = usePage();
   const success = $derived($page.props.flash?.success ?? null);
-  const list = $derived(Array.isArray(exam_domains) ? exam_domains : []);
-const breadcrumbs = [{ label: 'Aptitude Areas' }];
+  const list = $derived(Array.isArray(aptitude_areas) ? aptitude_areas : []);
+
+  const breadcrumbs = [{ label: 'Aptitude Areas' }];
 </script>
 
 <AuthenticatedLayout {breadcrumbs}>
   <div class="space-y-6 min-w-0">
     <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
       <div>
-      <Link href="/admin/exam-domains/create">
-        <Button class="min-h-[44px]">
-          <Plus class="mr-2 h-4 w-4" />
-          Add pillar
-        </Button>
-      </Link>
+        <Link href="/admin/aptitude-areas/create">
+          <Button class="min-h-[44px]">
+            <Plus class="mr-2 h-4 w-4" />
+            Add aptitude area
+          </Button>
+        </Link>
+      </div>
     </div>
 
     {#if success}
@@ -45,19 +47,19 @@ const breadcrumbs = [{ label: 'Aptitude Areas' }];
             </tr>
           </thead>
           <tbody>
-            {#each list as domain}
+            {#each list as area}
               <tr class="border-t border-border hover:bg-muted/30">
-                <td class="px-4 py-3 font-medium">{domain.name ?? '—'}</td>
-                <td class="px-4 py-3 font-mono text-muted-foreground">{domain.code ?? '—'}</td>
-                <td class="px-4 py-3">{domain.max_items ?? '—'}</td>
-                <td class="px-4 py-3">{domain.display_order ?? 0}</td>
+                <td class="px-4 py-3 font-medium">{area.name ?? '—'}</td>
+                <td class="px-4 py-3 font-mono text-muted-foreground">{area.code ?? '—'}</td>
+                <td class="px-4 py-3">{area.max_items ?? '—'}</td>
+                <td class="px-4 py-3">{area.display_order ?? 0}</td>
                 <td class="px-4 py-3">
-                  <Badge variant={domain.is_active ? 'success' : 'muted'}>
-                    {domain.is_active ? 'Active' : 'Inactive'}
+                  <Badge variant={area.is_active ? 'success' : 'muted'}>
+                    {area.is_active ? 'Active' : 'Inactive'}
                   </Badge>
                 </td>
                 <td class="px-4 py-3 text-right">
-                  <Link href={`/admin/exam-domains/${domain.id}/edit`}>
+                  <Link href={`/admin/aptitude-areas/${area.id}/edit`}>
                     <Button variant="ghost" size="icon" aria-label="Edit">
                       <Pencil class="h-4 w-4" />
                     </Button>
@@ -67,7 +69,7 @@ const breadcrumbs = [{ label: 'Aptitude Areas' }];
             {:else}
               <tr>
                 <td colspan="6" class="px-4 py-12 text-center text-muted-foreground">
-                  No exam pillars yet. Add one to use in grading and result templates.
+                  No aptitude areas yet. Add one to use in grading and result templates.
                 </td>
               </tr>
             {/each}

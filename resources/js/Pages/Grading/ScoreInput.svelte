@@ -19,9 +19,9 @@
   const initialScores = $derived.by(() => {
     const arr = [];
     for (const d of domains) {
-      const existing = existing_scores.find((s) => s.domain_id === d.id);
+      const existing = existing_scores.find((s) => s.aptitude_area_id === d.id);
       arr.push({
-        domain_id: d.id,
+        aptitude_area_id: d.id,
         raw_score: existing?.raw_score ?? 0,
         max_score: existing?.max_score ?? d.max_items ?? 0,
       });
@@ -35,19 +35,19 @@
   });
 
   function getScore(domainId) {
-    const s = scores.find((x) => x.domain_id === domainId);
+    const s = scores.find((x) => x.aptitude_area_id === domainId);
     return s ? s.raw_score : 0;
   }
 
   function setScore(domainId, value) {
     const num = Math.max(0, parseInt(value, 10) || 0);
     scores = scores.map((s) =>
-      s.domain_id === domainId ? { ...s, raw_score: Math.min(num, s.max_score) } : s
+      s.aptitude_area_id === domainId ? { ...s, raw_score: Math.min(num, s.max_score) } : s
     );
   }
 
   function getMax(domainId) {
-    return scores.find((x) => x.domain_id === domainId)?.max_score ?? 0;
+    return scores.find((x) => x.aptitude_area_id === domainId)?.max_score ?? 0;
   }
 
   function pct(domainId) {
@@ -63,7 +63,7 @@
     saving = true;
     saveError = '';
     const s = scores.map((sc) => ({
-      domain_id: sc.domain_id,
+      aptitude_area_id: sc.aptitude_area_id,
       raw_score: sc.raw_score,
       max_score: sc.max_score,
     }));

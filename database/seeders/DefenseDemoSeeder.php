@@ -7,7 +7,7 @@ use App\Models\ApplicantScore;
 use App\Models\Application;
 use App\Models\ConsultationSummary;
 use App\Models\Course;
-use App\Models\ExamDomain;
+use App\Models\AptitudeArea;
 use App\Models\ExamSession;
 use App\Models\GradingSession;
 use App\Models\Role;
@@ -31,9 +31,9 @@ class DefenseDemoSeeder extends Seeder
             return;
         }
 
-        $domains = ExamDomain::query()->where('is_active', true)->orderBy('display_order')->get();
+        $domains = AptitudeArea::query()->where('is_active', true)->orderBy('display_order')->get();
         if ($domains->count() < 3) {
-            $this->command?->warn('DefenseDemoSeeder: need at least 3 active exam domains. Run DatabaseSeeder first.');
+            $this->command?->warn('DefenseDemoSeeder: need at least 3 active aptitude areas. Run DatabaseSeeder first.');
             return;
         }
 
@@ -271,7 +271,7 @@ class DefenseDemoSeeder extends Seeder
             foreach ($domains as $domain) {
                 $raw = $scoreMap[$i][$domain->code] ?? (int) round($domain->max_items * 0.5);
                 ApplicantScore::query()->updateOrCreate(
-                    ['grading_session_id' => $gs->id, 'applicant_id' => $applicant->id, 'domain_id' => $domain->id],
+                    ['grading_session_id' => $gs->id, 'applicant_id' => $applicant->id, 'aptitude_area_id' => $domain->id],
                     [
                         'raw_score'        => $raw,
                         'max_score'        => $domain->max_items,
@@ -365,7 +365,7 @@ class DefenseDemoSeeder extends Seeder
             foreach ($domains->take(3) as $domain) {
                 $raw = $partialScores[$i][$domain->code] ?? (int) round($domain->max_items * 0.6);
                 ApplicantScore::query()->updateOrCreate(
-                    ['grading_session_id' => $gs->id, 'applicant_id' => $applicant->id, 'domain_id' => $domain->id],
+                    ['grading_session_id' => $gs->id, 'applicant_id' => $applicant->id, 'aptitude_area_id' => $domain->id],
                     [
                         'raw_score'        => $raw,
                         'max_score'        => $domain->max_items,

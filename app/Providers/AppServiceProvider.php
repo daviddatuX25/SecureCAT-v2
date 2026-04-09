@@ -3,8 +3,10 @@
 namespace App\Providers;
 
 use App\Models\AuditLog;
+use App\Models\AptitudeArea;
 use App\Models\ExamSession;
 use App\Policies\AuditLogPolicy;
+use App\Policies\AptitudeAreaPolicy;
 use App\Policies\ExamSessionPolicy;
 use Illuminate\Auth\Middleware\RedirectIfAuthenticated;
 use Illuminate\Cache\RateLimiting\Limit;
@@ -29,6 +31,7 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         Gate::policy(AuditLog::class, AuditLogPolicy::class);
+        Gate::policy(AptitudeArea::class, AptitudeAreaPolicy::class);
         Gate::policy(ExamSession::class, ExamSessionPolicy::class);
 
         RedirectIfAuthenticated::redirectUsing(fn () => route('dashboard'));

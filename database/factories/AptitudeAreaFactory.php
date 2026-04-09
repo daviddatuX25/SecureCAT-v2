@@ -2,12 +2,12 @@
 
 namespace Database\Factories;
 
-use App\Models\ExamDomain;
+use App\Models\AptitudeArea;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
-class ExamDomainFactory extends Factory
+class AptitudeAreaFactory extends Factory
 {
-    protected $model = ExamDomain::class;
+    protected $model = AptitudeArea::class;
 
     public function definition(): array
     {

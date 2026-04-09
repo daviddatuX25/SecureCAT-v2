@@ -8,7 +8,7 @@ use App\Models\Application;
 use App\Models\Appointment;
 use App\Models\ConsultationSummary;
 use App\Models\Course;
-use App\Models\ExamDomain;
+use App\Models\AptitudeArea;
 use App\Models\ExamSession;
 use App\Models\GradingSession;
 use App\Models\Role;
@@ -36,9 +36,9 @@ class DemoDashboardSeeder extends Seeder
             return;
         }
 
-        $domains = ExamDomain::query()->where('is_active', true)->orderBy('display_order')->get();
+        $domains = AptitudeArea::query()->where('is_active', true)->orderBy('display_order')->get();
         if ($domains->count() < 3) {
-            $this->command?->warn('DemoDashboardSeeder: not enough exam domains; skipping.');
+            $this->command?->warn('DemoDashboardSeeder: not enough aptitude areas; skipping.');
             return;
         }
 
@@ -234,12 +234,12 @@ class DemoDashboardSeeder extends Seeder
                     if ($idx === 2) continue;
 
                     $take = ($idx === 0) ? $domains->count() : max(1, (int) floor($domains->count() / 2));
-                    $domains->take($take)->each(function (ExamDomain $d) use ($gs, $applicantId, $users) {
+                    $domains->take($take)->each(function (AptitudeArea $d) use ($gs, $applicantId, $users) {
                         ApplicantScore::query()->updateOrCreate(
                             [
                                 'grading_session_id' => $gs->id,
                                 'applicant_id' => $applicantId,
-                                'domain_id' => $d->id,
+                                'aptitude_area_id' => $d->id,
                             ],
                             [
                                 'raw_score' => 10,

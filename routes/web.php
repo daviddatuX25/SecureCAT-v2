@@ -2,9 +2,10 @@
 
 use App\Http\Controllers\Admin\AdmissionSlipTemplateController;
 use App\Http\Controllers\Admin\AiCompanionAdminController;
+use App\Http\Controllers\Admin\AptitudeAreaController;
 use App\Http\Controllers\Admin\AuditLogController;
 use App\Http\Controllers\Admin\CourseController;
-use App\Http\Controllers\Admin\ExamDomainController;
+
 use App\Http\Controllers\Admin\ExamSchedulingAssistantController;
 use App\Http\Controllers\Admin\ExamSessionController;
 use App\Http\Controllers\Admin\KnowledgeDocumentController;
@@ -114,7 +115,7 @@ Route::middleware(['auth'])->group(function () {
         Route::put('test-scheduling/{exam_session}', [ExamSessionController::class, 'update'])->name('test-scheduling.update');
         Route::resource('seasons', SeasonController::class)->except('show', 'destroy')->parameters(['seasons' => 'season']);
         Route::post('seasons/{season}/activate', [SeasonController::class, 'activate'])->name('seasons.activate');
-        Route::resource('exam-domains', ExamDomainController::class)->except('show', 'destroy')->parameters(['exam_domains' => 'exam_domain']);
+        Route::resource('aptitude-areas', AptitudeAreaController::class)->except('show', 'destroy')->parameters(['aptitude_areas' => 'aptitude_area']);
         Route::resource('courses', CourseController::class)->except('show')->parameters(['courses' => 'course']);
         Route::post('courses/{course}/activate', [CourseController::class, 'activate'])->name('courses.activate');
         Route::post('courses/{course}/deactivate', [CourseController::class, 'deactivate'])->name('courses.deactivate');

@@ -2,13 +2,13 @@
 
 namespace App\Policies;
 
-use App\Models\ExamDomain;
+use App\Models\AptitudeArea;
 use App\Models\User;
 
 /**
- * Exam pillars (exam domains) are managed by test administrator and super_admin only, not registrar admin.
+ * Aptitude areas are managed by test_administrator and super_admin only.
  */
-class ExamDomainPolicy
+class AptitudeAreaPolicy
 {
     public function viewAny(User $user): bool
     {
@@ -20,7 +20,7 @@ class ExamDomainPolicy
         return $user->hasAnyRole(['super_admin', 'test_administrator']);
     }
 
-    public function update(User $user, ExamDomain $examDomain): bool
+    public function update(User $user, AptitudeArea $aptitudeArea): bool
     {
         return $user->hasAnyRole(['super_admin', 'test_administrator']);
     }

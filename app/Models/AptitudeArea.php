@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-class ExamDomain extends Model
+class AptitudeArea extends Model
 {
     use HasFactory;
 
@@ -30,6 +30,6 @@ class ExamDomain extends Model
 
     public function applicantScores(): HasMany
     {
-        return $this->hasMany(ApplicantScore::class, 'domain_id');
+        return $this->hasMany(ApplicantScore::class, 'aptitude_area_id');
     }
 }

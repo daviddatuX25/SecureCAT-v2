@@ -5,7 +5,7 @@ namespace App\Http\Requests;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
-class UpdateExamDomainRequest extends FormRequest
+class UpdateAptitudeAreaRequest extends FormRequest
 {
     public function authorize(): bool
     {
@@ -14,15 +14,15 @@ class UpdateExamDomainRequest extends FormRequest
 
     public function rules(): array
     {
-        $examDomain = $this->route('exam_domain');
+        $aptitudeArea = $this->route('aptitude_area');
 
         return [
-            'name' => ['required', 'string', 'max:100'],
-            'code' => ['required', 'string', 'max:20', Rule::unique('exam_domains', 'code')->ignore($examDomain?->id)],
-            'description' => ['nullable', 'string', 'max:1000'],
-            'max_items' => ['required', 'integer', 'min:1', 'max:999'],
+            'name'          => ['required', 'string', 'max:100'],
+            'code'          => ['required', 'string', 'max:20', Rule::unique('aptitude_areas', 'code')->ignore($aptitudeArea?->id)],
+            'description'   => ['nullable', 'string', 'max:1000'],
+            'max_items'     => ['required', 'integer', 'min:1', 'max:999'],
             'display_order' => ['nullable', 'integer', 'min:0'],
-            'is_active' => ['nullable', 'boolean'],
+            'is_active'     => ['nullable', 'boolean'],
         ];
     }
 
