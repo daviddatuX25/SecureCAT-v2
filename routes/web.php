@@ -29,10 +29,19 @@ use App\Http\Controllers\ReleaseController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
+use App\Http\Controllers\Auth\GoogleAuthController;
 use App\Http\Controllers\HomeController;
+use App\Support\GoogleOAuthConfig;
 
 Route::get('/', [HomeController::class, 'index'])->name('home');
 Route::get('/about', [HomeController::class, 'about'])->name('about');
+
+Route::middleware('guest')->group(function () {
+    Route::get('/auth/google', [GoogleAuthController::class, 'redirect'])
+        ->name('auth.google.redirect');
+    Route::get('/auth/google/callback', [GoogleAuthController::class, 'callback'])
+        ->name('auth.google.callback');
+});
 
 Route::middleware('guest')->group(function () {
     Route::get('/login', [AuthController::class, 'create'])->name('login');
@@ -173,5 +182,6 @@ Route::middleware(['auth'])->group(function () {
             Route::get('/', [ReleaseController::class, 'index'])->name('index');
             Route::post('/summaries/{summary}/release', [ReleaseController::class, 'release'])->name('summaries.release');
             Route::post('/summaries/bulk-release', [ReleaseController::class, 'releaseBulk'])->name('summaries.bulk-release');
+            Route::put('/summaries/by-applicant/{applicantId}', [ReleaseController::class, 'storeOrUpdateByApplicant'])->name('summaries.storeOrUpdate');
         });
 });

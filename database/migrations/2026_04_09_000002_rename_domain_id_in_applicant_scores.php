@@ -25,31 +25,36 @@ return new class extends Migration
         //   3. Drop composite unique + rename column (now unblocked)
         //   4. Re-add grading_session_id FK, aptitude_area_id FK, new unique
 
-        foreach (['grading_session_id', 'domain_id'] as $col) {
-            $rows = DB::select("
-                SELECT CONSTRAINT_NAME
-                FROM information_schema.KEY_COLUMN_USAGE
+        // Only run MySQL-specific FK detection when using MySQL.
+        // SQLite does not support information_schema and does not enforce FKs
+        // the same way, so no FK-dropping is needed in that environment.
+        if (DB::getDriverName() === 'mysql') {
+            foreach (['grading_session_id', 'domain_id'] as $col) {
+                $rows = DB::select("
+                    SELECT CONSTRAINT_NAME
+                    FROM information_schema.KEY_COLUMN_USAGE
+                    WHERE TABLE_SCHEMA = DATABASE()
+                      AND TABLE_NAME   = 'applicant_scores'
+                      AND COLUMN_NAME  = ?
+                      AND REFERENCED_TABLE_NAME IS NOT NULL
+                ", [$col]);
+                foreach ($rows as $row) {
+                    DB::statement("ALTER TABLE `applicant_scores` DROP FOREIGN KEY `{$row->CONSTRAINT_NAME}`");
+                }
+            }
+
+            // Drop orphaned standalone index on domain_id (exists when domain_id FK was
+            // created separately from the composite unique index).
+            $orphan = DB::select("
+                SELECT INDEX_NAME FROM information_schema.STATISTICS
                 WHERE TABLE_SCHEMA = DATABASE()
                   AND TABLE_NAME   = 'applicant_scores'
-                  AND COLUMN_NAME  = ?
-                  AND REFERENCED_TABLE_NAME IS NOT NULL
-            ", [$col]);
-            foreach ($rows as $row) {
-                DB::statement("ALTER TABLE `applicant_scores` DROP FOREIGN KEY `{$row->CONSTRAINT_NAME}`");
+                  AND INDEX_NAME   = 'applicant_scores_domain_id_foreign'
+                LIMIT 1
+            ");
+            if ($orphan) {
+                DB::statement("ALTER TABLE `applicant_scores` DROP INDEX `applicant_scores_domain_id_foreign`");
             }
-        }
-
-        // Drop orphaned standalone index on domain_id (exists when domain_id FK was
-        // created separately from the composite unique index).
-        $orphan = DB::select("
-            SELECT INDEX_NAME FROM information_schema.STATISTICS
-            WHERE TABLE_SCHEMA = DATABASE()
-              AND TABLE_NAME   = 'applicant_scores'
-              AND INDEX_NAME   = 'applicant_scores_domain_id_foreign'
-            LIMIT 1
-        ");
-        if ($orphan) {
-            DB::statement("ALTER TABLE `applicant_scores` DROP INDEX `applicant_scores_domain_id_foreign`");
         }
 
         // Composite unique index now has no FK using it — safe to drop + rename.
