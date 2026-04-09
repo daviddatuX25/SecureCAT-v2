@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Admin\AdmissionSlipTemplateController;
+use App\Http\Controllers\Admin\AiCompanionAdminController;
 use App\Http\Controllers\Admin\AuditLogController;
 use App\Http\Controllers\Admin\CourseController;
 use App\Http\Controllers\Admin\ExamDomainController;
@@ -12,10 +13,6 @@ use App\Http\Controllers\Admin\RoomController;
 use App\Http\Controllers\Admin\SeasonController;
 use App\Http\Controllers\Admin\SettingsController;
 use App\Http\Controllers\Admin\UserController;
-use App\Http\Controllers\Consultation\ConsultationApplicantController;
-use App\Http\Controllers\Consultation\ConsultationController;
-use App\Http\Controllers\Consultation\ConsultationDayController;
-use App\Http\Controllers\Consultation\ConsultationScheduleController;
 use App\Http\Controllers\Grading\GradingController;
 use App\Http\Controllers\Grading\GradingPrintController;
 use App\Http\Controllers\Grading\GradingScoreController;
@@ -78,7 +75,11 @@ Route::middleware(['auth'])->group(function () {
         Route::get('logs', [AuditLogController::class, 'index'])->name('logs.index');
         Route::get('logs/export', [AuditLogController::class, 'export'])->name('logs.export');
         Route::resource('admission-slip-templates', AdmissionSlipTemplateController::class)->except('show')->parameters(['admission_slip_templates' => 'admission_slip_template']);
-        Route::get('knowledge-documents', [KnowledgeDocumentController::class, 'index'])->name('knowledge-documents.index');
+        // AI Companion hub (replaces knowledge-documents index)
+        Route::get('ai-companion', [AiCompanionAdminController::class, 'index'])->name('ai-companion.index');
+        Route::put('ai-companion/persona', [AiCompanionAdminController::class, 'updatePersona'])->name('ai-companion.persona.update');
+        // Redirect old knowledge-documents index → new hub
+        Route::get('knowledge-documents', fn () => redirect()->route('admin.ai-companion.index'));
         Route::get('knowledge-documents/create', [KnowledgeDocumentController::class, 'create'])->name('knowledge-documents.create');
         Route::post('knowledge-documents', [KnowledgeDocumentController::class, 'store'])->name('knowledge-documents.store');
         Route::get('knowledge-documents/import', [KnowledgeDocumentController::class, 'importForm'])->name('knowledge-documents.import');
@@ -160,15 +161,5 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/sessions/{grading_session}/mark-printed', [GradingPrintController::class, 'markPrinted'])->name('sessions.mark-printed');
         Route::get('/sessions/{grading_session}/print-bulk', [GradingPrintController::class, 'printBulk'])->name('sessions.print-bulk');
         Route::get('/sessions/{grading_session}/applicants/{applicant}/result-sheet', [GradingPrintController::class, 'resultSheet'])->name('sessions.result-sheet');
-    });
-    // Consultation (link always visible for role; access enforced by consultation.enabled)
-    Route::middleware(['role:super_admin,test_administrator', 'consultation.enabled'])->prefix('consultation')->name('consultation.')->group(function () {
-        Route::get('/', [ConsultationController::class, 'index'])->name('index');
-        Route::get('/schedule', [ConsultationScheduleController::class, 'index'])->name('schedule.index');
-        Route::post('/schedule', [ConsultationScheduleController::class, 'store'])->name('schedule.store');
-        Route::get('/day', [ConsultationDayController::class, 'index'])->name('day.index');
-        Route::get('/applicants/{applicant}', [ConsultationApplicantController::class, 'show'])->name('applicants.show');
-        Route::post('/applicants/bulk-release', [ConsultationApplicantController::class, 'releaseBulk'])->name('applicants.bulk-release');
-        Route::post('/applicants/{applicant}/release', [ConsultationApplicantController::class, 'release'])->name('applicants.release');
     });
 });
