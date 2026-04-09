@@ -21,8 +21,6 @@ class SettingsController extends Controller
 
         return Inertia::render('Admin/Settings/Index', [
             'ai_exam_companion_enabled' => SystemSetting::aiCompanionEnabled(),
-            'ai_companion_persona' => SystemSetting::get('ai_companion_persona', '') ?: '',
-            'consultation_enabled' => SystemSetting::consultationEnabled(),
         ]);
     }
 

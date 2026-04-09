@@ -7,6 +7,7 @@ use App\Http\Requests\StoreCsvImportRequest;
 use App\Http\Requests\StoreKnowledgeDocumentRequest;
 use App\Http\Requests\UpdateKnowledgeDocumentRequest;
 use App\Models\KnowledgeDocument;
+use App\Models\SystemSetting;
 use App\Services\CsvToNarrativeService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -17,6 +18,10 @@ class KnowledgeDocumentController extends Controller
 {
     public function index(Request $request): Response
     {
+        if (! SystemSetting::aiCompanionEnabled()) {
+            abort(403, 'AI Companion is disabled.');
+        }
+
         $this->authorize('viewAny', KnowledgeDocument::class);
 
         $query = KnowledgeDocument::query()->orderByDesc('updated_at');
