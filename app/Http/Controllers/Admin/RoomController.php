@@ -7,6 +7,7 @@ use App\Http\Requests\StoreRoomRequest;
 use App\Http\Requests\UpdateRoomRequest;
 use App\Models\ExamSession;
 use App\Models\Room;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -94,7 +95,7 @@ class RoomController extends Controller
         return redirect()->route('admin.rooms.index')->with('success', 'Room activated.');
     }
 
-    public function deactivate(Room $room): RedirectResponse
+    public function deactivate(Room $room): JsonResponse|RedirectResponse
     {
         $hasFutureSessions = ExamSession::query()
             ->where('room_id', $room->id)
@@ -102,6 +103,10 @@ class RoomController extends Controller
             ->exists();
 
         if ($hasFutureSessions) {
+            if (request()->header('X-Inertia')) {
+                return response()->json(['errors' => ['room' => ['Cannot deactivate: this room has exam sessions scheduled in the future.']]], 422);
+            }
+
             return redirect()->route('admin.rooms.index')
                 ->with('error', 'Cannot deactivate: this room has exam sessions scheduled in the future.');
         }

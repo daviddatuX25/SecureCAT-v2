@@ -29,6 +29,10 @@ class DatabaseSeeder extends Seeder
             DemoAccountSeeder::class,
             SeasonSeeder::class,
         ]);
+
+        if (config('demo.enabled', false)) {
+            $this->command?->info('DEMO=true detected — running DefenseDemoSeeder...');
+            $this->call(DefenseDemoSeeder::class);
+        }
     }
 }
-

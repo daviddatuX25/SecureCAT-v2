@@ -34,6 +34,7 @@ class GradingController extends Controller
         $gradingSessions = $gradingQuery->get()
             ->map(function (GradingSession $gs) {
                 $scored = $gs->applicantScores()->distinct()->count('applicant_id');
+
                 return [
                     'id' => $gs->id,
                     'exam_session_id' => $gs->exam_session_id,
@@ -73,7 +74,7 @@ class GradingController extends Controller
             'description' => 'Input and manage exam scores.',
             'grading_sessions' => $gradingSessions->values()->all(),
             'completed_exams_without_grading' => $completedWithoutGrading->values()->all(),
-            'exam_domains_count' => $examDomainsCount,
+            'aptitude_areas_count' => $examDomainsCount,
         ]);
     }
 

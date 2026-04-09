@@ -12,7 +12,7 @@
     description = 'Input and manage exam scores.',
     grading_sessions = [],
     completed_exams_without_grading = [],
-    exam_domains_count = 0,
+    aptitude_areas_count = 0,
   } = $props();
 
   const page = usePage();
@@ -47,24 +47,24 @@
       <div class="rounded-lg bg-primary/10 px-4 py-3 text-sm text-primary">{success}</div>
     {/if}
 
-    {#if exam_domains_count === 0}
+    {#if aptitude_areas_count === 0}
       <Card variant="glass" class="border-amber-500/50 bg-amber-500/5">
         <CardHeader>
           <CardTitle class="flex items-center gap-2 text-amber-700 dark:text-amber-400">
             <Layers class="h-5 w-5" />
-            No grading pillars configured
+            No aptitude areas configured
           </CardTitle>
           <CardDescription>
-            Grade exam domains (pillars) must be set up before you can open grading sessions. Run
-            <span class="font-mono text-sm">./vendor/bin/sail artisan db:seed</span> to create default exam domains, or add them via
-            <Link href="/admin/exam-domains" class="font-medium text-primary underline hover:no-underline">Admin → Exam pillars</Link>.
+            Aptitude areas must be set up before you can open grading sessions. Run
+            <span class="font-mono text-sm">php artisan db:seed</span> to create default aptitude areas, or add them via
+            <Link href="/admin/aptitude-areas" class="font-medium text-primary underline hover:no-underline">Admin → Aptitude Areas</Link>.
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <Link href="/admin/exam-domains">
+          <Link href="/admin/aptitude-areas">
             <Button class="min-h-[44px]">
               <Layers class="mr-2 h-4 w-4" />
-              Go to Exam pillars
+              Go to Aptitude Areas
             </Button>
           </Link>
         </CardContent>

@@ -5,9 +5,9 @@ namespace Database\Seeders;
 use App\Models\Applicant;
 use App\Models\ApplicantScore;
 use App\Models\Application;
+use App\Models\AptitudeArea;
 use App\Models\ConsultationSummary;
 use App\Models\Course;
-use App\Models\AptitudeArea;
 use App\Models\ExamSession;
 use App\Models\GradingSession;
 use App\Models\Role;
@@ -16,6 +16,7 @@ use App\Models\Season;
 use App\Models\User;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 
@@ -28,20 +29,22 @@ class DefenseDemoSeeder extends Seeder
         $courses = Course::query()->where('is_active', true)->orderBy('id')->take(3)->get();
         if ($courses->count() < 3) {
             $this->command?->warn('DefenseDemoSeeder: need at least 3 active courses. Run DatabaseSeeder first.');
+
             return;
         }
 
         $domains = AptitudeArea::query()->where('is_active', true)->orderBy('display_order')->get();
         if ($domains->count() < 3) {
             $this->command?->warn('DefenseDemoSeeder: need at least 3 active aptitude areas. Run DatabaseSeeder first.');
+
             return;
         }
 
         DB::transaction(function () use ($today, $courses, $domains) {
-            $season  = $this->seedSeason($today);
-            $users   = $this->seedUsers();
-            $rooms   = $this->seedRooms();
-            $appMap  = $this->seedApplications($today, $season, $courses, $users);
+            $season = $this->seedSeason($today);
+            $users = $this->seedUsers();
+            $rooms = $this->seedRooms();
+            $appMap = $this->seedApplications($today, $season, $courses, $users);
             $this->seedSessionA($today, $season, $rooms, $appMap, $users, $domains);
             $this->seedSessionB($today, $season, $rooms, $appMap, $users, $domains);
             $this->seedSessionC($today, $season, $rooms, $appMap, $users);
@@ -52,14 +55,14 @@ class DefenseDemoSeeder extends Seeder
     private function seedSeason(CarbonImmutable $today): Season
     {
         $year = $today->month >= 6 ? $today->year : $today->year - 1;
-        $academicYear = $year . '-' . ($year + 1);
+        $academicYear = $year.'-'.($year + 1);
 
         $season = Season::query()->updateOrCreate(
             ['academic_year' => $academicYear, 'semester' => '1'],
             [
-                'is_active'               => true,
-                'application_start_date'  => $today->subDays(45)->toDateString(),
-                'application_end_date'    => $today->addDays(14)->toDateString(),
+                'is_active' => true,
+                'application_start_date' => $today->subDays(45)->toDateString(),
+                'application_end_date' => $today->addDays(14)->toDateString(),
             ]
         );
 
@@ -72,28 +75,27 @@ class DefenseDemoSeeder extends Seeder
     private function seedUsers(): array
     {
         return [
-            'super_admin'     => $this->upsertUserWithRole('admin@securecat.local',    'Ricardo Dela Cruz', 'super_admin'),
-            'admin'           => $this->upsertUserWithRole('josefina@securecat.local', 'Josefina Gaerlan',  'admin'),
-            'staff'           => $this->upsertUserWithRole('maria@securecat.local',    'Maria Corpuz',      'staff'),
-            'proctor'         => $this->upsertUserWithRole('eduardo@securecat.local',  'Eduardo Fariñas',   'proctor'),
-            'test_admin'      => $this->upsertUserWithRole('analiza@securecat.local',  'Analiza Barroga',   'test_administrator'),
+            'super_admin' => $this->upsertUserWithRole('admin@securecat.local', 'Ricardo Dela Cruz', 'super_admin'),
+            'admin' => $this->upsertUserWithRole('josefina@securecat.local', 'Josefina Gaerlan', 'admin'),
+            'staff' => $this->upsertUserWithRole('maria@securecat.local', 'Maria Corpuz', 'staff'),
+            'proctor' => $this->upsertUserWithRole('eduardo@securecat.local', 'Eduardo Fariñas', 'proctor'),
+            'test_admin' => $this->upsertUserWithRole('analiza@securecat.local', 'Analiza Barroga', 'test_administrator'),
         ];
     }
 
-    private function seedRooms(): \Illuminate\Support\Collection
+    private function seedRooms(): Collection
     {
         $specs = [
             ['building' => 'Main Building',       'name' => 'Room 101',  'floor' => '1st Floor',    'capacity' => 30],
             ['building' => 'Main Building',       'name' => 'Room 102',  'floor' => '1st Floor',    'capacity' => 30],
             ['building' => 'Academic Building',   'name' => 'Room 201',  'floor' => '2nd Floor',    'capacity' => 40],
-            ['building' => 'Vocational Building', 'name' => 'Lab Room 1','floor' => 'Ground Floor','capacity' => 25],
+            ['building' => 'Vocational Building', 'name' => 'Lab Room 1', 'floor' => 'Ground Floor', 'capacity' => 25],
         ];
 
-        return collect($specs)->map(fn ($r) =>
-            Room::query()->updateOrCreate(
-                ['building' => $r['building'], 'name' => $r['name']],
-                ['floor' => $r['floor'], 'capacity' => $r['capacity'], 'is_active' => true]
-            )
+        return collect($specs)->map(fn ($r) => Room::query()->updateOrCreate(
+            ['building' => $r['building'], 'name' => $r['name']],
+            ['floor' => $r['floor'], 'capacity' => $r['capacity'], 'is_active' => true]
+        )
         );
     }
 
@@ -106,12 +108,12 @@ class DefenseDemoSeeder extends Seeder
             [1,  'Juan Carlo', null,     'Agustin',    null,   'male',   '2006-03-12', 'Tagudin',     'Ilocos Sur', '2714', '09171001001', 'accepted',             28, 'A'],
             [2,  'Maricel',    null,     'Dacumos',    null,   'female', '2005-07-24', 'Tagudin',     'Ilocos Sur', '2714', '09171001002', 'accepted',             26, 'A'],
             [3,  'Reynaldo',   null,     'Soriano',    null,   'male',   '2006-01-08', 'Candon City', 'Ilocos Sur', '2802', '09171001003', 'accepted',             25, 'A'],
-            [4,  'Rowena',     null,     'Ballesteros',null,   'female', '2005-11-15', 'Narvacan',    'Ilocos Sur', '2704', '09171001004', 'accepted',             18, 'B'],
+            [4,  'Rowena',     null,     'Ballesteros', null,   'female', '2005-11-15', 'Narvacan',    'Ilocos Sur', '2704', '09171001004', 'accepted',             18, 'B'],
             [5,  'Danilo',     null,     'Espiritu',   'Jr.',  'male',   '2006-05-30', 'Tagudin',     'Ilocos Sur', '2714', '09171001005', 'accepted',             17, 'B'],
             [6,  'Lorena',     null,     'Tamayo',     null,   'female', '2007-02-17', 'Santiago',    'Ilocos Sur', '2712', '09171001006', 'accepted',             10, 'C'],
             [7,  'Roberto',    null,     'Libed',      null,   'male',   '2006-09-03', 'Tagudin',     'Ilocos Sur', '2714', '09171001007', 'accepted',              9, 'C'],
             [8,  'Maribel',    null,     'Pagulayan',  null,   'female', '2005-12-21', 'Sudipen',     'La Union',   '2507', '09171001008', 'accepted',              8, 'C'],
-            [9,  'Arturo',     null,     'Madriaga',   null,   'male',   '2006-08-14', 'Tagudin',     'Ilocos Sur', '2714', '09171001009', 'accepted',              7, 'unassigned'],
+            [9,  'Arturo',     null,     'Madriaga',   null,   'male',   '2006-08-14', 'Tagudin',     'Ilocos Sur', '2714', '09171001009', 'accepted',              7, 'C'],
             [10, 'Natividad',  null,     'Ramirez',    null,   'female', '2005-04-07', 'Candon City', 'Ilocos Sur', '2802', '09171001010', 'accepted',              6, 'unassigned'],
             [11, 'Virgilio',   null,     'Castillo',   null,   'male',   '2007-01-19', 'Vigan City',  'Ilocos Sur', '2700', '09171001011', 'accepted',              6, 'unassigned'],
             [12, 'Erlinda',    null,     'De Vera',    null,   'female', '2006-06-25', 'Tagudin',     'Ilocos Sur', '2714', '09171001012', 'accepted',              5, 'unassigned'],
@@ -132,12 +134,12 @@ class DefenseDemoSeeder extends Seeder
         $appMap = [];
 
         foreach ($specs as [$idx, $first, $middle, $last, $suffix, $sex, $birthdate, $city, $province, $zip, $phone, $status, $daysAgo, $slot]) {
-            $ref         = 'ISPSC-' . $year . '-' . str_pad((string) $idx, 4, '0', STR_PAD_LEFT);
-            $email       = strtolower(str_replace(' ', '.', $first) . '.' . strtolower(str_replace(' ', '', $last))) . '@ispsc-demo.local';
+            $ref = 'ISPSC-'.$year.'-'.str_pad((string) $idx, 4, '0', STR_PAD_LEFT);
+            $email = strtolower(str_replace(' ', '.', $first).'.'.strtolower(str_replace(' ', '', $last))).'@ispsc-demo.local';
             $submittedAt = $today->subDays($daysAgo)->startOfDay()->addHours(9);
 
-            $processedBy     = null;
-            $processedAt     = null;
+            $processedBy = null;
+            $processedAt = null;
             $rejectionReason = null;
 
             if ($status === 'accepted') {
@@ -146,14 +148,14 @@ class DefenseDemoSeeder extends Seeder
             }
 
             if ($status === 'dismissed') {
-                $processedBy     = $users['staff']->id;
-                $processedAt     = $submittedAt->addDays(2);
+                $processedBy = $users['staff']->id;
+                $processedAt = $submittedAt->addDays(2);
                 $rejectionReason = 'Did not appear for scheduled appointment.';
             }
 
             if ($status === 'incomplete_documents') {
-                $processedBy     = $users['staff']->id;
-                $processedAt     = $submittedAt->addDays(1);
+                $processedBy = $users['staff']->id;
+                $processedAt = $submittedAt->addDays(1);
                 $rejectionReason = $idx === 19
                     ? 'Missing PSA birth certificate.'
                     : 'Missing Form 138 (Report Card).';
@@ -162,29 +164,29 @@ class DefenseDemoSeeder extends Seeder
             $app = Application::query()->updateOrCreate(
                 ['reference_number' => $ref],
                 [
-                    'season_id'           => $season->id,
-                    'first_name'          => $first,
-                    'middle_name'         => $middle,
-                    'last_name'           => $last,
-                    'suffix'              => $suffix,
-                    'birthdate'           => $birthdate,
-                    'age'                 => $today->year - (int) substr($birthdate, 0, 4),
-                    'sex'                 => $sex,
-                    'email'               => $email,
-                    'phone'               => $phone,
-                    'address_line'        => '123 Rizal St.',
-                    'city'                => $city,
-                    'province'            => $province,
-                    'zip_code'            => $zip,
+                    'season_id' => $season->id,
+                    'first_name' => $first,
+                    'middle_name' => $middle,
+                    'last_name' => $last,
+                    'suffix' => $suffix,
+                    'birthdate' => $birthdate,
+                    'age' => $today->year - (int) substr($birthdate, 0, 4),
+                    'sex' => $sex,
+                    'email' => $email,
+                    'phone' => $phone,
+                    'address_line' => '123 Rizal St.',
+                    'city' => $city,
+                    'province' => $province,
+                    'zip_code' => $zip,
                     'course_preference_1' => $courseIdMap['BSIT'],
                     'course_preference_2' => $courseIdMap['BSCS'],
                     'course_preference_3' => $courseIdMap['BSDS'],
-                    'status'              => $status,
-                    'processed_by'        => $processedBy,
-                    'processed_at'       => $processedAt,
-                    'rejection_reason'    => $rejectionReason,
-                    'appointment_id'      => null,
-                    'submitted_at'        => $submittedAt,
+                    'status' => $status,
+                    'processed_by' => $processedBy,
+                    'processed_at' => $processedAt,
+                    'rejection_reason' => $rejectionReason,
+                    'appointment_id' => null,
+                    'submitted_at' => $submittedAt,
                 ]
             );
 
@@ -194,9 +196,9 @@ class DefenseDemoSeeder extends Seeder
                 $applicant = Applicant::query()->updateOrCreate(
                     ['email' => $app->email],
                     [
-                        'application_id'         => $app->id,
-                        'password'               => Hash::make('password'),
-                        'setup_token'            => null,
+                        'application_id' => $app->id,
+                        'password' => Hash::make('password'),
+                        'setup_token' => null,
                         'setup_token_expires_at' => null,
                     ]
                 );
@@ -211,19 +213,19 @@ class DefenseDemoSeeder extends Seeder
     private function seedSessionA(CarbonImmutable $today, Season $season, $rooms, array $appMap, array $users, $domains): void
     {
         $date = $today->subDays(14);
-        $room  = $rooms[0]; // Main Building Room 101
+        $room = $rooms[0]; // Main Building Room 101
 
         $es = ExamSession::query()->updateOrCreate(
             ['season_id' => $season->id, 'room_id' => $room->id, 'date' => $date->toDateString()],
             [
-                'start_time'         => '09:00:00',
-                'end_time'           => '11:00:00',
-                'status'             => ExamSession::STATUS_COMPLETED,
-                'published_at'       => $date->subDays(5),
-                'started_at'         => $date->setTimeFromTimeString('09:00:00'),
-                'closed_at'          => $date->setTimeFromTimeString('11:05:00'),
+                'start_time' => '09:00:00',
+                'end_time' => '11:00:00',
+                'status' => ExamSession::STATUS_COMPLETED,
+                'published_at' => $date->subDays(5),
+                'started_at' => $date->setTimeFromTimeString('09:00:00'),
+                'closed_at' => $date->setTimeFromTimeString('11:05:00'),
                 'score_release_date' => $date->addDays(7)->toDateString(),
-                'created_by'         => $users['admin']->id,
+                'created_by' => $users['admin']->id,
             ]
         );
 
@@ -237,21 +239,21 @@ class DefenseDemoSeeder extends Seeder
 
         foreach ($sessionApplicants as $applicant) {
             $this->attachApplicant($es, $applicant, [
-                'attendance_status'    => 'present',
+                'attendance_status' => 'present',
                 'attendance_marked_at' => $date->setTimeFromTimeString('09:05:00'),
                 'attendance_marked_by' => $users['proctor']->id,
-                'submission_status'    => 'submitted',
-                'submitted_at'        => $date->setTimeFromTimeString('10:55:00'),
-                'submitted_to'        => $users['proctor']->id,
+                'submission_status' => 'submitted',
+                'submitted_at' => $date->setTimeFromTimeString('10:55:00'),
+                'submitted_to' => $users['proctor']->id,
             ]);
         }
 
         $gs = GradingSession::query()->updateOrCreate(
             ['exam_session_id' => $es->id],
             [
-                'status'       => GradingSession::STATUS_FINALIZED,
-                'opened_at'    => $date->addDays(1)->setTimeFromTimeString('08:00:00'),
-                'opened_by'    => $users['test_admin']->id,
+                'status' => GradingSession::STATUS_FINALIZED,
+                'opened_at' => $date->addDays(1)->setTimeFromTimeString('08:00:00'),
+                'opened_by' => $users['test_admin']->id,
                 'finalized_at' => $date->addDays(3)->setTimeFromTimeString('16:00:00'),
                 'finalized_by' => $users['test_admin']->id,
             ]
@@ -264,7 +266,7 @@ class DefenseDemoSeeder extends Seeder
         $scoreMap = [
             0 => ['SA' => 22, 'NA' => 20, 'VR' => 21, 'AR' => 17, 'LR' => 20, 'PSA' => 16], // Juan — high/passing
             1 => ['SA' => 14, 'NA' => 13, 'VR' => 15, 'AR' => 10, 'LR' => 13, 'PSA' => 11], // Maricel — borderline
-            2 => ['SA' =>  8, 'NA' =>  9, 'VR' =>  7, 'AR' =>  6, 'LR' =>  8, 'PSA' =>  7], // Reynaldo — low/failing
+            2 => ['SA' => 8, 'NA' => 9, 'VR' => 7, 'AR' => 6, 'LR' => 8, 'PSA' => 7], // Reynaldo — low/failing
         ];
 
         foreach ($sessionApplicants as $i => $applicant) {
@@ -273,11 +275,11 @@ class DefenseDemoSeeder extends Seeder
                 ApplicantScore::query()->updateOrCreate(
                     ['grading_session_id' => $gs->id, 'applicant_id' => $applicant->id, 'aptitude_area_id' => $domain->id],
                     [
-                        'raw_score'        => $raw,
-                        'max_score'        => $domain->max_items,
+                        'raw_score' => $raw,
+                        'max_score' => $domain->max_items,
                         'normalized_score' => null,
-                        'scored_by'        => $users['test_admin']->id,
-                        'scored_at'        => $date->addDays(2)->setTimeFromTimeString('14:00:00'),
+                        'scored_by' => $users['test_admin']->id,
+                        'scored_at' => $date->addDays(2)->setTimeFromTimeString('14:00:00'),
                     ]
                 );
             }
@@ -294,13 +296,13 @@ class DefenseDemoSeeder extends Seeder
             ConsultationSummary::query()->updateOrCreate(
                 ['applicant_id' => $applicant->id],
                 [
-                    'status'                => ConsultationSummary::STATUS_RELEASED,
+                    'status' => ConsultationSummary::STATUS_RELEASED,
                     'recommended_course_id' => $courseId,
-                    'counselor_comments'    => $consultationData[$i]['comments'],
-                    'system_notes'          => ['seed' => 'defense-demo'],
-                    'counselor_id'          => $users['test_admin']->id,
-                    'released_at'           => $date->addDays(5)->setTimeFromTimeString('10:00:00'),
-                    'released_by'           => $users['test_admin']->id,
+                    'counselor_comments' => $consultationData[$i]['comments'],
+                    'system_notes' => ['seed' => 'defense-demo'],
+                    'counselor_id' => $users['test_admin']->id,
+                    'released_at' => $date->addDays(5)->setTimeFromTimeString('10:00:00'),
+                    'released_by' => $users['test_admin']->id,
                 ]
             );
         }
@@ -309,19 +311,19 @@ class DefenseDemoSeeder extends Seeder
     private function seedSessionB(CarbonImmutable $today, Season $season, $rooms, array $appMap, array $users, $domains): void
     {
         $date = $today->subDays(5);
-        $room  = $rooms[2]; // Academic Building Room 201
+        $room = $rooms[2]; // Academic Building Room 201
 
         $es = ExamSession::query()->updateOrCreate(
             ['season_id' => $season->id, 'room_id' => $room->id, 'date' => $date->toDateString()],
             [
-                'start_time'         => '13:00:00',
-                'end_time'           => '15:00:00',
-                'status'             => ExamSession::STATUS_COMPLETED,
-                'published_at'       => $date->subDays(5),
-                'started_at'         => $date->setTimeFromTimeString('13:00:00'),
-                'closed_at'          => $date->setTimeFromTimeString('15:05:00'),
+                'start_time' => '13:00:00',
+                'end_time' => '15:00:00',
+                'status' => ExamSession::STATUS_COMPLETED,
+                'published_at' => $date->subDays(5),
+                'started_at' => $date->setTimeFromTimeString('13:00:00'),
+                'closed_at' => $date->setTimeFromTimeString('15:05:00'),
                 'score_release_date' => $date->addDays(7)->toDateString(),
-                'created_by'         => $users['admin']->id,
+                'created_by' => $users['admin']->id,
             ]
         );
 
@@ -334,19 +336,19 @@ class DefenseDemoSeeder extends Seeder
 
         foreach ($sessionApplicants as $applicant) {
             $this->attachApplicant($es, $applicant, [
-                'attendance_status'    => 'present',
+                'attendance_status' => 'present',
                 'attendance_marked_at' => $date->setTimeFromTimeString('13:05:00'),
                 'attendance_marked_by' => $users['proctor']->id,
-                'submission_status'    => 'submitted',
-                'submitted_at'        => $date->setTimeFromTimeString('14:55:00'),
-                'submitted_to'        => $users['proctor']->id,
+                'submission_status' => 'submitted',
+                'submitted_at' => $date->setTimeFromTimeString('14:55:00'),
+                'submitted_to' => $users['proctor']->id,
             ]);
         }
 
         $gs = GradingSession::query()->updateOrCreate(
             ['exam_session_id' => $es->id],
             [
-                'status'    => GradingSession::STATUS_IN_PROGRESS,
+                'status' => GradingSession::STATUS_IN_PROGRESS,
                 'opened_at' => $date->addDays(1)->setTimeFromTimeString('08:00:00'),
                 'opened_by' => $users['test_admin']->id,
             ]
@@ -367,11 +369,11 @@ class DefenseDemoSeeder extends Seeder
                 ApplicantScore::query()->updateOrCreate(
                     ['grading_session_id' => $gs->id, 'applicant_id' => $applicant->id, 'aptitude_area_id' => $domain->id],
                     [
-                        'raw_score'        => $raw,
-                        'max_score'        => $domain->max_items,
+                        'raw_score' => $raw,
+                        'max_score' => $domain->max_items,
                         'normalized_score' => null,
-                        'scored_by'        => $users['test_admin']->id,
-                        'scored_at'        => $date->addDays(1)->setTimeFromTimeString('11:00:00'),
+                        'scored_by' => $users['test_admin']->id,
+                        'scored_at' => $date->addDays(1)->setTimeFromTimeString('11:00:00'),
                     ]
                 );
             }
@@ -385,13 +387,13 @@ class DefenseDemoSeeder extends Seeder
             ConsultationSummary::query()->updateOrCreate(
                 ['applicant_id' => $applicant->id],
                 [
-                    'status'                => ConsultationSummary::STATUS_PENDING,
+                    'status' => ConsultationSummary::STATUS_PENDING,
                     'recommended_course_id' => $courseId,
-                    'counselor_comments'   => null,
-                    'system_notes'          => ['seed' => 'defense-demo'],
-                    'counselor_id'          => $users['test_admin']->id,
-                    'released_at'           => null,
-                    'released_by'           => null,
+                    'counselor_comments' => null,
+                    'system_notes' => ['seed' => 'defense-demo'],
+                    'counselor_id' => $users['test_admin']->id,
+                    'released_at' => null,
+                    'released_by' => null,
                 ]
             );
         }
@@ -404,33 +406,39 @@ class DefenseDemoSeeder extends Seeder
         $es = ExamSession::query()->updateOrCreate(
             ['season_id' => $season->id, 'room_id' => $room->id, 'date' => $today->toDateString()],
             [
-                'start_time'         => '09:00:00',
-                'end_time'           => '11:00:00',
-                'status'             => ExamSession::STATUS_PUBLISHED,
-                'published_at'       => $today->subDays(3),
+                'start_time' => '09:00:00',
+                'end_time' => '11:00:00',
+                'status' => ExamSession::STATUS_PUBLISHED,
+                'published_at' => $today->subDays(3),
                 'score_release_date' => $today->addDays(7)->toDateString(),
-                'created_by'         => $users['admin']->id,
+                'created_by' => $users['admin']->id,
             ]
         );
 
         $es->proctors()->syncWithoutDetaching([$users['proctor']->id]);
 
-        // Roberto — present
+        // Lorena — pre-marked present (arrived early before demo)
         $this->attachApplicant($es, $appMap[6]['applicant'], [
-            'attendance_status'    => 'present',
+            'attendance_status' => 'present',
             'attendance_marked_at' => $today->setTimeFromTimeString('09:03:00'),
             'attendance_marked_by' => $users['proctor']->id,
-            'submission_status'    => 'pending',
+            'submission_status' => 'pending',
         ]);
 
-        // Maribel — pending
+        // Roberto — pending (proctor marks present during live demo)
         $this->attachApplicant($es, $appMap[7]['applicant'], [
             'attendance_status' => 'pending',
             'submission_status' => 'pending',
         ]);
 
-        // Arturo — pending
+        // Maribel — pending (proctor marks present during live demo)
         $this->attachApplicant($es, $appMap[8]['applicant'], [
+            'attendance_status' => 'pending',
+            'submission_status' => 'pending',
+        ]);
+
+        // Arturo — pending (proctor marks absent during live demo)
+        $this->attachApplicant($es, $appMap[9]['applicant'], [
             'attendance_status' => 'pending',
             'submission_status' => 'pending',
         ]);
@@ -438,7 +446,7 @@ class DefenseDemoSeeder extends Seeder
         GradingSession::query()->updateOrCreate(
             ['exam_session_id' => $es->id],
             [
-                'status'    => GradingSession::STATUS_OPEN,
+                'status' => GradingSession::STATUS_OPEN,
                 'opened_at' => $today->setTimeFromTimeString('08:45:00'),
                 'opened_by' => $users['test_admin']->id,
             ]
@@ -448,18 +456,18 @@ class DefenseDemoSeeder extends Seeder
     private function seedSessionD(CarbonImmutable $today, Season $season, $rooms): void
     {
         $date = $today->addDays(5);
-        $room  = $rooms[3]; // Vocational Building Lab Room 1
+        $room = $rooms[3]; // Vocational Building Lab Room 1
         $admin = User::query()->where('email', 'josefina@securecat.local')->first();
 
         ExamSession::query()->updateOrCreate(
             ['season_id' => $season->id, 'room_id' => $room->id, 'date' => $date->toDateString()],
             [
-                'start_time'         => '09:00:00',
-                'end_time'           => '11:00:00',
-                'status'             => ExamSession::STATUS_PUBLISHED,
-                'published_at'       => $today->subDay(),
+                'start_time' => '09:00:00',
+                'end_time' => '11:00:00',
+                'status' => ExamSession::STATUS_PUBLISHED,
+                'published_at' => $today->subDay(),
                 'score_release_date' => $date->addDays(7)->toDateString(),
-                'created_by'         => $admin?->id,
+                'created_by' => $admin?->id,
             ]
         );
     }
@@ -484,10 +492,10 @@ class DefenseDemoSeeder extends Seeder
         DB::table('exam_session_applicant')->updateOrInsert(
             ['exam_session_id' => $es->id, 'applicant_id' => $applicant->id],
             array_merge([
-                'attendance_status'  => 'pending',
-                'submission_status'  => 'pending',
-                'created_at'        => now(),
-                'updated_at'        => now(),
+                'attendance_status' => 'pending',
+                'submission_status' => 'pending',
+                'created_at' => now(),
+                'updated_at' => now(),
             ], $pivot)
         );
     }

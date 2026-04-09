@@ -1,0 +1,135 @@
+<style>
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th {
+    text-align: left;
+    padding: 10px 14px;
+    background: #1a1d2e;
+    color: #94a3b8;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    border-bottom: 2px solid #2a2d3e;
+  }
+  td {
+    padding: 10px 14px;
+    border-bottom: 1px solid #1e2233;
+    vertical-align: top;
+  }
+  tr:last-child td { border-bottom: none; }
+  .mismatch { background: rgba(220,38,38,0.07); }
+  .match { background: rgba(22,163,74,0.05); }
+  .nav-label { color: #94a3b8; font-weight: 500; }
+  .page-label { color: #f1f5f9; }
+  .mismatch .page-label { color: #f87171; }
+  .badge { display: inline-block; font-size: 10px; padding: 1px 7px; border-radius: 99px; font-weight: 600; }
+  .badge-mismatch { background: #7f1d1d; color: #fca5a5; }
+  .badge-ok { background: #14532d; color: #86efac; }
+  .badge-missing { background: #78350f; color: #fcd34d; }
+  .proposed { color: #818cf8; font-weight: 600; }
+  .hint { font-size: 11px; color: #475569; margin-top: 2px; }
+</style>
+
+<h2>Label Consistency Audit</h2>
+<p class="subtitle">Nav sidebar labels vs. page h1 labels — all pages scanned</p>
+
+<div style="overflow-x:auto">
+<table>
+  <thead>
+    <tr>
+      <th>Sidebar nav label</th>
+      <th>Page h1 (current)</th>
+      <th>Status</th>
+      <th>Suggested canonical</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr class="mismatch">
+      <td class="nav-label">Seasons</td>
+      <td class="page-label">Academic Years<div class="hint">Index, Create, Edit</div></td>
+      <td><span class="badge badge-mismatch">mismatch</span></td>
+      <td class="proposed">Academic Years</td>
+    </tr>
+    <tr class="mismatch">
+      <td class="nav-label">Test Scheduling</td>
+      <td class="page-label">Exam Scheduling<div class="hint">Index (proctor: "My Sessions")</div></td>
+      <td><span class="badge badge-mismatch">mismatch</span></td>
+      <td class="proposed">Exam Scheduling</td>
+    </tr>
+    <tr class="match">
+      <td class="nav-label">My Sessions</td>
+      <td class="page-label">My Sessions</td>
+      <td><span class="badge badge-ok">ok</span></td>
+      <td class="proposed">My Sessions</td>
+    </tr>
+    <tr class="match">
+      <td class="nav-label">Session Monitor</td>
+      <td class="page-label">Session Monitor</td>
+      <td><span class="badge badge-ok">ok</span></td>
+      <td class="proposed">Session Monitor</td>
+    </tr>
+    <tr class="match">
+      <td class="nav-label">Applications</td>
+      <td class="page-label">Applications</td>
+      <td><span class="badge badge-ok">ok</span></td>
+      <td class="proposed">Applications</td>
+    </tr>
+    <tr class="mismatch">
+      <td class="nav-label">Exam Domains</td>
+      <td class="page-label">Exam pillars<div class="hint">Index, Create, Edit</div></td>
+      <td><span class="badge badge-mismatch">mismatch</span></td>
+      <td class="proposed">?</td>
+    </tr>
+    <tr class="mismatch">
+      <td class="nav-label">Knowledge Docs</td>
+      <td class="page-label">Knowledge documents</td>
+      <td><span class="badge badge-mismatch">mismatch</span></td>
+      <td class="proposed">Knowledge Documents</td>
+    </tr>
+    <tr class="mismatch">
+      <td class="nav-label">Admission Slip Templates</td>
+      <td class="page-label">Admission slip templates</td>
+      <td><span class="badge badge-ok">ok</span> (casing)</td>
+      <td class="proposed">Admission Slip Templates</td>
+    </tr>
+    <tr class="mismatch">
+      <td class="nav-label">Result Templates</td>
+      <td class="page-label">Result sheet templates</td>
+      <td><span class="badge badge-mismatch">mismatch</span></td>
+      <td class="proposed">Result Sheet Templates</td>
+    </tr>
+    <tr class="mismatch">
+      <td class="nav-label">Audit Log</td>
+      <td class="page-label">Audit log</td>
+      <td><span class="badge badge-ok">ok</span> (casing)</td>
+      <td class="proposed">Audit Log</td>
+    </tr>
+    <tr class="match">
+      <td class="nav-label">Users</td>
+      <td class="page-label">Users (Create User, Edit User)</td>
+      <td><span class="badge badge-ok">ok</span></td>
+      <td class="proposed">Users</td>
+    </tr>
+    <tr class="match">
+      <td class="nav-label">Settings</td>
+      <td class="page-label">Settings</td>
+      <td><span class="badge badge-ok">ok</span></td>
+      <td class="proposed">Settings</td>
+    </tr>
+    <tr class="match">
+      <td class="nav-label">Grading</td>
+      <td class="page-label">Grading</td>
+      <td><span class="badge badge-ok">ok</span></td>
+      <td class="proposed">Grading</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<div class="section" style="margin-top:20px">
+  <p style="font-size:13px;color:#94a3b8">
+    <strong style="color:#f1f5f9">Key unknowns:</strong><br>
+    • <strong style="color:#f87171">Exam Domains vs Exam Pillars</strong> — which term is correct?<br>
+    • <strong style="color:#f87171">Test Scheduling vs Exam Scheduling</strong> — confirm "Exam Scheduling" wins?<br>
+    • Should sub-page actions use <span style="color:#818cf8">Title Case</span> ("Create", "Edit", "Import") or descriptive labels ("Add Academic Year", "Edit Room #3")?
+  </p>
+</div>

@@ -2,11 +2,11 @@
 
 namespace App\Providers;
 
-use App\Models\AuditLog;
 use App\Models\AptitudeArea;
+use App\Models\AuditLog;
 use App\Models\ExamSession;
-use App\Policies\AuditLogPolicy;
 use App\Policies\AptitudeAreaPolicy;
+use App\Policies\AuditLogPolicy;
 use App\Policies\ExamSessionPolicy;
 use Illuminate\Auth\Middleware\RedirectIfAuthenticated;
 use Illuminate\Cache\RateLimiting\Limit;
@@ -41,7 +41,22 @@ class AppServiceProvider extends ServiceProvider
                 return Limit::none();
             }
 
-            $attempts = (int) config('auth.login_throttle_attempts', 5);
+            $attempts = (int) (config('demo.enabled') && config('demo.throttle_attempts') !== null
+                ? config('demo.throttle_attempts')
+                : config('auth.login_throttle_attempts', 5));
+
+            // Demo mode: use a seconds-based window so rate-limiting can be
+            // demonstrated live without waiting 15 minutes.
+            if (config('demo.enabled') && config('demo.throttle_decay_seconds') !== null) {
+                $seconds = (int) config('demo.throttle_decay_seconds');
+
+                return Limit::perSeconds($seconds, $attempts)
+                    ->by($request->ip())
+                    ->response(fn () => back()->withErrors([
+                        'email' => "Too many login attempts. Please try again in {$seconds} seconds.",
+                    ]));
+            }
+
             $decayMinutes = (int) config('auth.login_throttle_decay_minutes', 15);
 
             return Limit::perMinutes($decayMinutes, $attempts)

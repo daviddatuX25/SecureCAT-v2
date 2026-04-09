@@ -71,7 +71,7 @@
       { href: '/admin/settings', label: 'Settings', icon: Settings, roles: ['super_admin'] },
       { href: '/admin/logs', label: 'Audit Log', icon: ScrollText, roles: ['super_admin'] },
       { href: '/admin/ai-companion', label: 'AI Companion', icon: Bot, roles: ['super_admin'], featureFlag: 'ai_exam_companion_enabled' },
-      { href: '/admin/exam-domains', label: 'Aptitude Areas', icon: Layers, roles: ['super_admin'] },
+      { href: '/admin/aptitude-areas', label: 'Aptitude Areas', icon: Layers, roles: ['super_admin'] },
       { href: '/admin/admission-slip-templates', label: 'Admission Slip Templates', icon: FileStack, roles: ['super_admin'] },
       { href: '/admin/result-sheet-templates', label: 'Result Sheet Templates', icon: FileText, roles: ['super_admin'] },
     ]},
