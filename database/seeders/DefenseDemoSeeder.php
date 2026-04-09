@@ -397,9 +397,72 @@ class DefenseDemoSeeder extends Seeder
         }
     }
 
-    private function seedSessionC(CarbonImmutable $today, Season $season, $rooms, array $appMap, array $users): void {}
+    private function seedSessionC(CarbonImmutable $today, Season $season, $rooms, array $appMap, array $users): void
+    {
+        $room = $rooms[1]; // Main Building Room 102
 
-    private function seedSessionD(CarbonImmutable $today, Season $season, $rooms): void {}
+        $es = ExamSession::query()->updateOrCreate(
+            ['season_id' => $season->id, 'room_id' => $room->id, 'date' => $today->toDateString()],
+            [
+                'start_time'         => '09:00:00',
+                'end_time'           => '11:00:00',
+                'status'             => ExamSession::STATUS_PUBLISHED,
+                'published_at'       => $today->subDays(3),
+                'score_release_date' => $today->addDays(7)->toDateString(),
+                'created_by'         => $users['admin']->id,
+            ]
+        );
+
+        $es->proctors()->syncWithoutDetaching([$users['proctor']->id]);
+
+        // Roberto — present
+        $this->attachApplicant($es, $appMap[6]['applicant'], [
+            'attendance_status'    => 'present',
+            'attendance_marked_at' => $today->setTimeFromTimeString('09:03:00'),
+            'attendance_marked_by' => $users['proctor']->id,
+            'submission_status'    => 'pending',
+        ]);
+
+        // Maribel — pending
+        $this->attachApplicant($es, $appMap[7]['applicant'], [
+            'attendance_status' => 'pending',
+            'submission_status' => 'pending',
+        ]);
+
+        // Arturo — pending
+        $this->attachApplicant($es, $appMap[8]['applicant'], [
+            'attendance_status' => 'pending',
+            'submission_status' => 'pending',
+        ]);
+
+        GradingSession::query()->updateOrCreate(
+            ['exam_session_id' => $es->id],
+            [
+                'status'    => GradingSession::STATUS_OPEN,
+                'opened_at' => $today->setTimeFromTimeString('08:45:00'),
+                'opened_by' => $users['test_admin']->id,
+            ]
+        );
+    }
+
+    private function seedSessionD(CarbonImmutable $today, Season $season, $rooms): void
+    {
+        $date = $today->addDays(5);
+        $room  = $rooms[3]; // Vocational Building Lab Room 1
+        $admin = User::query()->where('email', 'josefina@securecat.local')->first();
+
+        ExamSession::query()->updateOrCreate(
+            ['season_id' => $season->id, 'room_id' => $room->id, 'date' => $date->toDateString()],
+            [
+                'start_time'         => '09:00:00',
+                'end_time'           => '11:00:00',
+                'status'             => ExamSession::STATUS_PUBLISHED,
+                'published_at'       => $today->subDay(),
+                'score_release_date' => $date->addDays(7)->toDateString(),
+                'created_by'         => $admin?->id,
+            ]
+        );
+    }
 
     private function upsertUserWithRole(string $email, string $name, string $roleName): User
     {
