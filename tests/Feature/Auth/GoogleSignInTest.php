@@ -6,6 +6,8 @@ use App\Models\User;
 use App\Models\UserCredential;
 use App\Support\GoogleOAuthConfig;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Route;
+use Laravel\Socialite\Contracts\Provider;
 use Laravel\Socialite\Contracts\User as SocialiteUser;
 use Laravel\Socialite\Facades\Socialite;
 use Mockery;
@@ -21,7 +23,7 @@ class GoogleSignInTest extends TestCase
         $socialUser->shouldReceive('getId')->andReturn($sub);
         $socialUser->shouldReceive('getEmail')->andReturn($email);
 
-        $provider = Mockery::mock(\Laravel\Socialite\Contracts\Provider::class);
+        $provider = Mockery::mock(Provider::class);
         $provider->shouldReceive('user')->andReturn($socialUser);
         $provider->shouldReceive('redirect')->andReturn(
             redirect('https://accounts.google.com/o/oauth2/auth?fake=1')
@@ -33,9 +35,9 @@ class GoogleSignInTest extends TestCase
     private function configureGoogle(): void
     {
         config([
-            'services.google.client_id'     => 'fake-client-id',
+            'services.google.client_id' => 'fake-client-id',
             'services.google.client_secret' => 'fake-client-secret',
-            'services.google.redirect'      => 'http://localhost/auth/google/callback',
+            'services.google.redirect' => 'http://localhost/auth/google/callback',
         ]);
     }
 
@@ -56,8 +58,8 @@ class GoogleSignInTest extends TestCase
 
         $user = User::factory()->create(['email' => 'linked@gmail.com']);
         UserCredential::create([
-            'user_id'    => $user->id,
-            'provider'   => UserCredential::PROVIDER_GOOGLE,
+            'user_id' => $user->id,
+            'provider' => UserCredential::PROVIDER_GOOGLE,
             'identifier' => 'sub-linked-123',
         ]);
 
@@ -82,8 +84,8 @@ class GoogleSignInTest extends TestCase
         $this->assertAuthenticatedAs($user);
 
         $this->assertDatabaseHas('user_credentials', [
-            'user_id'    => $user->id,
-            'provider'   => 'google',
+            'user_id' => $user->id,
+            'provider' => 'google',
             'identifier' => 'sub-new-456',
         ]);
     }
@@ -102,8 +104,18 @@ class GoogleSignInTest extends TestCase
 
     public function test_google_routes_not_registered_without_config(): void
     {
+        // Skip if Google is configured in the environment (routes already registered at boot)
+        // This test verifies behavior when env vars are ABSENT (CI/pre-production)
+        if (GoogleOAuthConfig::isConfigured()) {
+            $this->markTestSkipped('Google OAuth is configured in this environment; routes are registered at boot and cannot be unregistered per-test.');
+        }
+
         config(['services.google.client_id' => '', 'services.google.client_secret' => '']);
 
         $this->assertFalse(GoogleOAuthConfig::isConfigured());
+
+        // Routes should NOT be registered when unconfigured
+        $this->assertFalse(Route::has('auth.google.redirect'));
+        $this->assertFalse(Route::has('auth.google.callback'));
     }
 }

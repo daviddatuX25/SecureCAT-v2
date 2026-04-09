@@ -5,7 +5,6 @@ use App\Http\Controllers\Admin\AiCompanionAdminController;
 use App\Http\Controllers\Admin\AptitudeAreaController;
 use App\Http\Controllers\Admin\AuditLogController;
 use App\Http\Controllers\Admin\CourseController;
-
 use App\Http\Controllers\Admin\ExamSchedulingAssistantController;
 use App\Http\Controllers\Admin\ExamSessionController;
 use App\Http\Controllers\Admin\KnowledgeDocumentController;
@@ -14,34 +13,34 @@ use App\Http\Controllers\Admin\RoomController;
 use App\Http\Controllers\Admin\SeasonController;
 use App\Http\Controllers\Admin\SettingsController;
 use App\Http\Controllers\Admin\UserController;
+use App\Http\Controllers\ApplicationController;
+use App\Http\Controllers\Auth\GoogleAuthController;
+use App\Http\Controllers\AuthController;
+use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\Grading\GradingController;
 use App\Http\Controllers\Grading\GradingPrintController;
 use App\Http\Controllers\Grading\GradingScoreController;
 use App\Http\Controllers\Grading\GradingSessionController;
-use App\Http\Controllers\ApplicationController;
-use App\Http\Controllers\AuthController;
-use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\HomeController;
 use App\Http\Controllers\Portal\AiCompanionController;
 use App\Http\Controllers\Portal\NotificationController as PortalNotificationController;
 use App\Http\Controllers\PortalAuthController;
 use App\Http\Controllers\Proctor\SessionRosterController;
 use App\Http\Controllers\ReleaseController;
-use Illuminate\Support\Facades\Route;
-use Inertia\Inertia;
-
-use App\Http\Controllers\Auth\GoogleAuthController;
-use App\Http\Controllers\HomeController;
 use App\Support\GoogleOAuthConfig;
+use Illuminate\Support\Facades\Route;
 
 Route::get('/', [HomeController::class, 'index'])->name('home');
 Route::get('/about', [HomeController::class, 'about'])->name('about');
 
-Route::middleware('guest')->group(function () {
-    Route::get('/auth/google', [GoogleAuthController::class, 'redirect'])
-        ->name('auth.google.redirect');
+if (GoogleOAuthConfig::isConfigured()) {
+    Route::middleware('guest')->group(function () {
+        Route::get('/auth/google', [GoogleAuthController::class, 'redirect'])
+            ->name('auth.google.redirect');
+    });
     Route::get('/auth/google/callback', [GoogleAuthController::class, 'callback'])
         ->name('auth.google.callback');
-});
+}
 
 Route::middleware('guest')->group(function () {
     Route::get('/login', [AuthController::class, 'create'])->name('login');
