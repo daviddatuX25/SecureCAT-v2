@@ -24,6 +24,7 @@ use App\Http\Controllers\Portal\AiCompanionController;
 use App\Http\Controllers\Portal\NotificationController as PortalNotificationController;
 use App\Http\Controllers\PortalAuthController;
 use App\Http\Controllers\Proctor\SessionRosterController;
+use App\Http\Controllers\ReleaseController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
@@ -162,4 +163,14 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/sessions/{grading_session}/print-bulk', [GradingPrintController::class, 'printBulk'])->name('sessions.print-bulk');
         Route::get('/sessions/{grading_session}/applicants/{applicant}/result-sheet', [GradingPrintController::class, 'resultSheet'])->name('sessions.result-sheet');
     });
+
+    // Release Management
+    Route::middleware('role:super_admin,test_administrator')
+        ->prefix('release')
+        ->name('release.')
+        ->group(function () {
+            Route::get('/', [ReleaseController::class, 'index'])->name('index');
+            Route::post('/summaries/{summary}/release', [ReleaseController::class, 'release'])->name('summaries.release');
+            Route::post('/summaries/bulk-release', [ReleaseController::class, 'releaseBulk'])->name('summaries.bulk-release');
+        });
 });
