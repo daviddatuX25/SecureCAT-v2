@@ -7,6 +7,8 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use App\Models\UserCredential;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class User extends Authenticatable
 {
@@ -60,6 +62,18 @@ class User extends Authenticatable
     public function hasAnyRole(array $roles): bool
     {
         return $this->roles()->whereIn('name', $roles)->exists();
+    }
+
+    public function credentials(): HasMany
+    {
+        return $this->hasMany(UserCredential::class);
+    }
+
+    public function hasGoogleLinked(): bool
+    {
+        return $this->credentials()
+            ->where('provider', UserCredential::PROVIDER_GOOGLE)
+            ->exists();
     }
 
     public function examSessionsAsProctor(): BelongsToMany
