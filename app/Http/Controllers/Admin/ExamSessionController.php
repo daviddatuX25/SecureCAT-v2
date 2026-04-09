@@ -11,7 +11,9 @@ use App\Models\ExamSchedulingConversation;
 use App\Models\ExamSession;
 use App\Models\Room;
 use App\Models\Season;
+use App\Models\SystemSetting;
 use App\Models\User;
+use App\Notifications\ExamSessionPublished;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -355,6 +357,12 @@ class ExamSessionController extends Controller
             'status' => ExamSession::STATUS_PUBLISHED,
             'published_at' => now(),
         ]);
+
+        if (SystemSetting::notifyOnPublish()) {
+            $exam_session->applicants->each(
+                fn ($applicant) => $applicant->notify(new ExamSessionPublished($exam_session))
+            );
+        }
 
         return redirect()->route('admin.test-scheduling.show', $exam_session)->with('success', 'Session published.');
     }
