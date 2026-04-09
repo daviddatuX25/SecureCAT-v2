@@ -46,11 +46,14 @@
   function doToggle(id, currentActive) {
     if (currentActive) {
       router.post(`/admin/rooms/${id}/deactivate`, {}, {
-        onSuccess: () => router.reload(),
+        onSuccess: () => console.log('[Rooms] onSuccess - reload'),
+        onError: (errors) => {
+          console.log('[Rooms] onError triggered', JSON.stringify(errors));
+        },
       });
     } else {
       router.post(`/admin/rooms/${id}/activate`, {}, {
-        onSuccess: () => router.reload(),
+        onSuccess: () => console.log('[Rooms] activate success'),
       });
     }
   }
@@ -67,7 +70,7 @@
 
   // 'responsive' = cards on small, table on md+; 'table' | 'cards' = explicit override
   let viewMode = $state('responsive');
-const breadcrumbs = [{ label: 'Rooms' }];
+const breadcrumbs = [{ label: 'Exam Scheduling', href: '/admin/test-scheduling' }, { label: 'Rooms' }];
 </script>
 
 <AuthenticatedLayout {breadcrumbs}>

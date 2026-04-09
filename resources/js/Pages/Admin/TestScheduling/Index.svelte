@@ -146,7 +146,7 @@
           <Link href="/admin/rooms">
             <Button variant="outline" class="min-h-[44px]">
               <DoorOpen class="mr-2 h-4 w-4" />
-              Add Room
+              Manage Rooms
             </Button>
           </Link>
         {/if}
