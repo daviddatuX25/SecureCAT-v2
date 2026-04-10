@@ -87,7 +87,7 @@
   function isNavActive(href) {
     const url = $page.url;
     if (href === '/dashboard') return url === '/dashboard' || url === '/dashboard/';
-    return url === href;
+    return url === href || url.startsWith(href + '/');
   }
 </script>
 
