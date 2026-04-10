@@ -15,10 +15,7 @@
     onApplied = null,
   } = $props();
 
-  let messages = $state([]);
-  $effect(() => {
-    if (messages.length === 0) messages = [...(initialMessages ?? [])];
-  });
+  let messages = $state([...(initialMessages ?? [])]);
   let input = $state('');
   let loading = $state(false);
   let generating = $state(false);
