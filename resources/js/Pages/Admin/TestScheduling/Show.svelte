@@ -101,7 +101,6 @@
 
   function submitReleaseDate(e) {
     e.preventDefault();
-    releaseDateForm.transform((data) => data);
     $releaseDateForm.put(`/admin/test-scheduling/${session.id}/release-date`);
   }
 </script>
