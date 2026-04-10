@@ -4,9 +4,7 @@
   import { Button } from '@/Components/ui/button';
   import { Badge } from '@/Components/ui/badge';
   import { Input } from '@/Components/ui/input';
-  import QrScanner from '@/Components/QrScanner.svelte';
-  import { ArrowLeft, UserCheck, UserX, FileCheck, Play, Square, QrCode } from 'lucide-svelte';
-  import axios from 'axios';
+  import { ArrowLeft, UserCheck, UserX, FileCheck, Play, Square } from 'lucide-svelte';
 
   let { session, applicants = [], stats = {} } = $props();
 
@@ -16,10 +14,6 @@
 
   let searchQuery = $state('');
   let actionError = $state('');
-  let showScanner = $state(false);
-  let scanMode = $state('attendance'); // 'attendance' | 'submission'
-  let scanHandled = $state(false);
-  let scanError = $state('');
 
   const filteredApplicants = $derived(
     searchQuery.trim()
@@ -63,87 +57,6 @@
   function handleRosterError(err) {
     actionError = err?.message ?? err ?? 'Something went wrong.';
     setTimeout(() => (actionError = ''), 5000);
-  }
-
-  /** Extract reference number from QR content (URL or plain ref). */
-  function extractReference(decodedText) {
-    const t = String(decodedText ?? '').trim();
-    const match = t.match(/\/(?:admission|consultation)\/([^/?#]+)/i);
-    if (match) return match[1];
-    if (/^APP-\d{4}-\d{5}$/.test(t)) return t;
-    return t;
-  }
-
-  function handleQrScan(decodedText) {
-    if (scanHandled) return;
-    scanHandled = true;
-    scanError = '';
-    const ref = extractReference(decodedText);
-    if (!ref) {
-      scanError = 'Invalid QR content.';
-      scanHandled = false;
-      return;
-    }
-    if (scanMode === 'attendance') {
-      axios
-        .post(`/proctor/sessions/${session.id}/scan-attendance`, { reference_number: ref })
-        .then(() => {
-          showScanner = false;
-          scanHandled = false;
-          scanError = '';
-          router.reload();
-        })
-        .catch((err) => {
-          const msg = err?.response?.data?.message ?? err?.message ?? 'Scan failed.';
-          scanError = msg;
-          setTimeout(() => (scanError = ''), 5000);
-          scanHandled = false;
-        });
-      return;
-    }
-    // scanMode === 'submission': resolve ref to applicant in this session, then log submission
-    const applicant = applicants.find(
-      (a) => (a.reference_number ?? '').trim().toLowerCase() === ref.trim().toLowerCase()
-    );
-    if (!applicant) {
-      scanError = 'Applicant not in this session.';
-      scanHandled = false;
-      return;
-    }
-    axios
-      .post(`/proctor/sessions/${session.id}/submission`, { applicant_id: applicant.id })
-      .then(() => {
-        showScanner = false;
-        scanHandled = false;
-        scanError = '';
-        router.reload();
-      })
-      .catch((err) => {
-        const msg = err?.response?.data?.message ?? err?.message ?? 'Submission failed.';
-        scanError = msg;
-        setTimeout(() => (scanError = ''), 5000);
-        scanHandled = false;
-      });
-  }
-
-  function openScannerForAttendance() {
-    scanMode = 'attendance';
-    scanHandled = false;
-    scanError = '';
-    showScanner = true;
-  }
-
-  function openScannerForSubmission() {
-    scanMode = 'submission';
-    scanHandled = false;
-    scanError = '';
-    showScanner = true;
-  }
-
-  function closeScanner() {
-    showScanner = false;
-    scanHandled = false;
-    scanError = '';
   }
 
   function markPresent(applicantId) {
@@ -342,18 +255,6 @@
           bind:value={searchQuery}
           aria-label="Search applicants"
         />
-        {#if canMarkAttendance}
-          <Button variant="outline" class="min-h-[44px]" onclick={openScannerForAttendance}>
-            <QrCode class="h-4 w-4 mr-2" />
-            Scan for attendance
-          </Button>
-        {/if}
-        {#if canLogSubmission}
-          <Button variant="outline" class="min-h-[44px]" onclick={openScannerForSubmission}>
-            <QrCode class="h-4 w-4 mr-2" />
-            Scan for submission
-          </Button>
-        {/if}
         {#if canBulkSubmit}
           <Button variant="outline" class="min-h-[44px]" onclick={logSubmissionBulk}>
             <FileCheck class="h-4 w-4 mr-2" />
@@ -441,17 +342,4 @@
       {/if}
     </div>
   </div>
-
-  {#if showScanner}
-    <QrScanner
-      title={scanMode === 'attendance' ? 'Scan for attendance' : 'Scan for submission'}
-      onScan={handleQrScan}
-      onClose={closeScanner}
-    />
-    {#if scanError}
-      <div class="fixed bottom-4 left-4 right-4 z-[60] rounded-lg bg-destructive/90 px-4 py-3 text-sm text-destructive-foreground sm:left-auto sm:right-4 sm:max-w-sm">
-        {scanError}
-      </div>
-    {/if}
-  {/if}
 </AuthenticatedLayout>

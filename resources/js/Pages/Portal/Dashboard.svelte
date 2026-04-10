@@ -11,7 +11,6 @@
     applicant = {},
     status_tracker,
     exam_schedule = null,
-    score_release = null,
     consultation = { status: 'pending', summary: null },
     ai_companion_enabled = false,
     notifications,
@@ -119,18 +118,6 @@
               </div>
             </div>
           </Card.Content>
-        </Card.Root>
-      {/if}
-
-      <!-- Score Release Data -->
-      {#if score_release?.date_set}
-        <Card.Root>
-          <Card.Header>
-            <Card.Title class="text-lg">Score Release</Card.Title>
-            <Card.Description>
-              Results will be released on <strong class="text-foreground">{score_release.release_date}</strong>.
-            </Card.Description>
-          </Card.Header>
         </Card.Root>
       {/if}
 

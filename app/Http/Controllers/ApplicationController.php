@@ -46,10 +46,10 @@ class ApplicationController extends Controller
 
         if ($search = $request->input('search')) {
             $query->where(function ($q) use ($search) {
-                $q->where('reference_number', 'like', '%' . $search . '%')
-                    ->orWhere('first_name', 'like', '%' . $search . '%')
-                    ->orWhere('last_name', 'like', '%' . $search . '%')
-                    ->orWhere('email', 'like', '%' . $search . '%');
+                $q->where('reference_number', 'like', '%'.$search.'%')
+                    ->orWhere('first_name', 'like', '%'.$search.'%')
+                    ->orWhere('last_name', 'like', '%'.$search.'%')
+                    ->orWhere('email', 'like', '%'.$search.'%');
             });
         }
 
@@ -118,7 +118,7 @@ class ApplicationController extends Controller
         $appointmentLabel = null;
         if ($application->appointment) {
             $apt = $application->appointment;
-            $appointmentLabel = $apt->date->format('Y-m-d') . ' ' . substr($apt->time_slot, 0, 5);
+            $appointmentLabel = $apt->date->format('Y-m-d').' '.substr($apt->time_slot, 0, 5);
         }
 
         $season = $application->season;
@@ -225,7 +225,7 @@ class ApplicationController extends Controller
         $appointmentDetails = null;
         if ($application->appointment_id) {
             $apt = $application->appointment;
-            $appointmentDetails = $apt ? $apt->date->format('Y-m-d') . ' ' . substr($apt->time_slot, 0, 5) : null;
+            $appointmentDetails = $apt ? $apt->date->format('Y-m-d').' '.substr($apt->time_slot, 0, 5) : null;
         }
 
         return redirect()
@@ -341,7 +341,7 @@ class ApplicationController extends Controller
     }
 
     /**
-     * Dismiss application. Allowed only when within application window. From pending or incomplete_documents.
+     * Dismiss application. Allowed only when within application window.
      */
     public function dismiss(DismissApplicationRequest $request, Application $application): RedirectResponse
     {
@@ -379,44 +379,6 @@ class ApplicationController extends Controller
         return redirect()
             ->route('applications.show', $application)
             ->with('success', 'Application has been dismissed.');
-    }
-
-    /**
-     * Set application status to incomplete documents. Allowed only when within application window.
-     */
-    public function setIncompleteDocuments(Application $application): RedirectResponse
-    {
-        $this->authorize('setIncompleteDocuments', $application);
-
-        $withinWindow = $application->season?->isApplicationWindowOpen() ?? false;
-        if (! $withinWindow) {
-            return redirect()
-                ->back()
-                ->with('error', 'Status can only be changed while the application window is open.');
-        }
-
-        $allowedStatuses = ['pending', 'dismissed'];
-        if (! in_array($application->status, $allowedStatuses, true)) {
-            return redirect()
-                ->back()
-                ->with('error', 'Application cannot be set to incomplete documents from its current status.');
-        }
-
-        $application->update([
-            'status' => 'incomplete_documents',
-            'processed_by' => auth()->id(),
-            'processed_at' => now(),
-        ]);
-
-        Log::info('Application set to incomplete documents', [
-            'application_id' => $application->id,
-            'reference_number' => $application->reference_number,
-            'processed_by' => auth()->id(),
-        ]);
-
-        return redirect()
-            ->route('applications.show', $application)
-            ->with('success', 'Application has been marked as incomplete documents.');
     }
 
     /**
@@ -465,6 +427,7 @@ class ApplicationController extends Controller
                 ->orderBy('time_slot')
                 ->limit(50)
                 ->get();
+
             return $rows->map(fn ($r) => [
                 'id' => $r->id,
                 'date' => $r->date->format('Y-m-d'),
@@ -472,7 +435,7 @@ class ApplicationController extends Controller
                 'duration_minutes' => $r->duration_minutes,
                 'max_slots' => $r->max_slots,
                 'booked_count' => $r->booked_count,
-                'label' => $r->date->format('Y-m-d') . ' ' . substr($r->time_slot, 0, 5),
+                'label' => $r->date->format('Y-m-d').' '.substr($r->time_slot, 0, 5),
             ])->all();
         }
 

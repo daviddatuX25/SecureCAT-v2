@@ -33,7 +33,6 @@ class ExamSession extends Model
         'published_at',
         'started_at',
         'closed_at',
-        'score_release_date',
         'created_by',
     ];
 
@@ -44,7 +43,6 @@ class ExamSession extends Model
             'published_at' => 'datetime',
             'started_at' => 'datetime',
             'closed_at' => 'datetime',
-            'score_release_date' => 'date',
         ];
     }
 
