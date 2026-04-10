@@ -50,8 +50,8 @@ class AcademicYearControllerTest extends TestCase
         $response->assertStatus(200);
         $response->assertInertia(fn ($page) => $page
             ->component('Admin/AcademicYears/Index')
-            ->has('seasons')
-            ->has('seasons.data')
+            ->has('academic_years')
+            ->has('academic_years.data')
         );
     }
 
@@ -60,7 +60,7 @@ class AcademicYearControllerTest extends TestCase
         $response = $this->actingAs($this->superAdmin())->get(route('admin.academic-years.index'));
 
         $response->assertStatus(200);
-        $response->assertInertia(fn ($page) => $page->component('Admin/AcademicYears/Index')->has('seasons'));
+        $response->assertInertia(fn ($page) => $page->component('Admin/AcademicYears/Index')->has('academic_years'));
     }
 
     public function test_admin_can_view_create_academic_year_form(): void
@@ -116,10 +116,10 @@ class AcademicYearControllerTest extends TestCase
         $response->assertStatus(200);
         $response->assertInertia(fn ($page) => $page
             ->component('Admin/AcademicYears/Edit')
-            ->has('season')
-            ->where('season.id', $academicYear->id)
-            ->where('season.academic_year', '2025-2026')
-            ->where('season.semester', '1')
+            ->has('academicYear')
+            ->where('academicYear.id', $academicYear->id)
+            ->where('academicYear.academic_year', '2025-2026')
+            ->where('academicYear.semester', '1')
         );
     }
 

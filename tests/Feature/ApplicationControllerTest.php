@@ -2,10 +2,10 @@
 
 namespace Tests\Feature;
 
+use App\Models\AcademicYear;
 use App\Models\Application;
 use App\Models\Course;
 use App\Models\Role;
-use App\Models\Season;
 use App\Models\User;
 use Database\Seeders\CourseSeeder;
 use Database\Seeders\RoleSeeder;
@@ -31,12 +31,12 @@ class ApplicationControllerTest extends TestCase
         return $user;
     }
 
-    private function createApplicationWithSeason(bool $windowOpen = true): Application
+    private function createApplicationWithAcademicYear(bool $windowOpen = true): Application
     {
         $course = Course::first();
         $start = $windowOpen ? now()->subDays(5)->toDateString() : now()->addDays(5)->toDateString();
         $end = $windowOpen ? now()->addDays(30)->toDateString() : now()->addDays(10)->toDateString();
-        $season = Season::create([
+        $academicYear = AcademicYear::create([
             'academic_year' => '2025-2026',
             'semester' => '1',
             'is_active' => true,
@@ -45,7 +45,7 @@ class ApplicationControllerTest extends TestCase
         ]);
 
         return Application::create([
-            'season_id' => $season->id,
+            'academic_year_id' => $academicYear->id,
             'reference_number' => Application::nextReferenceNumber(),
             'first_name' => 'Jane',
             'last_name' => 'Doe',
@@ -77,7 +77,7 @@ class ApplicationControllerTest extends TestCase
 
     public function test_show_passes_within_application_window_when_season_window_open(): void
     {
-        $application = $this->createApplicationWithSeason(true);
+        $application = $this->createApplicationWithAcademicYear(true);
 
         $response = $this->actingAs($this->staff())->get(route('applications.show', $application));
 
@@ -91,7 +91,7 @@ class ApplicationControllerTest extends TestCase
 
     public function test_show_passes_within_application_window_false_when_season_window_closed(): void
     {
-        $application = $this->createApplicationWithSeason(false);
+        $application = $this->createApplicationWithAcademicYear(false);
 
         $response = $this->actingAs($this->staff())->get(route('applications.show', $application));
 
@@ -104,7 +104,7 @@ class ApplicationControllerTest extends TestCase
 
     public function test_accept_from_pending_within_window_succeeds(): void
     {
-        $application = $this->createApplicationWithSeason(true);
+        $application = $this->createApplicationWithAcademicYear(true);
 
         $response = $this->actingAs($this->staff())->put(route('applications.accept', $application));
 
@@ -116,7 +116,7 @@ class ApplicationControllerTest extends TestCase
 
     public function test_accept_outside_window_returns_error(): void
     {
-        $application = $this->createApplicationWithSeason(false);
+        $application = $this->createApplicationWithAcademicYear(false);
 
         $response = $this->actingAs($this->staff())->put(route('applications.accept', $application));
 
@@ -128,7 +128,7 @@ class ApplicationControllerTest extends TestCase
 
     public function test_dismiss_within_window_succeeds(): void
     {
-        $application = $this->createApplicationWithSeason(true);
+        $application = $this->createApplicationWithAcademicYear(true);
 
         $response = $this->actingAs($this->staff())->put(route('applications.dismiss', $application), [
             'reason' => 'Missing documents',
@@ -143,7 +143,7 @@ class ApplicationControllerTest extends TestCase
 
     public function test_dismiss_outside_window_returns_error(): void
     {
-        $application = $this->createApplicationWithSeason(false);
+        $application = $this->createApplicationWithAcademicYear(false);
 
         $response = $this->actingAs($this->staff())->put(route('applications.dismiss', $application), []);
 
@@ -155,7 +155,7 @@ class ApplicationControllerTest extends TestCase
 
     public function test_accept_from_dismissed_within_window_succeeds(): void
     {
-        $application = $this->createApplicationWithSeason(true);
+        $application = $this->createApplicationWithAcademicYear(true);
         $application->update(['status' => 'dismissed']);
 
         $response = $this->actingAs($this->staff())->put(route('applications.accept', $application));
@@ -168,7 +168,7 @@ class ApplicationControllerTest extends TestCase
 
     public function test_reject_route_does_not_exist(): void
     {
-        $application = $this->createApplicationWithSeason(true);
+        $application = $this->createApplicationWithAcademicYear(true);
 
         $response = $this->actingAs($this->staff())->put("/applications/{$application->id}/reject", ['reason' => 'Test']);
 
