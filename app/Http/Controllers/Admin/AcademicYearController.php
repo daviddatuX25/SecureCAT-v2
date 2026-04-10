@@ -35,7 +35,7 @@ class AcademicYearController extends Controller
             });
 
         return Inertia::render('Admin/AcademicYears/Index', [
-            'seasons' => $academicYears,
+            'academic_years' => $academicYears,
         ]);
     }
 
@@ -59,7 +59,7 @@ class AcademicYearController extends Controller
         $this->authorize('update', $academic_year);
 
         return Inertia::render('Admin/AcademicYears/Edit', [
-            'season' => [
+            'academicYear' => [
                 'id' => $academic_year->id,
                 'academic_year' => $academic_year->academic_year,
                 'semester' => $academic_year->semester,
@@ -76,6 +76,15 @@ class AcademicYearController extends Controller
         $academic_year->update($request->validated());
 
         return redirect()->route('admin.academic-years.index')->with('success', 'Academic year updated.');
+    }
+
+    public function deactivate(AcademicYear $academicYear): RedirectResponse
+    {
+        $this->authorize('update', $academicYear);
+
+        $academicYear->update(['is_active' => false]);
+
+        return back()->with('success', 'Academic year deactivated. Applications are now closed.');
     }
 
     public function activate(AcademicYear $academic_year): RedirectResponse

@@ -64,7 +64,14 @@
 
 <GuestLayout>
   <div class="mx-auto max-w-2xl space-y-6">
-    {#if !allow_apply}
+    {#if !active_season}
+      <div class="flex min-h-[60vh] items-center justify-center">
+        <div class="max-w-md text-center space-y-3">
+          <h2 class="text-xl font-semibold">Applications Closed</h2>
+          <p class="text-muted-foreground">No admission period is currently open. Contact the registrar's office for details.</p>
+        </div>
+      </div>
+    {:else if !allow_apply}
       <Card>
         <CardHeader>
           <CardTitle class="flex items-center gap-2">

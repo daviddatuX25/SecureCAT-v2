@@ -126,6 +126,7 @@ Route::middleware(['auth'])->group(function () {
         Route::put('test-scheduling/{exam_session}', [ExamSessionController::class, 'update'])->name('test-scheduling.update');
         Route::resource('academic-years', AcademicYearController::class)->except('show', 'destroy')->parameters(['academic_years' => 'academic_year']);
         Route::post('academic-years/{academic_year}/activate', [AcademicYearController::class, 'activate'])->name('academic-years.activate');
+        Route::post('academic-years/{academic_year}/deactivate', [AcademicYearController::class, 'deactivate'])->name('academic-years.deactivate');
         Route::resource('aptitude-areas', AptitudeAreaController::class)->except('show', 'destroy')->parameters(['aptitude_areas' => 'aptitude_area']);
         Route::resource('courses', CourseController::class)->except('show')->parameters(['courses' => 'course']);
         Route::post('courses/{course}/activate', [CourseController::class, 'activate'])->name('courses.activate');

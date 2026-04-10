@@ -3,12 +3,15 @@
   import { Link, router, usePage } from '@inertiajs/svelte';
   import { Button } from '@/Components/ui/button';
   import { Badge } from '@/Components/ui/badge';
-  import { Plus, Pencil, CheckCircle, BookOpen } from 'lucide-svelte';
+  import { Plus, Pencil, CheckCircle, XCircle, BookOpen } from 'lucide-svelte';
 
   let { seasons } = $props();
 
+  function doDeactivate(id) {
+    router.post(`/admin/academic-years/${id}/deactivate`, {}, { preserveScroll: true });
+  }
+
   const page = usePage();
-  const success = $derived($page.props.flash?.success ?? null);
   const list = $derived(seasons?.data ?? []);
   const breadcrumbs = [{ label: 'Academic Years' }];
 </script>
@@ -32,6 +35,12 @@
         </Link>
       </div>
     </div>
+
+    {#if !academic_years.some((ay) => ay.is_active)}
+      <div class="mb-4 rounded-md border border-amber-500/50 bg-amber-500/10 px-4 py-3 text-sm text-foreground">
+        No academic year is currently active. Applications are closed until one is activated.
+      </div>
+    {/if}
 
     {#if success}
       <div class="rounded-lg bg-primary/10 px-4 py-3 text-sm text-primary">
@@ -70,7 +79,17 @@
                 </td>
                 <td class="px-4 py-3 text-right">
                   <div class="flex justify-end gap-2">
-                    {#if !ay.is_active}
+                    {#if ay.is_active}
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        class="min-h-[44px]"
+                        onclick={() => doDeactivate(ay.id)}
+                      >
+                        <XCircle class="mr-1.5 h-4 w-4" />
+                        Deactivate
+                      </Button>
+                    {:else}
                       <Button
                         variant="outline"
                         size="sm"
