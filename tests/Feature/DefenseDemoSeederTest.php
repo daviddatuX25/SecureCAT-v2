@@ -93,6 +93,6 @@ class DefenseDemoSeederTest extends TestCase
             ->count();
 
         $this->assertSame(1, $present);
-        $this->assertSame(2, $pending);
+        $this->assertSame(3, $pending);
     }
 }
