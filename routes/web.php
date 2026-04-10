@@ -146,11 +146,11 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/applications', [ApplicationController::class, 'index'])->name('applications.index')->middleware('role:super_admin,registrar_administrator,staff');
     Route::get('/applications/{application}', [ApplicationController::class, 'show'])->name('applications.show')->middleware('role:super_admin,staff,registrar_administrator');
     Route::put('/applications/{application}/accept', [ApplicationController::class, 'accept'])->name('applications.accept')->middleware('role:super_admin,staff,registrar_administrator');
-    Route::post('/applications/{application}/resend-setup-email', [ApplicationController::class, 'resendSetupEmail'])->name('applications.resend-setup-email')->middleware('role:super_admin,staff,admin');
-    Route::put('/applications/{application}/dismiss', [ApplicationController::class, 'dismiss'])->name('applications.dismiss')->middleware('role:super_admin,staff,admin');
-    Route::post('/applications/bulk-accept', [ApplicationController::class, 'bulkAccept'])->name('applications.bulk-accept')->middleware('role:super_admin,staff,admin');
-    Route::post('/applications/bulk-dismiss', [ApplicationController::class, 'bulkDismiss'])->name('applications.bulk-dismiss')->middleware('role:super_admin,staff,admin');
-    Route::put('/applications/{application}/reopen', [ApplicationController::class, 'reopen'])->name('applications.reopen')->middleware('role:super_admin,staff,admin');
+    Route::post('/applications/{application}/resend-setup-email', [ApplicationController::class, 'resendSetupEmail'])->name('applications.resend-setup-email')->middleware('role:super_admin,staff,registrar_administrator');
+    Route::put('/applications/{application}/dismiss', [ApplicationController::class, 'dismiss'])->name('applications.dismiss')->middleware('role:super_admin,staff,registrar_administrator');
+    Route::post('/applications/bulk-accept', [ApplicationController::class, 'bulkAccept'])->name('applications.bulk-accept')->middleware('role:super_admin,staff,registrar_administrator');
+    Route::post('/applications/bulk-dismiss', [ApplicationController::class, 'bulkDismiss'])->name('applications.bulk-dismiss')->middleware('role:super_admin,staff,registrar_administrator');
+    Route::put('/applications/{application}/reopen', [ApplicationController::class, 'reopen'])->name('applications.reopen')->middleware('role:super_admin,staff,registrar_administrator');
     Route::delete('/applications/{application}', [ApplicationController::class, 'destroy'])->name('applications.destroy')->middleware('role:super_admin,registrar_administrator');
     Route::get('/applications/{application}/admission-slip', [ApplicationController::class, 'admissionSlip'])->name('applications.admission-slip')->middleware('role:super_admin,registrar_administrator,staff');
     Route::get('/proctor', fn () => redirect()->route('admin.test-scheduling.index'))->middleware('role:super_admin,proctor');
