@@ -1,7 +1,7 @@
 <script>
   import { Link, router } from '@inertiajs/svelte';
   import { usePage } from '@inertiajs/svelte';
-  import { ChevronDown, ChevronRight, Menu, LayoutDashboard, Users, FileText, Calendar, GraduationCap, Bot, Settings, ScrollText, FileStack, Activity, CalendarRange, Layers, ShieldCheck, Sun, Moon, Bell, Search, SendHorizonal } from 'lucide-svelte';
+  import { ChevronDown, ChevronRight, Menu, LayoutDashboard, Users, FileText, Calendar, GraduationCap, Bot, Settings, ScrollText, Activity, CalendarRange, Layers, ShieldCheck, Sun, Moon, Bell, Search, SendHorizonal } from 'lucide-svelte';
   import { Button } from '@/Components/ui/button';
 
   let { children, breadcrumbs = [] } = $props();
@@ -72,7 +72,6 @@
       { href: '/admin/logs', label: 'Audit Log', icon: ScrollText, roles: ['super_admin'] },
       { href: '/admin/ai-companion', label: 'AI Companion', icon: Bot, roles: ['super_admin'], featureFlag: 'ai_exam_companion_enabled' },
       { href: '/admin/aptitude-areas', label: 'Aptitude Areas', icon: Layers, roles: ['super_admin'] },
-      { href: '/admin/admission-slip-templates', label: 'Admission Slip Templates', icon: FileStack, roles: ['super_admin'] },
       { href: '/admin/result-sheet-templates', label: 'Result Sheet Templates', icon: FileText, roles: ['super_admin'] },
     ]},
   ].map((section) => ({
@@ -88,7 +87,7 @@
   function isNavActive(href) {
     const url = $page.url;
     if (href === '/dashboard') return url === '/dashboard' || url === '/dashboard/';
-    return url === href || url.startsWith(href + '/');
+    return url === href;
   }
 </script>
 
