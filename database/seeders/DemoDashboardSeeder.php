@@ -51,7 +51,7 @@ class DemoDashboardSeeder extends Seeder
                 'staff' => $this->upsertUserWithRole('staff@demo.local', 'Staff Demo', 'staff'),
                 'registrar_admin' => $this->upsertUserWithRole('admin@demo.local', 'Admin Demo', 'registrar_administrator'),
                 'proctor' => $this->upsertUserWithRole('proctor@demo.local', 'Proctor Demo', 'proctor'),
-                'test_admin' => $this->upsertUserWithRole('testadmin@demo.local', 'Test Admin Demo', 'registrar_administrator'),
+                'test_admin' => $this->upsertUserWithRole('testadmin@demo.local', 'Test Admin Demo', 'test_administrator'),
             ];
 
             // Rooms
