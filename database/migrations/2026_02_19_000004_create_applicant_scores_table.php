@@ -12,7 +12,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('grading_session_id')->constrained()->cascadeOnDelete();
             $table->foreignId('applicant_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('domain_id')->constrained('exam_domains')->cascadeOnDelete();
+            $table->foreignId('aptitude_area_id')->constrained('aptitude_areas')->cascadeOnDelete();
             $table->unsignedSmallInteger('raw_score');
             $table->unsignedSmallInteger('max_score');
             $table->decimal('normalized_score', 5, 2)->nullable();
@@ -20,7 +20,7 @@ return new class extends Migration
             $table->timestamp('scored_at');
             $table->timestamps();
 
-            $table->unique(['grading_session_id', 'applicant_id', 'domain_id'], 'app_scores_gs_app_dom_unique');
+            $table->unique(['grading_session_id', 'applicant_id', 'aptitude_area_id'], 'app_scores_gs_app_area_unique');
         });
     }
 

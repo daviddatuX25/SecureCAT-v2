@@ -9,6 +9,11 @@ return new class extends Migration
 {
     public function up(): void
     {
+        if (! Schema::hasColumn('applicant_scores', 'domain_id')) {
+            // Column already renamed (fresh install using updated create migration).
+            return;
+        }
+
         // Root cause analysis:
         // The composite unique index app_scores_gs_app_dom_unique covers
         // (grading_session_id, applicant_id, domain_id). When Laravel created the
@@ -53,7 +58,7 @@ return new class extends Migration
                 LIMIT 1
             ");
             if ($orphan) {
-                DB::statement("ALTER TABLE `applicant_scores` DROP INDEX `applicant_scores_domain_id_foreign`");
+                DB::statement('ALTER TABLE `applicant_scores` DROP INDEX `applicant_scores_domain_id_foreign`');
             }
         }
 
