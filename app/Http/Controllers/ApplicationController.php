@@ -244,7 +244,7 @@ class ApplicationController extends Controller
 
     /**
      * Accept application. Per 08-API-SPEC-PHASE1: create applicant, send setup email, audit.
-     * Allowed from pending, dismissed, or incomplete_documents only when within application window.
+     * Allowed from pending or dismissed only when within application window.
      */
     public function accept(Application $application): RedirectResponse
     {
