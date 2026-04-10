@@ -3,7 +3,7 @@
   import { Button } from '@/Components/ui/button';
   import * as Card from '@/Components/ui/card';
   import * as Table from '@/Components/ui/table';
-  import { MessageSquare, Send, Sparkles, Calendar, CheckCircle2 } from 'lucide-svelte';
+  import { MessageSquare, Send, Sparkles, Calendar, CheckCircle2, Trash2 } from 'lucide-svelte';
 
   let {
     applicant_count = 0,
@@ -198,13 +198,47 @@
       applying = false;
     }
   }
+
+  async function resetConversation() {
+    if (!confirm('Reset the conversation? This cannot be undone.')) return;
+    try {
+      const res = await fetch('/admin/test-scheduling/schedule-assistant/conversation', {
+        method: 'DELETE',
+        headers: {
+          'X-CSRF-TOKEN': csrf_token,
+          'X-Requested-With': 'XMLHttpRequest',
+        },
+        credentials: 'same-origin',
+      });
+      if (res.ok) {
+        messages = [];
+        hasReplyThisSession = false;
+        structuredSchedule = null;
+        error = '';
+      }
+    } catch (e) {
+      error = 'Failed to reset conversation.';
+    }
+  }
 </script>
 
 <div class="space-y-6">
   <div class="rounded-lg border border-border bg-muted/30 p-4 space-y-4">
-    <div class="flex items-center gap-2">
-      <Sparkles class="w-5 h-5 text-primary" />
-      <h2 class="text-lg font-bold text-foreground">Schedule with AI</h2>
+    <div class="flex items-center justify-between">
+      <div class="flex items-center gap-2">
+        <Sparkles class="w-5 h-5 text-primary" />
+        <h2 class="text-lg font-bold text-foreground">Schedule with AI</h2>
+      </div>
+      {#if messages.length > 0}
+        <button
+          type="button"
+          onclick={resetConversation}
+          class="text-xs text-muted-foreground hover:text-destructive transition-colors"
+          title="Reset conversation"
+        >
+          <Trash2 class="h-4 w-4" />
+        </button>
+      {/if}
     </div>
     <div class="flex flex-wrap gap-4 text-sm">
       <span class="flex items-center gap-1.5">
@@ -235,10 +269,13 @@
         <MessageSquare class="h-5 w-5" />
         Conversation
       </Card.Title>
-      <Card.Title class="flex items-center gap-2">
-        <p class="text-sm text-destructive rounded-md bg-destructive/10 px-3 py-2">{error}</p>
+      {#if error}
+        <Card.Title class="flex items-center gap-2">
+          <p class="text-sm text-destructive rounded-md bg-destructive/10 px-3 py-2">{error}</p>
+        </Card.Title>
       {/if}
-
+    </Card.Header>
+    <Card.Content class="space-y-4">
       <div class="rounded-lg border border-border bg-muted/30 min-h-[200px] max-h-[360px] overflow-y-auto p-4 space-y-3">
         {#if messages.length === 0}
           <p class="text-sm text-muted-foreground">
