@@ -61,6 +61,7 @@ class DemoSetupCommand extends Command
         $this->info('Done! Database is demo-ready.');
         $this->line('');
         $this->printSummary();
+        $this->printSessionIds();
         $this->printThrottleInfo();
         $this->printCredentials();
 
@@ -136,6 +137,29 @@ class DemoSetupCommand extends Command
         );
 
         $this->line('  See DEMO.md for the full step-by-step defense walkthrough.');
+        $this->line('');
+    }
+
+    private function printSessionIds(): void
+    {
+        $this->line('  <info>Session IDs (use these in URLs):</info>');
+
+        ExamSession::with('room')
+            ->orderBy('date')
+            ->get()
+            ->each(function (ExamSession $session) {
+                $this->line(sprintf(
+                    '    ID %-4d | %-12s | %-10s | %s / %s',
+                    $session->id,
+                    $session->date,
+                    $session->status,
+                    $session->room->building ?? '—',
+                    $session->room->name ?? '—'
+                ));
+            });
+
+        $this->line('');
+        $this->line('  <info>Mailpit (local mail):</info>  http://localhost:8025');
         $this->line('');
     }
 }

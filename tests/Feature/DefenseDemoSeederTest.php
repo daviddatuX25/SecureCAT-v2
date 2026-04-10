@@ -8,7 +8,6 @@ use App\Models\ConsultationSummary;
 use App\Models\ExamSession;
 use App\Models\GradingSession;
 use App\Models\Room;
-use App\Models\User;
 use Database\Seeders\DatabaseSeeder;
 use Database\Seeders\DefenseDemoSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -75,6 +74,22 @@ class DefenseDemoSeederTest extends TestCase
     public function test_session_b_consultation_summaries_are_pending(): void
     {
         $this->assertSame(2, ConsultationSummary::where('status', ConsultationSummary::STATUS_PENDING)->count());
+    }
+
+    public function test_session_b_consultations_have_no_course_or_comments_pre_filled(): void
+    {
+        $pending = ConsultationSummary::where('status', ConsultationSummary::STATUS_PENDING)->get();
+
+        foreach ($pending as $summary) {
+            $this->assertNull(
+                $summary->recommended_course_id,
+                'Session B consultations must have null recommended_course_id so the demo can fill it live.'
+            );
+            $this->assertNull(
+                $summary->counselor_comments,
+                'Session B consultations must have null counselor_comments so the demo can fill it live.'
+            );
+        }
     }
 
     public function test_session_c_has_one_present_and_two_pending_attendance(): void

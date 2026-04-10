@@ -379,16 +379,12 @@ class DefenseDemoSeeder extends Seeder
             }
         }
 
-        $bsitId = Course::query()->where('code', 'BSIT')->value('id');
-        $bscsId = Course::query()->where('code', 'BSCS')->value('id');
-
-        foreach ($sessionApplicants as $i => $applicant) {
-            $courseId = $i === 0 ? $bsitId : $bscsId;
+        foreach ($sessionApplicants as $applicant) {
             ConsultationSummary::query()->updateOrCreate(
                 ['applicant_id' => $applicant->id],
                 [
                     'status' => ConsultationSummary::STATUS_PENDING,
-                    'recommended_course_id' => $courseId,
+                    'recommended_course_id' => null,
                     'counselor_comments' => null,
                     'system_notes' => ['seed' => 'defense-demo'],
                     'counselor_id' => $users['test_admin']->id,

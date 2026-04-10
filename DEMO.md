@@ -1,7 +1,7 @@
 # SecureCAT v2 — Defense Demo Guide
 
 > **ISPSC Tagudin Thesis Panel Defense**
-> Full lifecycle walkthrough: application → exam → grading → results → portal
+> Full lifecycle walkthrough: application → account setup → exam → scoring → results → portal
 
 ---
 
@@ -11,9 +11,9 @@ SecureCAT v2 is a web-based **College Admission Test (CAT) Management System** f
 
 1. **Applicants** submit online and track their status through a secure portal
 2. **Staff** review and accept applications
-3. **Admins** schedule exam sessions, assign applicants to rooms, and manage seasons
+3. **Admins** schedule exam sessions, assign applicants to rooms, and manage academic years
 4. **Proctors** manage attendance and exam submission in real-time
-5. **Test Administrators** enter scores, finalize grading, and release consultation summaries
+5. **Registrar Administrators** enter scores, finalize grading, and release consultation summaries
 6. **Applicants** view results, counselor recommendations, and chat with an AI companion
 
 **Tech stack:** Laravel 12 · Svelte 5 · Inertia.js · MySQL · Laravel Reverb (WebSockets)
@@ -23,93 +23,77 @@ SecureCAT v2 is a web-based **College Admission Test (CAT) Management System** f
 ## Quick Setup (run before the defense)
 
 ```bash
-# 1. Fresh database + foundation data (roles, courses, aptitude areas, templates)
-php artisan migrate:fresh --seed --seeder=DatabaseSeeder
-
-# 2. Defense demo data (20 applications, 5 staff, 12 applicant accounts, 4 sessions)
-php artisan db:seed --class=DefenseDemoSeeder
-
-# 3. Start the local server
-php artisan serve
-
-# 4. Verify counts
-php artisan tinker --execute="
-echo 'Applications: ' . App\Models\Application::count() . PHP_EOL;
-echo 'Applicants:   ' . App\Models\Applicant::count() . PHP_EOL;
-echo 'Sessions:     ' . App\Models\ExamSession::count() . PHP_EOL;
-echo 'Rooms:        ' . App\Models\Room::count() . PHP_EOL;
-echo 'Consultations:' . App\Models\ConsultationSummary::count() . PHP_EOL;
-"
+# One command — migrates fresh, seeds foundation + demo data, prints session IDs
+php artisan demo:setup
 ```
 
-**Expected output:**
+> **Requires:** `DEMO=true` in `.env`. See Troubleshooting if you see "DEMO is not enabled."
+
+**Expected output includes:**
 ```
-Applications: 20
-Applicants:   12
-Sessions:     4
-Rooms:        4
-Consultations:5
+Applications: 20        Exam sessions: 4
+Applicants:   12        Rooms:         4
+
+Session IDs (use these in URLs):
+  ID 1  | <date>  | completed  | Main Building / Room 101
+  ID 2  | <date>  | completed  | Academic Building / Room 201
+  ID 3  | today   | published  | Main Building / Room 102
+  ID 4  | <date>  | published  | Vocational Building / Lab Room 1
 ```
 
-### Get session IDs (needed for direct URL access)
-
-```bash
-php artisan tinker --execute="
-App\Models\ExamSession::with('room')
-    ->orderBy('date')
-    ->get(['id','date','status'])
-    ->each(fn(\$s) => print('ID ' . \$s->id . ' | ' . \$s->date . ' | ' . \$s->status . PHP_EOL));
-"
-```
+Note the Session IDs — you will use them in URLs during the demo.
 
 ---
 
 ## Pre-Flight Checklist (30 min before defense)
 
-- [ ] Run seeder commands above, verify counts
-- [ ] Open **Browser A** (Staff/Admin) — log in as Maria to start
-- [ ] Open **Browser B** (Applicant Portal) — keep at `http://localhost:8000/portal/login`
-- [ ] Copy the **Live Submission Data** below — paste into `/apply` form during Step 1
-- [ ] Note the Session IDs from the tinker command above
+- [ ] Run `php artisan demo:setup` — verify counts and note session IDs
+- [ ] Open **Browser A** (Staff/Admin) — start at `http://localhost:8000`
+- [ ] Open **Browser B** (Applicant Portal) — keep blank for now
+- [ ] Open **Mailpit tab** — `http://localhost:8025`
+- [ ] Copy the **Live Submission Data** below (paste into `/apply` during Step 1)
 - [ ] Confirm `php artisan serve` is running
-- [ ] (Optional) If Google OAuth is configured — verify the Sign-In button appears on `/login`
+- [ ] (Optional) If Google OAuth configured — verify Sign-In button at `/login`
 
 ---
 
 ## The Big Picture: What's Already Seeded
 
-The seeder creates a full snapshot of a live CAT cycle with sessions in **different lifecycle stages** — so you can demonstrate every part of the system without waiting:
-
 | Session | Date | Status | What it demonstrates |
 |---------|------|--------|----------------------|
-| **Session A** | 14 days ago | `completed` + results released | Fully finalized — show grading + consultation results |
-| **Session B** | 5 days ago | `completed` + grading in progress | Partial scores entered — complete grading live |
+| **Session A** | 14 days ago | `completed` + results released | Fully finalized — show grading + released consultation results |
+| **Session B** | 5 days ago | `completed` + grading in progress | Partial scores entered — complete grading live, then release |
 | **Session C** | **Today** | `published` | Live attendance marking by proctor |
-| **Session D** | 5 days from now | `published` | Upcoming session — shows forward scheduling |
+| **Session D** | 5 days from now | `published` | Upcoming session — assign applicants live |
 
 ---
 
-## Demo Flow (follow in order)
+## Demo Flow
+
+---
+
+## ACT 1 — Application Lifecycle (~5 min)
+
+> *"Let's follow an applicant from their very first interaction with the system."*
 
 ---
 
 ### Step 0: Home Page — Set the Scene (30 seconds)
 
-**URL:** `http://localhost:8000/`
+**Browser A → `http://localhost:8000/`**
 
-- Open the home page — briefly point out: "This is the public-facing entry point of SecureCAT."
-- Mention that applicants arrive here to submit their application — no login required.
-- The staff/admin system is accessed via the `/login` page.
+- Open the home page — *"This is the public entry point of SecureCAT."*
+- Applicants arrive here to submit. Staff access is via `/login`.
 
 ---
 
 ### Step 1: Live Application Submission (public — no login)
 
-**URL:** `http://localhost:8000/apply`
+**Browser A → `http://localhost:8000/apply`**
 
-**What to say:** *"Any student can submit an application online. The form is publicly accessible — no account needed."*
+*"Any student can submit an application online. No account needed."*
 
-Fill in the form using this data:
+Fill in the form with this data:
 
 | Field | Value |
 |-------|-------|
@@ -128,280 +112,307 @@ Fill in the form using this data:
 | Course Preference 3 | BSDS |
 
 **After submitting:**
-- System shows a success page with a **reference number** (e.g., `ISPSC-2026-0021`)
-- Application is created as `pending`
-- **Point out:** No portal account yet — that only happens after staff accepts the application
+- Success page shows reference number (e.g., `ISPSC-2026-0021`)
+- Application is `pending` — no portal account yet
 
 ---
 
 ### Step 2: Staff Reviews & Accepts Applications
 
-**Login:** `maria@securecat.local` / `password`
+**Browser A — Login:** `maria@securecat.local` / `password`
 **URL:** `http://localhost:8000/applications`
 
-**What to show:**
-
-1. Go to Applications list — show it sorted by date
-2. **Point out statuses:** pending (4), accepted, dismissed, incomplete_documents
-3. Find **Geraldine Santos** (just submitted) — open her application
-4. Show the application details: personal info, course preferences, submitted timestamp
-5. Click **Accept** → confirm
+1. Applications list — show statuses: pending, accepted, dismissed
+2. Open **Geraldine Santos** (just submitted) — show details
+3. Click **Accept** → confirm
    - Portal account is created automatically
-   - Status changes to `accepted`
-   - Setup email is sent (show the "Resend setup email" button)
-6. Optional: Also accept **Rosalinda Aquino** (submitted today, idx=16) to show a second accept
+   - Setup email is triggered
+4. Also show: **Carlos Vargas** (dismissed — "Did not appear") and **Rodolfo Lacsamana** (incomplete docs — "Missing PSA birth certificate")
 
-**Also show:**
-- **Dismiss flow:** Open a dismissed application (Carlos Vargas) — show the rejection reason logged
-- **Incomplete documents:** Open Rodolfo Lacsamana — show "Missing PSA birth certificate" reason
-
-**Key talking point:** *"Staff process applications without needing to use paper forms. Every action is logged for audit."*
+*"Staff process applications digitally. Every action is logged for audit."*
 
 ---
 
-### Step 3: Admin — Sessions Dashboard
+### Step 3: Account Setup via Mailpit
 
-**Login:** `josefina@securecat.local` / `password`
+**Mailpit tab → `http://localhost:8025`**
+
+1. Show the setup email for Geraldine Santos — it arrived the moment she was accepted
+2. Open the email — copy/click the setup link
+3. **Browser B** → paste the setup link
+4. Set a password (use `password` for simplicity)
+5. Submit → lands on the applicant portal dashboard
+
+**Portal shows:** *"Your application has been accepted. You are currently awaiting exam scheduling."*
+
+*"The applicant gets a setup email the moment staff accepts. Zero manual steps — one click and they're in."*
+
+6. Say: *"We'll come back to explore the portal features after the exam cycle."*
+
+---
+
+## ACT 2 — Exam Administration (~5 min)
+
+> *"Now let's see how admins manage the exam pipeline."*
+
+---
+
+### Step 4: Admin — Sessions Overview
+
+**Browser A — Login:** `josefina@securecat.local` / `password`
 **URL:** `http://localhost:8000/admin/test-scheduling`
 
-**What to show:**
+1. Show 4 sessions at different lifecycle stages
+2. Point out Session C (today — `published`) and Session D (upcoming)
+3. Open Session A (completed) — show it's closed and finalized
 
-1. Sessions list — all 4 sessions visible with their statuses
-2. **Highlight Session C** (today) — `published` status, show room + time
-3. Open Session A (completed) — show it's closed, grading finalized
-4. Open Session D (future) — show it's scheduled but not started
-
-**Point out:** *"The admin can see the full pipeline at a glance — what's upcoming, in progress, and completed."*
+*"The admin sees the full pipeline at a glance — what's upcoming, in progress, and completed."*
 
 ---
 
-### Step 3B: Assign Applicants to a Session (bonus)
+### Step 5: Assign Applicants to Session D
 
-**Same login as Step 3**
+**Browser A (same login)**
 
-- Open **Session D** (upcoming, 5 days from now)
-- Click **Assign Applicants**
-- Show the list of accepted/unassigned applicants: Natividad, Virgilio, Erlinda
-- Assign them to Session D
-- **Point out:** *"Admins control which applicants go to which session — useful when managing multiple rooms and dates."*
+1. Open **Session D** (upcoming, 5 days from now)
+2. Click **Assign Applicants / Examinees**
+3. Show the list of accepted/unassigned applicants: Natividad, Virgilio, Erlinda
+4. Assign them to Session D
 
----
-
-### Step 3C: AI Scheduling Assistant (bonus — impressive feature)
-
-**Login:** `josefina@securecat.local` / `password`
-**URL:** `http://localhost:8000/admin/test-scheduling`
-
-- Click the **AI Scheduling Assistant** button (if visible on the index or session page)
-- Type a natural language prompt, e.g.:
-  - *"How many applicants are unassigned?"*
-  - *"Suggest a schedule for the remaining applicants."*
-- Show the AI response
-- **Point out:** *"The assistant is context-aware — it knows your rooms, capacity, and current applicant load."*
+*"Admins control which examinees go to which session — useful when managing multiple rooms and dates."*
 
 ---
 
-### Step 4: Proctor — Mark Attendance Live
+### Step 6: AI Scheduling Assistant *(bonus — impressive)*
 
-**Login:** `eduardo@securecat.local` / `password`
+**Browser A (same login) → Test Scheduling**
+
+1. Click the **AI Scheduling Assistant** button
+2. Type: *"How many applicants are still unassigned?"* or *"Suggest a schedule for remaining applicants."*
+3. Show the AI response
+
+*"The assistant is context-aware — it knows your rooms, capacity, and current examinee load."*
+
+---
+
+## ACT 3 — Live Exam (~3 min)
+
+> *"Session C is happening today. Let's watch the proctor work in real-time."*
+
+---
+
+### Step 7: Proctor — Mark Attendance Live
+
+**Browser A — Login:** `eduardo@securecat.local` / `password`
 **URL:** `http://localhost:8000/proctor/sessions/{SESSION_C_ID}`
 
-*(Replace `{SESSION_C_ID}` with the ID from the tinker command)*
+*(Use the Session C ID from `php artisan demo:setup` output)*
 
-**What to show:**
-
-1. Open Session C roster
-2. **Point out:** Lorena Tamayo is already marked **present** (she arrived before the demo started)
+1. Open Session C examinee list
+2. **Point out:** Lorena Tamayo is already marked **Present** (pre-seeded)
 3. Live demo actions:
    - **Roberto Libed** → Mark **Present** ✓
    - **Maribel Pagulayan** → Mark **Present** ✓
-   - **Arturo Madriaga** → Mark **Absent** ✗ (optional — shows absent tracking)
-4. Show the present count updating
+   - **Arturo Madriaga** → Mark **Absent** ✗
+4. Show present count updating
 
-**Key talking point:** *"Proctors mark attendance in real-time. No paper rosters — the system is the single source of truth."*
+*"Proctors mark attendance in real-time. No paper rosters — the system is the single source of truth."*
 
 ---
 
-### Step 5: Test Admin — Complete Session B Grading
+## ACT 4 — Scoring & Release (~5 min)
 
-**Login:** `analiza@securecat.local` / `password`
+> *"Session B was completed 5 days ago. The registrar administrator finishes grading and releases results."*
+
+---
+
+### Step 8: Complete Session B Grading
+
+**Browser A — Login:** `analiza@securecat.local` / `password`
 **URL:** `http://localhost:8000/grading/sessions/{SESSION_B_GRADING_ID}`
 
-**What to show:**
+*(Grading session ID = navigate to grading from the session B exam session)*
 
-1. Open Session B grading
-2. **Point out:** SA, NA, VR scores already entered — grading is partially done
-3. Open **Rowena Ballesteros** → Enter the remaining domain scores:
+1. Open Session B grading — status: **In Progress**
+2. **Point out:** SA, NA, VR scores already entered — 3 of 6 domains done
+3. Open **Rowena Ballesteros** → Enter remaining scores:
+
    | Domain | Score |
    |--------|-------|
    | AR | 15 |
    | LR | 14 |
    | PSA | 13 |
+
 4. Save Rowena's scores
 5. Open **Danilo Espiritu Jr.** → Enter:
+
    | Domain | Score |
    |--------|-------|
    | AR | 17 |
    | LR | 16 |
    | PSA | 15 |
-6. Save Danilo's scores
-7. Click **Finalize Grading** — confirm
 
-**Key talking point:** *"Scores are entered per aptitude area (SA, NA, VR, AR, LR, PSA). Finalization locks the session — no further edits."*
+6. Save Danilo's scores
+7. Click **Finalize Grading** → confirm
+
+*"Scores are entered per aptitude area. Finalization locks the session — no further edits."*
 
 ---
 
-### Step 6: Test Admin — Release Consultation Summaries (Session B)
+### Step 9: Release Consultation Summaries
 
-**Login:** `analiza@securecat.local` / `password`
+**Browser A (same login)**
 **URL:** `http://localhost:8000/release`
 
-**What to show:**
+1. Open Release Management — shows **pending** summaries for Rowena and Danilo
+   - Note: course and notes fields are **blank** — filled live here
+2. Open **Rowena Ballesteros**:
+   - Recommended course: **BSIT**
+   - Counselor comments: *"Good aptitude scores overall. Recommended for BSIT based on SA and VR performance."*
+   - Click **Release**
+3. Open **Danilo Espiritu Jr.**:
+   - Recommended course: **BSCS**
+   - Counselor comments: *"Strong numerical ability. Recommended for BSCS."*
+   - Click **Release**
 
-1. Open Release Management — shows pending summaries for Rowena and Danilo
-2. Open **Rowena Ballesteros** — add counselor comments:
-   > *"Good aptitude scores overall. Recommended for BSIT based on SA and VR performance."*
-3. Set recommended course: **BSIT**
-4. Click **Release**
-5. Do the same for **Danilo Espiritu Jr.**:
-   > *"Strong numerical ability. Recommended for BSCS."*
-6. Set recommended course: **BSCS**
-7. Release Danilo
-8. Optional: use **Bulk Release** to release both at once
+> **f2f shortcut:** If time is tight, skip counselor comments and use **Bulk Release**. Say: *"In practice, counselors review scores before releasing — we'll skip that step for time."*
 
-**Key talking point:** *"Release management is a deliberate step — counselors review scores before applicants can see results. Prevents premature disclosure."*
-
----
-
-### Step 7: Test Admin — View Session A Finalized Results
-
-**Login:** `analiza@securecat.local` / `password`
-**URL:** `http://localhost:8000/grading/sessions/{SESSION_A_GRADING_ID}`
-
-**What to show:**
-
-1. Open Session A grading — status: **Finalized**
-2. Show all three applicants with full scores:
-
-   | Applicant | SA | NA | VR | AR | LR | PSA | Result |
-   |-----------|----|----|----|----|----|----|--------|
-   | Juan Carlo Agustin | 22 | 20 | 21 | 17 | 20 | 16 | High — BSIT |
-   | Maricel Dacumos | 14 | 13 | 15 | 10 | 13 | 11 | Borderline — BSCS |
-   | Reynaldo Soriano | 8 | 9 | 7 | 6 | 8 | 7 | Low — retake advised |
-
-3. Show that consultation summaries are already released for all three
-4. **Highlight:** *"The system supports three outcomes — pass with recommendation, borderline, and retake advised."*
+*"Release management is deliberate — counselors review scores before applicants see results. Prevents premature disclosure."*
 
 ---
 
-### Step 8: Print Result Sheets & Admission Slips
+## ACT 5 — Portal Reveal (~4 min)
 
-**Login:** `analiza@securecat.local` / `password`
-**URL:** `http://localhost:8000/grading/sessions/{SESSION_A_GRADING_ID}/print`
-
-**What to show:**
-
-1. Go to the Print view for Session A
-2. Show the **result sheet preview** for Juan — formatted with scores per domain
-3. Click **Print** (browser print dialog)
-4. Go back to Applications → open Juan's application → show **Admission Slip** button
-5. Preview/print the admission slip
-
-**Key talking point:** *"All printable outputs are generated from live data — no manual formatting. The template is configurable by the super admin."*
+> *"Now let's see what just happened on the applicant's side — immediately after that release."*
 
 ---
 
-### Step 9: Applicant Portal — Juan Views His Result
+### Step 10: Rowena Sees Her Just-Released Result
 
-**Browser B — URL:** `http://localhost:8000/portal/login`
+**Browser B → `http://localhost:8000/login`**
+**Login:** `rowena.ballesteros@ispsc-demo.local` / `password`
+
+1. Dashboard shows result status: **Released**
+2. Recommended course: **BSIT**
+3. Counselor comments visible
+
+*"Rowena's result was released 30 seconds ago. No delay, no batch job — the system is live."*
+
+---
+
+### Step 11: Juan Views Session A Results
+
+**Browser B → `http://localhost:8000/login`**
 **Login:** `juan.agustin@ispsc-demo.local` / `password`
 
-**What to show:**
+1. Dashboard shows Session A result — **Released**
+2. Full scores per aptitude area, counselor comments, recommended course: **BSIT**
 
-1. Login to the applicant portal
-2. Dashboard shows Session A result — status: **Released**
-3. Recommended course: **BSIT**
-4. Counselor comments: *"Excellent performance. Highly recommended for BSIT."*
-5. **Point out:** Applicant can see their result independently — no need to come to the office
+*"Session A was finalized days ago. Applicants can view results any time after release — no office visit needed."*
 
 ---
 
-### Step 9B: AI Companion — Applicant Asks Questions (bonus — impressive)
+### Step 11B: AI Companion *(bonus — impressive)*
 
-**Same login as Step 9**
+**Browser B (same login as Juan)**
 **URL:** `http://localhost:8000/portal/ai-companion`
 
-**What to show:**
+1. Ask: *"What does BSIT involve?"* or *"What do my scores mean?"*
+2. Show contextual AI response (ISPSC-aware)
 
-1. Open the AI Companion tab in Juan's portal
-2. Ask a question like:
-   - *"What does BSIT involve?"*
-   - *"What should I prepare for enrollment?"*
-   - *"What do my scores mean?"*
-3. Show the AI response (contextual, aware of ISPSC)
-4. **Point out:** *"The AI companion is configured by the admin with ISPSC-specific knowledge documents — it gives relevant, localized answers."*
+*"The AI companion is configured with ISPSC-specific knowledge — it gives relevant, localized answers."*
 
 ---
 
-### Step 10: Applicant Portal — Lorena Checks Today's Exam
+### Step 12: Lorena Checks Today's Exam
 
-**Browser B — URL:** `http://localhost:8000/portal/login`
+**Browser B → `http://localhost:8000/login`**
 **Login:** `lorena.tamayo@ispsc-demo.local` / `password`
 
-**What to show:**
-
-1. Dashboard shows Session C — status: **Published** (today's exam)
+1. Dashboard shows Session C — **Published** (today's exam)
 2. Shows: room (Main Building / Room 102), time (9:00 AM – 11:00 AM), proctor name
-3. **Point out:** *"Once the admin publishes a session, assigned applicants immediately see their exam details in the portal — no separate notification needed."*
+
+*"Once the admin publishes a session, assigned examinees immediately see their exam details — no separate notification needed."*
 
 ---
 
-### Step 11: Staff Login — Both Methods
+## ACT 6 — Admin Tools *(bonus, ~3 min)*
 
-**URL:** `http://localhost:8000/login`
-
-**What to show:**
-
-#### Method A: Email + Password
-1. Enter: `maria@securecat.local` / `password`
-2. Login → redirects to dashboard
-3. **Point out:** Standard credential login with role-based access
-
-#### Method B: Google Sign-In *(if Google OAuth is configured)*
-1. On the Staff tab, show the **"Sign in with Google"** button
-2. Click → redirects to Google's consent screen
-3. **Point out:** *"Staff can link their institutional Google account for one-click login. The system matches by email — no new registration needed."*
-4. After login: show the user is logged in with their role intact
-
-> **Note:** Google Sign-In requires `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, and `GOOGLE_REDIRECT_URI` in `.env`. The button only appears when these are configured.
+> *"Finally, let's look at what the super admin sees."*
 
 ---
 
-### Step 12: Super Admin — Audit Logs (bonus)
+### Step 13: View Session A Finalized Results
 
-**Login:** `admin@securecat.local` / `password`
+**Browser A — Login:** `analiza@securecat.local` / `password`
+**URL:** `http://localhost:8000/grading/sessions/{SESSION_A_GRADING_ID}`
+
+Show the 3 score profiles:
+
+| Applicant | SA | NA | VR | AR | LR | PSA | Outcome |
+|-----------|----|----|----|----|----|----|---------|
+| Juan Carlo Agustin | 22 | 20 | 21 | 17 | 20 | 16 | High — BSIT |
+| Maricel Dacumos | 14 | 13 | 15 | 10 | 13 | 11 | Borderline — BSCS |
+| Reynaldo Soriano | 8 | 9 | 7 | 6 | 8 | 7 | Low — retake advised |
+
+*"The system supports three outcomes — pass with recommendation, borderline, and retake advised."*
+
+---
+
+### Step 14: Print Result Sheets
+
+**Browser A (same login) → Session A print view**
+
+1. Show result sheet preview for Juan — formatted with scores per domain
+2. Click **Print** (browser print dialog)
+
+*"All printable outputs are generated from live data — no manual formatting."*
+
+---
+
+### Step 15: Staff Login — Both Methods
+
+**Browser A → `http://localhost:8000/login`**
+
+- **Method A:** `maria@securecat.local` / `password` → email + password login
+- **Method B *(if configured)*:** Google Sign-In button → one-click with institutional Google account
+
+---
+
+### Step 16: Audit Logs
+
+**Browser A — Login:** `admin@securecat.local` / `password`
 **URL:** `http://localhost:8000/admin/logs`
 
-**What to show:**
+1. Full audit trail of everything done during the demo
+2. Filter by user — show Maria's accepts
+3. Export to CSV
 
-1. Full audit log of all actions during the demo
-2. Filter by user — show Maria's application accepts
-3. Filter by event type
-4. Export to CSV
-5. **Point out:** *"Every state-changing action is logged with the user, timestamp, and before/after values — full traceability for institutional accountability."*
+*"Every state-changing action is logged with user, timestamp, and before/after values — full traceability."*
 
 ---
 
-### Step 13: Super Admin — System Settings (bonus)
+### Step 17: System Settings
 
-**Login:** `admin@securecat.local` / `password`
+**Browser A (same login)**
 **URL:** `http://localhost:8000/admin/settings`
 
-**What to show:**
+- AI Companion toggle, release mode settings
+- *"System behavior is configurable without touching code."*
 
-- AI Companion enable/disable toggle
-- Release mode settings
-- **Point out:** *"System behavior can be configured without touching code."*
+---
+
+## Timing Guide
+
+| Act | Core | With bonus |
+|-----|------|-----------|
+| Act 1 — Application Lifecycle | ~5 min | — |
+| Act 2 — Exam Administration | ~4 min | +2 min AI scheduler |
+| Act 3 — Live Exam | ~3 min | — |
+| Act 4 — Scoring & Release | ~5 min | — |
+| Act 5 — Portal Reveal | ~4 min | +2 min AI companion |
+| Act 6 — Admin Tools | — | ~3 min |
+| **Total** | **~21 min** | **~28 min** |
 
 ---
 
@@ -415,7 +426,7 @@ Fill in the form using this data:
 | `admin` | `josefina@securecat.local` | `password` | Sessions, scheduling, AI assistant |
 | `staff` | `maria@securecat.local` | `password` | Application review & acceptance |
 | `proctor` | `eduardo@securecat.local` | `password` | Attendance marking (Session C) |
-| `test_administrator` | `analiza@securecat.local` | `password` | Grading, scoring, result release |
+| `registrar_administrator` | `analiza@securecat.local` | `password` | Grading, scoring, result release |
 
 ### Applicant Portal Accounts
 
@@ -424,8 +435,8 @@ Fill in the form using this data:
 | Juan Carlo Agustin | `juan.agustin@ispsc-demo.local` | `password` | Session A — result **released** ✓ |
 | Maricel Dacumos | `maricel.dacumos@ispsc-demo.local` | `password` | Session A — result **released** ✓ |
 | Reynaldo Soriano | `reynaldo.soriano@ispsc-demo.local` | `password` | Session A — result **released** ✓ |
-| Rowena Ballesteros | `rowena.ballesteros@ispsc-demo.local` | `password` | Session B — pending release |
-| Danilo Espiritu Jr. | `danilo.espiritu@ispsc-demo.local` | `password` | Session B — pending release |
+| Rowena Ballesteros | `rowena.ballesteros@ispsc-demo.local` | `password` | Session B — release live in Step 9 |
+| Danilo Espiritu Jr. | `danilo.espiritu@ispsc-demo.local` | `password` | Session B — release live in Step 9 |
 | Lorena Tamayo | `lorena.tamayo@ispsc-demo.local` | `password` | Session C — today's exam |
 | Roberto Libed | `roberto.libed@ispsc-demo.local` | `password` | Session C — pending attendance |
 | Maribel Pagulayan | `maribel.pagulayan@ispsc-demo.local` | `password` | Session C — pending attendance |
@@ -434,7 +445,7 @@ Fill in the form using this data:
 | Virgilio Castillo | `virgilio.castillo@ispsc-demo.local` | `password` | Accepted — unassigned |
 | Erlinda De Vera | `erlinda.devera@ispsc-demo.local` | `password` | Accepted — unassigned |
 
-> **Note:** 8 additional applicants (pending, dismissed, incomplete_documents) have **no portal account** — portal access is granted only after staff acceptance.
+> **Note:** 8 additional applicants (pending, dismissed, incomplete docs) have **no portal account** — access is granted only after staff acceptance.
 
 ---
 
@@ -451,12 +462,12 @@ Fill in the form using this data:
 
 ### Sessions
 
-| Session | Date | Room | Status | Applicants |
-|---------|------|------|--------|------------|
+| Session | Date | Room | Status | Examinees |
+|---------|------|------|--------|-----------|
 | Session A | Today − 14 days | Main Building / Room 101 | `completed` | Juan, Maricel, Reynaldo |
 | Session B | Today − 5 days | Academic Building / Room 201 | `completed` | Rowena, Danilo |
 | Session C | **Today** | Main Building / Room 102 | `published` | Lorena *(present)*, Roberto, Maribel, Arturo |
-| Session D | Today + 5 days | Vocational Building / Lab Room 1 | `published` | *(empty — assign live in demo)* |
+| Session D | Today + 5 days | Vocational Building / lab Room 1 | `published` | *(empty — assign live in Step 5)* |
 
 ### Consultation Summaries
 
@@ -465,34 +476,31 @@ Fill in the form using this data:
 | Juan Carlo Agustin | `released` | BSIT — *"Excellent performance"* |
 | Maricel Dacumos | `released` | BSCS — *"Borderline scores"* |
 | Reynaldo Soriano | `released` | BSIT — *"Low scores. Advised to retake."* |
-| Rowena Ballesteros | `pending` | BSIT *(release live in Step 6)* |
-| Danilo Espiritu Jr. | `pending` | BSCS *(release live in Step 6)* |
+| Rowena Ballesteros | `pending` | *(enter live in Step 9 — BSIT)* |
+| Danilo Espiritu Jr. | `pending` | *(enter live in Step 9 — BSCS)* |
 
 ---
 
 ## Test Suite
 
 ```bash
-# Run the full integration test suite
-php artisan test tests/Feature/DefenseDemoSeederTest.php
-
-# Run with verbose output
-php artisan test tests/Feature/DefenseDemoSeederTest.php -v
+# Run the DefenseDemoSeeder integration tests
+php artisan test --compact tests/Feature/DefenseDemoSeederTest.php
 
 # Run a specific test
-php artisan test tests/Feature/DefenseDemoSeederTest.php --filter="session_a"
+php artisan test --compact tests/Feature/DefenseDemoSeederTest.php --filter=session_a
 
-# Run full suite (all tests)
-php artisan test
+# Run full suite
+php artisan test --compact
 ```
 
-**Expected:** 10/10 DefenseDemoSeeder tests PASS.
+**Expected:** All DefenseDemoSeeder tests PASS.
 
 ---
 
-## Google Sign-In Setup (optional — for Step 11B)
+## Google Sign-In Setup (optional — for Step 15)
 
-To enable Google Sign-In during the defense, add to `.env`:
+Add to `.env`:
 
 ```ini
 GOOGLE_CLIENT_ID=your-client-id
@@ -500,11 +508,7 @@ GOOGLE_CLIENT_SECRET=your-client-secret
 GOOGLE_REDIRECT_URI=http://localhost:8000/auth/google/callback
 ```
 
-Then restart: `php artisan serve`
-
-The **"Sign in with Google"** button will appear on the Staff tab at `/login`. Without these values, the feature is silently hidden — no errors, no broken UI.
-
-> See `docs/superpowers/plans/2026-04-09-google-signin.md` for full implementation details.
+Restart: `php artisan serve`. The Sign-In button appears on the Staff tab. Without these values, the button is silently hidden.
 
 ---
 
@@ -512,10 +516,11 @@ The **"Sign in with Google"** button will appear on the Staff tab at `/login`. W
 
 | Problem | Fix |
 |---------|-----|
-| "Database empty / seeder counts wrong" | Re-run: `php artisan migrate:fresh --seed --seeder=DatabaseSeeder && php artisan db:seed --class=DefenseDemoSeeder` |
-| "Login fails for staff" | Verify `DefenseDemoSeeder` ran — check `users` table for `maria@securecat.local` |
+| "DEMO is not enabled" | Add `DEMO=true` to `.env`, then re-run |
+| "Database empty / counts wrong" | Re-run: `php artisan demo:setup` |
+| "Login fails for staff" | Verify seeder ran — check `users` table for `maria@securecat.local` |
 | "Portal login fails" | Only accepted applicants have portal accounts — check application status |
-| "Session C has wrong applicants" | Re-run `DefenseDemoSeeder` — it uses `updateOrCreate` and is idempotent |
+| "Session C has wrong examinees" | Re-run `php artisan demo:setup` — idempotent via `updateOrCreate` |
 | "Google button not showing" | Check `.env` for `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET` |
 | "AI Companion not responding" | Check `OPENAI_API_KEY` or configured AI provider in `.env` |
-| "Print page blank" | Ensure `AdmissionSlipTemplateSeeder` ran (part of `DatabaseSeeder`) |
+| "Mailpit has no emails" | Confirm `MAIL_MAILER=smtp` and `MAIL_PORT=1025` in `.env` |
