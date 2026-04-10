@@ -75,7 +75,7 @@ class HandleInertiaRequests extends Middleware
             'admin.users.index' => 'Users',
             'admin.settings.index' => 'Settings',
             'admin.logs.index' => 'Audit log',
-            'admin.seasons.index' => 'Seasons',
+            'admin.academic-years.index' => 'Academic Years',
             'admin.aptitude-areas.index' => 'Aptitude Areas',
             'admin.ai-companion.index' => 'AI Companion',
             'admin.admission-slip-templates.index' => 'Admission slip templates',

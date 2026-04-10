@@ -25,7 +25,7 @@
       });
     }
   }
-const breadcrumbs = [{ label: 'Academic Years', href: '/admin/seasons' }, { label: 'Courses' }];
+const breadcrumbs = [{ label: 'Academic Years', href: '/admin/academic-years' }, { label: 'Courses' }];
 </script>
 
 <AuthenticatedLayout {breadcrumbs}>
