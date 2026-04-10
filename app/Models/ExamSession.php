@@ -2,21 +2,25 @@
 
 namespace App\Models;
 
-use App\Models\Applicant;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class ExamSession extends Model
 {
     use HasFactory;
 
     public const STATUS_DRAFT = 'draft';
+
     public const STATUS_PUBLISHED = 'published';
+
     public const STATUS_IN_PROGRESS = 'in_progress';
+
     public const STATUS_COMPLETED = 'completed';
+
     public const STATUS_CANCELLED = 'cancelled';
 
     protected $fillable = [
@@ -91,7 +95,7 @@ class ExamSession extends Model
         return $this->belongsTo(User::class, 'created_by');
     }
 
-    public function gradingSession(): \Illuminate\Database\Eloquent\Relations\HasOne
+    public function gradingSession(): HasOne
     {
         return $this->hasOne(GradingSession::class);
     }
@@ -112,13 +116,13 @@ class ExamSession extends Model
 
         $sessions = $query->get(['id', 'start_time', 'end_time']);
 
-        $start = \Carbon\Carbon::parse($startTime)->format('H:i:s');
-        $end = $endTime ? \Carbon\Carbon::parse($endTime)->format('H:i:s') : '23:59:59';
+        $start = Carbon::parse($startTime)->format('H:i:s');
+        $end = $endTime ? Carbon::parse($endTime)->format('H:i:s') : '23:59:59';
 
         foreach ($sessions as $session) {
-            $otherStart = \Carbon\Carbon::parse($session->start_time)->format('H:i:s');
+            $otherStart = Carbon::parse($session->start_time)->format('H:i:s');
             $otherEnd = $session->end_time
-                ? \Carbon\Carbon::parse($session->end_time)->format('H:i:s')
+                ? Carbon::parse($session->end_time)->format('H:i:s')
                 : '23:59:59';
             if ($start < $otherEnd && $end > $otherStart) {
                 return true;
@@ -146,5 +150,45 @@ class ExamSession extends Model
         $windowEnd = Carbon::parse($dateStr.' '.($this->end_time ?? '23:59'), config('app.timezone', 'UTC'))->addMinutes($graceMinutesAfterEnd);
 
         return $now->between($windowStart, $windowEnd);
+    }
+
+    /**
+     * True when the current time is between the session's start_time and end_time.
+     * If no end_time is set, any time after start is considered within window.
+     */
+    public function isWithinExamWindow(?Carbon $now = null): bool
+    {
+        $now ??= Carbon::now();
+        $sessionDate = Carbon::parse($this->date);
+        $start = $sessionDate->copy()->setTimeFromTimeString($this->start_time);
+
+        if ($now->lt($start)) {
+            return false;
+        }
+
+        if (! $this->end_time) {
+            return true;
+        }
+
+        $end = $sessionDate->copy()->setTimeFromTimeString($this->end_time);
+
+        return $now->lte($end);
+    }
+
+    /**
+     * True when the current time is past the session's end_time.
+     * Returns false when end_time is not set (open-ended sessions never expire).
+     */
+    public function isPastEndTime(?Carbon $now = null): bool
+    {
+        if (! $this->end_time) {
+            return false;
+        }
+
+        $now ??= Carbon::now();
+        $sessionDate = Carbon::parse($this->date);
+        $end = $sessionDate->copy()->setTimeFromTimeString($this->end_time);
+
+        return $now->gt($end);
     }
 }
