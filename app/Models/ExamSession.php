@@ -158,8 +158,9 @@ class ExamSession extends Model
      */
     public function isWithinExamWindow(?Carbon $now = null): bool
     {
-        $now ??= Carbon::now();
-        $sessionDate = Carbon::parse($this->date);
+        $tz = config('app.timezone', 'UTC');
+        $now ??= Carbon::now($tz);
+        $sessionDate = Carbon::parse($this->date)->tz($tz);
         $start = $sessionDate->copy()->setTimeFromTimeString($this->start_time);
 
         if ($now->lt($start)) {
@@ -185,8 +186,9 @@ class ExamSession extends Model
             return false;
         }
 
-        $now ??= Carbon::now();
-        $sessionDate = Carbon::parse($this->date);
+        $tz = config('app.timezone', 'UTC');
+        $now ??= Carbon::now($tz);
+        $sessionDate = Carbon::parse($this->date)->tz($tz);
         $end = $sessionDate->copy()->setTimeFromTimeString($this->end_time);
 
         return $now->gt($end);
