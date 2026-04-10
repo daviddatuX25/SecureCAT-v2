@@ -19,11 +19,12 @@
     if (!open) return;
     if (buttonEl && buttonEl.contains(e.target)) return;
     if (panelEl && panelEl.contains(e.target)) return;
+    e.preventDefault();
     open = false;
   }
 </script>
 
-<svelte:window onkeydown={handleKeydown} onclick={handleOutsideClick} />
+<svelte:window onkeydown={handleKeydown} onmousedown={handleOutsideClick} />
 
 <span class="relative inline-flex items-center gap-1">
   {#if label}
