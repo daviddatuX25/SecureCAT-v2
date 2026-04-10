@@ -196,9 +196,14 @@
   const outsideStartWindow = $derived(session.status === 'published' && session.is_within_start_window === false);
   const showAdminOverrideHint = $derived(outsideStartWindow && session.can_override_schedule === true);
   const canMarkAttendance = $derived(
-    session.status === 'published' || session.status === 'in_progress'
+    (session.status === 'published' || session.status === 'in_progress')
+    && !session.is_past_end
   );
-  const canLogSubmission = $derived(session.status === 'in_progress');
+  const canLogSubmission = $derived(
+    (session.status === 'in_progress' ||
+      (session.status === 'published' && session.is_within_window))
+    && !session.is_past_end
+  );
   const canBulkSubmit = $derived(
     session.status === 'in_progress' && (stats.present_pending_submission ?? 0) > 0
   );
@@ -356,6 +361,11 @@
           </Button>
         {/if}
       </div>
+      {#if session.is_past_end}
+        <div class="mt-3 rounded-lg bg-destructive/10 px-4 py-3 text-sm text-destructive">
+          The exam window has ended. Attendance and submission actions are locked.
+        </div>
+      {/if}
       {#if filteredApplicants.length > 0}
         <div class="mt-4 overflow-x-auto">
           <table class="w-full text-sm">
