@@ -1,11 +1,19 @@
 <script>
   import HomeLayout from '@/Layouts/HomeLayout.svelte';
+  import { onMount } from 'svelte';
   import { useForm, usePage, Link } from '@inertiajs/svelte';
   import { Button } from '@/Components/ui/button';
   import { Input } from '@/Components/ui/input';
   import * as Card from '@/Components/ui/card';
 
   let activeTab = $state('applicant'); // 'applicant' or 'staff'
+
+  onMount(() => {
+    const saved = localStorage.getItem('loginTab');
+    if (saved === 'applicant' || saved === 'staff') {
+      activeTab = saved;
+    }
+  });
 
   // Applicant form pointing to portal
   const applicantForm = useForm({
@@ -63,7 +71,7 @@
         <button
           type="button"
           class="flex-1 py-3 text-sm font-bold relative z-10 transition-colors flex items-center justify-center gap-2 {activeTab === 'applicant' ? 'text-primary' : 'text-muted-foreground hover:text-foreground'}"
-          onclick={() => (activeTab = 'applicant')}
+          onclick={() => { activeTab = 'applicant'; localStorage.setItem('loginTab', 'applicant'); }}
         >
           <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
             <path stroke-linecap="round" stroke-linejoin="round" d="M12 14l9-5-9-5-9 5 9 5z M12 14v7M5 10v7a7 7 0 0014 0v-7" />
@@ -74,7 +82,7 @@
         <button
           type="button"
           class="flex-1 py-3 text-sm font-bold relative z-10 transition-colors flex items-center justify-center gap-2 {activeTab === 'staff' ? 'text-primary' : 'text-muted-foreground hover:text-foreground'}"
-          onclick={() => (activeTab = 'staff')}
+          onclick={() => { activeTab = 'staff'; localStorage.setItem('loginTab', 'staff'); }}
         >
           <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
             <path stroke-linecap="round" stroke-linejoin="round" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
