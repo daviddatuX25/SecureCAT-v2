@@ -50,7 +50,9 @@ class AppServiceProvider extends ServiceProvider
             if (config('demo.enabled') && config('demo.throttle_decay_seconds') !== null) {
                 $seconds = (int) config('demo.throttle_decay_seconds');
 
-                return Limit::perSeconds($seconds, $attempts)
+                $decayMinutes = max(1, (int) ceil($seconds / 60));
+
+                return Limit::perMinutes($decayMinutes, $attempts)
                     ->by($request->ip())
                     ->response(fn () => back()->withErrors([
                         'email' => "Too many login attempts. Please try again in {$seconds} seconds.",

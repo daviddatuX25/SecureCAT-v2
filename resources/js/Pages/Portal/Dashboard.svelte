@@ -88,18 +88,6 @@
         </Card.Root>
       {/if}
 
-      <!-- Consultation Summary if released -->
-      {#if consultation.status === 'released' && consultation.summary}
-        <Card.Root>
-          <Card.Header>
-            <Card.Title>Consultation</Card.Title>
-            <Card.Description>Your consultation summary is available</Card.Description>
-          </Card.Header>
-          <Card.Content>
-            <!-- Summary content when released -->
-          </Card.Content>
-        </Card.Root>
-      {/if}
     </div>
 
     <!-- Right Column: Sidebar -->
@@ -140,7 +128,7 @@
           <Card.Header>
             <Card.Title class="text-lg">Score Release</Card.Title>
             <Card.Description>
-              Results will be available on <strong class="text-foreground">{score_release.release_date}</strong>.
+              Results will be released on <strong class="text-foreground">{score_release.release_date}</strong>.
             </Card.Description>
           </Card.Header>
         </Card.Root>

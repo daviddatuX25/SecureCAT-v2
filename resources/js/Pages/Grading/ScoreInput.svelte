@@ -85,7 +85,7 @@
           <User class="h-5 w-5" />
           {applicant.name}
         </CardTitle>
-        <CardDescription>Reference: {applicant.reference} · Enter raw score per domain (items correct).</CardDescription>
+        <CardDescription>Reference: {applicant.reference} · Enter raw score per aptitude area (items correct).</CardDescription>
       </CardHeader>
       <CardContent class="space-y-6">
         <!-- Domain score inputs -->

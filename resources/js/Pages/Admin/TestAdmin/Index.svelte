@@ -99,7 +99,7 @@
                       class="inline-flex items-center gap-1.5 rounded-md bg-primary px-3 py-2 text-xs font-semibold text-primary-foreground hover:bg-primary/90 min-h-[36px] transition-colors"
                     >
                       <ClipboardList class="h-3.5 w-3.5" />
-                      Open roster
+                      Open examinees
                     </Link>
                   </td>
                 </tr>

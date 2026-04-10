@@ -85,7 +85,7 @@
     <Card>
       <CardHeader>
         <CardTitle>Applicants</CardTitle>
-        <CardDescription>Click an applicant to input or edit domain scores.</CardDescription>
+        <CardDescription>Click an applicant to input or edit aptitude area scores.</CardDescription>
       </CardHeader>
       <CardContent>
         <div class="rounded-lg border border-border overflow-hidden min-w-0">
@@ -110,7 +110,7 @@
                         Complete
                       </Badge>
                     {:else if app.domains_complete > 0}
-                      <Badge variant="warning">{app.domains_complete} / 6 domains</Badge>
+                      <Badge variant="warning">{app.domains_complete} / 6 aptitude areas</Badge>
                     {:else}
                       <Badge variant="muted" class="gap-1">
                         <Circle class="h-3 w-3" />

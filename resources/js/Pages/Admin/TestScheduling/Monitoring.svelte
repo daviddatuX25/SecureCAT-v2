@@ -82,7 +82,7 @@
                       class="inline-flex items-center gap-1.5 text-sm font-medium text-primary hover:underline min-h-[44px] min-w-[44px] items-center"
                     >
                       <ClipboardList class="h-4 w-4" />
-                      Roster
+                      Examinees
                     </Link>
                   </Table.Cell>
                 </Table.Row>

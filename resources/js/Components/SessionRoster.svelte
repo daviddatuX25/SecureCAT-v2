@@ -287,7 +287,7 @@
 
   <!-- Session info card -->
   <div class="rounded-lg border border-border bg-card p-6">
-    <h1 class="text-2xl font-bold">Session Roster</h1>
+    <h1 class="text-2xl font-bold">Session Examinees</h1>
     <dl class="mt-4 grid gap-3 sm:grid-cols-2">
       <div>
         <dt class="text-sm text-muted-foreground">Date</dt>
