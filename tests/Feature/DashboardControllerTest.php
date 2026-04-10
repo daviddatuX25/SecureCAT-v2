@@ -73,4 +73,40 @@ class DashboardControllerTest extends TestCase
                 ->has('sessionStats')
             );
     }
+
+    public function test_proctor_does_not_see_grading_stats(): void
+    {
+        $role = Role::query()->create([
+            'name' => 'proctor',
+            'display_name' => 'Proctor',
+            'description' => null,
+        ]);
+
+        $proctor = User::factory()->create();
+        $proctor->roles()->attach($role);
+
+        $this->actingAs($proctor)
+            ->get('/dashboard')
+            ->assertInertia(fn (AssertableInertia $page) => $page
+                ->where('gradingStats', [])
+            );
+    }
+
+    public function test_test_administrator_sees_grading_stats(): void
+    {
+        $role = Role::query()->firstOrCreate([
+            'name' => 'test_administrator',
+            'display_name' => 'Test Administrator',
+            'description' => 'Guidance office, inputs scores and releases consultations',
+        ]);
+
+        $ta = User::factory()->create();
+        $ta->roles()->attach($role);
+
+        $this->actingAs($ta)
+            ->get('/dashboard')
+            ->assertInertia(fn (AssertableInertia $page) => $page
+                ->has('gradingStats')
+            );
+    }
 }
