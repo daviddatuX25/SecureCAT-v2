@@ -40,7 +40,7 @@
     description="Apply online, log in to the applicant portal, or sign in as staff."
     actions={[
       { label: 'Apply Online', href: '/apply', variant: 'default' },
-      { label: 'Applicant Portal', href: '/portal/login', variant: 'outline' },
+      { label: 'Applicant Portal', href: '/login', variant: 'outline' },
       { label: 'Staff Login', href: '/login', variant: 'outline' },
     ]}
   />
@@ -57,7 +57,7 @@
     <p>
       <Link href="/apply" class="text-primary hover:underline">Apply online</Link>
       {' | '}
-      <Link href="/portal/login" class="text-primary hover:underline">Applicant portal</Link>
+      <Link href="/login" class="text-primary hover:underline">Applicant portal</Link>
       {' | '}
       <Link href="/login" class="text-primary hover:underline">Staff login</Link>
     </p>

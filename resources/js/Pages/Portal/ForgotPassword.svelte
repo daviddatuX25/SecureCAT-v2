@@ -57,7 +57,7 @@
       </form>
 
       <p class="mt-4 text-center text-sm text-muted-foreground">
-        <Link href="/portal/login" class="text-primary hover:underline">Back to sign in</Link>
+        <Link href="/login" class="text-primary hover:underline">Back to sign in</Link>
       </p>
     </Card.Content>
   </Card.Root>
