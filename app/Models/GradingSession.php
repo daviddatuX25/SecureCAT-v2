@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -9,9 +10,14 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class GradingSession extends Model
 {
+    use HasFactory;
+
     public const STATUS_OPEN = 'open';
+
     public const STATUS_IN_PROGRESS = 'in_progress';
+
     public const STATUS_REVIEW = 'review';
+
     public const STATUS_FINALIZED = 'finalized';
 
     protected $fillable = [
