@@ -15,8 +15,9 @@ class UpdateSystemSettingsRequest extends FormRequest
     {
         return [
             'ai_exam_companion_enabled' => ['sometimes', 'boolean'],
-            'notify_on_publish'         => ['sometimes', 'boolean'],
-            'release_mode'              => ['sometimes', 'in:online,f2f,both'],
+            'notify_on_publish' => ['sometimes', 'boolean'],
+            'release_mode' => ['sometimes', 'in:online,f2f,both'],
+            'ai_companion_persona' => ['sometimes', 'nullable', 'string', 'max:5000'],
         ];
     }
 }

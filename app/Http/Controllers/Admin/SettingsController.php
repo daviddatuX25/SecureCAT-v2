@@ -21,8 +21,8 @@ class SettingsController extends Controller
 
         return Inertia::render('Admin/Settings/Index', [
             'ai_exam_companion_enabled' => SystemSetting::aiCompanionEnabled(),
-            'notify_on_publish'         => SystemSetting::notifyOnPublish(),
-            'release_mode'              => SystemSetting::releaseMode(),
+            'notify_on_publish' => SystemSetting::notifyOnPublish(),
+            'release_mode' => SystemSetting::releaseMode(),
         ]);
     }
 
@@ -42,7 +42,7 @@ class SettingsController extends Controller
         }
 
         if (array_key_exists('ai_companion_persona', $validated)) {
-            SystemSetting::set('ai_companion_persona', $validated['ai_companion_persona'] ?? '');
+            SystemSetting::set('ai_companion_persona', preg_replace('/<script[^>]*>.*?<\/script>/is', '', $validated['ai_companion_persona'] ?? ''));
         }
 
         if (array_key_exists('consultation_enabled', $validated)) {
