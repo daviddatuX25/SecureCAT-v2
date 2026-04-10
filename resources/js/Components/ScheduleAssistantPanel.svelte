@@ -33,9 +33,26 @@
     Object.fromEntries((draft_sessions ?? []).map((s) => [s.id, s]))
   );
 
+  /**
+   * Normalise a raw session object from the AI to the canonical field set.
+   * Tries multiple known aliases so the UI is robust to AI hallucinations.
+   */
+  function normalizeSession(s) {
+    return {
+      exam_session_id: s.exam_session_id ?? s.session_id ?? null,
+      room_id:        s.room_id   ?? s.roomId   ?? s.room?.id   ?? null,
+      room_name:      s.room_name ?? s.room?.name ?? null,
+      date:           s.date      ?? s.session_date ?? s.exam_date ?? null,
+      start_time:     s.start_time ?? s.startTime ?? s.time_start ?? null,
+      end_time:       s.end_time   ?? s.endTime   ?? s.time_end   ?? null,
+      applicant_ids:  s.applicant_ids ?? s.applicantIds ?? s.applicants ?? [],
+    };
+  }
+
   function getScheduleRows(schedule) {
     if (!schedule?.sessions?.length) return [];
-    return schedule.sessions.map((s) => {
+    return schedule.sessions.map((raw) => {
+      const s = normalizeSession(raw);
       if (s.exam_session_id) {
         const draft = draftMap[s.exam_session_id];
         return {
@@ -48,7 +65,7 @@
       }
       return {
         type: 'New',
-        room: roomMap[s.room_id]?.name ?? `Room ${s.room_id}`,
+        room: roomMap[s.room_id]?.name ?? s.room_name ?? `Room ${s.room_id ?? '?'}`,
         date: s.date ?? '—',
         time: [s.start_time, s.end_time].filter(Boolean).join('–') || '—',
         applicant_count: (s.applicant_ids ?? []).length,
