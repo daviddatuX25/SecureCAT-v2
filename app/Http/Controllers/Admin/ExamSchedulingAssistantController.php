@@ -110,6 +110,35 @@ class ExamSchedulingAssistantController extends Controller
                 ->all();
         }
 
+        $existingSessions = [];
+        if ($activeAcademicYear) {
+            $existingSessions = ExamSession::query()
+                ->where('status', '!=', ExamSession::STATUS_DRAFT)
+                ->forAcademicYear($activeAcademicYear)
+                ->with('room:id,name,building,capacity')
+                ->get()
+                ->map(fn ($s) => [
+                    'id' => $s->id,
+                    'room_id' => $s->room_id,
+                    'room' => $s->room ? [
+                        'name' => $s->room->name,
+                        'capacity' => $s->room->capacity,
+                    ] : ['name' => '?', 'capacity' => 0],
+                    'date' => $s->date?->format('Y-m-d'),
+                    'start_time' => $s->start_time,
+                    'end_time' => $s->end_time,
+                    'current_count' => $s->applicants()->count(),
+                    'capacity' => $s->room?->capacity ?? 0,
+                ])
+                ->values()
+                ->all();
+        }
+
+        Log::info('[AI-SCHEDULER-DEBUG] Existing sessions being sent to AI', [
+            'count' => count($existingSessions),
+            'sessions' => $existingSessions,
+        ]);
+
         $conversation = ExamSchedulingConversation::query()
             ->latestForUser($user->id)
             ->first();
