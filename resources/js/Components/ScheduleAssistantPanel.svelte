@@ -267,7 +267,7 @@
                     {msg.content}
                   </div>
                 {/if}
-                {#if msg.schedule?.sessions?.length}
+                {#if msg.schedule?.sessions?.length && !structuredSchedule}
                   <div class="rounded-lg border border-border bg-background overflow-hidden max-w-[85%] mt-1">
                     <p class="text-xs font-medium text-muted-foreground px-3 py-2 border-b border-border">Generated schedule</p>
                     <Table.Root>
@@ -334,6 +334,11 @@
             Generate schedule
           {/if}
         </Button>
+        {#if !canGenerate}
+          <p class="text-xs text-muted-foreground w-full md:w-auto">
+            Send a message and get a reply first to unlock Generate schedule.
+          </p>
+        {/if}
       </div>
     </Card.Content>
   </Card.Root>
