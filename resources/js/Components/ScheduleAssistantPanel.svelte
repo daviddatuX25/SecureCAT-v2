@@ -206,10 +206,6 @@
       <Sparkles class="w-5 h-5 text-primary" />
       <h2 class="text-lg font-bold text-foreground">Schedule with AI</h2>
     </div>
-    <p class="text-sm text-muted-foreground">
-      Describe your scheduling needs (e.g. morning slots only, 9–12, next week). The assistant will suggest options.
-      When ready, click <strong>Generate schedule</strong> to get a structured plan, then <strong>Apply schedule</strong> to create sessions and assign applicants.
-    </p>
     <div class="flex flex-wrap gap-4 text-sm">
       <span class="flex items-center gap-1.5">
         <Calendar class="w-4 h-4 text-muted-foreground" />
@@ -239,12 +235,7 @@
         <MessageSquare class="h-5 w-5" />
         Conversation
       </Card.Title>
-      <Card.Description>
-        Chat with the assistant to refine your schedule. After you get a reply, <strong>Generate schedule</strong> unlocks so you can get a structured plan. The generated schedule appears here in the chat and in the table below. Then use <strong>Apply schedule</strong> to create sessions.
-      </Card.Description>
-    </Card.Header>
-    <Card.Content class="space-y-4">
-      {#if error}
+      <Card.Title class="flex items-center gap-2">
         <p class="text-sm text-destructive rounded-md bg-destructive/10 px-3 py-2">{error}</p>
       {/if}
 
@@ -319,25 +310,22 @@
             {/if}
           </Button>
         </div>
-        <Button
-          type="button"
-          variant="secondary"
-          onclick={() => send(true)}
-          disabled={!canGenerate || loading || generating}
-          class="min-h-[44px] w-full md:w-auto shrink-0"
-          title={generateButtonTitle}
-        >
-          {#if generating}
-            Generating…
-          {:else}
-            <Sparkles class="h-4 w-4 mr-2 inline" />
-            Generate schedule
-          {/if}
-        </Button>
-        {#if !canGenerate}
-          <p class="text-xs text-muted-foreground w-full md:w-auto">
-            Send a message and get a reply first to unlock Generate schedule.
-          </p>
+        {#if hasReplyThisSession}
+          <Button
+            type="button"
+            variant="secondary"
+            onclick={() => send(true)}
+            disabled={!canGenerate || loading || generating}
+            class="min-h-[44px] w-full md:w-auto shrink-0"
+            title={generateButtonTitle}
+          >
+            {#if generating}
+              Generating…
+            {:else}
+              <Sparkles class="h-4 w-4 mr-2 inline" />
+              Generate schedule
+            {/if}
+          </Button>
         {/if}
       </div>
     </Card.Content>

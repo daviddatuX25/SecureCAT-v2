@@ -274,7 +274,7 @@ class ApplicationController extends Controller
             $applicant = Applicant::where('application_id', $application->id)->first();
             if (! $applicant) {
                 $setupToken = Applicant::generateSetupToken();
-                $expiresAt = now()->addHours(72);
+                $expiresAt = now()->addHours(config('auth.setup_token_expires_hours', 72));
                 $applicant = Applicant::create([
                     'application_id' => $application->id,
                     'email' => $application->email,
@@ -324,7 +324,7 @@ class ApplicationController extends Controller
         }
 
         $applicant->setup_token = Applicant::generateSetupToken();
-        $applicant->setup_token_expires_at = now()->addHours(72);
+        $applicant->setup_token_expires_at = now()->addHours(config('auth.setup_token_expires_hours', 72));
         $applicant->save();
 
         SendApplicantSetupEmail::dispatch($applicant);

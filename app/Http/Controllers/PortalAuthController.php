@@ -7,8 +7,13 @@ use App\Http\Requests\PortalLoginRequest;
 use App\Http\Requests\PortalSetupRequest;
 use App\Mail\ApplicantResetPasswordMail;
 use App\Models\Applicant;
+use App\Models\Application;
+use App\Models\ConsultationSummary;
+use App\Models\ExamSession;
+use App\Models\GradingSession;
 use App\Models\SystemSetting;
 use App\Services\AuditService;
+use Carbon\Carbon;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Notifications\DatabaseNotification;
@@ -16,6 +21,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -152,7 +158,7 @@ class PortalAuthController extends Controller
 
         if ($applicant && $applicant->hasCompletedSetup()) {
             $token = Str::random(64);
-            $expiresAt = now()->addMinutes(15);
+            $expiresAt = now()->addMinutes(config('auth.reset_token_expires_minutes', 15));
 
             DB::table('applicant_password_reset_tokens')->upsert(
                 [
@@ -164,7 +170,7 @@ class PortalAuthController extends Controller
                 ['token', 'expires_at']
             );
 
-            \Illuminate\Support\Facades\Mail::to($applicant->email)->send(new ApplicantResetPasswordMail($applicant, $token));
+            Mail::to($applicant->email)->send(new ApplicantResetPasswordMail($applicant, $token));
         }
 
         return back()->with('success', 'If an account exists for that email, we have sent password reset instructions.');
@@ -236,7 +242,7 @@ class PortalAuthController extends Controller
 
         $application = $applicant->application;
         $name = $application
-            ? trim(($application->first_name ?? '') . ' ' . ($application->middle_name ?? '') . ' ' . ($application->last_name ?? ''))
+            ? trim(($application->first_name ?? '').' '.($application->middle_name ?? '').' '.($application->last_name ?? ''))
             : $applicant->email;
         $referenceNumber = $application?->reference_number ?? '—';
 
@@ -307,11 +313,11 @@ class PortalAuthController extends Controller
      */
     private function buildStatusTracker(
         Applicant $applicant,
-        ?\App\Models\Application $application,
-        ?\App\Models\ExamSession $primarySession,
+        ?Application $application,
+        ?ExamSession $primarySession,
         $pivot,
-        ?\App\Models\GradingSession $gradingSession,
-        ?\App\Models\ConsultationSummary         $summary
+        ?GradingSession $gradingSession,
+        ?ConsultationSummary $summary
     ): array {
         $stages = [];
 
@@ -354,7 +360,7 @@ class PortalAuthController extends Controller
             'timestamp' => $pivot?->submitted_at?->format('M j, Y g:i A'),
         ];
 
-        $scoresFinalized = $gradingSession && $gradingSession->status === \App\Models\GradingSession::STATUS_FINALIZED;
+        $scoresFinalized = $gradingSession && $gradingSession->status === GradingSession::STATUS_FINALIZED;
         $stages[] = [
             'stage' => 'Scores processed',
             'completed' => (bool) $scoresFinalized,
@@ -385,7 +391,7 @@ class PortalAuthController extends Controller
      *
      * @return array{assigned: bool, room: string, building: string, date: string, time: string}|null
      */
-    private function buildExamSchedule(?\App\Models\ExamSession $session): ?array
+    private function buildExamSchedule(?ExamSession $session): ?array
     {
         if (! $session) {
             return null;
@@ -398,7 +404,7 @@ class PortalAuthController extends Controller
             'room' => $room?->name ?? '—',
             'building' => $room?->building ?? '—',
             'date' => $session->date?->format('M j, Y') ?? '—',
-            'time' => $session->start_time ? \Carbon\Carbon::parse($session->start_time)->format('g:i A') : '—',
+            'time' => $session->start_time ? Carbon::parse($session->start_time)->format('g:i A') : '—',
         ];
     }
 
@@ -407,7 +413,7 @@ class PortalAuthController extends Controller
      *
      * @return array{date_set: bool, release_date: string}|null
      */
-    private function buildScoreRelease(?\App\Models\ExamSession $session): ?array
+    private function buildScoreRelease(?ExamSession $session): ?array
     {
         if (! $session || ! $session->score_release_date) {
             return null;

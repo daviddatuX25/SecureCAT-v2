@@ -1,5 +1,8 @@
 <?php
 
+use App\Models\Applicant;
+use App\Models\User;
+
 return [
 
     /*
@@ -66,11 +69,11 @@ return [
     'providers' => [
         'users' => [
             'driver' => 'eloquent',
-            'model' => env('AUTH_MODEL', App\Models\User::class),
+            'model' => env('AUTH_MODEL', User::class),
         ],
         'applicants' => [
             'driver' => 'eloquent',
-            'model' => App\Models\Applicant::class,
+            'model' => Applicant::class,
         ],
     ],
 
@@ -128,5 +131,15 @@ return [
     'login_throttle_enabled' => env('LOGIN_THROTTLE_ENABLED', true),
     'login_throttle_attempts' => (int) env('LOGIN_THROTTLE_ATTEMPTS', 5),
     'login_throttle_decay_minutes' => (int) env('LOGIN_THROTTLE_DECAY_MINUTES', 15),
+
+    /*
+    |--------------------------------------------------------------------------
+    | Token Expiry (ENV-overridable for demo/testing)
+    |--------------------------------------------------------------------------
+    */
+
+    'setup_token_expires_hours' => (int) env('SETUP_TOKEN_EXPIRES_HOURS', 72),
+
+    'reset_token_expires_minutes' => (int) env('RESET_TOKEN_EXPIRES_MINUTES', 15),
 
 ];
