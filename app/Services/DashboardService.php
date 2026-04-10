@@ -4,8 +4,8 @@ namespace App\Services;
 
 use App\Models\Application;
 use App\Models\ConsultationSummary;
+use App\Models\ExamSession;
 use App\Models\GradingSession;
-use App\Models\Room;
 use App\Models\Season;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
@@ -14,86 +14,137 @@ use Illuminate\Support\Facades\Schema;
 class DashboardService
 {
     /**
-     * Stats for the dashboard. Each item: key, label, value, href (optional).
-     * Keys must match the Dashboard frontend iconMap.
+     * Application-level KPI stats (admin / super_admin only).
      *
      * @return array<int, array{key: string, label: string, value: int|string, href?: string}>
      */
-    public function getStatsForUser(User $user): array
+    public function getApplicationStats(User $user): array
     {
-        $stats = [];
+        if (! $user->hasAnyRole(['super_admin', 'admin'])) {
+            return [];
+        }
 
         $activeSeason = Season::active();
 
-        if ($user->hasAnyRole(['super_admin', 'admin', 'staff', 'test_administrator'])) {
-            $pendingQuery = Application::query()->where('status', 'pending');
-            if ($activeSeason !== null) {
-                $pendingQuery->forSeason($activeSeason);
-            }
-            $pending = $pendingQuery->count();
-            $stats[] = [
+        $base = Application::query();
+        if ($activeSeason !== null) {
+            $base->forSeason($activeSeason);
+        }
+
+        return [
+            [
                 'key' => 'applications_pending',
-                'label' => 'Applications pending',
-                'value' => $pending,
+                'label' => 'Pending',
+                'value' => (clone $base)->where('status', 'pending')->count(),
                 'href' => '/applications',
-            ];
-        }
-
-        if ($user->hasAnyRole(['super_admin', 'admin', 'proctor'])) {
-            $examSessionsCount = $this->getExamSessionsCount($activeSeason?->id);
-            $stats[] = [
-                'key' => 'exam_sessions',
-                'label' => $user->hasRole('proctor') ? 'My sessions' : 'Exam sessions',
-                'value' => $examSessionsCount,
-                'href' => '/admin/test-scheduling',
-            ];
-        }
-
-        if ($user->hasAnyRole(['super_admin', 'admin'])) {
-            $roomsCount = Room::query()->where('is_active', true)->count();
-            $stats[] = [
-                'key' => 'rooms',
-                'label' => 'Rooms',
-                'value' => $roomsCount,
-                'href' => '/admin/rooms',
-            ];
-        }
-
-        if ($user->hasAnyRole(['super_admin', 'test_administrator'])) {
-            $activeGrading = GradingSession::query()
-                ->whereIn('status', [GradingSession::STATUS_OPEN, GradingSession::STATUS_IN_PROGRESS])
-                ->count();
-            $stats[] = [
-                'key' => 'grading_sessions_active',
-                'label' => 'Grading sessions active',
-                'value' => $activeGrading,
-                'href' => '/grading',
-            ];
-        }
-
-        if ($user->hasAnyRole(['super_admin', 'test_administrator'])) {
-            $consultationPending = ConsultationSummary::query()->where('status', ConsultationSummary::STATUS_PENDING)->count();
-            $stats[] = [
-                'key' => 'consultation_pending',
-                'label' => 'Consultation pending',
-                'value' => $consultationPending,
-                'href' => '/consultation',
-            ];
-        }
-
-        return $stats;
+            ],
+            [
+                'key' => 'applications_accepted',
+                'label' => 'Accepted',
+                'value' => (clone $base)->where('status', 'accepted')->count(),
+                'href' => '/applications',
+            ],
+            [
+                'key' => 'applications_dismissed',
+                'label' => 'Dismissed',
+                'value' => (clone $base)->where('status', 'dismissed')->count(),
+                'href' => '/applications',
+            ],
+        ];
     }
 
-    private function getExamSessionsCount(?int $seasonId = null): int
+    /**
+     * Session-level KPI stats (proctor / test_administrator / super_admin).
+     *
+     * @return array<int, array{key: string, label: string, value: int|string, href?: string}>
+     */
+    public function getSessionStats(User $user): array
     {
-        if (! Schema::hasTable('exam_sessions')) {
-            return 0;
+        if (! $user->hasAnyRole(['super_admin', 'proctor', 'test_administrator'])) {
+            return [];
         }
 
-        $query = DB::table('exam_sessions');
-        if ($seasonId !== null) {
-            $query->where('season_id', $seasonId);
+        if (! Schema::hasTable('exam_sessions')) {
+            return [];
         }
-        return (int) $query->count();
+
+        $activeSeason = Season::active();
+
+        $upcomingQuery = ExamSession::query()
+            ->whereIn('status', [ExamSession::STATUS_PUBLISHED, ExamSession::STATUS_IN_PROGRESS]);
+
+        if ($activeSeason !== null) {
+            $upcomingQuery->where('season_id', $activeSeason->id);
+        }
+
+        $upcoming = $upcomingQuery->count();
+
+        $attendanceDue = DB::table('exam_session_applicant')
+            ->join('exam_sessions', 'exam_sessions.id', '=', 'exam_session_applicant.exam_session_id')
+            ->whereIn('exam_sessions.status', [ExamSession::STATUS_IN_PROGRESS, ExamSession::STATUS_COMPLETED])
+            ->where('exam_session_applicant.attendance_status', 'pending')
+            ->count();
+
+        $submissionsDue = DB::table('exam_session_applicant')
+            ->join('exam_sessions', 'exam_sessions.id', '=', 'exam_session_applicant.exam_session_id')
+            ->whereIn('exam_sessions.status', [ExamSession::STATUS_IN_PROGRESS, ExamSession::STATUS_COMPLETED])
+            ->where('exam_session_applicant.submission_status', 'pending')
+            ->count();
+
+        return [
+            [
+                'key' => 'sessions_upcoming',
+                'label' => 'Upcoming Sessions',
+                'value' => $upcoming,
+                'href' => '/admin/test-scheduling',
+            ],
+            [
+                'key' => 'attendance_due',
+                'label' => 'Attendance Due',
+                'value' => $attendanceDue,
+                'href' => '/admin/test-scheduling',
+            ],
+            [
+                'key' => 'submissions_due',
+                'label' => 'Submissions Due',
+                'value' => $submissionsDue,
+                'href' => '/admin/test-scheduling',
+            ],
+        ];
+    }
+
+    /**
+     * Grading + release KPI stats (test_administrator / super_admin only).
+     *
+     * @return array<int, array{key: string, label: string, value: int|string, href?: string}>
+     */
+    public function getGradingStats(User $user): array
+    {
+        if (! $user->hasAnyRole(['super_admin', 'test_administrator'])) {
+            return [];
+        }
+
+        $pendingGrading = GradingSession::query()
+            ->whereIn('status', [GradingSession::STATUS_OPEN, GradingSession::STATUS_IN_PROGRESS, GradingSession::STATUS_REVIEW])
+            ->count();
+
+        $pendingRelease = ConsultationSummary::query()
+            ->where('status', ConsultationSummary::STATUS_DRAFT)
+            ->count();
+
+        return [
+            [
+                'key' => 'grading_pending',
+                'label' => 'Pending Grading',
+                'value' => $pendingGrading,
+                'href' => '/grading',
+            ],
+            [
+                'key' => 'release_pending',
+                'label' => 'Pending Release',
+                'value' => $pendingRelease,
+                'href' => '/release',
+            ],
+        ];
     }
 }

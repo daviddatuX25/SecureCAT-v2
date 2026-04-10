@@ -15,11 +15,13 @@ class DashboardController extends Controller
 
     public function index(Request $request): Response
     {
-        $stats = $this->dashboardService->getStatsForUser($request->user());
+        $user = $request->user();
 
         return Inertia::render('Dashboard', [
-            'user' => $request->user(),
-            'stats' => $stats,
+            'user' => $user,
+            'applicationStats' => $this->dashboardService->getApplicationStats($user),
+            'sessionStats' => $this->dashboardService->getSessionStats($user),
+            'gradingStats' => $this->dashboardService->getGradingStats($user),
         ]);
     }
 }
