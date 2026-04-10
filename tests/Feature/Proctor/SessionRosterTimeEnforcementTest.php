@@ -3,7 +3,10 @@
 namespace Tests\Feature\Proctor;
 
 use App\Models\ExamSession;
+use App\Models\Role;
+use App\Models\User;
 use Carbon\Carbon;
+use Database\Seeders\RoleSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -61,6 +64,30 @@ class SessionRosterTimeEnforcementTest extends TestCase
         Carbon::setTestNow('2026-05-01 23:00:00');
         $session = $this->makeSession('2026-05-01', '09:00:00', null);
         $this->assertFalse($session->isPastEndTime());
+    }
+
+    public function test_show_passes_time_flags_to_inertia(): void
+    {
+        $this->seed(RoleSeeder::class);
+
+        $proctor = User::factory()->create();
+        $proctor->roles()->attach(Role::where('name', 'proctor')->first());
+
+        Carbon::setTestNow('2026-05-01 10:00:00');
+
+        $session = $this->makeSession('2026-05-01', '09:00:00', '12:00:00');
+        $session->update(['status' => ExamSession::STATUS_PUBLISHED]);
+        $session->proctors()->attach($proctor->id);
+
+        $response = $this->actingAs($proctor)
+            ->get("/proctor/sessions/{$session->id}");
+
+        $response->assertInertia(fn ($page) => $page
+            ->has('session.is_within_window')
+            ->has('session.is_past_end')
+            ->where('session.is_within_window', true)
+            ->where('session.is_past_end', false)
+        );
     }
 
     protected function tearDown(): void

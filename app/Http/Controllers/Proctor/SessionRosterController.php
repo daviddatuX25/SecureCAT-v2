@@ -66,6 +66,8 @@ class SessionRosterController extends Controller
             'session' => array_merge($exam_session->toArray(), [
                 'is_within_start_window' => $isWithinStartWindow,
                 'can_override_schedule' => $canOverrideSchedule,
+                'is_within_window' => $exam_session->isWithinExamWindow(),
+                'is_past_end' => $exam_session->isPastEndTime(),
             ]),
             'applicants' => $applicants->values()->all(),
             'stats' => $stats,
@@ -105,10 +107,10 @@ class SessionRosterController extends Controller
         DB::table('exam_session_applicant')
             ->where('id', $pivot->id)
             ->update([
-                'attendance_status'    => 'present',
+                'attendance_status' => 'present',
                 'attendance_marked_at' => now(),
                 'attendance_marked_by' => $request->user()->id,
-                'updated_at'           => now(),
+                'updated_at' => now(),
             ]);
 
         return response()->json(['message' => 'Attendance marked.'], 200);
@@ -121,6 +123,7 @@ class SessionRosterController extends Controller
             if ($request->wantsJson()) {
                 return response()->json(['message' => 'Session must be published or in progress.'], 409);
             }
+
             return back()->with('error', 'Session must be published or in progress.');
         }
 
@@ -134,6 +137,7 @@ class SessionRosterController extends Controller
             if ($request->wantsJson()) {
                 return response()->json(['message' => 'Applicant not assigned to this session.'], 404);
             }
+
             return back()->with('error', 'Applicant not assigned to this session.');
         }
 
@@ -142,6 +146,7 @@ class SessionRosterController extends Controller
             if ($request->wantsJson()) {
                 return response()->json(['message' => 'Attendance already marked.'], 409);
             }
+
             return response()->json(['message' => 'Attendance already marked.'], 409);
         }
 
@@ -158,6 +163,7 @@ class SessionRosterController extends Controller
         if ($request->wantsJson()) {
             return response()->json(['message' => 'Attendance updated.'], 200);
         }
+
         return back()->with('success', 'Attendance marked.');
     }
 
@@ -166,6 +172,7 @@ class SessionRosterController extends Controller
         $session = $exam_session;
         if ($session->status !== ExamSession::STATUS_IN_PROGRESS) {
             $message = 'Session must be in progress.';
+
             return $request->wantsJson() ? response()->json(['message' => $message], 409) : response()->json(['message' => $message], 409);
         }
 
@@ -179,6 +186,7 @@ class SessionRosterController extends Controller
             if ($request->wantsJson()) {
                 return response()->json(['message' => 'Applicant not assigned to this session.'], 404);
             }
+
             return back()->with('error', 'Applicant not assigned to this session.');
         }
 
@@ -202,6 +210,7 @@ class SessionRosterController extends Controller
         if ($request->wantsJson()) {
             return response()->json(['message' => 'Submission recorded.'], 200);
         }
+
         return back()->with('success', 'Submission recorded.');
     }
 
@@ -210,6 +219,7 @@ class SessionRosterController extends Controller
         $session = $exam_session;
         if ($session->status !== ExamSession::STATUS_IN_PROGRESS) {
             $message = 'Session must be in progress.';
+
             return $request->wantsJson() ? response()->json(['message' => $message], 409) : back()->with('error', $message);
         }
 
@@ -247,6 +257,7 @@ class SessionRosterController extends Controller
         if ($request->wantsJson()) {
             return response()->json(['message' => $message, 'count' => $count], 200);
         }
+
         return back()->with('success', $message);
     }
 
@@ -267,6 +278,7 @@ class SessionRosterController extends Controller
             if (request()->wantsJson()) {
                 return response()->json(['message' => $message], 409);
             }
+
             return back()->with('error', $message);
         }
 
@@ -282,6 +294,7 @@ class SessionRosterController extends Controller
         if (request()->wantsJson()) {
             return response()->json(['message' => 'Session started.'], 200);
         }
+
         return back()->with('success', 'Session started.');
     }
 
@@ -301,6 +314,7 @@ class SessionRosterController extends Controller
         if (request()->wantsJson()) {
             return response()->json(['message' => 'Session closed.'], 200);
         }
+
         return back()->with('success', 'Session closed.');
     }
 }
