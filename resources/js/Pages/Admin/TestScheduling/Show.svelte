@@ -1,10 +1,9 @@
 <script>
   import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.svelte';
-  import { Link, router, useForm } from '@inertiajs/svelte';
+  import { Link, router } from '@inertiajs/svelte';
   import { usePage } from '@inertiajs/svelte';
   import { Button } from '@/Components/ui/button';
   import { Badge } from '@/Components/ui/badge';
-  import { Input } from '@/Components/ui/input';
   import { UserPlus, UserMinus, Send, ClipboardList, RotateCcw } from 'lucide-svelte';
 
   let { session, assigned_applicants = [], available_applicants = [], proctors = [], view = 'admin' } = $props();
@@ -54,10 +53,6 @@
     return `${h}:${String(mins).padStart(2, '0')} ${ampm}`;
   }
 
-  const releaseDateForm = useForm({
-    score_release_date: dateToYmd(session.score_release_date) || '',
-  });
-
   function statusVariant(status) {
     if (status === 'draft') return 'muted';
     if (status === 'published') return 'success';
@@ -97,11 +92,6 @@
 
   function reopenSession() {
     router.post(`/admin/test-scheduling/${session.id}/reopen`, {}, { onSuccess: () => router.reload() });
-  }
-
-  function submitReleaseDate(e) {
-    e.preventDefault();
-    $releaseDateForm.put(`/admin/test-scheduling/${session.id}/release-date`);
   }
 </script>
 
@@ -261,7 +251,7 @@
     </div>
     {/if}
 
-    <!-- Publish & release date (admin only) - hidden when completed, cancelled, or in_progress (E-002, E-003) -->
+    <!-- Publish (admin only) - hidden when completed, cancelled, or in_progress (E-002, E-003) -->
     {#if !isProctorView && !['completed', 'cancelled', 'in_progress'].includes(session.status)}
     <div class="rounded-lg border border-border bg-card p-6">
       <h2 class="text-lg font-semibold">Schedule actions</h2>
@@ -277,19 +267,6 @@
           </Button>
           <p class="mt-1 text-xs text-muted-foreground">Notify assigned applicants and lock schedule.</p>
         </div>
-        <form onsubmit={submitReleaseDate} class="flex flex-col gap-2 sm:flex-row sm:items-end">
-          <div class="space-y-1">
-            <label for="score_release_date" class="text-sm font-medium">Score release date</label>
-            <Input
-              id="score_release_date"
-              type="date"
-              bind:value={$releaseDateForm.score_release_date}
-            />
-          </div>
-          <Button type="submit" variant="outline" class="min-h-[44px]" disabled={$releaseDateForm.processing}>
-            {$releaseDateForm.processing ? 'Saving...' : 'Set release date'}
-          </Button>
-        </form>
       </div>
     </div>
     {/if}

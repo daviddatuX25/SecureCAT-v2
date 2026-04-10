@@ -10,7 +10,7 @@
   const page = usePage();
   const success = $derived($page.props.flash?.success ?? null);
   const list = $derived(seasons?.data ?? []);
-const breadcrumbs = [{ label: 'Academic Years' }];
+  const breadcrumbs = [{ label: 'Academic Years' }];
 </script>
 
 <AuthenticatedLayout {breadcrumbs}>
@@ -18,10 +18,10 @@ const breadcrumbs = [{ label: 'Academic Years' }];
     <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
       <div>
       <div class="flex flex-wrap gap-3">
-        <Link href="/admin/seasons/create">
+        <Link href="/admin/academic-years/create">
           <Button class="min-h-[44px]">
             <Plus class="mr-2 h-4 w-4" />
-            Add Season
+            Add Academic Year
           </Button>
         </Link>
         <Link href="/admin/courses">
@@ -52,36 +52,36 @@ const breadcrumbs = [{ label: 'Academic Years' }];
             </tr>
           </thead>
           <tbody>
-            {#each list as season}
+            {#each list as ay}
               <tr class="border-t border-border hover:bg-muted/30">
                 <td class="px-4 py-3 font-medium">
-                  {season.label ?? (season.academic_year ?? '—') + ' – ' + (season.semester_label ?? '—')}
+                  {ay.label ?? (ay.academic_year ?? '—') + ' – ' + (ay.semester_label ?? '—')}
                 </td>
                 <td class="px-4 py-3 text-muted-foreground">
-                  {season.application_window ?? '— — —'}
+                  {ay.application_window ?? '— — —'}
                 </td>
                 <td class="px-4 py-3">
-                  <Badge variant={season.is_active ? 'success' : 'muted'}>
-                    {season.is_active ? 'Active' : 'Inactive'}
+                  <Badge variant={ay.is_active ? 'success' : 'muted'}>
+                    {ay.is_active ? 'Active' : 'Inactive'}
                   </Badge>
                 </td>
                 <td class="px-4 py-3">
-                  {season.applications_count ?? 0}
+                  {ay.applications_count ?? 0}
                 </td>
                 <td class="px-4 py-3 text-right">
                   <div class="flex justify-end gap-2">
-                    {#if !season.is_active}
+                    {#if !ay.is_active}
                       <Button
                         variant="outline"
                         size="sm"
                         class="min-h-[44px]"
-                        onclick={() => router.post(`/admin/seasons/${season.id}/activate`)}
+                        onclick={() => router.post(`/admin/academic-years/${ay.id}/activate`)}
                       >
                         <CheckCircle class="mr-1.5 h-4 w-4" />
                         Set active
                       </Button>
                     {/if}
-                    <Link href={`/admin/seasons/${season.id}/edit`}>
+                    <Link href={`/admin/academic-years/${ay.id}/edit`}>
                       <Button variant="ghost" size="icon" aria-label="Edit">
                         <Pencil class="h-4 w-4" />
                       </Button>
@@ -92,7 +92,7 @@ const breadcrumbs = [{ label: 'Academic Years' }];
             {:else}
               <tr>
                 <td colspan="5" class="px-4 py-12 text-center text-muted-foreground">
-                  No seasons yet. Create one and set it active so applications can be submitted.
+                  No academic years yet. Create one and set it active so applications can be submitted.
                 </td>
               </tr>
             {/each}

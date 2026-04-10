@@ -4,7 +4,7 @@
   import { Button } from '@/Components/ui/button';
   import { Badge } from '@/Components/ui/badge';
   import { Card, CardContent, CardHeader, CardTitle } from '@/Components/ui/card';
-  import { ArrowLeft, CheckCircle, XCircle, Mail, FileX2 } from 'lucide-svelte';
+  import { ArrowLeft, CheckCircle, XCircle, Mail } from 'lucide-svelte';
 
   let { application, courses = [], within_application_window = false, application_window_label = null } = $props();
 
@@ -16,7 +16,6 @@
     if (status === 'pending') return 'warning';
     if (status === 'accepted') return 'success';
     if (status === 'dismissed') return 'danger';
-    if (status === 'incomplete_documents') return 'warning';
     return 'muted';
   }
 
@@ -25,7 +24,6 @@
       pending: 'Pending',
       accepted: 'Accepted',
       dismissed: 'Dismissed',
-      incomplete_documents: 'Incomplete Documents',
     };
     return labels[status] ?? status;
   }
@@ -58,10 +56,6 @@
     dismissReason = '';
   }
 
-  function setIncompleteDocuments() {
-    router.put(`/applications/${application.id}/incomplete-documents`);
-  }
-
   function resendSetupEmail() {
     router.post(`/applications/${application.id}/resend-setup-email`);
   }
@@ -74,15 +68,11 @@
   const canAccept = $derived(
     within_application_window &&
     application &&
-    ['pending', 'dismissed', 'incomplete_documents'].includes(application.status)
+    ['pending', 'dismissed'].includes(application.status)
   );
   const canDismiss = $derived(
-    within_application_window && application && ['pending', 'incomplete_documents'].includes(application.status)
+    within_application_window && application && application.status === 'pending'
   );
-  const canSetIncomplete = $derived(
-    within_application_window && application && ['pending', 'dismissed'].includes(application.status)
-  );
-
   const breadcrumbs = $derived([
     { label: 'Applications', href: '/applications' },
     { label: application?.reference_number ?? 'Application' }
@@ -127,12 +117,6 @@
           >
             <XCircle class="mr-1.5 h-4 w-4" />
             Dismiss
-          </Button>
-        {/if}
-        {#if canSetIncomplete}
-          <Button onclick={setIncompleteDocuments} variant="outline" size="sm" class="min-h-[40px]">
-            <FileX2 class="mr-1.5 h-4 w-4" />
-            Incomplete Docs
           </Button>
         {/if}
         {#if application?.status === 'accepted'}

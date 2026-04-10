@@ -14,7 +14,7 @@ class StoreExamSessionRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'season_id' => ['sometimes', 'nullable', 'integer', 'exists:seasons,id'],
+            'academic_year_id' => ['sometimes', 'nullable', 'integer', 'exists:academic_years,id'],
             'room_id' => ['required', 'integer', 'exists:rooms,id'],
             'date' => ['required', 'date', 'after_or_equal:today'],
             'start_time' => ['required', 'string', 'date_format:H:i'],

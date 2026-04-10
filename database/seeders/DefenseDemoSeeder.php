@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\AcademicYear;
 use App\Models\Applicant;
 use App\Models\ApplicantScore;
 use App\Models\Application;
@@ -12,7 +13,6 @@ use App\Models\ExamSession;
 use App\Models\GradingSession;
 use App\Models\Role;
 use App\Models\Room;
-use App\Models\Season;
 use App\Models\User;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Seeder;
@@ -41,23 +41,23 @@ class DefenseDemoSeeder extends Seeder
         }
 
         DB::transaction(function () use ($today, $courses, $domains) {
-            $season = $this->seedSeason($today);
+            $academicYear = $this->seedAcademicYear($today);
             $users = $this->seedUsers();
             $rooms = $this->seedRooms();
-            $appMap = $this->seedApplications($today, $season, $courses, $users);
-            $this->seedSessionA($today, $season, $rooms, $appMap, $users, $domains);
-            $this->seedSessionB($today, $season, $rooms, $appMap, $users, $domains);
-            $this->seedSessionC($today, $season, $rooms, $appMap, $users);
-            $this->seedSessionD($today, $season, $rooms);
+            $appMap = $this->seedApplications($today, $academicYear, $courses, $users);
+            $this->seedSessionA($today, $academicYear, $rooms, $appMap, $users, $domains);
+            $this->seedSessionB($today, $academicYear, $rooms, $appMap, $users, $domains);
+            $this->seedSessionC($today, $academicYear, $rooms, $appMap, $users);
+            $this->seedSessionD($today, $academicYear, $rooms);
         });
     }
 
-    private function seedSeason(CarbonImmutable $today): Season
+    private function seedAcademicYear(CarbonImmutable $today): AcademicYear
     {
         $year = $today->month >= 6 ? $today->year : $today->year - 1;
         $academicYear = $year.'-'.($year + 1);
 
-        $season = Season::query()->updateOrCreate(
+        $academicYearModel = AcademicYear::query()->updateOrCreate(
             ['academic_year' => $academicYear, 'semester' => '1'],
             [
                 'is_active' => true,
@@ -67,9 +67,9 @@ class DefenseDemoSeeder extends Seeder
         );
 
         // Deactivate all other seasons
-        Season::query()->where('id', '!=', $season->id)->update(['is_active' => false]);
+        AcademicYear::query()->where('id', '!=', $academicYearModel->id)->update(['is_active' => false]);
 
-        return $season;
+        return $academicYearModel;
     }
 
     private function seedUsers(): array
@@ -99,7 +99,7 @@ class DefenseDemoSeeder extends Seeder
         );
     }
 
-    private function seedApplications(CarbonImmutable $today, Season $season, $courses, array $users): array
+    private function seedApplications(CarbonImmutable $today, AcademicYear $academicYear, $courses, array $users): array
     {
         $year = $today->year;
 
@@ -164,7 +164,7 @@ class DefenseDemoSeeder extends Seeder
             $app = Application::query()->updateOrCreate(
                 ['reference_number' => $ref],
                 [
-                    'season_id' => $season->id,
+                    'academic_year_id' => $academicYear->id,
                     'first_name' => $first,
                     'middle_name' => $middle,
                     'last_name' => $last,
@@ -210,13 +210,13 @@ class DefenseDemoSeeder extends Seeder
         return $appMap;
     }
 
-    private function seedSessionA(CarbonImmutable $today, Season $season, $rooms, array $appMap, array $users, $domains): void
+    private function seedSessionA(CarbonImmutable $today, AcademicYear $academicYear, $rooms, array $appMap, array $users, $domains): void
     {
         $date = $today->subDays(14);
         $room = $rooms[0]; // Main Building Room 101
 
         $es = ExamSession::query()->updateOrCreate(
-            ['season_id' => $season->id, 'room_id' => $room->id, 'date' => $date->toDateString()],
+            ['academic_year_id' => $academicYear->id, 'room_id' => $room->id, 'date' => $date->toDateString()],
             [
                 'start_time' => '09:00:00',
                 'end_time' => '11:00:00',
@@ -308,13 +308,13 @@ class DefenseDemoSeeder extends Seeder
         }
     }
 
-    private function seedSessionB(CarbonImmutable $today, Season $season, $rooms, array $appMap, array $users, $domains): void
+    private function seedSessionB(CarbonImmutable $today, AcademicYear $academicYear, $rooms, array $appMap, array $users, $domains): void
     {
         $date = $today->subDays(5);
         $room = $rooms[2]; // Academic Building Room 201
 
         $es = ExamSession::query()->updateOrCreate(
-            ['season_id' => $season->id, 'room_id' => $room->id, 'date' => $date->toDateString()],
+            ['academic_year_id' => $academicYear->id, 'room_id' => $room->id, 'date' => $date->toDateString()],
             [
                 'start_time' => '13:00:00',
                 'end_time' => '15:00:00',
@@ -395,12 +395,12 @@ class DefenseDemoSeeder extends Seeder
         }
     }
 
-    private function seedSessionC(CarbonImmutable $today, Season $season, $rooms, array $appMap, array $users): void
+    private function seedSessionC(CarbonImmutable $today, AcademicYear $academicYear, $rooms, array $appMap, array $users): void
     {
         $room = $rooms[1]; // Main Building Room 102
 
         $es = ExamSession::query()->updateOrCreate(
-            ['season_id' => $season->id, 'room_id' => $room->id, 'date' => $today->toDateString()],
+            ['academic_year_id' => $academicYear->id, 'room_id' => $room->id, 'date' => $today->toDateString()],
             [
                 'start_time' => '09:00:00',
                 'end_time' => '11:00:00',
@@ -449,14 +449,14 @@ class DefenseDemoSeeder extends Seeder
         );
     }
 
-    private function seedSessionD(CarbonImmutable $today, Season $season, $rooms): void
+    private function seedSessionD(CarbonImmutable $today, AcademicYear $academicYear, $rooms): void
     {
         $date = $today->addDays(5);
         $room = $rooms[3]; // Vocational Building Lab Room 1
         $admin = User::query()->where('email', 'josefina@securecat.local')->first();
 
         ExamSession::query()->updateOrCreate(
-            ['season_id' => $season->id, 'room_id' => $room->id, 'date' => $date->toDateString()],
+            ['academic_year_id' => $academicYear->id, 'room_id' => $room->id, 'date' => $date->toDateString()],
             [
                 'start_time' => '09:00:00',
                 'end_time' => '11:00:00',

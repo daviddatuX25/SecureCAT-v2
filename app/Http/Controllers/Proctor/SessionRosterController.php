@@ -10,7 +10,6 @@ use App\Models\ExamSession;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -72,48 +71,6 @@ class SessionRosterController extends Controller
             'applicants' => $applicants->values()->all(),
             'stats' => $stats,
         ]);
-    }
-
-    /**
-     * Scan a QR code for attendance: resolves reference_number to applicant_id then marks present.
-     */
-    public function scanAttendance(Request $request, ExamSession $exam_session): JsonResponse
-    {
-        $this->authorize('manageRoster', $exam_session);
-
-        if (! in_array($exam_session->status, [ExamSession::STATUS_PUBLISHED, ExamSession::STATUS_IN_PROGRESS], true)) {
-            return response()->json(['message' => 'Session must be published or in progress.'], 409);
-        }
-
-        $request->validate(['reference_number' => 'required|string']);
-        $ref = trim($request->input('reference_number'));
-
-        $pivot = DB::table('exam_session_applicant as esa')
-            ->join('applicants as ap', 'ap.id', '=', 'esa.applicant_id')
-            ->join('applications as appl', 'appl.id', '=', 'ap.application_id')
-            ->where('esa.exam_session_id', $exam_session->id)
-            ->where('appl.reference_number', $ref)
-            ->select('esa.id', 'esa.attendance_status')
-            ->first();
-
-        if (! $pivot) {
-            return response()->json(['message' => 'Applicant not found in this session.'], 404);
-        }
-
-        if (($pivot->attendance_status ?? 'pending') !== 'pending') {
-            return response()->json(['message' => 'Attendance already marked.'], 409);
-        }
-
-        DB::table('exam_session_applicant')
-            ->where('id', $pivot->id)
-            ->update([
-                'attendance_status' => 'present',
-                'attendance_marked_at' => now(),
-                'attendance_marked_by' => $request->user()->id,
-                'updated_at' => now(),
-            ]);
-
-        return response()->json(['message' => 'Attendance marked.'], 200);
     }
 
     public function storeAttendance(MarkAttendanceRequest $request, ExamSession $exam_session): RedirectResponse|JsonResponse

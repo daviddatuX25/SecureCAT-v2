@@ -14,7 +14,7 @@ class UpdateExamSessionRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'season_id' => ['sometimes', 'nullable', 'integer', 'exists:seasons,id'],
+            'academic_year_id' => ['sometimes', 'nullable', 'integer', 'exists:academic_years,id'],
             'room_id' => ['sometimes', 'integer', 'exists:rooms,id'],
             'date' => ['sometimes', 'date'],
             'start_time' => ['sometimes', 'string', 'date_format:H:i'],

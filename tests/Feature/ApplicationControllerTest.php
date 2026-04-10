@@ -7,6 +7,8 @@ use App\Models\Course;
 use App\Models\Role;
 use App\Models\Season;
 use App\Models\User;
+use Database\Seeders\CourseSeeder;
+use Database\Seeders\RoleSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -17,8 +19,8 @@ class ApplicationControllerTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->seed(\Database\Seeders\RoleSeeder::class);
-        $this->seed(\Database\Seeders\CourseSeeder::class);
+        $this->seed(RoleSeeder::class);
+        $this->seed(CourseSeeder::class);
     }
 
     private function staff(): User
@@ -149,18 +151,6 @@ class ApplicationControllerTest extends TestCase
         $response->assertSessionHas('error');
         $application->refresh();
         $this->assertSame('pending', $application->status);
-    }
-
-    public function test_set_incomplete_documents_within_window_succeeds(): void
-    {
-        $application = $this->createApplicationWithSeason(true);
-
-        $response = $this->actingAs($this->staff())->put(route('applications.set-incomplete-documents', $application));
-
-        $response->assertRedirect(route('applications.show', $application));
-        $response->assertSessionHas('success');
-        $application->refresh();
-        $this->assertSame('incomplete_documents', $application->status);
     }
 
     public function test_accept_from_dismissed_within_window_succeeds(): void

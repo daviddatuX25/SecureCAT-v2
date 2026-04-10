@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Admin\AcademicYearController;
 use App\Http\Controllers\Admin\AdmissionSlipTemplateController;
 use App\Http\Controllers\Admin\AiCompanionAdminController;
 use App\Http\Controllers\Admin\AptitudeAreaController;
@@ -10,7 +11,6 @@ use App\Http\Controllers\Admin\ExamSessionController;
 use App\Http\Controllers\Admin\KnowledgeDocumentController;
 use App\Http\Controllers\Admin\ResultSheetTemplateController;
 use App\Http\Controllers\Admin\RoomController;
-use App\Http\Controllers\Admin\SeasonController;
 use App\Http\Controllers\Admin\SettingsController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\ApplicationController;
@@ -120,13 +120,12 @@ Route::middleware(['auth'])->group(function () {
         Route::post('test-scheduling/{exam_session}/remove-applicant', [ExamSessionController::class, 'removeApplicant'])->name('test-scheduling.remove-applicant');
         Route::post('test-scheduling/{exam_session}/publish', [ExamSessionController::class, 'publish'])->name('test-scheduling.publish');
         Route::post('test-scheduling/{exam_session}/unpublish', [ExamSessionController::class, 'unpublish'])->name('test-scheduling.unpublish');
-        Route::put('test-scheduling/{exam_session}/release-date', [ExamSessionController::class, 'releaseDate'])->name('test-scheduling.release-date');
         Route::post('test-scheduling/{exam_session}/reopen', [ExamSessionController::class, 'reopen'])->name('test-scheduling.reopen');
         Route::post('test-scheduling', [ExamSessionController::class, 'store'])->name('test-scheduling.store');
         Route::get('test-scheduling/{exam_session}/edit', [ExamSessionController::class, 'edit'])->name('test-scheduling.edit');
         Route::put('test-scheduling/{exam_session}', [ExamSessionController::class, 'update'])->name('test-scheduling.update');
-        Route::resource('seasons', SeasonController::class)->except('show', 'destroy')->parameters(['seasons' => 'season']);
-        Route::post('seasons/{season}/activate', [SeasonController::class, 'activate'])->name('seasons.activate');
+        Route::resource('academic-years', AcademicYearController::class)->except('show', 'destroy')->parameters(['academic_years' => 'academic_year']);
+        Route::post('academic-years/{academic_year}/activate', [AcademicYearController::class, 'activate'])->name('academic-years.activate');
         Route::resource('aptitude-areas', AptitudeAreaController::class)->except('show', 'destroy')->parameters(['aptitude_areas' => 'aptitude_area']);
         Route::resource('courses', CourseController::class)->except('show')->parameters(['courses' => 'course']);
         Route::post('courses/{course}/activate', [CourseController::class, 'activate'])->name('courses.activate');
@@ -145,13 +144,11 @@ Route::middleware(['auth'])->group(function () {
     Route::put('/applications/{application}/accept', [ApplicationController::class, 'accept'])->name('applications.accept')->middleware('role:super_admin,staff,admin');
     Route::post('/applications/{application}/resend-setup-email', [ApplicationController::class, 'resendSetupEmail'])->name('applications.resend-setup-email')->middleware('role:super_admin,staff,admin');
     Route::put('/applications/{application}/dismiss', [ApplicationController::class, 'dismiss'])->name('applications.dismiss')->middleware('role:super_admin,staff,admin');
-    Route::put('/applications/{application}/incomplete-documents', [ApplicationController::class, 'setIncompleteDocuments'])->name('applications.set-incomplete-documents')->middleware('role:super_admin,staff,admin');
     Route::get('/applications/{application}/admission-slip', [ApplicationController::class, 'admissionSlip'])->name('applications.admission-slip')->middleware('role:super_admin,staff,admin,test_administrator');
     Route::get('/proctor', fn () => redirect()->route('admin.test-scheduling.index'))->middleware('role:super_admin,proctor');
     Route::middleware('role:super_admin,admin,proctor,test_administrator')->prefix('proctor')->name('proctor.')->group(function () {
         Route::get('sessions/{exam_session}', [SessionRosterController::class, 'show'])->name('sessions.show');
         Route::post('sessions/{exam_session}/attendance', [SessionRosterController::class, 'storeAttendance'])->name('sessions.attendance');
-        Route::post('sessions/{exam_session}/scan-attendance', [SessionRosterController::class, 'scanAttendance'])->name('sessions.scan-attendance');
         Route::post('sessions/{exam_session}/submission', [SessionRosterController::class, 'storeSubmission'])->name('sessions.submission');
         Route::post('sessions/{exam_session}/submission-bulk', [SessionRosterController::class, 'storeSubmissionBulk'])->name('sessions.submission-bulk');
         Route::post('sessions/{exam_session}/start', [SessionRosterController::class, 'start'])->name('sessions.start');

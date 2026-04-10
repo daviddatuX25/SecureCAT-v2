@@ -38,14 +38,6 @@ class ApplicationPolicy
     }
 
     /**
-     * Staff can set application to incomplete documents (within window enforced in controller).
-     */
-    public function setIncompleteDocuments(User $user, Application $application): bool
-    {
-        return $user->hasAnyRole(['super_admin', 'staff', 'admin']);
-    }
-
-    /**
      * Resend portal setup email (same roles as accept).
      */
     public function resendSetupEmail(User $user, Application $application): bool

@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 class Application extends Model
 {
     protected $fillable = [
-        'season_id',
+        'academic_year_id',
         'reference_number',
         'first_name',
         'middle_name',
@@ -41,9 +41,9 @@ class Application extends Model
         'submitted_at' => 'datetime',
     ];
 
-    public function season(): BelongsTo
+    public function academicYear(): BelongsTo
     {
-        return $this->belongsTo(Season::class);
+        return $this->belongsTo(AcademicYear::class, 'academic_year_id');
     }
 
     public function appointment(): BelongsTo
@@ -51,12 +51,12 @@ class Application extends Model
         return $this->belongsTo(Appointment::class);
     }
 
-    public function scopeForSeason($query, $season): void
+    public function scopeForAcademicYear($query, $academicYear): void
     {
-        if ($season instanceof Season) {
-            $query->where('season_id', $season->id);
-        } elseif ($season !== null) {
-            $query->where('season_id', $season);
+        if ($academicYear instanceof AcademicYear) {
+            $query->where('academic_year_id', $academicYear->id);
+        } elseif ($academicYear !== null) {
+            $query->where('academic_year_id', $academicYear);
         }
     }
 
@@ -84,8 +84,8 @@ class Application extends Model
     {
         $year = date('Y');
         $prefix = "APP-{$year}-";
-        $count = static::where('reference_number', 'like', $prefix . '%')->count();
+        $count = static::where('reference_number', 'like', $prefix.'%')->count();
 
-        return $prefix . str_pad((string) ($count + 1), 5, '0', STR_PAD_LEFT);
+        return $prefix.str_pad((string) ($count + 1), 5, '0', STR_PAD_LEFT);
     }
 }

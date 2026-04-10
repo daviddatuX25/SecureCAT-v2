@@ -2,11 +2,11 @@
 
 namespace App\Services;
 
+use App\Models\AcademicYear;
 use App\Models\Application;
 use App\Models\ConsultationSummary;
 use App\Models\ExamSession;
 use App\Models\GradingSession;
-use App\Models\Season;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
@@ -24,11 +24,11 @@ class DashboardService
             return [];
         }
 
-        $activeSeason = Season::active();
+        $activeAcademicYear = AcademicYear::active();
 
         $base = Application::query();
-        if ($activeSeason !== null) {
-            $base->forSeason($activeSeason);
+        if ($activeAcademicYear !== null) {
+            $base->forAcademicYear($activeAcademicYear);
         }
 
         return [
@@ -68,13 +68,13 @@ class DashboardService
             return [];
         }
 
-        $activeSeason = Season::active();
+        $activeAcademicYear = AcademicYear::active();
 
         $upcomingQuery = ExamSession::query()
             ->whereIn('status', [ExamSession::STATUS_PUBLISHED, ExamSession::STATUS_IN_PROGRESS]);
 
-        if ($activeSeason !== null) {
-            $upcomingQuery->where('season_id', $activeSeason->id);
+        if ($activeAcademicYear !== null) {
+            $upcomingQuery->where('academic_year_id', $activeAcademicYear->id);
         }
 
         $upcoming = $upcomingQuery->count();
