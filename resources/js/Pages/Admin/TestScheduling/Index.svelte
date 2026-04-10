@@ -8,6 +8,7 @@
   import { Badge } from '@/Components/ui/badge';
   import { Input } from '@/Components/ui/input';
   import ScheduleAssistantPanel from '@/Components/ScheduleAssistantPanel.svelte';
+  import InfoPopover from '@/Components/InfoPopover.svelte';
   import { Plus, LayoutGrid, Table2, MonitorSmartphone, Eye, Pencil, ChevronDown, Filter, ClipboardList, Sparkles, DoorOpen } from 'lucide-svelte';
 
   let { sessions, filters = {}, statuses = [], view = 'admin', schedule_assistant = null } = $props();
@@ -408,8 +409,12 @@
       <Dialog.Content class="w-[95vw] max-w-6xl max-h-[90vh] overflow-y-auto" aria-describedby="schedule-assistant-description">
         <Dialog.Header>
           <Dialog.Title>AI Exam Scheduler</Dialog.Title>
-          <Dialog.Description id="schedule-assistant-description">
-            Describe your scheduling needs (e.g. morning slots, dates, number of rooms). The assistant suggests a plan; generate and apply to create exam sessions and assign applicants.
+          <InfoPopover
+            content="Chat with the assistant to refine your schedule. After you get a reply, click Generate Schedule to create a preview."
+            label="Beta"
+          />
+          <Dialog.Description id="schedule-assistant-description" class="sr-only">
+            Chat with the assistant to refine your schedule. After you get a reply, click Generate Schedule to create a preview.
           </Dialog.Description>
         </Dialog.Header>
         <div class="mt-4">
