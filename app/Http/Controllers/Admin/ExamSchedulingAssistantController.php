@@ -44,7 +44,13 @@ class ExamSchedulingAssistantController extends Controller
         $applicantCount = Applicant::query()
             ->whereHas('application', fn ($q) => $q->where('status', 'accepted'))
             ->whereDoesntHave('examSessions')
+            ->when($activeAcademicYear, fn ($q) => $q->whereHas('application', fn ($aq) => $aq->where('academic_year_id', $activeAcademicYear->id)))
             ->count();
+
+        Log::info('[AI-SCHEDULER-DEBUG] Unassigned applicants query', [
+            'applicantCount' => $applicantCount,
+            'activeAcademicYear' => $activeAcademicYear?->id,
+        ]);
 
         $rooms = Room::query()
             ->where('is_active', true)
@@ -59,15 +65,26 @@ class ExamSchedulingAssistantController extends Controller
             ->values()
             ->all();
 
+        Log::info('[AI-SCHEDULER-DEBUG] Rooms being sent to AI', [
+            'count' => count($rooms),
+            'rooms' => $rooms,
+        ]);
+
         $applicantSummary = Applicant::query()
             ->whereHas('application', fn ($q) => $q->where('status', 'accepted'))
             ->whereDoesntHave('examSessions')
+            ->when($activeAcademicYear, fn ($q) => $q->whereHas('application', fn ($aq) => $aq->where('academic_year_id', $activeAcademicYear->id)))
             ->orderBy('id')
             ->limit(100)
             ->get(['id'])
             ->map(fn ($a) => ['id' => $a->id])
             ->values()
             ->all();
+
+        Log::info('[AI-SCHEDULER-DEBUG] Applicant summary being sent to AI', [
+            'count' => count($applicantSummary),
+            'ids' => collect($applicantSummary)->pluck('id')->toArray(),
+        ]);
 
         $draftSessions = [];
         if ($activeAcademicYear) {
