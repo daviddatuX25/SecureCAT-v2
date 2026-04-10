@@ -37,7 +37,7 @@
     <p class="text-muted-foreground">Welcome back, {user?.name ?? 'User'}.</p>
 
     <!-- Application KPIs — admin / super_admin -->
-    {#if safeApplicationStats.length > 0}
+    {#if (hasRole('admin') || hasRole('super_admin')) && safeApplicationStats.length > 0}
       <section>
         <h2 class="mb-4 text-base font-semibold text-foreground">Applications</h2>
         <div class="grid grid-cols-2 lg:grid-cols-3 gap-4">
@@ -53,7 +53,7 @@
     {/if}
 
     <!-- Session KPIs — proctor / test_administrator / super_admin -->
-    {#if safeSessionStats.length > 0}
+    {#if (hasRole('proctor') || hasRole('test_administrator') || hasRole('super_admin')) && safeSessionStats.length > 0}
       <section>
         <h2 class="mb-4 text-base font-semibold text-foreground">Sessions</h2>
         <div class="grid grid-cols-2 lg:grid-cols-3 gap-4">
@@ -69,7 +69,7 @@
     {/if}
 
     <!-- Grading + Release KPIs — test_administrator / super_admin -->
-    {#if safeGradingStats.length > 0}
+    {#if (hasRole('test_administrator') || hasRole('super_admin')) && safeGradingStats.length > 0}
       <section>
         <h2 class="mb-4 text-base font-semibold text-foreground">Grading & Release</h2>
         <div class="grid grid-cols-2 lg:grid-cols-3 gap-4">
