@@ -148,12 +148,16 @@ class ExamSchedulingAssistantController extends Controller
             ['role' => 'user', 'content' => $message],
         ]);
 
+        // Scrub hallucinated claims from conversation history before sending to AI
+        $scrubbedMessages = $this->scrubContradictingMessages($newMessages, $applicantCount);
+
         try {
-            $result = $this->assistantService->chat($newMessages, [
+            $result = $this->assistantService->chat($scrubbedMessages, [
                 'applicant_count' => $applicantCount,
                 'rooms' => $rooms,
                 'applicant_summary' => $applicantSummary,
                 'draft_sessions' => $draftSessions,
+                'existing_sessions' => $existingSessions,
             ], $requestStructured);
 
             $reply = $result['reply'];
@@ -329,5 +333,53 @@ class ExamSchedulingAssistantController extends Controller
         }
 
         return ['sessions' => $normalised];
+    }
+
+    /**
+     * Scrub assistant messages that contain factual claims contradicting current data.
+     * Narrow pattern matching only — catches the known hallucination pattern.
+     */
+    private function scrubContradictingMessages(array $messages, int $applicantCount): array
+    {
+        $hallucinationPatterns = [
+            '/\bno\s+(unassigned|unscheduled)\s+applicants?\b/i',
+            '/\b0\s+applicants?\b/i',
+            '/\bzero\s+applicants?\b/i',
+            '/\bthere\s+are\s+no\s+applicants?\b/i',
+            '/\bno\s+applicants?\s+(left|remaining|to\s+schedule|waiting)\b/i',
+        ];
+
+        $placeholder = '[The AI previously made a statement here that contradicted the current data and it has been corrected.]';
+
+        return array_map(function ($msg) use ($hallucinationPatterns, $applicantCount, $placeholder) {
+            if ($msg['role'] !== 'assistant') {
+                return $msg;
+            }
+
+            $content = $msg['content'] ?? '';
+
+            // If the message is just the placeholder, leave it
+            if ($content === $placeholder) {
+                return $msg;
+            }
+
+            // If applicantCount is 0 and the message claims zero — that's accurate, leave it
+            if ($applicantCount === 0) {
+                return $msg;
+            }
+
+            // Check against hallucination patterns
+            foreach ($hallucinationPatterns as $pattern) {
+                if (preg_match($pattern, $content)) {
+                    Log::info('[AI-SCHEDULER-DEBUG] Scrubbing hallucinated message', [
+                        'pattern' => $pattern,
+                        'content' => $content,
+                    ]);
+                    return ['role' => 'assistant', 'content' => $placeholder];
+                }
+            }
+
+            return $msg;
+        }, $messages);
     }
 }
