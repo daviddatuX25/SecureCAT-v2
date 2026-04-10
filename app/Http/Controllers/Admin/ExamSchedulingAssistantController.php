@@ -3,9 +3,9 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\Applicant;
 use App\Models\ExamSchedulingConversation;
 use App\Models\ExamSession;
-use App\Models\Applicant;
 use App\Models\Room;
 use App\Models\Season;
 use App\Services\ExamSchedulingAssistantService;
@@ -113,7 +113,7 @@ class ExamSchedulingAssistantController extends Controller
             $reply = $result['reply'];
             $lastMessage = ['role' => 'assistant', 'content' => $reply];
             if (isset($result['structured_schedule'])) {
-                $lastMessage['schedule'] = $result['structured_schedule'];
+                $lastMessage['schedule'] = $this->normalizeStructuredSchedule($result['structured_schedule']);
             }
             $newMessages[] = $lastMessage;
 
@@ -128,7 +128,7 @@ class ExamSchedulingAssistantController extends Controller
 
             $response = ['reply' => $reply];
             if (isset($result['structured_schedule'])) {
-                $response['structured_schedule'] = $result['structured_schedule'];
+                $response['structured_schedule'] = $this->normalizeStructuredSchedule($result['structured_schedule']);
             }
 
             return response()->json($response);
@@ -212,6 +212,7 @@ class ExamSchedulingAssistantController extends Controller
                             throw new \RuntimeException("Session {$session->id} would exceed room capacity.");
                         }
                         $session->applicants()->attach($applicantIds);
+
                         continue;
                     }
 
@@ -259,5 +260,28 @@ class ExamSchedulingAssistantController extends Controller
             'message' => 'Schedule applied successfully.',
             'redirect_url' => route('admin.test-scheduling.index'),
         ]);
+    }
+
+    /**
+     * Coerce AI-returned structured schedule to the canonical field set.
+     * Handles common hallucinated aliases so the frontend always gets clean data.
+     */
+    private function normalizeStructuredSchedule(array $schedule): array
+    {
+        $sessions = $schedule['sessions'] ?? [];
+        $normalised = [];
+
+        foreach ($sessions as $s) {
+            $normalised[] = [
+                'exam_session_id' => $s['exam_session_id'] ?? $s['session_id'] ?? null,
+                'room_id' => $s['room_id'] ?? $s['roomId'] ?? $s['room']['id'] ?? null,
+                'date' => $s['date'] ?? $s['session_date'] ?? $s['exam_date'] ?? null,
+                'start_time' => $s['start_time'] ?? $s['startTime'] ?? $s['time_start'] ?? null,
+                'end_time' => $s['end_time'] ?? $s['endTime'] ?? $s['time_end'] ?? null,
+                'applicant_ids' => $s['applicant_ids'] ?? $s['applicantIds'] ?? $s['applicants'] ?? [],
+            ];
+        }
+
+        return ['sessions' => $normalised];
     }
 }
