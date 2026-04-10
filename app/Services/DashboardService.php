@@ -20,7 +20,7 @@ class DashboardService
      */
     public function getApplicationStats(User $user): array
     {
-        if (! $user->hasAnyRole(['super_admin', 'admin'])) {
+        if (! $user->hasAnyRole(['super_admin', 'registrar_administrator'])) {
             return [];
         }
 
@@ -60,7 +60,7 @@ class DashboardService
      */
     public function getSessionStats(User $user): array
     {
-        if (! $user->hasAnyRole(['super_admin', 'proctor', 'registrar_administrator'])) {
+        if (! $user->hasAnyRole(['super_admin', 'proctor', 'test_administrator'])) {
             return [];
         }
 
@@ -120,7 +120,7 @@ class DashboardService
      */
     public function getGradingStats(User $user): array
     {
-        if (! $user->hasAnyRole(['super_admin', 'registrar_administrator'])) {
+        if (! $user->hasAnyRole(['super_admin', 'test_administrator'])) {
             return [];
         }
 

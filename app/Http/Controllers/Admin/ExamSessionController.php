@@ -41,7 +41,7 @@ class ExamSessionController extends Controller
         $this->authorize('viewAny', ExamSession::class);
 
         $user = $request->user();
-        $isProctorView = $user->hasAnyRole(['proctor']) && ! $user->hasAnyRole(['super_admin', 'admin']);
+        $isProctorView = $user->hasAnyRole(['proctor']) && ! $user->hasAnyRole(['super_admin', 'registrar_administrator']);
 
         $activeAcademicYear = AcademicYear::active();
         $academicYearId = $request->input('academic_year_id');
@@ -211,7 +211,7 @@ class ExamSessionController extends Controller
         $this->authorize('view', $exam_session);
 
         $user = request()->user();
-        $isProctorView = $user->hasAnyRole(['proctor']) && ! $user->hasAnyRole(['super_admin', 'admin']);
+        $isProctorView = $user->hasAnyRole(['proctor']) && ! $user->hasAnyRole(['super_admin', 'registrar_administrator']);
 
         $exam_session->load(['room:id,name,building,capacity', 'proctors:id,name']);
 
@@ -426,7 +426,7 @@ class ExamSessionController extends Controller
     public function testAdminIndex(Request $request): Response
     {
         $user = $request->user();
-        $isTestAdminOnly = $user->hasAnyRole(['registrar_administrator']) && ! $user->hasAnyRole(['super_admin', 'admin']);
+        $isTestAdminOnly = $user->hasAnyRole(['test_administrator']) && ! $user->hasAnyRole(['super_admin', 'registrar_administrator']);
 
         $activeAcademicYear = AcademicYear::active();
         $queryAcademicYearId = $activeAcademicYear?->id;
@@ -472,7 +472,7 @@ class ExamSessionController extends Controller
         $user = $request->user();
 
         // Authorization: must be admin/super_admin OR be an assigned proctor on this session.
-        if (! $user->hasAnyRole(['super_admin', 'admin'])) {
+        if (! $user->hasAnyRole(['super_admin', 'registrar_administrator'])) {
             $assigned = $exam_session->proctors()->where('users.id', $user->id)->exists();
             abort_unless($assigned, 403, 'You are not assigned to this session.');
         }
@@ -547,7 +547,7 @@ class ExamSessionController extends Controller
         $this->authorize('viewAny', ExamSession::class);
 
         $user = $request->user();
-        $isProctorView = $user->hasAnyRole(['proctor']) && ! $user->hasAnyRole(['super_admin', 'admin']);
+        $isProctorView = $user->hasAnyRole(['proctor']) && ! $user->hasAnyRole(['super_admin', 'registrar_administrator']);
         $activeAcademicYear = AcademicYear::active();
 
         $query = ExamSession::query()

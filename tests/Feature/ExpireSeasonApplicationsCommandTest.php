@@ -2,9 +2,11 @@
 
 namespace Tests\Feature;
 
+use App\Models\AcademicYear;
 use App\Models\Application;
 use App\Models\Course;
-use App\Models\Season;
+use Database\Seeders\CourseSeeder;
+use Database\Seeders\RoleSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -15,14 +17,14 @@ class ExpireSeasonApplicationsCommandTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->seed(\Database\Seeders\RoleSeeder::class);
-        $this->seed(\Database\Seeders\CourseSeeder::class);
+        $this->seed(RoleSeeder::class);
+        $this->seed(CourseSeeder::class);
     }
 
     public function test_expire_command_marks_pending_applications_as_dismissed_when_window_closed(): void
     {
         $course = Course::first();
-        $season = Season::create([
+        $academicYear = AcademicYear::create([
             'academic_year' => '2024-2025',
             'semester' => '2',
             'is_active' => false,
@@ -30,7 +32,7 @@ class ExpireSeasonApplicationsCommandTest extends TestCase
             'application_end_date' => now()->subDays(1),
         ]);
         $app = Application::create([
-            'season_id' => $season->id,
+            'academic_year_id' => $academicYear->id,
             'reference_number' => Application::nextReferenceNumber(),
             'first_name' => 'Test',
             'last_name' => 'User',

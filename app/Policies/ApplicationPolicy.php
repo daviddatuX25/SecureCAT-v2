@@ -9,16 +9,16 @@ class ApplicationPolicy
 {
     /**
      * Roles that can view applications list and details.
-     * Per 05-SECURITY-CONTROLS: staff, admin, registrar_administrator, super_admin.
+     * Per 05-SECURITY-CONTROLS: registrar_administrator, staff, super_admin.
      */
     public function viewAny(User $user): bool
     {
-        return $user->hasAnyRole(['super_admin', 'staff', 'admin', 'registrar_administrator']);
+        return $user->hasAnyRole(['super_admin', 'registrar_administrator', 'staff']);
     }
 
     public function view(User $user, Application $application): bool
     {
-        return $user->hasAnyRole(['super_admin', 'staff', 'admin', 'registrar_administrator']);
+        return $user->hasAnyRole(['super_admin', 'registrar_administrator', 'staff']);
     }
 
     /**
@@ -26,7 +26,7 @@ class ApplicationPolicy
      */
     public function accept(User $user, Application $application): bool
     {
-        return $user->hasAnyRole(['super_admin', 'staff', 'admin']);
+        return $user->hasAnyRole(['super_admin', 'staff', 'registrar_administrator']);
     }
 
     /**
@@ -34,7 +34,7 @@ class ApplicationPolicy
      */
     public function dismiss(User $user, Application $application): bool
     {
-        return $user->hasAnyRole(['super_admin', 'staff', 'admin']);
+        return $user->hasAnyRole(['super_admin', 'staff', 'registrar_administrator']);
     }
 
     /**
@@ -42,7 +42,7 @@ class ApplicationPolicy
      */
     public function resendSetupEmail(User $user, Application $application): bool
     {
-        return $user->hasAnyRole(['super_admin', 'staff', 'admin']);
+        return $user->hasAnyRole(['super_admin', 'staff', 'registrar_administrator']);
     }
 
     /**
@@ -51,7 +51,7 @@ class ApplicationPolicy
      */
     public function admissionSlip(User $user, Application $application): bool
     {
-        return $user->hasAnyRole(['super_admin', 'staff', 'admin', 'registrar_administrator']);
+        return $user->hasAnyRole(['super_admin', 'registrar_administrator', 'staff']);
     }
 
     /**
@@ -59,14 +59,14 @@ class ApplicationPolicy
      */
     public function update(User $user, Application $application): bool
     {
-        return $user->hasAnyRole(['super_admin', 'staff', 'admin']);
+        return $user->hasAnyRole(['super_admin', 'staff', 'registrar_administrator']);
     }
 
     /**
-     * Only super_admin and admin can delete applications.
+     * Only super_admin and registrar_administrator can delete applications.
      */
     public function delete(User $user, Application $application): bool
     {
-        return $user->hasAnyRole(['super_admin', 'admin']);
+        return $user->hasAnyRole(['super_admin', 'registrar_administrator']);
     }
 }

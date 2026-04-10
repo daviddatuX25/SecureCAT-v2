@@ -15,8 +15,8 @@ class DashboardControllerTest extends TestCase
     public function test_admin_sees_application_stats(): void
     {
         $role = Role::query()->create([
-            'name' => 'admin',
-            'display_name' => 'Admin',
+            'name' => 'registrar_administrator',
+            'display_name' => 'Registrar Administrator',
             'description' => null,
         ]);
 

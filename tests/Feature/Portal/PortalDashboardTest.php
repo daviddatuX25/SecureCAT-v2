@@ -2,10 +2,12 @@
 
 namespace Tests\Feature\Portal;
 
+use App\Models\AcademicYear;
 use App\Models\Applicant;
 use App\Models\Application;
 use App\Models\Course;
-use App\Models\Season;
+use Database\Seeders\CourseSeeder;
+use Database\Seeders\RoleSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -16,8 +18,8 @@ class PortalDashboardTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->seed(\Database\Seeders\RoleSeeder::class);
-        $this->seed(\Database\Seeders\CourseSeeder::class);
+        $this->seed(RoleSeeder::class);
+        $this->seed(CourseSeeder::class);
     }
 
     public function test_dashboard_redirects_when_not_authenticated(): void
@@ -30,15 +32,17 @@ class PortalDashboardTest extends TestCase
 
     public function test_dashboard_shows_status_tracker_with_accepted_application(): void
     {
-        $season = Season::create([
+        $academicYear = AcademicYear::create([
             'academic_year' => '2025-2026',
             'semester' => '1',
             'is_active' => true,
+            'application_start_date' => now()->subDays(30),
+            'application_end_date' => now()->addDays(30),
         ]);
 
         $course = Course::first();
         $application = Application::create([
-            'season_id' => $season->id,
+            'academic_year_id' => $academicYear->id,
             'reference_number' => Application::nextReferenceNumber(),
             'first_name' => 'Jane',
             'last_name' => 'Doe',
@@ -83,15 +87,17 @@ class PortalDashboardTest extends TestCase
 
     public function test_dashboard_returns_exam_schedule_null_when_not_assigned(): void
     {
-        $season = Season::create([
+        $academicYear = AcademicYear::create([
             'academic_year' => '2025-2026',
             'semester' => '1',
             'is_active' => true,
+            'application_start_date' => now()->subDays(30),
+            'application_end_date' => now()->addDays(30),
         ]);
 
         $course = Course::first();
         $application = Application::create([
-            'season_id' => $season->id,
+            'academic_year_id' => $academicYear->id,
             'reference_number' => Application::nextReferenceNumber(),
             'first_name' => 'Jane',
             'last_name' => 'Doe',

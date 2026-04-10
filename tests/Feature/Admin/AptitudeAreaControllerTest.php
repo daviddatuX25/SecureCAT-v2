@@ -29,7 +29,7 @@ class AptitudeAreaControllerTest extends TestCase
     private function registrarAdmin(): User
     {
         $user = User::factory()->create();
-        $user->roles()->attach(Role::where('name', 'admin')->first());
+        $user->roles()->attach(Role::where('name', 'registrar_administrator')->first());
         return $user;
     }
 

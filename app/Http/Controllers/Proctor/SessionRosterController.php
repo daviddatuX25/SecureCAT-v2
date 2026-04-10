@@ -61,7 +61,7 @@ class SessionRosterController extends Controller
 
         $user = request()->user();
         $isWithinStartWindow = $exam_session->isWithinStartWindow();
-        $canOverrideSchedule = $user->hasAnyRole(['admin', 'super_admin']);
+        $canOverrideSchedule = $user->hasAnyRole(['registrar_administrator', 'super_admin']);
 
         return Inertia::render('Proctor/SessionRoster', [
             'session' => array_merge($exam_session->toArray(), [
@@ -243,7 +243,7 @@ class SessionRosterController extends Controller
 
         $withinWindow = $exam_session->isWithinStartWindow();
         $user = request()->user();
-        $canOverride = $user->hasAnyRole(['admin', 'super_admin']);
+        $canOverride = $user->hasAnyRole(['registrar_administrator', 'super_admin']);
 
         if (! $withinWindow && ! $canOverride) {
             $message = 'Outside scheduled window. Only an admin can start the session outside the schedule.';

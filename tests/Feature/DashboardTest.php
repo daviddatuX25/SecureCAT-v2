@@ -14,8 +14,8 @@ class DashboardTest extends TestCase
     public function test_dashboard_renders_and_includes_dashboard_payload_for_admin_roles(): void
     {
         $role = Role::query()->create([
-            'name' => 'admin',
-            'display_name' => 'Admin',
+            'name' => 'registrar_administrator',
+            'display_name' => 'Registrar Administrator',
             'description' => null,
         ]);
 

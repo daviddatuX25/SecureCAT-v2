@@ -56,23 +56,23 @@
   const navSections = $derived([
     { label: null, items: [{ href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard, roles: ['*'] }] },
     { label: 'Registrar Office', items: [
-      { href: '/admin/academic-years', label: 'Academic Years', icon: CalendarRange, roles: ['super_admin', 'admin'] },
-      { href: '/applications', label: 'Applications', icon: FileText, roles: ['super_admin', 'admin', 'staff', 'registrar_administrator'] },
-      { href: '/admin/test-scheduling', label: 'Exam Scheduling', icon: Calendar, roles: ['super_admin', 'admin'] },
+      { href: '/admin/academic-years', label: 'Academic Years', icon: CalendarRange, roles: ['super_admin', 'registrar_administrator'] },
+      { href: '/applications', label: 'Applications', icon: FileText, roles: ['super_admin', 'registrar_administrator', 'staff'] },
+      { href: '/admin/test-scheduling', label: 'Exam Scheduling', icon: Calendar, roles: ['super_admin', 'registrar_administrator'] },
     ]},
     { label: 'Guidance Office', items: [
       { href: '/admin/test-scheduling', label: 'My Sessions', icon: Calendar, roles: ['proctor'] },
-      { href: '/admin/test-scheduling/monitoring', label: 'Exam Monitoring', icon: Activity, roles: ['super_admin', 'registrar_administrator', 'proctor'] },
-      { href: '/grading', label: 'Grading', icon: GraduationCap, roles: ['super_admin', 'registrar_administrator'] },
-      { href: '/release', label: 'Release', icon: SendHorizonal, roles: ['super_admin', 'registrar_administrator'] },
+      { href: '/admin/test-scheduling/monitoring', label: 'Exam Monitoring', icon: Activity, roles: ['super_admin', 'test_administrator', 'proctor'] },
+      { href: '/grading', label: 'Grading', icon: GraduationCap, roles: ['super_admin', 'test_administrator'] },
+      { href: '/release', label: 'Release', icon: SendHorizonal, roles: ['super_admin', 'test_administrator'] },
+      { href: '/admin/aptitude-areas', label: 'Aptitude Areas', icon: Layers, roles: ['super_admin', 'test_administrator'] },
+      { href: '/admin/result-sheet-templates', label: 'Result Sheet Templates', icon: FileText, roles: ['super_admin', 'test_administrator'] },
     ]},
     { label: 'Administration', collapsible: true, items: [
       { href: '/admin/users', label: 'Users', icon: Users, roles: ['super_admin'] },
       { href: '/admin/settings', label: 'Settings', icon: Settings, roles: ['super_admin'] },
       { href: '/admin/logs', label: 'Audit Log', icon: ScrollText, roles: ['super_admin'] },
       { href: '/admin/ai-companion', label: 'AI Companion', icon: Bot, roles: ['super_admin'], featureFlag: 'ai_exam_companion_enabled' },
-      { href: '/admin/aptitude-areas', label: 'Aptitude Areas', icon: Layers, roles: ['super_admin'] },
-      { href: '/admin/result-sheet-templates', label: 'Result Sheet Templates', icon: FileText, roles: ['super_admin'] },
     ]},
   ].map((section) => ({
     ...section,

@@ -22,7 +22,7 @@ class AcademicYearControllerTest extends TestCase
     private function admin(): User
     {
         $user = User::factory()->create();
-        $user->roles()->attach(Role::where('name', 'admin')->first());
+        $user->roles()->attach(Role::where('name', 'registrar_administrator')->first());
 
         return $user;
     }
@@ -163,7 +163,7 @@ class AcademicYearControllerTest extends TestCase
 
     public function test_test_administrator_cannot_view_academic_years_index(): void
     {
-        $response = $this->actingAs($this->testAdministrator())->get(route('admin.academic-years.index'));
+        $response = $this->actingAs($this->test_administrator())->get(route('admin.academic-years.index'));
 
         $response->assertStatus(403);
     }
@@ -172,7 +172,7 @@ class AcademicYearControllerTest extends TestCase
     {
         $initialCount = AcademicYear::count();
 
-        $response = $this->actingAs($this->testAdministrator())->post(route('admin.academic-years.store'), [
+        $response = $this->actingAs($this->test_administrator())->post(route('admin.academic-years.store'), [
             'academic_year' => '2025-2026',
             'semester' => '1',
         ]);
