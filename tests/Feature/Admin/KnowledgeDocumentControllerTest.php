@@ -38,11 +38,7 @@ class KnowledgeDocumentControllerTest extends TestCase
     {
         $response = $this->actingAs($this->superAdmin())->get('/admin/knowledge-documents');
 
-        $response->assertStatus(200);
-        $response->assertInertia(fn ($page) => $page
-            ->component('Admin/KnowledgeDocuments/Index')
-            ->has('documents')
-        );
+        $response->assertRedirect(route('admin.ai-companion.index'));
     }
 
     public function test_super_admin_can_create_doc_with_metadata(): void
@@ -131,8 +127,7 @@ class KnowledgeDocumentControllerTest extends TestCase
 
         $response = $this->actingAs($this->superAdmin())->get('/admin/knowledge-documents');
 
-        $response->assertStatus(200);
-        $response->assertInertia(fn ($page) => $page->has('documents')->has('documents.data'));
+        $response->assertRedirect(route('admin.ai-companion.index'));
 
         $doc = KnowledgeDocument::first();
         $this->assertSame('Engineering · 2024', $doc->metadata_summary);
