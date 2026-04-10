@@ -49,7 +49,7 @@ class DemoDashboardSeeder extends Seeder
             // Users for key roles (stable emails for repeatable seeding)
             $users = [
                 'staff' => $this->upsertUserWithRole('staff@demo.local', 'Staff Demo', 'staff'),
-                'admin' => $this->upsertUserWithRole('admin@demo.local', 'Admin Demo', 'admin'),
+                'registrar_admin' => $this->upsertUserWithRole('admin@demo.local', 'Admin Demo', 'registrar_administrator'),
                 'proctor' => $this->upsertUserWithRole('proctor@demo.local', 'Proctor Demo', 'proctor'),
                 'test_admin' => $this->upsertUserWithRole('testadmin@demo.local', 'Test Admin Demo', 'registrar_administrator'),
             ];
@@ -189,7 +189,7 @@ class DemoDashboardSeeder extends Seeder
                         'status' => $s['status'],
                         'published_at' => CarbonImmutable::now()->subDay(),
                         'score_release_date' => $s['date']->addDays(7)->toDateString(),
-                        'created_by' => $users['admin']->id,
+                        'created_by' => $users['registrar_admin']->id,
                     ]
                 );
             });

@@ -76,10 +76,10 @@ class DefenseDemoSeeder extends Seeder
     {
         return [
             'super_admin' => $this->upsertUserWithRole('admin@securecat.local', 'Ricardo Dela Cruz', 'super_admin'),
-            'admin' => $this->upsertUserWithRole('josefina@securecat.local', 'Josefina Gaerlan', 'admin'),
+            'registrar_admin' => $this->upsertUserWithRole('josefina@securecat.local', 'Josefina Gaerlan', 'registrar_administrator'),
             'staff' => $this->upsertUserWithRole('maria@securecat.local', 'Maria Corpuz', 'staff'),
             'proctor' => $this->upsertUserWithRole('eduardo@securecat.local', 'Eduardo Fariñas', 'proctor'),
-            'test_admin' => $this->upsertUserWithRole('analiza@securecat.local', 'Analiza Barroga', 'registrar_administrator'),
+            'test_admin' => $this->upsertUserWithRole('analiza@securecat.local', 'Analiza Barroga', 'test_administrator'),
         ];
     }
 
@@ -225,7 +225,7 @@ class DefenseDemoSeeder extends Seeder
                 'started_at' => $date->setTimeFromTimeString('09:00:00'),
                 'closed_at' => $date->setTimeFromTimeString('11:05:00'),
                 'score_release_date' => $date->addDays(7)->toDateString(),
-                'created_by' => $users['admin']->id,
+                'created_by' => $users['registrar_admin']->id,
             ]
         );
 
@@ -323,7 +323,7 @@ class DefenseDemoSeeder extends Seeder
                 'started_at' => $date->setTimeFromTimeString('13:00:00'),
                 'closed_at' => $date->setTimeFromTimeString('15:05:00'),
                 'score_release_date' => $date->addDays(7)->toDateString(),
-                'created_by' => $users['admin']->id,
+                'created_by' => $users['registrar_admin']->id,
             ]
         );
 
@@ -407,7 +407,7 @@ class DefenseDemoSeeder extends Seeder
                 'status' => ExamSession::STATUS_PUBLISHED,
                 'published_at' => $today->subDays(3),
                 'score_release_date' => $today->addDays(7)->toDateString(),
-                'created_by' => $users['admin']->id,
+                'created_by' => $users['registrar_admin']->id,
             ]
         );
 
