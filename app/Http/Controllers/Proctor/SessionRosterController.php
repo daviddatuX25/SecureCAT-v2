@@ -127,6 +127,15 @@ class SessionRosterController extends Controller
             return back()->with('error', 'Session must be published or in progress.');
         }
 
+        if ($session->isPastEndTime()) {
+            $message = 'The exam window has ended. Attendance cannot be marked.';
+            if ($request->wantsJson()) {
+                return response()->json(['message' => $message], 422);
+            }
+
+            return back()->with('error', $message);
+        }
+
         $applicantId = (int) $request->validated('applicant_id');
         $pivot = DB::table('exam_session_applicant')
             ->where('exam_session_id', $session->id)
@@ -174,6 +183,10 @@ class SessionRosterController extends Controller
             $message = 'Session must be in progress.';
 
             return $request->wantsJson() ? response()->json(['message' => $message], 409) : response()->json(['message' => $message], 409);
+        }
+
+        if ($session->isPastEndTime()) {
+            return response()->json(['message' => 'The exam window has ended. Submissions cannot be recorded.'], 422);
         }
 
         $applicantId = (int) $request->validated('applicant_id');

@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\Proctor;
 
+use App\Models\Applicant;
 use App\Models\ExamSession;
 use App\Models\Role;
 use App\Models\User;
@@ -88,6 +89,65 @@ class SessionRosterTimeEnforcementTest extends TestCase
             ->where('session.is_within_window', true)
             ->where('session.is_past_end', false)
         );
+    }
+
+    public function test_attendance_blocked_after_end_time(): void
+    {
+        $this->seed(RoleSeeder::class);
+
+        $proctor = User::factory()->create();
+        $proctor->roles()->attach(Role::where('name', 'proctor')->first());
+
+        Carbon::setTestNow('2026-05-01 13:00:00'); // past 12:00 end
+
+        $session = $this->makeSession('2026-05-01', '09:00:00', '12:00:00');
+        $session->update(['status' => ExamSession::STATUS_IN_PROGRESS]);
+        $session->proctors()->attach($proctor->id);
+
+        $applicant = Applicant::factory()->create();
+        $session->applicants()->attach($applicant->id, [
+            'attendance_status' => 'pending',
+            'submission_status' => 'pending',
+        ]);
+
+        $response = $this->actingAs($proctor)->postJson("/proctor/sessions/{$session->id}/attendance", [
+            'applicant_id' => $applicant->id,
+            'status' => 'present',
+        ]);
+
+        $response->assertStatus(422);
+        $this->assertDatabaseMissing('exam_session_applicant', [
+            'attendance_status' => 'present',
+        ]);
+    }
+
+    public function test_submission_blocked_after_end_time(): void
+    {
+        $this->seed(RoleSeeder::class);
+
+        $proctor = User::factory()->create();
+        $proctor->roles()->attach(Role::where('name', 'proctor')->first());
+
+        Carbon::setTestNow('2026-05-01 13:00:00'); // past 12:00 end
+
+        $session = $this->makeSession('2026-05-01', '09:00:00', '12:00:00');
+        $session->update(['status' => ExamSession::STATUS_IN_PROGRESS]);
+        $session->proctors()->attach($proctor->id);
+
+        $applicant = Applicant::factory()->create();
+        $session->applicants()->attach($applicant->id, [
+            'attendance_status' => 'present',
+            'submission_status' => 'pending',
+        ]);
+
+        $response = $this->actingAs($proctor)->postJson("/proctor/sessions/{$session->id}/submission", [
+            'applicant_id' => $applicant->id,
+        ]);
+
+        $response->assertStatus(422);
+        $this->assertDatabaseMissing('exam_session_applicant', [
+            'submission_status' => 'submitted',
+        ]);
     }
 
     protected function tearDown(): void
