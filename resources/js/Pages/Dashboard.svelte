@@ -22,9 +22,9 @@
   // Quick actions per role — no "Print Admission Slip"
   const quickActions = $derived([
     (hasRole('admin') || hasRole('super_admin')) && { href: '/applications', label: 'View Applications', icon: FileText },
-    (hasRole('proctor') || hasRole('test_administrator') || hasRole('super_admin')) && { href: '/admin/test-scheduling', label: 'My Sessions', icon: Calendar },
-    (hasRole('test_administrator') || hasRole('super_admin')) && { href: '/grading', label: 'Grading', icon: GraduationCap },
-    (hasRole('test_administrator') || hasRole('super_admin')) && { href: '/release', label: 'Release Results', icon: SendHorizonal },
+    (hasRole('proctor') || hasRole('registrar_administrator') || hasRole('super_admin')) && { href: '/admin/test-scheduling', label: 'My Sessions', icon: Calendar },
+    (hasRole('registrar_administrator') || hasRole('super_admin')) && { href: '/grading', label: 'Grading', icon: GraduationCap },
+    (hasRole('registrar_administrator') || hasRole('super_admin')) && { href: '/release', label: 'Release Results', icon: SendHorizonal },
     (hasRole('admin') || hasRole('super_admin')) && { href: '/admin/users', label: 'Manage Users', icon: Users },
   ].filter(Boolean));
 
@@ -52,8 +52,8 @@
       </section>
     {/if}
 
-    <!-- Session KPIs — proctor / test_administrator / super_admin -->
-    {#if (hasRole('proctor') || hasRole('test_administrator') || hasRole('super_admin')) && safeSessionStats.length > 0}
+    <!-- Session KPIs — proctor / registrar_administrator / super_admin -->
+    {#if (hasRole('proctor') || hasRole('registrar_administrator') || hasRole('super_admin')) && safeSessionStats.length > 0}
       <section>
         <h2 class="mb-4 text-base font-semibold text-foreground">Sessions</h2>
         <div class="grid grid-cols-2 lg:grid-cols-3 gap-4">
@@ -68,8 +68,8 @@
       </section>
     {/if}
 
-    <!-- Grading + Release KPIs — test_administrator / super_admin -->
-    {#if (hasRole('test_administrator') || hasRole('super_admin')) && safeGradingStats.length > 0}
+    <!-- Grading + Release KPIs — registrar_administrator / super_admin -->
+    {#if (hasRole('registrar_administrator') || hasRole('super_admin')) && safeGradingStats.length > 0}
       <section>
         <h2 class="mb-4 text-base font-semibold text-foreground">Grading & Release</h2>
         <div class="grid grid-cols-2 lg:grid-cols-3 gap-4">

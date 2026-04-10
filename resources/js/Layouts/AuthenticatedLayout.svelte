@@ -57,14 +57,14 @@
     { label: null, items: [{ href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard, roles: ['*'] }] },
     { label: 'Registrar Office', items: [
       { href: '/admin/academic-years', label: 'Academic Years', icon: CalendarRange, roles: ['super_admin', 'admin'] },
-      { href: '/applications', label: 'Applications', icon: FileText, roles: ['super_admin', 'admin', 'staff', 'test_administrator'] },
+      { href: '/applications', label: 'Applications', icon: FileText, roles: ['super_admin', 'admin', 'staff', 'registrar_administrator'] },
       { href: '/admin/test-scheduling', label: 'Exam Scheduling', icon: Calendar, roles: ['super_admin', 'admin'] },
     ]},
     { label: 'Guidance Office', items: [
       { href: '/admin/test-scheduling', label: 'My Sessions', icon: Calendar, roles: ['proctor'] },
-      { href: '/admin/test-scheduling/monitoring', label: 'Exam Monitoring', icon: Activity, roles: ['super_admin', 'test_administrator', 'proctor'] },
-      { href: '/grading', label: 'Grading', icon: GraduationCap, roles: ['super_admin', 'test_administrator'] },
-      { href: '/release', label: 'Release', icon: SendHorizonal, roles: ['super_admin', 'test_administrator'] },
+      { href: '/admin/test-scheduling/monitoring', label: 'Exam Monitoring', icon: Activity, roles: ['super_admin', 'registrar_administrator', 'proctor'] },
+      { href: '/grading', label: 'Grading', icon: GraduationCap, roles: ['super_admin', 'registrar_administrator'] },
+      { href: '/release', label: 'Release', icon: SendHorizonal, roles: ['super_admin', 'registrar_administrator'] },
     ]},
     { label: 'Administration', collapsible: true, items: [
       { href: '/admin/users', label: 'Users', icon: Users, roles: ['super_admin'] },

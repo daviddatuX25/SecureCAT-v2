@@ -79,7 +79,7 @@ class DefenseDemoSeeder extends Seeder
             'admin' => $this->upsertUserWithRole('josefina@securecat.local', 'Josefina Gaerlan', 'admin'),
             'staff' => $this->upsertUserWithRole('maria@securecat.local', 'Maria Corpuz', 'staff'),
             'proctor' => $this->upsertUserWithRole('eduardo@securecat.local', 'Eduardo Fariñas', 'proctor'),
-            'test_admin' => $this->upsertUserWithRole('analiza@securecat.local', 'Analiza Barroga', 'test_administrator'),
+            'test_admin' => $this->upsertUserWithRole('analiza@securecat.local', 'Analiza Barroga', 'registrar_administrator'),
         ];
     }
 

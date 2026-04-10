@@ -116,7 +116,7 @@ class DemoSetupCommand extends Command
                 ['admin',             'josefina@securecat.local'],
                 ['staff',             'maria@securecat.local'],
                 ['proctor',           'eduardo@securecat.local'],
-                ['test_administrator', 'analiza@securecat.local'],
+                ['registrar_administrator', 'analiza@securecat.local'],
             ]
         );
 

@@ -54,13 +54,13 @@ class DashboardService
     }
 
     /**
-     * Session-level KPI stats (proctor / test_administrator / super_admin).
+     * Session-level KPI stats (proctor / registrar_administrator / super_admin).
      *
      * @return array<int, array{key: string, label: string, value: int|string, href?: string}>
      */
     public function getSessionStats(User $user): array
     {
-        if (! $user->hasAnyRole(['super_admin', 'proctor', 'test_administrator'])) {
+        if (! $user->hasAnyRole(['super_admin', 'proctor', 'registrar_administrator'])) {
             return [];
         }
 
@@ -114,13 +114,13 @@ class DashboardService
     }
 
     /**
-     * Grading + release KPI stats (test_administrator / super_admin only).
+     * Grading + release KPI stats (registrar_administrator / super_admin only).
      *
      * @return array<int, array{key: string, label: string, value: int|string, href?: string}>
      */
     public function getGradingStats(User $user): array
     {
-        if (! $user->hasAnyRole(['super_admin', 'test_administrator'])) {
+        if (! $user->hasAnyRole(['super_admin', 'registrar_administrator'])) {
             return [];
         }
 

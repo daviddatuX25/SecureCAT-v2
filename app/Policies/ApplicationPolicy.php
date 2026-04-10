@@ -9,16 +9,16 @@ class ApplicationPolicy
 {
     /**
      * Roles that can view applications list and details.
-     * Per 05-SECURITY-CONTROLS: staff, admin, test_administrator, super_admin.
+     * Per 05-SECURITY-CONTROLS: staff, admin, registrar_administrator, super_admin.
      */
     public function viewAny(User $user): bool
     {
-        return $user->hasAnyRole(['super_admin', 'staff', 'admin', 'test_administrator']);
+        return $user->hasAnyRole(['super_admin', 'staff', 'admin', 'registrar_administrator']);
     }
 
     public function view(User $user, Application $application): bool
     {
-        return $user->hasAnyRole(['super_admin', 'staff', 'admin', 'test_administrator']);
+        return $user->hasAnyRole(['super_admin', 'staff', 'admin', 'registrar_administrator']);
     }
 
     /**
@@ -51,6 +51,6 @@ class ApplicationPolicy
      */
     public function admissionSlip(User $user, Application $application): bool
     {
-        return $user->hasAnyRole(['super_admin', 'staff', 'admin', 'test_administrator']);
+        return $user->hasAnyRole(['super_admin', 'staff', 'admin', 'registrar_administrator']);
     }
 }

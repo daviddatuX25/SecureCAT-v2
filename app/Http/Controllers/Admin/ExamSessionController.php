@@ -420,13 +420,13 @@ class ExamSessionController extends Controller
 
     /**
      * Session list for Test Administrators.
-     * - test_administrator: sessions where they are assigned as a proctor.
+     * - registrar_administrator: sessions where they are assigned as a proctor.
      * - admin / super_admin: all sessions.
      */
     public function testAdminIndex(Request $request): Response
     {
         $user = $request->user();
-        $isTestAdminOnly = $user->hasAnyRole(['test_administrator']) && ! $user->hasAnyRole(['super_admin', 'admin']);
+        $isTestAdminOnly = $user->hasAnyRole(['registrar_administrator']) && ! $user->hasAnyRole(['super_admin', 'admin']);
 
         $activeAcademicYear = AcademicYear::active();
         $queryAcademicYearId = $activeAcademicYear?->id;

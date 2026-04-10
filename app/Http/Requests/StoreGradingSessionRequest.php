@@ -8,7 +8,7 @@ class StoreGradingSessionRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return $this->user()?->hasAnyRole(['super_admin', 'admin', 'test_administrator']) ?? false;
+        return $this->user()?->hasAnyRole(['super_admin', 'admin', 'registrar_administrator']) ?? false;
     }
 
     public function rules(): array

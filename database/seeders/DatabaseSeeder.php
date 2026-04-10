@@ -9,7 +9,7 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         // Seed order (foundation data — run first):
-        //  1. RoleSeeder          → roles (super_admin, admin, staff, proctor, test_administrator)
+        //  1. RoleSeeder          → roles (super_admin, admin, staff, proctor, registrar_administrator)
         //  2. CourseSeeder        → courses (BSIT, BSCS, BSDS, etc.)
         //  3. AptitudeAreaSeeder   → aptitude areas (SA, NA, VR, AR, LR, PSA)
         //  4. AdmissionSlipTemplateSeeder → print templates

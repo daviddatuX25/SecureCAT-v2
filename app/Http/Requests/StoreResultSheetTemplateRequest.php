@@ -10,7 +10,7 @@ class StoreResultSheetTemplateRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return $this->user()?->hasAnyRole(['super_admin', 'admin', 'test_administrator']) ?? false;
+        return $this->user()?->hasAnyRole(['super_admin', 'admin', 'registrar_administrator']) ?? false;
     }
 
     public function rules(): array
@@ -33,8 +33,8 @@ class StoreResultSheetTemplateRequest extends FormRequest
                 ResultSheetTemplate::LOGICAL_HALF_LEGAL,
                 ResultSheetTemplate::LOGICAL_HALF_LETTER,
             ])],
-            'content' => ['required_if:mode,' . ResultSheetTemplate::MODE_HTML, 'nullable', 'string'],
-            'docx' => ['required_if:mode,' . ResultSheetTemplate::MODE_DOCX, 'nullable', 'file', 'mimes:docx', 'max:5120'],
+            'content' => ['required_if:mode,'.ResultSheetTemplate::MODE_HTML, 'nullable', 'string'],
+            'docx' => ['required_if:mode,'.ResultSheetTemplate::MODE_DOCX, 'nullable', 'file', 'mimes:docx', 'max:5120'],
             'is_active' => ['sometimes', 'boolean'],
         ];
     }

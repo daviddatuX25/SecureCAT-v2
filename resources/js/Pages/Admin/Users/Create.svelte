@@ -8,8 +8,8 @@
 
   const breadcrumbs = [{ label: 'Users', href: '/admin/users' }, { label: 'Create' }];
 
-  // Only roles allowed by StoreUserRequest (staff, admin, proctor, test_administrator)
-  const allowedRoleNames = ['staff', 'admin', 'proctor', 'test_administrator'];
+  // Only roles allowed by StoreUserRequest (staff, admin, proctor, registrar_administrator)
+  const allowedRoleNames = ['staff', 'admin', 'proctor', 'registrar_administrator'];
   const selectableRoles = $derived(roles.filter((r) => allowedRoleNames.includes(r.name)));
 
   let selectedRoles = $state([]);

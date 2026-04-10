@@ -9,7 +9,7 @@ class UpdateAptitudeAreaRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return $this->user()?->hasAnyRole(['super_admin', 'test_administrator']) ?? false;
+        return $this->user()?->hasAnyRole(['super_admin', 'registrar_administrator']) ?? false;
     }
 
     public function rules(): array
@@ -17,12 +17,12 @@ class UpdateAptitudeAreaRequest extends FormRequest
         $aptitudeArea = $this->route('aptitude_area');
 
         return [
-            'name'          => ['required', 'string', 'max:100'],
-            'code'          => ['required', 'string', 'max:20', Rule::unique('aptitude_areas', 'code')->ignore($aptitudeArea?->id)],
-            'description'   => ['nullable', 'string', 'max:1000'],
-            'max_items'     => ['required', 'integer', 'min:1', 'max:999'],
+            'name' => ['required', 'string', 'max:100'],
+            'code' => ['required', 'string', 'max:20', Rule::unique('aptitude_areas', 'code')->ignore($aptitudeArea?->id)],
+            'description' => ['nullable', 'string', 'max:1000'],
+            'max_items' => ['required', 'integer', 'min:1', 'max:999'],
             'display_order' => ['nullable', 'integer', 'min:0'],
-            'is_active'     => ['nullable', 'boolean'],
+            'is_active' => ['nullable', 'boolean'],
         ];
     }
 
