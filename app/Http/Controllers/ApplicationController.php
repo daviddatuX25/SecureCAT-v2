@@ -5,11 +5,11 @@ namespace App\Http\Controllers;
 use App\Http\Requests\DismissApplicationRequest;
 use App\Http\Requests\StoreApplicationRequest;
 use App\Jobs\SendApplicantSetupEmail;
+use App\Models\AcademicYear;
 use App\Models\Applicant;
 use App\Models\Application;
 use App\Models\Appointment;
 use App\Models\Course;
-use App\Models\Season;
 use App\Services\AdmissionSlipService;
 use Carbon\Carbon;
 use Illuminate\Http\RedirectResponse;
@@ -29,19 +29,19 @@ class ApplicationController extends Controller
     {
         $this->authorize('viewAny', Application::class);
 
-        $activeSeason = Season::active();
-        $seasonId = $request->input('season_id');
-        if ($seasonId !== null && $seasonId !== '') {
-            $querySeasonId = (int) $seasonId;
+        $activeAcademicYear = AcademicYear::active();
+        $academicYearId = $request->input('academic_year_id');
+        if ($academicYearId !== null && $academicYearId !== '') {
+            $queryAcademicYearId = (int) $academicYearId;
         } else {
-            $querySeasonId = $activeSeason?->id;
+            $queryAcademicYearId = $activeAcademicYear?->id;
         }
 
         $query = Application::query()
-            ->with(['coursePreference1:id,name,code', 'coursePreference2:id,name,code', 'coursePreference3:id,name,code', 'season:id,academic_year,semester']);
+            ->with(['coursePreference1:id,name,code', 'coursePreference2:id,name,code', 'coursePreference3:id,name,code', 'academicYear:id,academic_year,semester']);
 
-        if ($querySeasonId !== null) {
-            $query->forSeason($querySeasonId);
+        if ($queryAcademicYearId !== null) {
+            $query->forAcademicYear($queryAcademicYearId);
         }
 
         if ($search = $request->input('search')) {
@@ -89,13 +89,13 @@ class ApplicationController extends Controller
             ];
         });
 
-        $seasons = Season::query()->orderByDesc('academic_year')->orderBy('semester')->get(['id', 'academic_year', 'semester', 'is_active']);
+        $academicYears = AcademicYear::query()->orderByDesc('academic_year')->orderBy('semester')->get(['id', 'academic_year', 'semester', 'is_active']);
 
         return Inertia::render('Applications/Index', [
             'applications' => $applications,
-            'filters' => $request->only(['search', 'status', 'date_from', 'date_to', 'season_id']),
-            'seasons' => $seasons,
-            'active_season_id' => $activeSeason?->id,
+            'filters' => $request->only(['search', 'status', 'date_from', 'date_to', 'academic_year_id']),
+            'seasons' => $academicYears,
+            'active_season_id' => $activeAcademicYear?->id,
             'statuses' => [
                 ['value' => 'pending', 'label' => 'Pending'],
                 ['value' => 'accepted', 'label' => 'Accepted'],
@@ -111,7 +111,7 @@ class ApplicationController extends Controller
     {
         $this->authorize('view', $application);
 
-        $application->load(['coursePreference1:id,name,code', 'coursePreference2:id,name,code', 'coursePreference3:id,name,code', 'appointment', 'season:id,application_start_date,application_end_date']);
+        $application->load(['coursePreference1:id,name,code', 'coursePreference2:id,name,code', 'coursePreference3:id,name,code', 'appointment', 'academicYear:id,application_start_date,application_end_date']);
 
         $courses = $this->getCourses();
 
@@ -121,9 +121,9 @@ class ApplicationController extends Controller
             $appointmentLabel = $apt->date->format('Y-m-d').' '.substr($apt->time_slot, 0, 5);
         }
 
-        $season = $application->season;
-        $withinApplicationWindow = $season?->isApplicationWindowOpen() ?? false;
-        $applicationWindowLabel = $season?->applicationWindowLabel() ?? null;
+        $academicYear = $application->academicYear;
+        $withinApplicationWindow = $academicYear?->isApplicationWindowOpen() ?? false;
+        $applicationWindowLabel = $academicYear?->applicationWindowLabel() ?? null;
 
         $applicationData = [
             'id' => $application->id,
@@ -166,24 +166,24 @@ class ApplicationController extends Controller
 
     public function create(): Response
     {
-        $activeSeason = Season::active();
+        $activeAcademicYear = AcademicYear::active();
         $courses = $this->getCourses();
         $appointments = $this->getAppointments();
 
-        $allowApply = $activeSeason !== null && $activeSeason->isApplicationWindowOpen();
+        $allowApply = $activeAcademicYear !== null && $activeAcademicYear->isApplicationWindowOpen();
 
         return Inertia::render('Applications/Apply', [
             'courses' => $courses,
             'appointments' => $appointments,
-            'active_season' => $activeSeason ? ['id' => $activeSeason->id, 'academic_year' => $activeSeason->academic_year, 'semester' => $activeSeason->semester, 'semester_label' => $activeSeason->semesterLabel()] : null,
+            'active_season' => $activeAcademicYear ? ['id' => $activeAcademicYear->id, 'academic_year' => $activeAcademicYear->academic_year, 'semester' => $activeAcademicYear->semester, 'semester_label' => $activeAcademicYear->semesterLabel()] : null,
             'allow_apply' => $allowApply,
         ]);
     }
 
     public function store(StoreApplicationRequest $request): RedirectResponse
     {
-        $activeSeason = Season::active();
-        if ($activeSeason === null || ! $activeSeason->isApplicationWindowOpen()) {
+        $activeAcademicYear = AcademicYear::active();
+        if ($activeAcademicYear === null || ! $activeAcademicYear->isApplicationWindowOpen()) {
             abort(422, 'The application window is currently closed. Please try again later or contact the office.');
         }
 
@@ -195,7 +195,7 @@ class ApplicationController extends Controller
         $referenceNumber = Application::nextReferenceNumber();
 
         $application = Application::create([
-            'season_id' => $activeSeason->id,
+            'academic_year_id' => $activeAcademicYear->id,
             'reference_number' => $referenceNumber,
             'first_name' => $validated['first_name'],
             'middle_name' => $validated['middle_name'] ?? null,
@@ -257,7 +257,7 @@ class ApplicationController extends Controller
                 ->with('error', 'Application has already been accepted.');
         }
 
-        $withinWindow = $application->season?->isApplicationWindowOpen() ?? false;
+        $withinWindow = $application->academicYear?->isApplicationWindowOpen() ?? false;
         if (! $withinWindow) {
             return redirect()
                 ->back()
@@ -345,7 +345,7 @@ class ApplicationController extends Controller
      */
     public function dismiss(DismissApplicationRequest $request, Application $application): RedirectResponse
     {
-        $withinWindow = $application->season?->isApplicationWindowOpen() ?? false;
+        $withinWindow = $application->academicYear?->isApplicationWindowOpen() ?? false;
         if (! $withinWindow) {
             return redirect()
                 ->back()

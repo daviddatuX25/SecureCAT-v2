@@ -13,9 +13,9 @@
 
   function submitForm(e) {
     e.preventDefault();
-    $form.post('/admin/seasons');
+    $form.post('/admin/academic-years');
   }
-const breadcrumbs = [{ label: 'Academic Years', href: '/admin/seasons' }, { label: 'Create' }];
+  const breadcrumbs = [{ label: 'Academic Years', href: '/admin/academic-years' }, { label: 'Create' }];
 </script>
 
 <AuthenticatedLayout {breadcrumbs}>
@@ -81,9 +81,9 @@ const breadcrumbs = [{ label: 'Academic Years', href: '/admin/seasons' }, { labe
 
       <div class="flex gap-2 pt-4">
         <Button type="submit" disabled={$form.processing}>
-          {$form.processing ? 'Creating...' : 'Create Season'}
+          {$form.processing ? 'Creating...' : 'Create Academic Year'}
         </Button>
-        <Link href="/admin/seasons">
+        <Link href="/admin/academic-years">
           <Button type="button" variant="outline">Cancel</Button>
         </Link>
       </div>

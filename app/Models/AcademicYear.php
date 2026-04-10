@@ -7,9 +7,10 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Facades\DB;
 
-class Season extends Model
+class AcademicYear extends Model
 {
     use HasFactory;
+    protected $table = 'academic_years';
 
     protected $fillable = ['academic_year', 'semester', 'is_active', 'application_start_date', 'application_end_date'];
 
@@ -24,12 +25,12 @@ class Season extends Model
 
     public function applications(): HasMany
     {
-        return $this->hasMany(Application::class);
+        return $this->hasMany(Application::class, 'academic_year_id');
     }
 
     public function examSessions(): HasMany
     {
-        return $this->hasMany(ExamSession::class);
+        return $this->hasMany(ExamSession::class, 'academic_year_id');
     }
 
     public static function active(): ?self
@@ -40,11 +41,9 @@ class Season extends Model
     public function isApplicationWindowOpen(): bool
     {
         $today = now()->toDateString();
-
         if ($this->application_start_date && $today < $this->application_start_date->toDateString()) {
             return false;
         }
-
         if ($this->application_end_date && $today > $this->application_end_date->toDateString()) {
             return false;
         }
@@ -57,20 +56,16 @@ class Season extends Model
         if (! $this->application_start_date && ! $this->application_end_date) {
             return 'No window set';
         }
-
         $format = 'M j, Y';
         $start = $this->application_start_date?->format($format);
         $end = $this->application_end_date?->format($format);
-
         if ($start && $end) {
             return sprintf('%s – %s', $start, $end);
         }
-
         if ($start && ! $end) {
             return sprintf('From %s (no end date)', $start);
         }
 
-        // No start, only end
         return sprintf('Until %s', $end);
     }
 

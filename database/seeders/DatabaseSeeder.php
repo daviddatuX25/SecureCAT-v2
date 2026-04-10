@@ -27,7 +27,7 @@ class DatabaseSeeder extends Seeder
             AdmissionSlipTemplateSeeder::class,
             ResultSheetTemplateSeeder::class,
             DemoAccountSeeder::class,
-            SeasonSeeder::class,
+            AcademicYearSeeder::class,
         ]);
 
         if (config('demo.enabled', false)) {

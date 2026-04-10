@@ -2,18 +2,18 @@
 
 namespace Database\Seeders;
 
+use App\Models\AcademicYear;
 use App\Models\Applicant;
 use App\Models\ApplicantScore;
 use App\Models\Application;
 use App\Models\Appointment;
+use App\Models\AptitudeArea;
 use App\Models\ConsultationSummary;
 use App\Models\Course;
-use App\Models\AptitudeArea;
 use App\Models\ExamSession;
 use App\Models\GradingSession;
 use App\Models\Role;
 use App\Models\Room;
-use App\Models\Season;
 use App\Models\User;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Seeder;
@@ -24,25 +24,28 @@ class DemoDashboardSeeder extends Seeder
 {
     public function run(): void
     {
-        $season = Season::query()->where('is_active', true)->first();
-        if (! $season) {
+        $academicYear = AcademicYear::query()->where('is_active', true)->first();
+        if (! $academicYear) {
             $this->command?->warn('DemoDashboardSeeder: no active Season found; skipping.');
+
             return;
         }
 
         $courses = Course::query()->where('is_active', true)->take(5)->get();
         if ($courses->count() < 3) {
             $this->command?->warn('DemoDashboardSeeder: not enough courses; skipping.');
+
             return;
         }
 
         $domains = AptitudeArea::query()->where('is_active', true)->orderBy('display_order')->get();
         if ($domains->count() < 3) {
             $this->command?->warn('DemoDashboardSeeder: not enough aptitude areas; skipping.');
+
             return;
         }
 
-        DB::transaction(function () use ($season, $courses, $domains) {
+        DB::transaction(function () use ($academicYear, $courses, $domains) {
             // Users for key roles (stable emails for repeatable seeding)
             $users = [
                 'staff' => $this->upsertUserWithRole('staff@demo.local', 'Staff Demo', 'staff'),
@@ -94,7 +97,7 @@ class DemoDashboardSeeder extends Seeder
                 ['ref' => 'DEMO-APP-0007', 'status' => 'pending', 'submitted_days_ago' => 0, 'appointment' => false],
             ];
 
-            $applications = collect($appsSpec)->map(function ($spec, $idx) use ($season, $courses, $appointments, $users) {
+            $applications = collect($appsSpec)->map(function ($spec, $idx) use ($academicYear, $courses, $appointments, $users) {
                 $submittedAt = CarbonImmutable::now()->subDays((int) $spec['submitted_days_ago']);
                 $course1 = $courses[0]->id;
                 $course2 = $courses[1]->id;
@@ -123,10 +126,10 @@ class DemoDashboardSeeder extends Seeder
                 $app = Application::query()->updateOrCreate(
                     ['reference_number' => $spec['ref']],
                     [
-                        'season_id' => $season->id,
+                        'academic_year_id' => $academicYear->id,
                         'first_name' => 'Demo',
                         'middle_name' => null,
-                        'last_name' => 'Applicant ' . str_pad((string) ($idx + 1), 2, '0', STR_PAD_LEFT),
+                        'last_name' => 'Applicant '.str_pad((string) ($idx + 1), 2, '0', STR_PAD_LEFT),
                         'suffix' => null,
                         'birthdate' => '2006-01-15',
                         'age' => 19,
@@ -173,13 +176,13 @@ class DemoDashboardSeeder extends Seeder
                 ['key' => 'DEMO-EXAM-003', 'room' => $rooms[2], 'date' => $today->addDays(5), 'start' => '09:00', 'status' => ExamSession::STATUS_PUBLISHED],
             ];
 
-            $examSessions = collect($sessionSpecs)->map(function ($s) use ($season, $users) {
+            $examSessions = collect($sessionSpecs)->map(function ($s) use ($academicYear, $users) {
                 return ExamSession::query()->updateOrCreate(
                     [
-                        'season_id' => $season->id,
+                        'academic_year_id' => $academicYear->id,
                         'room_id' => $s['room']->id,
                         'date' => $s['date']->toDateString(),
-                        'start_time' => $s['start'] . ':00',
+                        'start_time' => $s['start'].':00',
                     ],
                     [
                         'end_time' => '11:00:00',
@@ -231,7 +234,9 @@ class DemoDashboardSeeder extends Seeder
                     $gs->applicants()->syncWithoutDetaching([$applicantId]);
 
                     // idx 0: full scores; idx 1: partial; idx 2: none
-                    if ($idx === 2) continue;
+                    if ($idx === 2) {
+                        continue;
+                    }
 
                     $take = ($idx === 0) ? $domains->count() : max(1, (int) floor($domains->count() / 2));
                     $domains->take($take)->each(function (AptitudeArea $d) use ($gs, $applicantId, $users) {
@@ -290,4 +295,3 @@ class DemoDashboardSeeder extends Seeder
         return $user;
     }
 }
-

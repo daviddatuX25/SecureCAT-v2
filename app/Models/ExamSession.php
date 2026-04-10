@@ -24,7 +24,7 @@ class ExamSession extends Model
     public const STATUS_CANCELLED = 'cancelled';
 
     protected $fillable = [
-        'season_id',
+        'academic_year_id',
         'room_id',
         'date',
         'start_time',
@@ -46,9 +46,9 @@ class ExamSession extends Model
         ];
     }
 
-    public function season(): BelongsTo
+    public function academicYear(): BelongsTo
     {
-        return $this->belongsTo(Season::class);
+        return $this->belongsTo(AcademicYear::class, 'academic_year_id');
     }
 
     public function room(): BelongsTo
@@ -56,12 +56,12 @@ class ExamSession extends Model
         return $this->belongsTo(Room::class);
     }
 
-    public function scopeForSeason($query, $season): void
+    public function scopeForAcademicYear($query, $academicYear): void
     {
-        if ($season instanceof Season) {
-            $query->where('season_id', $season->id);
-        } elseif ($season !== null) {
-            $query->where('season_id', $season);
+        if ($academicYear instanceof AcademicYear) {
+            $query->where('academic_year_id', $academicYear->id);
+        } elseif ($academicYear !== null) {
+            $query->where('academic_year_id', $academicYear);
         }
     }
 

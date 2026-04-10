@@ -2,14 +2,14 @@
 
 namespace Database\Seeders;
 
-use App\Models\Season;
+use App\Models\AcademicYear;
 use Illuminate\Database\Seeder;
 
-class SeasonSeeder extends Seeder
+class AcademicYearSeeder extends Seeder
 {
     public function run(): void
     {
-        $season = Season::updateOrCreate(
+        $academicYear = AcademicYear::updateOrCreate(
             ['academic_year' => '2025-2026', 'semester' => '1'],
             [
                 'is_active' => true,
@@ -18,8 +18,8 @@ class SeasonSeeder extends Seeder
             ]
         );
 
-        if (Season::where('is_active', true)->count() > 1) {
-            Season::where('id', '!=', $season->id)->update(['is_active' => false]);
+        if (AcademicYear::where('is_active', true)->count() > 1) {
+            AcademicYear::where('id', '!=', $academicYear->id)->update(['is_active' => false]);
         }
     }
 }

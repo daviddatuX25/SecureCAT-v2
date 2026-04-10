@@ -6,12 +6,12 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\AssignApplicantsRequest;
 use App\Http\Requests\StoreExamSessionRequest;
 use App\Http\Requests\UpdateExamSessionRequest;
+use App\Models\AcademicYear;
 use App\Models\Applicant;
 use App\Models\ExamSchedulingConversation;
 use App\Models\ExamSession;
 use App\Models\GradingSession;
 use App\Models\Room;
-use App\Models\Season;
 use App\Models\SystemSetting;
 use App\Models\User;
 use App\Notifications\ExamSessionPublished;
@@ -43,21 +43,21 @@ class ExamSessionController extends Controller
         $user = $request->user();
         $isProctorView = $user->hasAnyRole(['proctor']) && ! $user->hasAnyRole(['super_admin', 'admin']);
 
-        $activeSeason = Season::active();
-        $seasonId = $request->input('season_id');
-        if ($seasonId !== null && $seasonId !== '') {
-            $querySeasonId = (int) $seasonId;
+        $activeAcademicYear = AcademicYear::active();
+        $academicYearId = $request->input('academic_year_id');
+        if ($academicYearId !== null && $academicYearId !== '') {
+            $queryAcademicYearId = (int) $academicYearId;
         } else {
-            $querySeasonId = $activeSeason?->id;
+            $queryAcademicYearId = $activeAcademicYear?->id;
         }
 
         $query = ExamSession::query()
-            ->with(['room:id,name,building,capacity', 'proctors:id,name', 'season:id,academic_year,semester'])
+            ->with(['room:id,name,building,capacity', 'proctors:id,name', 'academicYear:id,academic_year,semester'])
             ->orderBy('date')
             ->orderBy('start_time');
 
-        if ($querySeasonId !== null) {
-            $query->forSeason($querySeasonId);
+        if ($queryAcademicYearId !== null) {
+            $query->forAcademicYear($queryAcademicYearId);
         }
 
         if ($isProctorView) {
@@ -82,19 +82,19 @@ class ExamSessionController extends Controller
 
         $sessions = $query->paginate(15)->withQueryString();
 
-        $seasons = Season::query()->orderByDesc('academic_year')->orderBy('semester')->get(['id', 'academic_year', 'semester', 'is_active']);
+        $academicYears = AcademicYear::query()->orderByDesc('academic_year')->orderBy('semester')->get(['id', 'academic_year', 'semester', 'is_active']);
 
         $payload = [
             'sessions' => $sessions,
-            'filters' => $request->only(['search', 'status', 'date_from', 'date_to', 'season_id']),
-            'seasons' => $seasons,
-            'active_season_id' => $activeSeason?->id,
+            'filters' => $request->only(['search', 'status', 'date_from', 'date_to', 'academic_year_id']),
+            'seasons' => $academicYears,
+            'active_season_id' => $activeAcademicYear?->id,
             'statuses' => self::statusesList(),
             'view' => $isProctorView ? 'proctor' : 'admin',
         ];
 
         if (! $isProctorView) {
-            $payload['schedule_assistant'] = self::scheduleAssistantPayload($request, $querySeasonId ?? $activeSeason?->id);
+            $payload['schedule_assistant'] = self::scheduleAssistantPayload($request, $queryAcademicYearId ?? $activeAcademicYear?->id);
         }
 
         return Inertia::render('Admin/TestScheduling/Index', $payload);
@@ -104,7 +104,7 @@ class ExamSessionController extends Controller
      * Payload for the schedule assistant modal (rooms, draft sessions, messages, etc.).
      * Same data as ExamSchedulingAssistantController::index for consistent behavior.
      */
-    private static function scheduleAssistantPayload(Request $request, ?int $seasonId): array
+    private static function scheduleAssistantPayload(Request $request, ?int $academicYearId): array
     {
         $applicantCount = Applicant::query()
             ->whereHas('application', fn ($q) => $q->where('status', 'accepted'))
@@ -126,10 +126,10 @@ class ExamSessionController extends Controller
             ->all();
 
         $draftSessions = [];
-        if ($seasonId !== null) {
+        if ($academicYearId !== null) {
             $draftSessions = ExamSession::query()
                 ->where('status', ExamSession::STATUS_DRAFT)
-                ->forSeason($seasonId)
+                ->forAcademicYear($academicYearId)
                 ->with('room:id,name,building,capacity')
                 ->get()
                 ->map(fn ($s) => [
@@ -169,16 +169,16 @@ class ExamSessionController extends Controller
     {
         $this->authorize('create', ExamSession::class);
 
-        $activeSeason = Season::active();
+        $activeAcademicYear = AcademicYear::active();
         $rooms = Room::query()->where('is_active', true)->orderBy('building')->orderBy('name')->get(['id', 'name', 'building', 'capacity']);
         $proctors = User::query()->whereHas('roles', fn ($q) => $q->where('name', 'proctor'))->orderBy('name')->get(['id', 'name']);
-        $seasons = Season::query()->orderByDesc('academic_year')->orderBy('semester')->get(['id', 'academic_year', 'semester', 'is_active']);
+        $academicYears = AcademicYear::query()->orderByDesc('academic_year')->orderBy('semester')->get(['id', 'academic_year', 'semester', 'is_active']);
 
         return Inertia::render('Admin/TestScheduling/Create', [
             'rooms' => $rooms,
             'proctors' => $proctors,
-            'seasons' => $seasons,
-            'active_season_id' => $activeSeason?->id,
+            'seasons' => $academicYears,
+            'active_season_id' => $activeAcademicYear?->id,
         ]);
     }
 
@@ -188,10 +188,10 @@ class ExamSessionController extends Controller
 
         $validated = $request->validated();
 
-        $seasonId = $validated['season_id'] ?? Season::active()?->id;
+        $academicYearId = $validated['academic_year_id'] ?? AcademicYear::active()?->id;
 
         $session = ExamSession::create([
-            'season_id' => $seasonId,
+            'academic_year_id' => $academicYearId,
             'room_id' => $validated['room_id'],
             'date' => $validated['date'],
             'start_time' => $validated['start_time'],
@@ -269,7 +269,7 @@ class ExamSessionController extends Controller
         $this->authorize('update', $exam_session);
 
         $validated = $request->validated();
-        $sessionData = collect($validated)->only(['season_id', 'room_id', 'date', 'start_time', 'end_time'])->filter()->all();
+        $sessionData = collect($validated)->only(['academic_year_id', 'room_id', 'date', 'start_time', 'end_time'])->filter()->all();
         if (! empty($sessionData)) {
             $exam_session->update($sessionData);
         }
@@ -428,19 +428,19 @@ class ExamSessionController extends Controller
         $user = $request->user();
         $isTestAdminOnly = $user->hasAnyRole(['test_administrator']) && ! $user->hasAnyRole(['super_admin', 'admin']);
 
-        $activeSeason = Season::active();
-        $querySeasonId = $activeSeason?->id;
-        if ($request->filled('season_id')) {
-            $querySeasonId = (int) $request->input('season_id');
+        $activeAcademicYear = AcademicYear::active();
+        $queryAcademicYearId = $activeAcademicYear?->id;
+        if ($request->filled('academic_year_id')) {
+            $queryAcademicYearId = (int) $request->input('academic_year_id');
         }
 
         $query = ExamSession::query()
-            ->with(['room:id,name,building,capacity', 'proctors:id,name', 'season:id,academic_year,semester'])
+            ->with(['room:id,name,building,capacity', 'proctors:id,name', 'academicYear:id,academic_year,semester'])
             ->orderBy('date')
             ->orderBy('start_time');
 
-        if ($querySeasonId !== null) {
-            $query->forSeason($querySeasonId);
+        if ($queryAcademicYearId !== null) {
+            $query->forAcademicYear($queryAcademicYearId);
         }
 
         if ($isTestAdminOnly) {
@@ -452,13 +452,13 @@ class ExamSessionController extends Controller
         }
 
         $sessions = $query->paginate(15)->withQueryString();
-        $seasons = Season::query()->orderByDesc('academic_year')->orderBy('semester')->get(['id', 'academic_year', 'semester', 'is_active']);
+        $academicYears = AcademicYear::query()->orderByDesc('academic_year')->orderBy('semester')->get(['id', 'academic_year', 'semester', 'is_active']);
 
         return Inertia::render('Admin/TestAdmin/Index', [
             'sessions' => $sessions,
-            'filters' => $request->only(['status', 'season_id']),
-            'seasons' => $seasons,
-            'active_season_id' => $activeSeason?->id,
+            'filters' => $request->only(['status', 'academic_year_id']),
+            'seasons' => $academicYears,
+            'active_season_id' => $activeAcademicYear?->id,
             'statuses' => self::statusesList(),
         ]);
     }
@@ -548,7 +548,7 @@ class ExamSessionController extends Controller
 
         $user = $request->user();
         $isProctorView = $user->hasAnyRole(['proctor']) && ! $user->hasAnyRole(['super_admin', 'admin']);
-        $activeSeason = Season::active();
+        $activeAcademicYear = AcademicYear::active();
 
         $query = ExamSession::query()
             ->with(['room:id,name,building,capacity', 'proctors:id,name'])
@@ -557,7 +557,7 @@ class ExamSessionController extends Controller
             ->orderBy('start_time');
 
         if ($activeSeason !== null) {
-            $query->forSeason($activeSeason);
+            $query->forAcademicYear($activeAcademicYear);
         }
         if ($isProctorView) {
             $query->whereHas('proctors', fn ($q) => $q->where('users.id', $user->id));

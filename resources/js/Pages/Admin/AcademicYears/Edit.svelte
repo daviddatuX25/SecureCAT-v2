@@ -15,9 +15,9 @@
 
   function submitForm(e) {
     e.preventDefault();
-    $form.put(`/admin/seasons/${season.id}`);
+    $form.put(`/admin/academic-years/${season.id}`);
   }
-const breadcrumbs = [{ label: 'Academic Years', href: '/admin/seasons' }, { label: 'Edit' }];
+  const breadcrumbs = [{ label: 'Academic Years', href: '/admin/academic-years' }, { label: 'Edit' }];
 </script>
 
 <AuthenticatedLayout {breadcrumbs}>
@@ -76,14 +76,14 @@ const breadcrumbs = [{ label: 'Academic Years', href: '/admin/seasons' }, { labe
       </div>
 
       {#if season.is_active}
-        <p class="text-sm text-muted-foreground">This season is currently active. Use &quot;Set active&quot; on another season from the list to change.</p>
+        <p class="text-sm text-muted-foreground">This academic year is currently active. Use &quot;Set active&quot; on another year from the list to change.</p>
       {/if}
 
       <div class="flex gap-2 pt-4">
         <Button type="submit" disabled={$form.processing}>
           {$form.processing ? 'Saving...' : 'Save'}
         </Button>
-        <Link href="/admin/seasons">
+        <Link href="/admin/academic-years">
           <Button type="button" variant="outline">Cancel</Button>
         </Link>
       </div>

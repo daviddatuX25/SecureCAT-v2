@@ -2,10 +2,10 @@
 
 namespace App\Policies;
 
-use App\Models\Season;
+use App\Models\AcademicYear;
 use App\Models\User;
 
-class SeasonPolicy
+class AcademicYearPolicy
 {
     public function viewAny(User $user): bool
     {
@@ -17,12 +17,12 @@ class SeasonPolicy
         return $user->hasAnyRole(['super_admin', 'admin']);
     }
 
-    public function update(User $user, Season $season): bool
+    public function update(User $user, AcademicYear $academicYear): bool
     {
         return $user->hasAnyRole(['super_admin', 'admin']);
     }
 
-    public function activate(User $user, Season $season): bool
+    public function activate(User $user, AcademicYear $academicYear): bool
     {
         return $user->hasAnyRole(['super_admin', 'admin']);
     }

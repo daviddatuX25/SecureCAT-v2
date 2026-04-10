@@ -3,11 +3,11 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\AcademicYear;
 use App\Models\Applicant;
 use App\Models\ExamSchedulingConversation;
 use App\Models\ExamSession;
 use App\Models\Room;
-use App\Models\Season;
 use App\Services\ExamSchedulingAssistantService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -40,7 +40,7 @@ class ExamSchedulingAssistantController extends Controller
         $user = $request->user();
         $message = $request->input('message');
 
-        $activeSeason = Season::active();
+        $activeAcademicYear = AcademicYear::active();
         $applicantCount = Applicant::query()
             ->whereHas('application', fn ($q) => $q->where('status', 'accepted'))
             ->whereDoesntHave('examSessions')
@@ -70,10 +70,10 @@ class ExamSchedulingAssistantController extends Controller
             ->all();
 
         $draftSessions = [];
-        if ($activeSeason) {
+        if ($activeAcademicYear) {
             $draftSessions = ExamSession::query()
                 ->where('status', ExamSession::STATUS_DRAFT)
-                ->forSeason($activeSeason)
+                ->forAcademicYear($activeAcademicYear)
                 ->with('room:id,name,building,capacity')
                 ->get()
                 ->map(fn ($s) => [
@@ -164,8 +164,8 @@ class ExamSchedulingAssistantController extends Controller
         ]);
 
         $payload = $request->input('sessions');
-        $activeSeason = Season::active();
-        if (! $activeSeason) {
+        $activeAcademicYear = AcademicYear::active();
+        if (! $activeAcademicYear) {
             return response()->json(['message' => 'No active season. Activate a season first.'], 422);
         }
 
@@ -194,7 +194,7 @@ class ExamSchedulingAssistantController extends Controller
         $roomIds = Room::query()->where('is_active', true)->pluck('id')->all();
 
         try {
-            DB::transaction(function () use ($payload, $activeSeason, $roomIds, $request) {
+            DB::transaction(function () use ($payload, $roomIds, $request) {
                 foreach ($payload as $item) {
                     $applicantIds = array_values(array_unique(array_map('intval', $item['applicant_ids'] ?? [])));
                     if (empty($applicantIds)) {
@@ -237,7 +237,7 @@ class ExamSchedulingAssistantController extends Controller
                     }
 
                     $session = ExamSession::create([
-                        'season_id' => $activeSeason->id,
+                        'academic_year_id' => $activeAcademicYear->id,
                         'room_id' => $roomId,
                         'date' => $date,
                         'start_time' => $startTime,

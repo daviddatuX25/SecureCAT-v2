@@ -56,7 +56,7 @@
   const navSections = $derived([
     { label: null, items: [{ href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard, roles: ['*'] }] },
     { label: 'Registrar Office', items: [
-      { href: '/admin/seasons', label: 'Academic Years', icon: CalendarRange, roles: ['super_admin', 'admin'] },
+      { href: '/admin/academic-years', label: 'Academic Years', icon: CalendarRange, roles: ['super_admin', 'admin'] },
       { href: '/applications', label: 'Applications', icon: FileText, roles: ['super_admin', 'admin', 'staff', 'test_administrator'] },
       { href: '/admin/test-scheduling', label: 'Exam Scheduling', icon: Calendar, roles: ['super_admin', 'admin'] },
     ]},

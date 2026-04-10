@@ -2,8 +2,8 @@
 
 namespace App\Console\Commands;
 
+use App\Models\AcademicYear;
 use App\Models\Application;
-use App\Models\Season;
 use Illuminate\Console\Command;
 
 class ExpireSeasonApplications extends Command
@@ -16,18 +16,19 @@ class ExpireSeasonApplications extends Command
     {
         $today = now()->toDateString();
 
-        $seasonIds = Season::query()
+        $academicYearIds = AcademicYear::query()
             ->whereNotNull('application_end_date')
             ->whereDate('application_end_date', '<', $today)
             ->pluck('id');
 
-        if ($seasonIds->isEmpty()) {
+        if ($academicYearIds->isEmpty()) {
             $this->info('No seasons with a closed application window found.');
+
             return self::SUCCESS;
         }
 
         $affected = Application::query()
-            ->whereIn('season_id', $seasonIds)
+            ->whereIn('academic_year_id', $academicYearIds)
             ->where('status', 'pending')
             ->update([
                 'status' => 'dismissed',
@@ -39,4 +40,3 @@ class ExpireSeasonApplications extends Command
         return self::SUCCESS;
     }
 }
-
