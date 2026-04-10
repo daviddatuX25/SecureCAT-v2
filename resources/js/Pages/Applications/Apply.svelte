@@ -84,7 +84,7 @@
     {:else}
       <Card>
         <CardHeader>
-          <CardTitle>Submit an application</CardTitle>
+          <CardTitle class="text-center">Submit an application</CardTitle>
           <CardDescription>
             {#if active_season}
               A.Y. {active_season.academic_year} – {active_season.semester_label}
@@ -173,7 +173,7 @@
                 <p class="mt-1 text-sm text-destructive">{$form.errors.course_preference_1}</p>
               {/if}
             </div>
-            <div class="flex gap-4 pt-4">
+            <div class="flex justify-end gap-4 pt-4">
               <Button type="submit" disabled={$form.processing} class="min-h-[44px]">
                 {$form.processing ? 'Submitting…' : 'Submit application'}
               </Button>

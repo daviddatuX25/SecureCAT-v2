@@ -26,7 +26,7 @@
     <div class="mt-8 mb-4 text-left p-6 bg-muted/30 rounded-xl border border-border shadow-sm">
       <h3 class="font-bold text-lg mb-2 text-foreground">Next Steps</h3>
       <p class="text-sm text-muted-foreground mb-4">
-        Please take a screenshot or write down your reference number. To proceed with your application and test scheduling, you must personally submit the following requirements to the Registrar's Office:
+        Please take a screenshot or write down your reference number. To proceed with your application and exam scheduling, you must personally submit the following requirements to the Registrar's Office:
       </p>
       <ul class="list-disc list-inside text-sm text-foreground space-y-1.5 ml-2 mb-4">
         <li>Form 138 (Report Card) or Transcript of Records</li>
