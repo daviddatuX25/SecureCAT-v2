@@ -196,6 +196,25 @@ class ExamSchedulingAssistantController extends Controller
     }
 
     /**
+     * DELETE conversation — delete the current user's conversation to start fresh.
+     */
+    public function clearConversation(Request $request): JsonResponse
+    {
+        $this->authorize('create', ExamSession::class);
+
+        $deleted = ExamSchedulingConversation::query()
+            ->where('user_id', $request->user()->id)
+            ->delete();
+
+        Log::info('[AI-SCHEDULER-DEBUG] Conversation cleared', [
+            'user_id' => $request->user()->id,
+            'deleted_count' => $deleted,
+        ]);
+
+        return response()->json(['message' => 'Conversation reset.']);
+    }
+
+    /**
      * POST apply-schedule — validate and apply structured schedule (create sessions, assign applicants).
      */
     public function applySchedule(Request $request): JsonResponse

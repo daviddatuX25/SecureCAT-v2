@@ -115,6 +115,7 @@ Route::middleware(['auth'])->group(function () {
 
     Route::middleware('role:super_admin,registrar_administrator')->prefix('admin')->name('admin.')->group(function () {
         Route::post('test-scheduling/schedule-assistant/chat', [ExamSchedulingAssistantController::class, 'chat'])->name('test-scheduling.schedule-assistant.chat');
+        Route::delete('test-scheduling/schedule-assistant/conversation', [ExamSchedulingAssistantController::class, 'clearConversation'])->name('test-scheduling.schedule-assistant.clear');
         Route::post('test-scheduling/schedule-assistant/apply-schedule', [ExamSchedulingAssistantController::class, 'applySchedule'])->name('test-scheduling.schedule-assistant.apply');
         Route::post('test-scheduling/{exam_session}/assign-applicants', [ExamSessionController::class, 'assignApplicants'])->name('test-scheduling.assign-applicants');
         Route::post('test-scheduling/{exam_session}/remove-applicant', [ExamSessionController::class, 'removeApplicant'])->name('test-scheduling.remove-applicant');
