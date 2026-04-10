@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use Illuminate\Support\Arr;
+use Illuminate\Support\Facades\Log;
 use MoeMizrak\LaravelOpenrouter\DTO\ChatData;
 use MoeMizrak\LaravelOpenrouter\DTO\ErrorData;
 use MoeMizrak\LaravelOpenrouter\DTO\MessageData;
@@ -59,7 +60,7 @@ class ExamSchedulingAssistantService
      *
      * @param  array<int, array{id: int, room?: array, date?: string, start_time?: string, end_time?: string, current_count: int, capacity: int}>  $draftSessions
      */
-    public function buildSystemPrompt(int $applicantCount, array $rooms, array $applicantSummary = [], array $draftSessions = []): string
+    public function buildSystemPrompt(int $applicantCount, array $rooms, array $applicantSummary = [], array $draftSessions = [], array $existingSessions = []): string
     {
         $roomList = collect($rooms)->map(fn ($r) => sprintf(
             'id: %s, name: %s, capacity: %s',
@@ -89,12 +90,29 @@ class ExamSchedulingAssistantService
                 ))->join('; ') . '.';
         }
 
+        $existingList = '';
+        if (! empty($existingSessions)) {
+            $existingList = ' Existing SCHEDULED (non-draft) exam sessions — do NOT schedule applicants in these rooms/times: '
+                . collect($existingSessions)->map(fn ($s) => sprintf(
+                    'id: %s, room: %s, date: %s, time: %s-%s',
+                    $s['id'],
+                    $s['room']['name'] ?? $s['room_id'] ?? '?',
+                    $s['date'] ?? '—',
+                    $s['start_time'] ?? '—',
+                    $s['end_time'] ?? '—'
+                ))->join('; ') . '.';
+        }
+
         return "You are an assistant helping an admin schedule exam sessions. "
-            . "There are {$applicantCount} applicants to schedule.{$summary} "
-            . "Available rooms: {$roomList}.{$draftList} "
+            . "IMPORTANT — you MUST always derive factual claims (counts, room availability, session status) from the data provided below, NEVER from memory or guesswork. "
+            . "There are {$applicantCount} applicants waiting to be scheduled.{$summary} "
+            . "Available rooms: {$roomList}.{$draftList}{$existingList} "
             . "Constraints: each applicant must be assigned to exactly one session; each session cannot exceed room capacity; the same room cannot be double-booked (no overlapping date/time). "
+            . "IMPORTANT — Assigned means confirmed placement: applicants assigned only to DRAFT sessions are still awaiting scheduling (draft sessions are not confirmed placements). Only applicants in non-draft sessions are considered fully assigned. "
             . "You may assign applicants to EXISTING DRAFT sessions (use exam_session_id + applicant_ids) or create NEW sessions (use room_id, date, start_time, end_time, applicant_ids). "
             . "Ask clarifying questions (e.g. preferred dates, morning/afternoon slots) and only output the final schedule when the user confirms. "
+            . "NEVER make absolute factual claims (e.g. 'there are no applicants', 'all rooms are full', 'no draft sessions') unless the data above explicitly shows zero. "
+            . "If you are unsure, say 'The records show...' or 'Based on the data I have...' rather than making absolute statements. "
             . "In the chat, always reply in plain conversational language: no code blocks, no JSON. When the user asks to generate the schedule, the structured output is captured separately—do not repeat the full JSON in your reply. "
             . "When the user asks to generate or output the schedule, respond with valid JSON: sessions array where each item has applicant_ids and either exam_session_id (existing draft) or room_id, date, start_time, end_time (new session).";
     }
@@ -114,7 +132,8 @@ class ExamSchedulingAssistantService
             $context['applicant_count'],
             $context['rooms'],
             $context['applicant_summary'] ?? [],
-            $context['draft_sessions'] ?? []
+            $context['draft_sessions'] ?? [],
+            $context['existing_sessions'] ?? []
         );
 
         $messageData = [
@@ -142,6 +161,17 @@ class ExamSchedulingAssistantService
             provider: $requestStructured ? new ProviderPreferencesData(require_parameters: true) : null
         );
 
+        Log::info('[AI-SCHEDULER-DEBUG] Full payload to OpenRouter', [
+            'model' => $model,
+            'systemPrompt' => $systemPrompt,
+            'messageCount' => count($messageData),
+            'messages' => array_map(fn ($m) => [
+                'role' => $m->role,
+                'content' => $m->content,
+            ], $messageData),
+            'requestStructured' => $requestStructured,
+        ]);
+
         $response = LaravelOpenRouter::chatRequest($chatData);
 
         if ($response instanceof ErrorData) {
@@ -158,6 +188,11 @@ class ExamSchedulingAssistantService
             $content = Arr::get($content, '0.text', json_encode($content));
         }
         $content = (string) $content;
+
+        Log::info('[AI-SCHEDULER-DEBUG] OpenRouter response', [
+            'content' => $content,
+            'rawResponse' => json_encode($response),
+        ]);
 
         $result = ['reply' => $content];
 
