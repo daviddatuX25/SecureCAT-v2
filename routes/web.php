@@ -144,6 +144,10 @@ Route::middleware(['auth'])->group(function () {
     Route::put('/applications/{application}/accept', [ApplicationController::class, 'accept'])->name('applications.accept')->middleware('role:super_admin,staff,admin');
     Route::post('/applications/{application}/resend-setup-email', [ApplicationController::class, 'resendSetupEmail'])->name('applications.resend-setup-email')->middleware('role:super_admin,staff,admin');
     Route::put('/applications/{application}/dismiss', [ApplicationController::class, 'dismiss'])->name('applications.dismiss')->middleware('role:super_admin,staff,admin');
+    Route::post('/applications/bulk-accept', [ApplicationController::class, 'bulkAccept'])->name('applications.bulk-accept')->middleware('role:super_admin,staff,admin');
+    Route::post('/applications/bulk-dismiss', [ApplicationController::class, 'bulkDismiss'])->name('applications.bulk-dismiss')->middleware('role:super_admin,staff,admin');
+    Route::put('/applications/{application}/reopen', [ApplicationController::class, 'reopen'])->name('applications.reopen')->middleware('role:super_admin,staff,admin');
+    Route::delete('/applications/{application}', [ApplicationController::class, 'destroy'])->name('applications.destroy')->middleware('role:super_admin,admin');
     Route::get('/applications/{application}/admission-slip', [ApplicationController::class, 'admissionSlip'])->name('applications.admission-slip')->middleware('role:super_admin,staff,admin,registrar_administrator');
     Route::get('/proctor', fn () => redirect()->route('admin.test-scheduling.index'))->middleware('role:super_admin,proctor');
     Route::middleware('role:super_admin,admin,proctor,registrar_administrator')->prefix('proctor')->name('proctor.')->group(function () {
@@ -153,6 +157,7 @@ Route::middleware(['auth'])->group(function () {
         Route::post('sessions/{exam_session}/submission-bulk', [SessionRosterController::class, 'storeSubmissionBulk'])->name('sessions.submission-bulk');
         Route::post('sessions/{exam_session}/start', [SessionRosterController::class, 'start'])->name('sessions.start');
         Route::post('sessions/{exam_session}/close', [SessionRosterController::class, 'close'])->name('sessions.close');
+        Route::post('sessions/{exam_session}/bulk-attendance', [SessionRosterController::class, 'bulkAttendance'])->name('sessions.bulk-attendance');
     });
 
     // Test Admin session management — dedicated index + roster with full permissions

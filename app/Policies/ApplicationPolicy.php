@@ -53,4 +53,20 @@ class ApplicationPolicy
     {
         return $user->hasAnyRole(['super_admin', 'staff', 'admin', 'registrar_administrator']);
     }
+
+    /**
+     * Bulk accept/dismiss and reopen — same roles as accept.
+     */
+    public function update(User $user, Application $application): bool
+    {
+        return $user->hasAnyRole(['super_admin', 'staff', 'admin']);
+    }
+
+    /**
+     * Only super_admin and admin can delete applications.
+     */
+    public function delete(User $user, Application $application): bool
+    {
+        return $user->hasAnyRole(['super_admin', 'admin']);
+    }
 }

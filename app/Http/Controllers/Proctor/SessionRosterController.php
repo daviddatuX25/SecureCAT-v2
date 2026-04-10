@@ -10,7 +10,9 @@ use App\Models\ExamSession;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -286,5 +288,26 @@ class SessionRosterController extends Controller
         }
 
         return back()->with('success', 'Session closed.');
+    }
+
+    /**
+     * Bulk update attendance or submission status for a list of applicants in a session.
+     */
+    public function bulkAttendance(Request $request, ExamSession $exam_session): RedirectResponse
+    {
+        $data = $request->validate([
+            'applicant_ids' => ['required', 'array'],
+            'applicant_ids.*' => ['integer'],
+            'status' => ['required', Rule::in(['present', 'absent', 'submitted'])],
+        ]);
+
+        $column = $data['status'] === 'submitted' ? 'submission_status' : 'attendance_status';
+
+        DB::table('exam_session_applicant')
+            ->where('exam_session_id', $exam_session->id)
+            ->whereIn('applicant_id', $data['applicant_ids'])
+            ->update([$column => $data['status']]);
+
+        return back()->with('success', 'Bulk update applied.');
     }
 }

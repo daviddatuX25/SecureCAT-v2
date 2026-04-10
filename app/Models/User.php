@@ -64,6 +64,15 @@ class User extends Authenticatable
         return $this->roles()->whereIn('name', $roles)->exists();
     }
 
+    public function assignRole(string $role): void
+    {
+        $roleModel = Role::firstOrCreate(
+            ['name' => $role],
+            ['display_name' => ucfirst(str_replace('_', ' ', $role))]
+        );
+        $this->roles()->syncWithoutDetaching($roleModel);
+    }
+
     public function credentials(): HasMany
     {
         return $this->hasMany(UserCredential::class);

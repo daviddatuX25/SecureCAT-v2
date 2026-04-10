@@ -398,6 +398,71 @@ class ApplicationController extends Controller
         return $pdf->download($filename);
     }
 
+    /**
+     * Bulk accept pending applications. Non-pending rows are silently skipped.
+     */
+    public function bulkAccept(Request $request): RedirectResponse
+    {
+        $ids = $request->validate(['ids' => 'required|array', 'ids.*' => 'integer'])['ids'];
+
+        Application::whereIn('id', $ids)
+            ->where('status', 'pending')
+            ->update([
+                'status' => 'accepted',
+                'processed_by' => auth()->id(),
+                'processed_at' => now(),
+            ]);
+
+        return back()->with('success', 'Selected applications accepted.');
+    }
+
+    /**
+     * Bulk dismiss pending applications. Non-pending rows are silently skipped.
+     */
+    public function bulkDismiss(Request $request): RedirectResponse
+    {
+        $ids = $request->validate(['ids' => 'required|array', 'ids.*' => 'integer'])['ids'];
+
+        Application::whereIn('id', $ids)
+            ->where('status', 'pending')
+            ->update([
+                'status' => 'dismissed',
+                'processed_by' => auth()->id(),
+                'processed_at' => now(),
+            ]);
+
+        return back()->with('success', 'Selected applications dismissed.');
+    }
+
+    /**
+     * Re-open a dismissed application back to pending.
+     * Gated: application window of the linked academic year must still be open.
+     */
+    public function reopen(Application $application): RedirectResponse
+    {
+        $this->authorize('update', $application);
+
+        if (! $application->academicYear?->isApplicationWindowOpen()) {
+            return back()->withErrors(['error' => 'The application window is closed.']);
+        }
+
+        $application->update(['status' => 'pending']);
+
+        return back()->with('success', 'Application re-opened.');
+    }
+
+    /**
+     * Hard-delete an application (any status). Requires admin or super_admin.
+     */
+    public function destroy(Application $application): RedirectResponse
+    {
+        $this->authorize('delete', $application);
+
+        $application->delete();
+
+        return redirect('/applications')->with('success', 'Application deleted.');
+    }
+
     private function getCourses(): array
     {
         $defaults = [
