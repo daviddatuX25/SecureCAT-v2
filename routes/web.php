@@ -104,10 +104,14 @@ Route::middleware(['auth'])->group(function () {
     Route::middleware('role:super_admin,admin,proctor')->prefix('admin')->name('admin.')->group(function () {
         Route::get('test-scheduling', [ExamSessionController::class, 'index'])->name('test-scheduling.index');
         Route::get('test-scheduling/create', [ExamSessionController::class, 'create'])->name('test-scheduling.create');
-        Route::get('test-scheduling/monitoring', [ExamSessionController::class, 'monitoring'])->name('test-scheduling.monitoring');
         Route::get('test-scheduling/schedule-assistant', fn () => redirect()->route('admin.test-scheduling.index'))->name('test-scheduling.schedule-assistant.index');
         Route::get('test-scheduling/{exam_session}', [ExamSessionController::class, 'show'])->name('test-scheduling.show');
     });
+
+    // Monitoring — standalone route so test_administrator can access it
+    Route::get('admin/test-scheduling/monitoring', [ExamSessionController::class, 'monitoring'])
+        ->name('admin.test-scheduling.monitoring')
+        ->middleware(['web', 'auth', 'role:super_admin,admin,proctor,test_administrator']);
 
     Route::middleware('role:super_admin,admin,test_administrator')->prefix('admin')->name('admin.')->group(function () {
         Route::post('test-scheduling/schedule-assistant/chat', [ExamSchedulingAssistantController::class, 'chat'])->name('test-scheduling.schedule-assistant.chat');
