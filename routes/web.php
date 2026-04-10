@@ -89,7 +89,7 @@ Route::middleware(['auth'])->group(function () {
         Route::get('ai-companion', [AiCompanionAdminController::class, 'index'])->name('ai-companion.index');
         Route::put('ai-companion/persona', [AiCompanionAdminController::class, 'updatePersona'])->name('ai-companion.persona.update');
         // Redirect old knowledge-documents index → new hub
-        Route::get('knowledge-documents', fn () => redirect()->route('admin.ai-companion.index'));
+        Route::get('knowledge-documents', fn () => redirect()->route('admin.ai-companion.index'))->name('knowledge-documents.index');
         Route::get('knowledge-documents/create', [KnowledgeDocumentController::class, 'create'])->name('knowledge-documents.create');
         Route::post('knowledge-documents', [KnowledgeDocumentController::class, 'store'])->name('knowledge-documents.store');
         Route::get('knowledge-documents/import', [KnowledgeDocumentController::class, 'importForm'])->name('knowledge-documents.import');
