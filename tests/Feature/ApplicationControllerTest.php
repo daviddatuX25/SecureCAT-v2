@@ -59,7 +59,7 @@ class ApplicationControllerTest extends TestCase
         ]);
     }
 
-    public function test_index_returns_statuses_including_dismissed_and_incomplete_documents(): void
+    public function test_index_returns_statuses_including_dismissed(): void
     {
         $response = $this->actingAs($this->staff())->get(route('applications.index'));
 
@@ -70,7 +70,6 @@ class ApplicationControllerTest extends TestCase
             ->where('statuses.0.value', 'pending')
             ->where('statuses.1.value', 'accepted')
             ->where('statuses.2.value', 'dismissed')
-            ->where('statuses.3.value', 'incomplete_documents')
         );
     }
 

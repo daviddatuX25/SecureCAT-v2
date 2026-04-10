@@ -54,7 +54,7 @@ class ApplicationController extends Controller
         }
 
         if ($status = $request->input('status')) {
-            if (in_array($status, ['pending', 'accepted', 'dismissed', 'incomplete_documents'], true)) {
+            if (in_array($status, ['pending', 'accepted', 'dismissed'], true)) {
                 $query->where('status', $status);
             }
         }
@@ -100,7 +100,6 @@ class ApplicationController extends Controller
                 ['value' => 'pending', 'label' => 'Pending'],
                 ['value' => 'accepted', 'label' => 'Accepted'],
                 ['value' => 'dismissed', 'label' => 'Dismissed'],
-                ['value' => 'incomplete_documents', 'label' => 'Incomplete Documents'],
             ],
         ]);
     }
@@ -251,7 +250,7 @@ class ApplicationController extends Controller
     {
         $this->authorize('accept', $application);
 
-        $allowedStatuses = ['pending', 'dismissed', 'incomplete_documents'];
+        $allowedStatuses = ['pending', 'dismissed'];
         if (! in_array($application->status, $allowedStatuses, true)) {
             return redirect()
                 ->back()
@@ -353,7 +352,7 @@ class ApplicationController extends Controller
                 ->with('error', 'Dismiss is only allowed while the application window is open.');
         }
 
-        $allowedStatuses = ['pending', 'incomplete_documents'];
+        $allowedStatuses = ['pending'];
         if (! in_array($application->status, $allowedStatuses, true)) {
             return redirect()
                 ->back()

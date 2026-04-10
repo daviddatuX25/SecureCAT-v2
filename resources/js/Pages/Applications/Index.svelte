@@ -6,11 +6,14 @@
   import { Input } from '@/Components/ui/input';
   import * as Table from '@/Components/ui/table';
   import * as ToggleGroup from '@/Components/ui/toggle-group';
-  import { Eye, Filter, ChevronDown, Table2, LayoutGrid, MonitorSmartphone, CheckCircle, XCircle } from 'lucide-svelte';
+  import { Eye, Filter, ChevronDown, Table2, LayoutGrid, MonitorSmartphone, CheckCircle, XCircle, UploadCloud } from 'lucide-svelte';
 
   let { applications, filters = {}, seasons = [], active_season_id = null, statuses = [] } = $props();
 
   const page = usePage();
+  const authUser = $derived($page.props.auth?.user ?? null);
+  const roles = $derived(authUser?.roles?.map((r) => r.name) ?? []);
+  function hasRole(r) { return roles.includes(r); }
   const success = $derived($page.props.flash?.success ?? null);
   const error = $derived($page.props.flash?.error ?? null);
 
@@ -45,7 +48,6 @@
     if (status === 'pending') return 'warning';
     if (status === 'accepted') return 'success';
     if (status === 'dismissed') return 'danger';
-    if (status === 'incomplete_documents') return 'warning';
     return 'muted';
   }
 
@@ -86,6 +88,14 @@
         <p class="mt-1 text-sm text-muted-foreground">View and manage applications by season</p>
       </div>
       <div class="flex flex-wrap items-center gap-3">
+        {#if hasRole('super_admin')}
+          <Link href="/admin/applications/import">
+            <Button variant="outline" class="min-h-[44px] gap-2">
+              <UploadCloud class="h-4 w-4" />
+              Import
+            </Button>
+          </Link>
+        {/if}
         <ToggleGroup.Root
           type="single"
           bind:value={viewMode}
@@ -217,7 +227,7 @@
                   </Table.Cell>
                   <Table.Cell class="px-4 py-3 text-right">
                     <div class="flex justify-end gap-2">
-                      {#if app.status === 'pending' || app.status === 'incomplete_documents'}
+                      {#if app.status === 'pending'}
                         <Button
                           variant="ghost"
                           size="sm"
@@ -293,7 +303,7 @@
               {app.submitted_at ? new Date(app.submitted_at).toLocaleDateString() : '—'}
             </p>
             <div class="mt-3 flex flex-wrap gap-2">
-              {#if app.status === 'pending' || app.status === 'incomplete_documents'}
+              {#if app.status === 'pending'}
                 <Button
                   variant="outline"
                   size="sm"
