@@ -9,13 +9,60 @@ use App\Http\Requests\UpdateKnowledgeDocumentRequest;
 use App\Models\KnowledgeDocument;
 use App\Models\SystemSetting;
 use App\Services\CsvToNarrativeService;
+use App\Services\MixedbreadService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
 use Inertia\Inertia;
 use Inertia\Response;
 
 class KnowledgeDocumentController extends Controller
 {
+    public function __construct(
+        private readonly MixedbreadService $mixedbread,
+    ) {}
+
+    private function syncToMixedbread(KnowledgeDocument $doc): void
+    {
+        $storeId = config('services.mixedbread.store_id', '');
+        if (empty($storeId)) {
+            return;
+        }
+        try {
+            $result = $this->mixedbread->uploadDocument(
+                $storeId,
+                $doc->content,
+                $doc->title,
+                array_filter((array) $doc->metadata),
+            );
+            $doc->update([
+                'mxb_file_id' => $result['id'] ?? null,
+                'mxb_sync_status' => KnowledgeDocument::SYNC_INDEXED,
+                'mxb_synced_at' => now(),
+            ]);
+        } catch (\Throwable $e) {
+            Log::warning('Mixedbread sync failed', ['doc_id' => $doc->id, 'error' => $e->getMessage()]);
+            $doc->update(['mxb_sync_status' => KnowledgeDocument::SYNC_FAILED]);
+        }
+    }
+
+    private function deleteFromMixedbread(KnowledgeDocument $doc): void
+    {
+        if (empty($doc->mxb_file_id)) {
+            return;
+        }
+        $storeId = config('services.mixedbread.store_id', '');
+        if (empty($storeId)) {
+            return;
+        }
+        try {
+            $this->mixedbread->deleteDocument($storeId, $doc->mxb_file_id);
+        } catch (\Throwable $e) {
+            Log::warning('Mixedbread delete failed', ['doc_id' => $doc->id, 'error' => $e->getMessage()]);
+        }
+    }
+
     public function index(Request $request): Response
     {
         if (! SystemSetting::aiCompanionEnabled()) {
@@ -27,7 +74,7 @@ class KnowledgeDocumentController extends Controller
         $query = KnowledgeDocument::query()->orderByDesc('updated_at');
 
         if ($request->filled('search')) {
-            $term = '%' . $request->get('search') . '%';
+            $term = '%'.$request->get('search').'%';
             $query->where(function ($q) use ($term) {
                 $q->where('title', 'like', $term)
                     ->orWhere('content', 'like', $term);
@@ -38,7 +85,7 @@ class KnowledgeDocumentController extends Controller
             return [
                 'id' => $doc->id,
                 'title' => $doc->title,
-                'content' => \Illuminate\Support\Str::limit($doc->content, 120),
+                'content' => Str::limit($doc->content, 120),
                 'metadata' => $doc->metadata,
                 'metadata_summary' => $doc->metadata_summary,
                 'source' => $doc->source,
@@ -65,13 +112,15 @@ class KnowledgeDocumentController extends Controller
     {
         $validated = $request->validated();
 
-        KnowledgeDocument::create([
+        $doc = KnowledgeDocument::create([
             'title' => $validated['title'],
             'content' => $validated['content'],
             'metadata' => $validated['metadata'] ?? [],
             'source' => $validated['source'] ?? KnowledgeDocument::SOURCE_MANUAL,
             'is_active' => true,
         ]);
+
+        $this->syncToMixedbread($doc);
 
         return redirect()->route('admin.knowledge-documents.index')->with('success', 'Knowledge document created.');
     }
@@ -98,12 +147,17 @@ class KnowledgeDocumentController extends Controller
     {
         $validated = $request->validated();
 
+        $this->deleteFromMixedbread($knowledgeDocument);
+
         $knowledgeDocument->update([
             'title' => $validated['title'],
             'content' => $validated['content'],
             'metadata' => $validated['metadata'] ?? $knowledgeDocument->metadata,
             'is_active' => array_key_exists('is_active', $validated) ? $validated['is_active'] : $knowledgeDocument->is_active,
         ]);
+
+        $knowledgeDocument->refresh();
+        $this->syncToMixedbread($knowledgeDocument);
 
         return redirect()->route('admin.knowledge-documents.index')->with('success', 'Knowledge document updated.');
     }
@@ -112,6 +166,7 @@ class KnowledgeDocumentController extends Controller
     {
         $this->authorize('delete', $knowledgeDocument);
 
+        $this->deleteFromMixedbread($knowledgeDocument);
         $knowledgeDocument->delete();
 
         return redirect()->route('admin.knowledge-documents.index')->with('success', 'Knowledge document deleted.');
@@ -150,13 +205,15 @@ class KnowledgeDocumentController extends Controller
         $metadata = $request->validated('metadata') ?? [];
         $metadata = array_filter($metadata, fn ($v) => $v !== null && $v !== '');
 
-        KnowledgeDocument::create([
+        $doc = KnowledgeDocument::create([
             'title' => $request->validated('title'),
             'content' => $result['content'],
             'metadata' => $metadata,
             'source' => KnowledgeDocument::SOURCE_CSV_IMPORT,
             'is_active' => true,
         ]);
+
+        $this->syncToMixedbread($doc);
 
         return redirect()->route('admin.knowledge-documents.index')
             ->with('success', "CSV imported: {$result['row_count']} rows converted to narrative.");

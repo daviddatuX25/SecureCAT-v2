@@ -2,17 +2,23 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Str;
 
 class KnowledgeDocument extends Model
 {
+    use HasFactory;
+
     public const SOURCE_MANUAL = 'manual';
 
     public const SOURCE_CSV_IMPORT = 'csv_import';
 
     public const SYNC_PENDING = 'pending';
+
     public const SYNC_INDEXED = 'indexed';
-    public const SYNC_FAILED  = 'failed';
+
+    public const SYNC_FAILED = 'failed';
 
     protected $fillable = [
         'title',
@@ -59,7 +65,7 @@ class KnowledgeDocument extends Model
             $parts[] = $this->metadata['year'];
         }
         if (! empty($this->metadata['description'])) {
-            $parts[] = \Illuminate\Support\Str::limit($this->metadata['description'], 30);
+            $parts[] = Str::limit($this->metadata['description'], 30);
         }
 
         return $parts === [] ? '—' : implode(' · ', $parts);

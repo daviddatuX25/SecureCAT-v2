@@ -12,9 +12,10 @@ use Illuminate\Support\Facades\Log;
  *
  * Wraps the mixedbread API for document upload, deletion, search, and file status operations.
  */
-final class MixedbreadService
+class MixedbreadService
 {
     private string $apiKey;
+
     private string $baseUrl;
 
     public function __construct()
@@ -26,15 +27,15 @@ final class MixedbreadService
     /**
      * Upload a document to a mixedbread store.
      *
-     * @param string $storeId The target store identifier.
-     * @param string $content The document content.
-     * @param string $title The document title / external ID.
-     * @param array<string, mixed> $metadata Optional key-value metadata.
+     * @param  string  $storeId  The target store identifier.
+     * @param  string  $content  The document content.
+     * @param  string  $title  The document title / external ID.
+     * @param  array<string, mixed>  $metadata  Optional key-value metadata.
      * @return array<string, mixed> The API response decoded as an array.
      */
     public function uploadDocument(string $storeId, string $content, string $title, array $metadata = []): array
     {
-        $tmpPath = tempnam(sys_get_temp_dir(), 'mxb_') . '.txt';
+        $tmpPath = tempnam(sys_get_temp_dir(), 'mxb_').'.txt';
         file_put_contents($tmpPath, $content);
 
         try {
@@ -59,9 +60,8 @@ final class MixedbreadService
     /**
      * Delete a document from a mixedbread store.
      *
-     * @param string $storeId The target store identifier.
-     * @param string $fileId The file identifier to delete.
-     * @return void
+     * @param  string  $storeId  The target store identifier.
+     * @param  string  $fileId  The file identifier to delete.
      */
     public function deleteDocument(string $storeId, string $fileId): void
     {
@@ -83,10 +83,10 @@ final class MixedbreadService
     /**
      * Search a mixedbread store for documents matching a query.
      *
-     * @param string $storeId The target store identifier.
-     * @param string $query The search query string.
-     * @param array<string, mixed> $filters Optional filter conditions.
-     * @param int $topK Maximum number of results to return (default 3).
+     * @param  string  $storeId  The target store identifier.
+     * @param  string  $query  The search query string.
+     * @param  array<string, mixed>  $filters  Optional filter conditions.
+     * @param  int  $topK  Maximum number of results to return (default 3).
      * @return array<string, mixed> The array of matching results.
      */
     public function search(string $storeId, string $query, array $filters = [], int $topK = 3): array
@@ -115,8 +115,8 @@ final class MixedbreadService
     /**
      * Get the processing status of a document in a mixedbread store.
      *
-     * @param string $storeId The target store identifier.
-     * @param string $fileId The file identifier to check.
+     * @param  string  $storeId  The target store identifier.
+     * @param  string  $fileId  The file identifier to check.
      * @return string The file status string.
      */
     public function getFileStatus(string $storeId, string $fileId): string
