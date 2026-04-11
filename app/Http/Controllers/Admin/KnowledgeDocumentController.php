@@ -168,9 +168,15 @@ class KnowledgeDocumentController extends Controller
     {
         $this->authorize('update', $knowledgeDocument);
         $this->syncToMixedbread($knowledgeDocument);
+        $knowledgeDocument->refresh();
+
+        if ($knowledgeDocument->mxb_sync_status === KnowledgeDocument::SYNC_INDEXED) {
+            return redirect()->route('admin.knowledge-documents.index')
+                ->with('success', 'Sync retried for: ' . $knowledgeDocument->title);
+        }
 
         return redirect()->route('admin.knowledge-documents.index')
-            ->with('success', 'Sync retried for: '.$knowledgeDocument->title);
+            ->with('error', 'Sync still failing for: ' . $knowledgeDocument->title);
     }
 
     public function destroy(KnowledgeDocument $knowledgeDocument): RedirectResponse
