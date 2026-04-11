@@ -10,12 +10,19 @@ class KnowledgeDocument extends Model
 
     public const SOURCE_CSV_IMPORT = 'csv_import';
 
+    public const SYNC_PENDING = 'pending';
+    public const SYNC_INDEXED = 'indexed';
+    public const SYNC_FAILED  = 'failed';
+
     protected $fillable = [
         'title',
         'content',
         'metadata',
         'source',
         'is_active',
+        'mxb_file_id',
+        'mxb_sync_status',
+        'mxb_synced_at',
     ];
 
     protected function casts(): array
@@ -23,6 +30,7 @@ class KnowledgeDocument extends Model
         return [
             'metadata' => 'array',
             'is_active' => 'boolean',
+            'mxb_synced_at' => 'datetime',
         ];
     }
 
