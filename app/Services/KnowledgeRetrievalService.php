@@ -4,7 +4,9 @@ namespace App\Services;
 
 use App\Models\Applicant;
 use App\Models\KnowledgeDocument;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class KnowledgeRetrievalService
 {
@@ -12,66 +14,42 @@ class KnowledgeRetrievalService
 
     public const DEFAULT_MAX_TOTAL_CHARS = 8000;
 
+    public function __construct(private readonly MixedbreadService $mixedbread) {}
+
     /**
-     * Retrieve institutional knowledge text for an applicant: active docs optionally filtered by
-     * course preferences (metadata.category), limited by doc count and total length.
-     * Deterministic order (updated_at desc, id desc) for reproducible truncation (T5.3).
+     * Retrieve institutional knowledge text for an applicant: uses Mixedbread semantic search
+     * as primary (when store_id and query are available), falls back to MySQL retrieval.
      *
      * @return string "No institutional data available." or concatenated content with source labels
      */
     public function retrieveForApplicant(
         Applicant $applicant,
+        string $query = '',
         int $maxDocs = self::DEFAULT_MAX_DOCS,
         int $maxTotalChars = self::DEFAULT_MAX_TOTAL_CHARS
     ): string {
-        $applicant->load('application');
-        $courseNames = $this->getApplicantCoursePreferenceNames($applicant);
+        $storeId = config('services.mixedbread.store_id', '');
 
-        $docs = KnowledgeDocument::query()
-            ->active()
-            ->orderByDesc('updated_at')
-            ->orderByDesc('id')
-            ->get();
+        if (! empty($storeId) && ! empty($query)) {
+            try {
+                $filters = $this->buildMetadataFilters($applicant);
+                $results = $this->mixedbread->search($storeId, $query, $filters, 3);
+                $formatted = $this->formatMixedbreadResults($results);
 
-        $filtered = $this->filterByCategory($docs, $courseNames);
-
-        $chunks = [];
-        $total = 0;
-
-        foreach ($filtered as $doc) {
-            if (count($chunks) >= $maxDocs) {
-                break;
-            }
-            $content = trim($doc->content ?? '');
-            if ($content === '') {
-                continue;
-            }
-            $label = "Source: {$doc->title}";
-            $block = "{$label}\n{$content}";
-            $blockLen = strlen($block);
-
-            if ($total + $blockLen > $maxTotalChars) {
-                $remaining = $maxTotalChars - $total - (int) strlen("\n\n") - (int) strlen($label) - 1;
-                if ($remaining > 0) {
-                    $truncated = mb_substr($content, 0, $remaining);
-                    if ($truncated !== '') {
-                        $lastChunk = "{$label}\n{$truncated}";
-                        $chunks[] = $lastChunk;
-                        $total += strlen($lastChunk);
-                    }
+                if (! empty($formatted)) {
+                    return $formatted;
                 }
-                break;
+
+                return 'No institutional data available.';
+            } catch (\Throwable $e) {
+                Log::warning('Mixedbread search failed; falling back to MySQL', [
+                    'error' => $e->getMessage(),
+                    'applicant_id' => $applicant->id,
+                ]);
             }
-
-            $chunks[] = $block;
-            $total += $blockLen;
         }
 
-        if ($chunks === []) {
-            return 'No institutional data available.';
-        }
-
-        return implode("\n\n", $chunks);
+        return $this->fallbackMysqlRetrieval($applicant, $maxDocs, $maxTotalChars);
     }
 
     /**
@@ -84,6 +62,72 @@ class KnowledgeRetrievalService
         int $maxDocs = self::DEFAULT_MAX_DOCS,
         int $maxTotalChars = self::DEFAULT_MAX_TOTAL_CHARS
     ): string {
+        return $this->fallbackMysqlRetrievalWithFilters($filters, $maxDocs, $maxTotalChars);
+    }
+
+    private function buildMetadataFilters(Applicant $applicant): array
+    {
+        $applicant->load('application');
+        $application = $applicant->application;
+        if (! $application) {
+            return [];
+        }
+
+        $id = $application->course_preference_1 ?? null;
+        if (empty($id) || ! is_numeric($id)) {
+            return [];
+        }
+
+        $name = DB::table('courses')->where('id', $id)->value('name');
+        if (! $name) {
+            return [];
+        }
+
+        return ['category' => $name];
+    }
+
+    private function formatMixedbreadResults(array $results): string
+    {
+        if (empty($results)) {
+            return '';
+        }
+
+        $chunks = [];
+        foreach ($results as $idx => $item) {
+            $content = trim((string) ($item['content'] ?? ''));
+            if ($content === '') {
+                continue;
+            }
+            $label = 'Source '.($idx + 1);
+            $chunks[] = "{$label}\n{$content}";
+        }
+
+        return implode("\n\n", $chunks);
+    }
+
+    public function fallbackMysqlRetrieval(
+        Applicant $applicant,
+        int $maxDocs = self::DEFAULT_MAX_DOCS,
+        int $maxTotalChars = self::DEFAULT_MAX_TOTAL_CHARS
+    ): string {
+        $applicant->load('application');
+        $courseNames = $this->getApplicantCoursePreferenceNames($applicant);
+        $docs = KnowledgeDocument::query()
+            ->active()
+            ->orderByDesc('updated_at')
+            ->orderByDesc('id')
+            ->get();
+
+        $filtered = $this->filterByCategory($docs, $courseNames);
+
+        return $this->buildTextFromDocs($filtered, $maxDocs, $maxTotalChars);
+    }
+
+    private function fallbackMysqlRetrievalWithFilters(
+        array $filters,
+        int $maxDocs,
+        int $maxTotalChars
+    ): string {
         $docs = KnowledgeDocument::query()
             ->active()
             ->orderByDesc('updated_at')
@@ -92,10 +136,15 @@ class KnowledgeRetrievalService
 
         $filtered = $this->filterByCategoryAndYear($docs, $filters);
 
+        return $this->buildTextFromDocs($filtered, $maxDocs, $maxTotalChars);
+    }
+
+    private function buildTextFromDocs($docs, int $maxDocs, int $maxTotalChars): string
+    {
         $chunks = [];
         $total = 0;
 
-        foreach ($filtered as $doc) {
+        foreach ($docs as $doc) {
             if (count($chunks) >= $maxDocs) {
                 break;
             }
@@ -124,11 +173,7 @@ class KnowledgeRetrievalService
             $total += $blockLen;
         }
 
-        if ($chunks === []) {
-            return 'No institutional data available.';
-        }
-
-        return implode("\n\n", $chunks);
+        return $chunks === [] ? 'No institutional data available.' : implode("\n\n", $chunks);
     }
 
     /**
@@ -164,9 +209,9 @@ class KnowledgeRetrievalService
      * Filter docs by category: when course names exist, include docs whose metadata category
      * matches any (case-insensitive) or is empty (T5.4). When no course names, include all.
      *
-     * @param  \Illuminate\Support\Collection<int, KnowledgeDocument>  $docs
+     * @param  Collection<int, KnowledgeDocument>  $docs
      * @param  array<int, string>  $courseNames
-     * @return \Illuminate\Support\Collection<int, KnowledgeDocument>
+     * @return Collection<int, KnowledgeDocument>
      */
     private function filterByCategory($docs, array $courseNames)
     {
@@ -192,9 +237,9 @@ class KnowledgeRetrievalService
     /**
      * Filter by optional category and year (T5.5).
      *
-     * @param  \Illuminate\Support\Collection<int, KnowledgeDocument>  $docs
+     * @param  Collection<int, KnowledgeDocument>  $docs
      * @param  array{category?: string, year?: string}  $filters
-     * @return \Illuminate\Support\Collection<int, KnowledgeDocument>
+     * @return Collection<int, KnowledgeDocument>
      */
     private function filterByCategoryAndYear($docs, array $filters)
     {

@@ -3,29 +3,25 @@
 namespace Tests\Feature\Services;
 
 use App\Models\Applicant;
+use App\Models\Application;
+use App\Models\Course;
 use App\Models\KnowledgeDocument;
 use App\Services\KnowledgeRetrievalService;
+use App\Services\MixedbreadService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Mockery;
 use Tests\TestCase;
 
 class KnowledgeRetrievalServiceTest extends TestCase
 {
     use RefreshDatabase;
 
-    private KnowledgeRetrievalService $service;
-
-    protected function setUp(): void
-    {
-        parent::setUp();
-        $this->service = app(KnowledgeRetrievalService::class);
-    }
-
     /** T5.2: No knowledge docs → "No institutional data available." */
     public function test_returns_no_institutional_data_when_no_docs(): void
     {
         $applicant = Applicant::factory()->create(['application_id' => null]);
 
-        $result = $this->service->retrieveForApplicant($applicant);
+        $result = app(KnowledgeRetrievalService::class)->retrieveForApplicant($applicant);
 
         $this->assertSame('No institutional data available.', $result);
     }
@@ -33,7 +29,7 @@ class KnowledgeRetrievalServiceTest extends TestCase
     /** T5.2: Same for retrieveWithFilters when no docs. */
     public function test_retrieve_with_filters_returns_no_data_when_no_docs(): void
     {
-        $result = $this->service->retrieveWithFilters(['year' => '2024']);
+        $result = app(KnowledgeRetrievalService::class)->retrieveWithFilters(['year' => '2024']);
 
         $this->assertSame('No institutional data available.', $result);
     }
@@ -50,7 +46,7 @@ class KnowledgeRetrievalServiceTest extends TestCase
             'is_active' => true,
         ]);
 
-        $result = $this->service->retrieveForApplicant($applicant);
+        $result = app(KnowledgeRetrievalService::class)->retrieveForApplicant($applicant);
 
         $this->assertStringContainsString('General info', $result);
         $this->assertStringContainsString('Some institutional text.', $result);
@@ -68,7 +64,7 @@ class KnowledgeRetrievalServiceTest extends TestCase
             'is_active' => true,
         ]);
 
-        $result = $this->service->retrieveForApplicant($applicant);
+        $result = app(KnowledgeRetrievalService::class)->retrieveForApplicant($applicant);
 
         $this->assertStringContainsString('No metadata doc', $result);
         $this->assertStringContainsString('Content here.', $result);
@@ -86,7 +82,7 @@ class KnowledgeRetrievalServiceTest extends TestCase
             'is_active' => false,
         ]);
 
-        $result = $this->service->retrieveForApplicant($applicant);
+        $result = app(KnowledgeRetrievalService::class)->retrieveForApplicant($applicant);
 
         $this->assertSame('No institutional data available.', $result);
     }
@@ -109,7 +105,7 @@ class KnowledgeRetrievalServiceTest extends TestCase
             'is_active' => true,
         ]);
 
-        $result = $this->service->retrieveWithFilters(['year' => '2024']);
+        $result = app(KnowledgeRetrievalService::class)->retrieveWithFilters(['year' => '2024']);
 
         $this->assertStringContainsString('Doc 2024', $result);
         $this->assertStringContainsString('Year 2024 data.', $result);
@@ -128,7 +124,7 @@ class KnowledgeRetrievalServiceTest extends TestCase
             'is_active' => true,
         ]);
 
-        $result = $this->service->retrieveWithFilters(['year' => '2024']);
+        $result = app(KnowledgeRetrievalService::class)->retrieveWithFilters(['year' => '2024']);
 
         $this->assertStringContainsString('No year', $result);
         $this->assertStringContainsString('Generic content.', $result);
@@ -155,7 +151,7 @@ class KnowledgeRetrievalServiceTest extends TestCase
         ]);
 
         $maxChars = 6000;
-        $result = $this->service->retrieveForApplicant($applicant, 10, $maxChars);
+        $result = app(KnowledgeRetrievalService::class)->retrieveForApplicant($applicant, '', 10, $maxChars);
 
         $this->assertLessThanOrEqual($maxChars + 200, strlen($result)); // allow small overhead for labels
         $this->assertStringContainsString('Source: First', $result);
@@ -176,7 +172,7 @@ class KnowledgeRetrievalServiceTest extends TestCase
             ]);
         }
 
-        $result = $this->service->retrieveForApplicant($applicant, 3, 10000);
+        $result = app(KnowledgeRetrievalService::class)->retrieveForApplicant($applicant, '', 3, 10000);
 
         $this->assertStringContainsString('Doc 15', $result);
         $this->assertStringContainsString('Doc 14', $result);
@@ -202,7 +198,7 @@ class KnowledgeRetrievalServiceTest extends TestCase
             'is_active' => true,
         ]);
 
-        $result = $this->service->retrieveWithFilters(['category' => 'Civil Engineering']);
+        $result = app(KnowledgeRetrievalService::class)->retrieveWithFilters(['category' => 'Civil Engineering']);
 
         $this->assertStringContainsString('Civil', $result);
         $this->assertStringContainsString('Civil Engineering info.', $result);
@@ -228,10 +224,89 @@ class KnowledgeRetrievalServiceTest extends TestCase
             'is_active' => true,
         ]);
 
-        $result = $this->service->retrieveForApplicant($applicant);
+        $result = app(KnowledgeRetrievalService::class)->retrieveForApplicant($applicant);
 
         $this->assertStringNotContainsString('Empty', $result);
         $this->assertStringContainsString('Has content', $result);
         $this->assertStringContainsString('Real content.', $result);
+    }
+
+    public function test_retrieves_top_3_via_mixedbread_semantic_search(): void
+    {
+        $mockMxb = Mockery::mock(MixedbreadService::class);
+        $mockMxb->shouldReceive('search')
+            ->once()
+            ->with(Mockery::any(), 'What are my chances in engineering?', Mockery::any(), 3)
+            ->andReturn([
+                ['content' => 'Civil Engineering: 87% pass rate.', 'metadata' => ['category' => 'Engineering']],
+                ['content' => 'Engineering requires 75 aptitude score.', 'metadata' => []],
+                ['content' => 'BSIT pass rate is 91%.', 'metadata' => ['category' => 'IT']],
+            ]);
+        $this->app->instance(MixedbreadService::class, $mockMxb);
+        config(['services.mixedbread.store_id' => 'store_xyz']);
+
+        $applicant = Applicant::factory()->create();
+        $service = app(KnowledgeRetrievalService::class);
+        $result = $service->retrieveForApplicant($applicant, 'What are my chances in engineering?');
+
+        $this->assertStringContainsString('Civil Engineering: 87% pass rate.', $result);
+        $this->assertStringContainsString('Engineering requires 75 aptitude score.', $result);
+    }
+
+    public function test_falls_back_to_mysql_when_mixedbread_throws(): void
+    {
+        $mockMxb = Mockery::mock(MixedbreadService::class);
+        $mockMxb->shouldReceive('search')->andThrow(new \RuntimeException('API down'));
+        $this->app->instance(MixedbreadService::class, $mockMxb);
+        config(['services.mixedbread.store_id' => 'store_xyz']);
+        KnowledgeDocument::factory()->create(['title' => 'Fallback Doc', 'content' => 'Fallback content from MySQL.', 'is_active' => true]);
+        $applicant = Applicant::factory()->create();
+
+        $result = app(KnowledgeRetrievalService::class)->retrieveForApplicant($applicant, 'test query');
+
+        $this->assertStringContainsString('Fallback content from MySQL.', $result);
+    }
+
+    public function test_falls_back_to_mysql_when_store_id_not_configured(): void
+    {
+        config(['services.mixedbread.store_id' => null]);
+        KnowledgeDocument::factory()->create(['title' => 'Doc A', 'content' => 'Content from MySQL.', 'is_active' => true]);
+        $applicant = Applicant::factory()->create();
+
+        $result = app(KnowledgeRetrievalService::class)->retrieveForApplicant($applicant, 'query');
+
+        $this->assertStringContainsString('Content from MySQL.', $result);
+    }
+
+    public function test_returns_no_institutional_data_when_store_empty_and_no_mysql_docs(): void
+    {
+        $mockMxb = Mockery::mock(MixedbreadService::class);
+        $mockMxb->shouldReceive('search')->andReturn([]);
+        $this->app->instance(MixedbreadService::class, $mockMxb);
+        config(['services.mixedbread.store_id' => 'store_xyz']);
+        $applicant = Applicant::factory()->create();
+
+        $result = app(KnowledgeRetrievalService::class)->retrieveForApplicant($applicant, 'query');
+
+        $this->assertSame('No institutional data available.', $result);
+    }
+
+    public function test_passes_course_category_as_metadata_filter(): void
+    {
+        $mockMxb = Mockery::mock(MixedbreadService::class);
+        $mockMxb->shouldReceive('search')
+            ->once()
+            ->withArgs(function ($storeId, $query, $filters, $topK) {
+                return isset($filters['category']) && $filters['category'] === 'Civil Engineering';
+            })
+            ->andReturn([['content' => 'Some matched content.', 'metadata' => []]]);
+        $this->app->instance(MixedbreadService::class, $mockMxb);
+        config(['services.mixedbread.store_id' => 'store_xyz']);
+
+        $course = Course::factory()->create(['name' => 'Civil Engineering']);
+        $application = Application::factory()->create(['course_preference_1' => $course->id]);
+        $applicant = Applicant::factory()->create(['application_id' => $application->id]);
+
+        app(KnowledgeRetrievalService::class)->retrieveForApplicant($applicant->fresh(), 'query');
     }
 }

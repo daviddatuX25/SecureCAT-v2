@@ -20,8 +20,8 @@ class MixedbreadService
 
     public function __construct()
     {
-        $this->apiKey = config('services.mixedbread.api_key', '');
-        $this->baseUrl = rtrim(config('services.mixedbread.base_url', 'https://api.mixedbread.com/v1'), '/');
+        $this->apiKey = config('services.mixedbread.api_key') ?? '';
+        $this->baseUrl = rtrim((string) (config('services.mixedbread.base_url') ?? 'https://api.mixedbread.com/v1'), '/');
     }
 
     /**
