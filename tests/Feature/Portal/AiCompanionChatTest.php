@@ -8,6 +8,8 @@ use App\Models\ConsultationSummary;
 use App\Models\KnowledgeDocument;
 use App\Models\SystemSetting;
 use App\Services\AiCompanionService;
+use App\Services\MixedbreadService;
+use Database\Seeders\RoleSeeder;
 use GuzzleHttp\ClientInterface;
 use GuzzleHttp\Psr7\Response;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -21,7 +23,7 @@ class AiCompanionChatTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->seed(\Database\Seeders\RoleSeeder::class);
+        $this->seed(RoleSeeder::class);
     }
 
     protected function tearDown(): void
@@ -194,6 +196,49 @@ class AiCompanionChatTest extends TestCase
 
         $response->assertStatus(200);
         $this->assertDatabaseCount('ai_companion_messages', 4); // 2 existing + 2 new
+    }
+
+    public function test_chat_uses_user_message_as_mixedbread_query(): void
+    {
+        SystemSetting::set('ai_exam_companion_enabled', true);
+        $applicant = Applicant::factory()->create();
+        $this->createReleasedConsultation($applicant);
+
+        $mockMxb = Mockery::mock(MixedbreadService::class);
+        $mockMxb->shouldReceive('search')
+            ->once()
+            ->withArgs(function ($storeId, $query) {
+                return str_contains($query, 'What are my chances');
+            })
+            ->andReturn([['content' => 'Engineering pass rate 87%.', 'metadata' => []]]);
+        $this->app->instance(MixedbreadService::class, $mockMxb);
+        config(['services.mixedbread.store_id' => 'store_xyz']);
+
+        $this->bindFakeGuzzleResponse('Your chances in Engineering are good.');
+
+        $this->actingAs($applicant, 'applicant')
+            ->postJson('/portal/ai-companion/chat', ['message' => 'What are my chances in Engineering?'])
+            ->assertOk()
+            ->assertJsonStructure(['reply']);
+    }
+
+    public function test_chat_still_works_when_mixedbread_is_down(): void
+    {
+        SystemSetting::set('ai_exam_companion_enabled', true);
+        $applicant = Applicant::factory()->create();
+        $this->createReleasedConsultation($applicant);
+
+        $mockMxb = Mockery::mock(MixedbreadService::class);
+        $mockMxb->shouldReceive('search')->andThrow(new \RuntimeException('timeout'));
+        $this->app->instance(MixedbreadService::class, $mockMxb);
+        config(['services.mixedbread.store_id' => 'store_xyz']);
+
+        $this->bindFakeGuzzleResponse('Hello! How can I help you?');
+
+        $this->actingAs($applicant, 'applicant')
+            ->postJson('/portal/ai-companion/chat', ['message' => 'Hello!'])
+            ->assertOk()
+            ->assertJsonStructure(['reply']);
     }
 
     /** T7.4: Clear history deletes all messages. */

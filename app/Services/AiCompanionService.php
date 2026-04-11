@@ -6,6 +6,7 @@ use App\Models\AiCompanionMessage;
 use App\Models\Applicant;
 use App\Models\SystemSetting;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Facades\DB;
 use MoeMizrak\LaravelOpenrouter\DTO\ChatData;
 use MoeMizrak\LaravelOpenrouter\DTO\ErrorData;
 use MoeMizrak\LaravelOpenrouter\DTO\MessageData;
@@ -40,7 +41,7 @@ class AiCompanionService
                 $s->raw_score ?? '—',
                 $s->max_score ?? '—'
             ))->unique()->values()->all();
-            $parts[] = 'Applicant scores: ' . implode('; ', $scoreLines);
+            $parts[] = 'Applicant scores: '.implode('; ', $scoreLines);
         }
 
         $application = $applicant->application;
@@ -53,7 +54,7 @@ class AiCompanionService
                 }
             }
             if ($prefs !== []) {
-                $parts[] = 'Course preferences: ' . implode(', ', array_filter($prefs));
+                $parts[] = 'Course preferences: '.implode(', ', array_filter($prefs));
             }
         }
 
@@ -63,7 +64,7 @@ class AiCompanionService
     private function resolveCourseName($courseId): string
     {
         if (is_numeric($courseId)) {
-            $name = \Illuminate\Support\Facades\DB::table('courses')->where('id', $courseId)->value('name');
+            $name = DB::table('courses')->where('id', $courseId)->value('name');
 
             return $name ?? "Course #{$courseId}";
         }
@@ -74,18 +75,18 @@ class AiCompanionService
     /**
      * Build system prompt: persona + institutional data (retrieved by metadata) + applicant summary (T5).
      */
-    public function buildSystemPrompt(Applicant $applicant): string
+    public function buildSystemPrompt(Applicant $applicant, string $userMessage = ''): string
     {
         $persona = SystemSetting::personaPrompt();
-        $institutional = $this->retrieval->retrieveForApplicant($applicant);
+        $institutional = $this->retrieval->retrieveForApplicant($applicant, $userMessage);
         $applicantSummary = $this->buildApplicantSummary($applicant);
 
         return $persona
-            . "\n\nInstitutional data (use only this; do not invent):\n"
-            . $institutional
-            . "\n\n--- Applicant data ---\n"
-            . $applicantSummary
-            . "\n--- End applicant data ---\n\nUse only the institutional and applicant data above when giving advice. Do not invent statistics. If the data does not cover a question, say so.";
+            ."\n\nInstitutional data (use only this; do not invent):\n"
+            .$institutional
+            ."\n\n--- Applicant data ---\n"
+            .$applicantSummary
+            ."\n--- End applicant data ---\n\nUse only the institutional and applicant data above when giving advice. Do not invent statistics. If the data does not cover a question, say so.";
     }
 
     /**
@@ -111,7 +112,7 @@ class AiCompanionService
             ->values()
             ->all();
 
-        $systemPrompt = $this->buildSystemPrompt($applicant);
+        $systemPrompt = $this->buildSystemPrompt($applicant, $userMessage);
         $model = config('services.openrouter.model', 'openrouter/free');
 
         $messageData = [
