@@ -6,7 +6,7 @@
   import { Badge } from '@/Components/ui/badge';
   import { Input } from '@/Components/ui/input';
   import * as Table from '@/Components/ui/table';
-  import { Plus, Pencil, Trash2, FileText, Upload } from 'lucide-svelte';
+  import { Plus, Pencil, Trash2, FileText, Upload, RefreshCw } from 'lucide-svelte';
 
   let { documents, filters = {} } = $props();
 
@@ -41,6 +41,10 @@
     if (deleteId) {
       router.delete(`/admin/knowledge-documents/${deleteId}`, { onSuccess: () => (deleteId = null) });
     }
+  }
+
+  function retrySync(docId) {
+    router.post(`/admin/knowledge-documents/${docId}/retry-sync`, {}, { onSuccess: () => router.reload() });
   }
 
   function formatDate(iso) {
@@ -103,6 +107,7 @@
             <Table.Head class="px-4 py-3">Title</Table.Head>
             <Table.Head class="px-4 py-3">Metadata</Table.Head>
             <Table.Head class="px-4 py-3">Source</Table.Head>
+            <Table.Head class="px-4 py-3">Sync</Table.Head>
             <Table.Head class="px-4 py-3">Updated</Table.Head>
             <Table.Head class="px-4 py-3 text-right">Actions</Table.Head>
           </Table.Row>
@@ -121,6 +126,23 @@
                 <Badge variant="outline">{sourceLabel(doc.source)}</Badge>
                 {#if doc.is_active === false}
                   <Badge variant="muted" class="ml-1">Inactive</Badge>
+                {/if}
+              </Table.Cell>
+              <Table.Cell class="px-4 py-3">
+                {#if doc.mxb_sync_status === 'indexed'}
+                  <Badge variant="success">Indexed</Badge>
+                {:else if doc.mxb_sync_status === 'pending'}
+                  <Badge variant="warning">Pending</Badge>
+                {:else if doc.mxb_sync_status === 'failed'}
+                  <div class="flex items-center gap-2">
+                    <Badge variant="danger">Failed</Badge>
+                    <Button variant="outline" size="sm" class="min-h-[32px] text-xs" onclick={() => retrySync(doc.id)}>
+                      <RefreshCw class="mr-1 h-3 w-3" />
+                      Retry
+                    </Button>
+                  </div>
+                {:else}
+                  <Badge variant="outline">—</Badge>
                 {/if}
               </Table.Cell>
               <Table.Cell class="px-4 py-3 text-sm text-muted-foreground">{formatDate(doc.updated_at)}</Table.Cell>
@@ -145,7 +167,7 @@
             </Table.Row>
           {:else}
             <Table.Row>
-              <Table.Cell colspan={5} class="px-4 py-12 text-center text-muted-foreground">
+              <Table.Cell colspan={6} class="px-4 py-12 text-center text-muted-foreground">
                 No knowledge documents yet. Add one so the AI companion can use institutional data.
               </Table.Cell>
             </Table.Row>

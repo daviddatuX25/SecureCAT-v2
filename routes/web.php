@@ -97,6 +97,7 @@ Route::middleware(['auth'])->group(function () {
         Route::get('knowledge-documents/{knowledge_document}/edit', [KnowledgeDocumentController::class, 'edit'])->name('knowledge-documents.edit');
         Route::put('knowledge-documents/{knowledge_document}', [KnowledgeDocumentController::class, 'update'])->name('knowledge-documents.update');
         Route::delete('knowledge-documents/{knowledge_document}', [KnowledgeDocumentController::class, 'destroy'])->name('knowledge-documents.destroy');
+        Route::post('knowledge-documents/{knowledge_document}/retry-sync', [KnowledgeDocumentController::class, 'retrySync'])->name('knowledge-documents.retry-sync');
     });
 
     // Test scheduling: index & show for proctors too (proctor view = assigned only)

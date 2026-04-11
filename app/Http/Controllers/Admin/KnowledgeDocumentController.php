@@ -90,6 +90,8 @@ class KnowledgeDocumentController extends Controller
                 'metadata_summary' => $doc->metadata_summary,
                 'source' => $doc->source,
                 'is_active' => $doc->is_active,
+                'mxb_sync_status' => $doc->mxb_sync_status,
+                'mxb_file_id' => $doc->mxb_file_id,
                 'created_at' => $doc->created_at?->toIso8601String(),
                 'updated_at' => $doc->updated_at?->toIso8601String(),
             ];
@@ -160,6 +162,15 @@ class KnowledgeDocumentController extends Controller
         $this->syncToMixedbread($knowledgeDocument);
 
         return redirect()->route('admin.knowledge-documents.index')->with('success', 'Knowledge document updated.');
+    }
+
+    public function retrySync(KnowledgeDocument $knowledgeDocument): RedirectResponse
+    {
+        $this->authorize('update', $knowledgeDocument);
+        $this->syncToMixedbread($knowledgeDocument);
+
+        return redirect()->route('admin.knowledge-documents.index')
+            ->with('success', 'Sync retried for: '.$knowledgeDocument->title);
     }
 
     public function destroy(KnowledgeDocument $knowledgeDocument): RedirectResponse

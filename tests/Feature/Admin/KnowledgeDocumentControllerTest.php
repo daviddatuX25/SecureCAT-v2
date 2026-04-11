@@ -274,6 +274,24 @@ class KnowledgeDocumentControllerTest extends TestCase
         $this->assertModelMissing($doc);
     }
 
+    public function test_retry_sync_re_uploads_failed_doc(): void
+    {
+        $doc = KnowledgeDocument::factory()->create([
+            'mxb_sync_status' => KnowledgeDocument::SYNC_FAILED,
+            'mxb_file_id' => null,
+        ]);
+        $mockMxb = $this->mixedbreadMock();
+        $mockMxb->shouldReceive('uploadDocument')->once()->andReturn(['id' => 'file_retried']);
+        $this->app->instance(MixedbreadService::class, $mockMxb);
+        config(['services.mixedbread.store_id' => 'store_xyz']);
+
+        $this->actingAs($this->superAdmin())
+            ->post(route('admin.knowledge-documents.retry-sync', $doc))
+            ->assertRedirect(route('admin.knowledge-documents.index'));
+
+        $this->assertSame(KnowledgeDocument::SYNC_INDEXED, $doc->fresh()->mxb_sync_status);
+    }
+
     public function test_destroy_proceeds_even_if_doc_has_no_mxb_file_id(): void
     {
         $doc = KnowledgeDocument::factory()->create([
