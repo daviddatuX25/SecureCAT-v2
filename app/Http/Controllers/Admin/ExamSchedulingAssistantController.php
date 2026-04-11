@@ -161,6 +161,13 @@ class ExamSchedulingAssistantController extends Controller
             ], $requestStructured);
 
             $reply = $result['reply'];
+
+            if ($reply === '') {
+                return response()->json([
+                    'message' => 'The AI returned an empty response. Please try again.',
+                ], 502);
+            }
+
             $lastMessage = ['role' => 'assistant', 'content' => $reply];
             if (isset($result['structured_schedule'])) {
                 $lastMessage['schedule'] = $this->normalizeStructuredSchedule($result['structured_schedule']);
@@ -263,7 +270,7 @@ class ExamSchedulingAssistantController extends Controller
         $roomIds = Room::query()->where('is_active', true)->pluck('id')->all();
 
         try {
-            DB::transaction(function () use ($payload, $roomIds, $request) {
+            DB::transaction(function () use ($payload, $roomIds, $request, $activeAcademicYear) {
                 foreach ($payload as $item) {
                     $applicantIds = array_values(array_unique(array_map('intval', $item['applicant_ids'] ?? [])));
                     if (empty($applicantIds)) {
@@ -394,6 +401,7 @@ class ExamSchedulingAssistantController extends Controller
                         'pattern' => $pattern,
                         'content' => $content,
                     ]);
+
                     return ['role' => 'assistant', 'content' => $placeholder];
                 }
             }
