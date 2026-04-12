@@ -348,15 +348,15 @@
     display: none;
   }
   .scrollbar-thin::-webkit-scrollbar {
-    height: 6px;
-    width: 6px;
+    height: 3px;
+    width: 3px;
   }
   .scrollbar-thin::-webkit-scrollbar-track {
     background: transparent;
   }
   .scrollbar-thin::-webkit-scrollbar-thumb {
-    background: #cbd5e1;
-    border-radius: 3px;
+    background: #94a3b8;
+    border-radius: 2px;
   }
   .scrollbar-thin::-webkit-scrollbar-thumb:hover {
     background: #94a3b8;
