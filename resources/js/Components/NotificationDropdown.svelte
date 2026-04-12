@@ -2,11 +2,20 @@
   import { Bell, Check, CheckCheck, X, ExternalLink } from 'lucide-svelte';
   import { usePoll } from '@inertiajs/svelte';
   import { router } from '@inertiajs/svelte';
+  import ToastManager from '@/Components/ToastManager.svelte';
 
   let { initialNotifications = [] } = $props();
 
   let notifications = $state(initialNotifications);
   let dropdownOpen = $state(false);
+
+  // Track previous notification IDs for detecting new notifications
+  let previousNotificationIds = $state(new Set());
+  let previousCount = $state(0);
+
+  // Debounce to prevent toast spam
+  let lastToastTime = $state(0);
+  const TOAST_COOLDOWN = 5000; // 5 seconds between toasts
 
   const unreadCount = $derived(notifications.filter(n => !n.read).length);
   const hasUnread = $derived(unreadCount > 0);
@@ -16,6 +25,38 @@
     only: ['notifications'],
     onSuccess: (page) => {
       if (page.props.notifications) {
+        // Get current notification IDs
+        const currentIds = new Set(page.props.notifications.map(n => n.id));
+        const currentCount = page.props.notifications.length;
+
+        // Check for NEW notifications (not in previous set and unread)
+        const newNotifications = page.props.notifications.filter(
+          n => !previousNotificationIds.has(n.id) && !n.read
+        );
+
+        // Only show toast if dropdown is NOT open and we have new notifications
+        const now = Date.now();
+        if (!dropdownOpen && newNotifications.length > 0 && now - lastToastTime > TOAST_COOLDOWN) {
+          // Show toast for the most recent new notification
+          const latestNew = newNotifications[0];
+
+          // Determine toast type based on notification type
+          if (latestNew.type?.includes('application_status')) {
+            ToastManager.success(latestNew.message || 'Application status updated');
+          } else if (latestNew.type?.includes('exam_session')) {
+            ToastManager.message(latestNew.message || 'Exam session updated');
+          } else if (latestNew.type?.includes('result')) {
+            ToastManager.success(latestNew.message || 'Grading results available');
+          } else {
+            ToastManager.message(latestNew.message || 'New notification');
+          }
+
+          lastToastTime = now;
+        }
+
+        // Update previous state
+        previousNotificationIds = currentIds;
+        previousCount = currentCount;
         notifications = page.props.notifications;
       }
     }
@@ -148,7 +189,7 @@
 
                   <!-- Content -->
                   <div class="flex-1 min-w-0">
-                    <p class="text-sm text-foreground leading-snug {#if !notification.read}font-medium{/if}">
+                    <p class="text-sm text-foreground leading-snug {notification.read ? '' : 'font-medium'}">
                       {notification.message}
                     </p>
                     <p class="text-xs text-muted-foreground mt-1">
