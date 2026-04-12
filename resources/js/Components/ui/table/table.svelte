@@ -9,7 +9,7 @@
 	} = $props();
 </script>
 
-<div data-slot="table-container" class="relative w-full overflow-x-auto">
+<div data-slot="table-container" class="relative w-full overflow-x-auto scrollbar-hide">
 	<table
 		bind:this={ref}
 		data-slot="table"
