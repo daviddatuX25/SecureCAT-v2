@@ -1,7 +1,8 @@
 <script>
   import { Link, router } from '@inertiajs/svelte';
   import { usePage } from '@inertiajs/svelte';
-  import { ChevronDown, ChevronRight, Menu, LayoutDashboard, Users, FileText, Calendar, GraduationCap, Bot, Settings, ScrollText, Activity, CalendarRange, Layers, ShieldCheck, Sun, Moon, Bell, Search, SendHorizonal } from 'lucide-svelte';
+  import { ChevronDown, ChevronRight, Menu, LayoutDashboard, Users, FileText, Calendar, GraduationCap, Bot, Settings, ScrollText, Activity, CalendarRange, Layers, ShieldCheck, Sun, Moon, Search, SendHorizonal } from 'lucide-svelte';
+  import NotificationDropdown from '@/Components/NotificationDropdown.svelte';
   import { Button } from '@/Components/ui/button';
 
   let { children, breadcrumbs = [] } = $props();
@@ -323,10 +324,7 @@
           <Sun class="h-5 w-5 dark:hidden" />
           <Moon class="h-5 w-5 hidden dark:block" />
         </Button>
-        <button type="button" class="relative p-2 rounded-full hover:bg-muted text-foreground/80 transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center" aria-label="Notifications">
-          <Bell class="w-5 h-5" />
-          <span class="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full" aria-hidden="true"></span>
-        </button>
+        <NotificationDropdown />
       </div>
     </header>
 
