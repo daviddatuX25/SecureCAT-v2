@@ -65,8 +65,10 @@ Plans:
 - Self-service profile management
 
 ### Phase F2: Notification System
-- Email notifications
-- In-app alerts
+- [ ] In-app notifications for key events
+- [ ] Bell icon with dropdown UI
+- [ ] Poll-based notification delivery
+- [ ] Application, grading, scheduling triggers
 
 ### Phase F3: Audit Logging
 - Complete audit trail
