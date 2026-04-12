@@ -53,6 +53,19 @@ class HandleInertiaRequests extends Middleware
             'googleOAuthEnabled' => GoogleOAuthConfig::isConfigured(),
             'release_mode' => SystemSetting::releaseMode(),
             'pageTitle' => $this->defaultPageTitle($request),
+            'notifications' => $user instanceof User
+                ? $user->notifications()
+                    ->orderBy('created_at', 'desc')
+                    ->limit(20)
+                    ->get()
+                    ->map(fn ($n) => [
+                        'id' => $n->id,
+                        'type' => $n->type,
+                        'message' => $n->data['message'] ?? $n->data['title'] ?? class_basename($n->type),
+                        'read' => $n->read_at !== null,
+                        'created_at' => $n->created_at?->toIso8601String(),
+                    ])
+                : [],
         ]);
     }
 
@@ -69,7 +82,8 @@ class HandleInertiaRequests extends Middleware
             'portal.dashboard' => 'Portal',
             'dashboard' => 'Overview',
             'grading.index' => 'Grading',
-            'admin.test-scheduling.index' => 'Test Scheduling',
+            'admin.exam-scheduling.index' => 'Exam Scheduling',
+            'admin.exam-monitoring.index' => 'Exam Monitoring',
             'admin.courses.index' => 'Courses',
             'admin.rooms.index' => 'Rooms',
             'admin.users.index' => 'Users',
