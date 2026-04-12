@@ -2,6 +2,7 @@
   import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.svelte';
   import { Link, router } from '@inertiajs/svelte';
   import { usePage } from '@inertiajs/svelte';
+  import * as Table from '@/Components/ui/table';
   import * as ToggleGroup from '@/Components/ui/toggle-group';
   import * as Dialog from '@/Components/ui/dialog';
   import { Button } from '@/Components/ui/button';
@@ -9,7 +10,8 @@
   import { Input } from '@/Components/ui/input';
   import ScheduleAssistantPanel from '@/Components/ScheduleAssistantPanel.svelte';
   import InfoPopover from '@/Components/InfoPopover.svelte';
-  import { Plus, LayoutGrid, Table2, MonitorSmartphone, Eye, Pencil, ChevronDown, Filter, ClipboardList, Sparkles, DoorOpen } from 'lucide-svelte';
+  import { Plus, LayoutGrid, Table2, MonitorSmartphone, Eye, Pencil, ChevronDown, Filter, ClipboardList, Sparkles, DoorOpen, Send, Undo, X, Trash2 } from 'lucide-svelte';
+  import ActionDropdown from '@/Components/ActionDropdown.svelte';
 
   let { sessions, filters = {}, statuses = [], view = 'admin', schedule_assistant = null } = $props();
 
@@ -90,7 +92,7 @@
 
   function applyFilters() {
     if (mobileFiltersDetails) mobileFiltersDetails.open = false;
-    router.get('/admin/test-scheduling', {
+    router.get('/admin/exam-scheduling', {
       search: filterSearch || undefined,
       status: filterStatus || undefined,
       date_from: filterDateFrom || undefined,
@@ -101,6 +103,13 @@
 
   let viewMode = $state('responsive');
   const list = $derived(sessions?.data ?? []);
+
+  function getStateAction(session) {
+    if (session.status === 'draft') return { label: 'Publish', icon: Send, method: 'post', href: `/admin/exam-scheduling/${session.id}/publish` };
+    if (session.status === 'published') return { label: 'Unpublish', icon: Undo, method: 'post', href: `/admin/exam-scheduling/${session.id}/unpublish` };
+    if (session.status === 'in_progress') return { label: 'Cancel', icon: X, method: 'post', href: `/admin/exam-scheduling/${session.id}/cancel` };
+    return null;
+  }
 </script>
 
 <AuthenticatedLayout breadcrumbs={breadcrumbs}>
@@ -138,7 +147,7 @@
           </Button>
         {/if}
         {#if !isProctorView}
-          <Link href="/admin/test-scheduling/create">
+          <Link href="/admin/exam-scheduling/create">
             <Button class="min-h-[44px]">
               <Plus class="mr-2 h-4 w-4" />
               Create Session
@@ -255,74 +264,105 @@
 
     <div class="glass-panel rounded-2xl overflow-hidden min-w-0 max-w-full p-6">
       <div
-        class="w-full min-w-0 overflow-x-scroll overscroll-x-contain {viewMode === 'cards'
+        class="w-full min-w-0 overflow-x-auto {viewMode === 'cards'
           ? 'hidden'
           : viewMode === 'table'
             ? 'block'
             : 'hidden md:block'}"
       >
-        <table class="w-full min-w-[640px] text-sm">
-          <thead class="bg-muted/50">
-            <tr>
-              <th class="px-4 py-3 text-left font-medium">Date</th>
-              <th class="px-4 py-3 text-left font-medium">Time</th>
-              <th class="px-4 py-3 text-left font-medium">Room</th>
-              <th class="px-4 py-3 text-left font-medium">Status</th>
-              <th class="px-4 py-3 text-left font-medium">Proctors</th>
-              <th class="px-4 py-3 text-right font-medium">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
+        <Table.Root>
+          <Table.Header class="bg-muted/50">
+            <Table.Row>
+              <Table.Head>Date</Table.Head>
+              <Table.Head>Time</Table.Head>
+              <Table.Head>Room</Table.Head>
+              <Table.Head>Status</Table.Head>
+              <Table.Head>Proctors</Table.Head>
+              <Table.Head class="text-center">Actions</Table.Head>
+            </Table.Row>
+          </Table.Header>
+          <Table.Body>
             {#each list as session}
-              <tr class="border-t border-border hover:bg-muted/30">
-                <td class="px-4 py-3">{formatDate(session.date)}</td>
-                <td class="px-4 py-3">
+              <Table.Row>
+                <Table.Cell>{formatDate(session.date)}</Table.Cell>
+                <Table.Cell>
                   {formatTime(session.start_time)}{#if session.end_time} – {formatTime(session.end_time)}{/if}
-                </td>
-                <td class="px-4 py-3">{session.room?.name ?? '—'}</td>
-                <td class="px-4 py-3">
+                </Table.Cell>
+                <Table.Cell>{session.room?.name ?? '—'}</Table.Cell>
+                <Table.Cell>
                   <Badge variant={statusVariant(session.status)}>{statusLabel(session.status)}</Badge>
-                </td>
-                <td class="px-4 py-3">
+                </Table.Cell>
+                <Table.Cell>
                   {#if (session.proctors ?? []).length > 0}
                     {(session.proctors ?? []).map((p) => p.name).join(', ')}
                   {:else}
                     —
                   {/if}
-                </td>
-                <td class="px-4 py-3 text-right">
-                  <div class="flex justify-end gap-2">
-                    <Link href={`/admin/test-scheduling/${session.id}`}>
-                      <Button variant="ghost" size="icon" aria-label="View">
-                        <Eye class="h-4 w-4" />
-                      </Button>
-                    </Link>
-                    {#if isProctorView && (session.status === 'published' || session.status === 'in_progress')}
-                      <Link href={`/proctor/sessions/${session.id}`}>
-                        <Button variant="ghost" size="icon" aria-label="Open roster">
-                          <ClipboardList class="h-4 w-4" />
+                </Table.Cell>
+                <Table.Cell class="text-center">
+                    <div class="flex justify-center gap-2">
+                      <Link href={`/admin/exam-scheduling/${session.id}`}>
+                        <Button variant="ghost" size="sm" class="h-8 px-2 text-xs">
+                          <Eye class="mr-1.5 h-3.5 w-3.5" />
+                          Manage
                         </Button>
                       </Link>
-                    {/if}
-                    {#if !isProctorView && session.status !== 'completed'}
-                      <Link href={`/admin/test-scheduling/${session.id}/edit`}>
-                        <Button variant="ghost" size="icon" aria-label="Edit">
-                          <Pencil class="h-4 w-4" />
-                        </Button>
-                      </Link>
-                    {/if}
-                  </div>
-                </td>
-              </tr>
+                      <ActionDropdown
+                        items={[
+                          ...(isProctorView && (session.status === 'published' || session.status === 'in_progress') ? [
+                            {
+                              label: 'Roster',
+                              icon: ClipboardList,
+                              href: `/proctor/sessions/${session.id}`
+                            }
+                          ] : []),
+                          ...(!isProctorView && session.status !== 'completed' && session.status !== 'in_progress' && session.status !== 'cancelled' ? [
+                            {
+                              label: session.status === 'draft' ? 'Publish' : session.status === 'published' ? 'Unpublish' : '',
+                              icon: session.status === 'draft' ? Send : session.status === 'published' ? Undo : null,
+                              method: 'post',
+                              href: session.status === 'draft' ? `/admin/exam-scheduling/${session.id}/publish` : session.status === 'published' ? `/admin/exam-scheduling/${session.id}/unpublish` : null
+                            }
+                          ] : []),
+                          ...(!isProctorView && session.status !== 'in_progress' && session.status !== 'cancelled' && session.status !== 'completed' ? [
+                            {
+                              label: 'Edit',
+                              icon: Pencil,
+                              href: `/admin/exam-scheduling/${session.id}/edit`
+                            }
+                          ] : []),
+                          ...(!isProctorView && (session.status === 'in_progress') ? [
+                            {
+                              label: 'Cancel',
+                              icon: X,
+                              method: 'post',
+                              href: `/admin/exam-scheduling/${session.id}/cancel`,
+                              danger: true
+                            }
+                          ] : []),
+                          ...(!isProctorView ? [
+                            {
+                              label: 'Delete',
+                              icon: Trash2,
+                              method: 'delete',
+                              href: `/admin/exam-scheduling/${session.id}`,
+                              danger: true
+                            }
+                          ] : [])
+                        ]}
+                      />
+                    </div>
+                </Table.Cell>
+              </Table.Row>
             {:else}
-              <tr>
-                <td colspan="6" class="px-4 py-12 text-center text-muted-foreground">
+              <Table.Row>
+                <Table.Cell colspan={6} class="py-12 text-center text-muted-foreground">
                   {isProctorView ? 'No assigned sessions.' : 'No exam sessions yet. Create one to get started.'}
-                </td>
-              </tr>
+                </Table.Cell>
+              </Table.Row>
             {/each}
-          </tbody>
-        </table>
+          </Table.Body>
+        </Table.Root>
       </div>
 
       <div
@@ -351,10 +391,10 @@
                   </dd>
                 </dl>
                 <div class="mt-auto flex flex-wrap gap-2 pt-2">
-                  <Link href={`/admin/test-scheduling/${session.id}`} class="flex-1 min-w-0">
+                  <Link href={`/admin/exam-scheduling/${session.id}`} class="flex-1 min-w-0">
                     <Button variant="outline" size="sm" class="w-full min-h-[44px]">
                       <Eye class="h-4 w-4 mr-1.5" />
-                      View
+                      Manage
                     </Button>
                   </Link>
                   {#if isProctorView && (session.status === 'published' || session.status === 'in_progress')}
@@ -362,14 +402,6 @@
                       <Button variant="outline" size="sm" class="min-h-[44px]">
                         <ClipboardList class="h-4 w-4 mr-1.5" />
                         Roster
-                      </Button>
-                    </Link>
-                  {/if}
-                  {#if !isProctorView && session.status !== 'completed'}
-                    <Link href={`/admin/test-scheduling/${session.id}/edit`}>
-                      <Button variant="outline" size="sm" class="min-h-[44px]">
-                        <Pencil class="h-4 w-4 mr-1.5" />
-                        Edit
                       </Button>
                     </Link>
                   {/if}
