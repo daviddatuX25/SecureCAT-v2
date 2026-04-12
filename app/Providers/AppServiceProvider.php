@@ -2,17 +2,19 @@
 
 namespace App\Providers;
 
-use App\Models\AptitudeArea;
 use App\Models\Application;
+use App\Models\AptitudeArea;
 use App\Models\AuditLog;
 use App\Models\ExamSession;
-use App\Policies\AptitudeAreaPolicy;
 use App\Policies\ApplicationPolicy;
+use App\Policies\AptitudeAreaPolicy;
 use App\Policies\AuditLogPolicy;
 use App\Policies\ExamSessionPolicy;
+use App\Policies\NotificationPolicy;
 use Illuminate\Auth\Middleware\RedirectIfAuthenticated;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
+use Illuminate\Notifications\DatabaseNotification;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
@@ -36,6 +38,7 @@ class AppServiceProvider extends ServiceProvider
         Gate::policy(AptitudeArea::class, AptitudeAreaPolicy::class);
         Gate::policy(Application::class, ApplicationPolicy::class);
         Gate::policy(ExamSession::class, ExamSessionPolicy::class);
+        Gate::policy(DatabaseNotification::class, NotificationPolicy::class);
 
         RedirectIfAuthenticated::redirectUsing(fn () => route('dashboard'));
 
