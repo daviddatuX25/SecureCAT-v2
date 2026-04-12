@@ -3,6 +3,7 @@
   import { Link, usePage } from '@inertiajs/svelte';
   import { Button } from '@/Components/ui/button';
   import { Badge } from '@/Components/ui/badge';
+  import * as Table from '@/Components/ui/table';
   import { Plus, Pencil } from 'lucide-svelte';
 
   let { aptitude_areas = [] } = $props();
@@ -34,47 +35,50 @@
     {/if}
 
     <div class="glass-panel rounded-2xl overflow-hidden min-w-0 max-w-full p-6">
-      <div class="w-full min-w-0 overflow-x-auto">
-        <table class="w-full min-w-[520px] text-sm">
-          <thead class="bg-muted/50">
-            <tr>
-              <th class="px-4 py-3 text-left font-medium">Name</th>
-              <th class="px-4 py-3 text-left font-medium">Code</th>
-              <th class="px-4 py-3 text-left font-medium">Max items</th>
-              <th class="px-4 py-3 text-left font-medium">Order</th>
-              <th class="px-4 py-3 text-left font-medium">Status</th>
-              <th class="px-4 py-3 text-right font-medium">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
+      <div class="w-full min-w-0 overflow-x-auto scrollbar-thin">
+        <Table.Root>
+          <Table.Header class="bg-muted/50">
+            <Table.Row>
+              <Table.Head>Name</Table.Head>
+              <Table.Head>Code</Table.Head>
+              <Table.Head>Max items</Table.Head>
+              <Table.Head>Order</Table.Head>
+              <Table.Head>Status</Table.Head>
+              <Table.Head class="text-center">Actions</Table.Head>
+            </Table.Row>
+          </Table.Header>
+          <Table.Body>
             {#each list as area}
-              <tr class="border-t border-border hover:bg-muted/30">
-                <td class="px-4 py-3 font-medium">{area.name ?? '—'}</td>
-                <td class="px-4 py-3 font-mono text-muted-foreground">{area.code ?? '—'}</td>
-                <td class="px-4 py-3">{area.max_items ?? '—'}</td>
-                <td class="px-4 py-3">{area.display_order ?? 0}</td>
-                <td class="px-4 py-3">
+              <Table.Row>
+                <Table.Cell class="font-medium">{area.name ?? '—'}</Table.Cell>
+                <Table.Cell class="font-mono text-muted-foreground">{area.code ?? '—'}</Table.Cell>
+                <Table.Cell>{area.max_items ?? '—'}</Table.Cell>
+                <Table.Cell>{area.display_order ?? 0}</Table.Cell>
+                <Table.Cell>
                   <Badge variant={area.is_active ? 'success' : 'muted'}>
                     {area.is_active ? 'Active' : 'Inactive'}
                   </Badge>
-                </td>
-                <td class="px-4 py-3 text-right">
-                  <Link href={`/admin/aptitude-areas/${area.id}/edit`}>
-                    <Button variant="ghost" size="icon" aria-label="Edit">
-                      <Pencil class="h-4 w-4" />
-                    </Button>
-                  </Link>
-                </td>
-              </tr>
+                </Table.Cell>
+                <Table.Cell class="text-center">
+                  <div class="flex justify-center">
+                    <Link href={`/admin/aptitude-areas/${area.id}/edit`}>
+                      <Button variant="ghost" size="sm" class="h-8 px-2 text-xs">
+                        <Pencil class="mr-1.5 h-3.5 w-3.5" />
+                        Edit
+                      </Button>
+                    </Link>
+                  </div>
+                </Table.Cell>
+              </Table.Row>
             {:else}
-              <tr>
-                <td colspan="6" class="px-4 py-12 text-center text-muted-foreground">
+              <Table.Row>
+                <Table.Cell colspan={6} class="py-12 text-center text-muted-foreground">
                   No aptitude areas yet. Add one to use in grading and result templates.
-                </td>
-              </tr>
+                </Table.Cell>
+              </Table.Row>
             {/each}
-          </tbody>
-        </table>
+          </Table.Body>
+        </Table.Root>
       </div>
     </div>
   </div>

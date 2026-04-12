@@ -3,6 +3,7 @@
   import { Link, router } from '@inertiajs/svelte';
   import { usePage } from '@inertiajs/svelte';
   import { Button } from '@/Components/ui/button';
+  import * as Table from '@/Components/ui/table';
   import { Badge } from '@/Components/ui/badge';
   import { UserPlus, UserMinus, Send, ClipboardList, RotateCcw } from 'lucide-svelte';
 
@@ -12,11 +13,11 @@
   const breadcrumbs = $derived(
     view === 'proctor'
       ? [
-          { label: 'My Sessions', href: '/admin/test-scheduling?view=proctor' },
+          { label: 'My Sessions', href: '/admin/exam-scheduling?view=proctor' },
           { label: session?.id ? 'Session #' + session.id : 'Session' }
         ]
       : [
-          { label: 'Exam Scheduling', href: '/admin/test-scheduling' },
+          { label: 'Exam Scheduling', href: '/admin/exam-scheduling' },
           { label: session?.id ? 'Session #' + session.id : 'Session' }
         ]
   );
@@ -72,26 +73,26 @@
 
   function assignSelected() {
     if (selectedAvailable.length === 0) return;
-    router.post(`/admin/test-scheduling/${session.id}/assign-applicants`, { applicant_ids: selectedAvailable }, {
+    router.post(`/admin/exam-scheduling/${session.id}/assign-applicants`, { applicant_ids: selectedAvailable }, {
       onSuccess: () => (selectedAvailable = []),
     });
   }
 
   function removeAssigned(rowOrId) {
     const sessionApplicantId = typeof rowOrId === 'object' && rowOrId !== null ? rowOrId.session_applicant_id : rowOrId;
-    router.post(`/admin/test-scheduling/${session.id}/remove-applicant`, { session_applicant_id: sessionApplicantId });
+    router.post(`/admin/exam-scheduling/${session.id}/remove-applicant`, { session_applicant_id: sessionApplicantId });
   }
 
   function publish() {
-    router.post(`/admin/test-scheduling/${session.id}/publish`, {}, { onSuccess: () => router.reload() });
+    router.post(`/admin/exam-scheduling/${session.id}/publish`, {}, { onSuccess: () => router.reload() });
   }
 
   function unpublish() {
-    router.post(`/admin/test-scheduling/${session.id}/unpublish`, {}, { onSuccess: () => router.reload() });
+    router.post(`/admin/exam-scheduling/${session.id}/unpublish`, {}, { onSuccess: () => router.reload() });
   }
 
   function reopenSession() {
-    router.post(`/admin/test-scheduling/${session.id}/reopen`, {}, { onSuccess: () => router.reload() });
+    router.post(`/admin/exam-scheduling/${session.id}/reopen`, {}, { onSuccess: () => router.reload() });
   }
 </script>
 
@@ -165,35 +166,37 @@
         </div>
       </div>
       {#if (assigned_applicants ?? []).length > 0}
-        <div class="mt-4 overflow-x-auto">
-          <table class="w-full text-sm">
-            <thead class="bg-muted/50">
-              <tr>
-                <th class="px-4 py-3 text-left font-medium">Reference</th>
-                <th class="px-4 py-3 text-left font-medium">Name</th>
-                <th class="px-4 py-3 text-right font-medium">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
+        <div class="mt-4 overflow-x-auto scrollbar-thin">
+          <Table.Root>
+            <Table.Header class="bg-muted/50">
+              <Table.Row>
+                <Table.Head>Reference</Table.Head>
+                <Table.Head>Name</Table.Head>
+                <Table.Head class="text-center">Actions</Table.Head>
+              </Table.Row>
+            </Table.Header>
+            <Table.Body>
               {#each assigned_applicants as row (row.session_applicant_id)}
-                <tr class="border-t border-border hover:bg-muted/30">
-                  <td class="px-4 py-3">{row.reference_number}</td>
-                  <td class="px-4 py-3">{row.name}</td>
-                  <td class="px-4 py-3 text-right">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      class="text-destructive hover:text-destructive min-h-[44px]"
-                      onclick={() => removeAssigned(row)}
-                    >
-                      <UserMinus class="h-4 w-4 mr-1" />
-                      Remove
-                    </Button>
-                  </td>
-                </tr>
+                <Table.Row>
+                  <Table.Cell>{row.reference_number}</Table.Cell>
+                  <Table.Cell>{row.name}</Table.Cell>
+                  <Table.Cell class="text-center">
+                    <div class="flex justify-center">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        class="h-8 px-2 text-xs text-destructive hover:text-destructive hover:bg-destructive/10"
+                        onclick={() => removeAssigned(row)}
+                      >
+                        <UserMinus class="mr-1.5 h-3.5 w-3.5" />
+                        Remove
+                      </Button>
+                    </div>
+                  </Table.Cell>
+                </Table.Row>
               {/each}
-            </tbody>
-          </table>
+            </Table.Body>
+          </Table.Root>
         </div>
       {:else}
         <p class="mt-4 text-sm text-muted-foreground">No applicants assigned yet. Select from available below and click Assign.</p>
@@ -205,21 +208,21 @@
       <h2 class="text-lg font-semibold">Available applicants</h2>
       <p class="mt-1 text-sm text-muted-foreground">Accepted applicants not yet assigned to a session. Select and assign.</p>
       {#if (available_applicants ?? []).length > 0}
-        <div class="mt-4 overflow-x-auto">
-          <table class="w-full text-sm">
-            <thead class="bg-muted/50">
-              <tr>
-                <th class="px-4 py-3 text-left w-12">
+        <div class="mt-4 overflow-x-auto scrollbar-thin">
+          <Table.Root>
+            <Table.Header class="bg-muted/50">
+              <Table.Row>
+                <Table.Head class="w-12 text-center">
                   <span class="sr-only">Select</span>
-                </th>
-                <th class="px-4 py-3 text-left font-medium">Reference</th>
-                <th class="px-4 py-3 text-left font-medium">Name</th>
-              </tr>
-            </thead>
-            <tbody>
+                </Table.Head>
+                <Table.Head>Reference</Table.Head>
+                <Table.Head>Name</Table.Head>
+              </Table.Row>
+            </Table.Header>
+            <Table.Body>
               {#each available_applicants as app (app.id)}
-                <tr class="border-t border-border hover:bg-muted/30">
-                  <td class="px-4 py-3">
+                <Table.Row>
+                  <Table.Cell class="text-center">
                     <input
                       type="checkbox"
                       class="h-4 w-4 rounded border-input accent-primary"
@@ -227,13 +230,13 @@
                       onchange={() => toggleAvailable(app.id)}
                       aria-label="Select {app.name}"
                     />
-                  </td>
-                  <td class="px-4 py-3">{app.reference_number}</td>
-                  <td class="px-4 py-3">{app.name}</td>
-                </tr>
+                  </Table.Cell>
+                  <Table.Cell>{app.reference_number}</Table.Cell>
+                  <Table.Cell>{app.name}</Table.Cell>
+                </Table.Row>
               {/each}
-            </tbody>
-          </table>
+            </Table.Body>
+          </Table.Root>
         </div>
         <div class="mt-3">
           <Button

@@ -58,11 +58,11 @@
     { label: 'Registrar Office', items: [
       { href: '/admin/academic-years', label: 'Academic Years', icon: CalendarRange, roles: ['super_admin', 'registrar_administrator'] },
       { href: '/applications', label: 'Applications', icon: FileText, roles: ['super_admin', 'registrar_administrator', 'staff'] },
-      { href: '/admin/test-scheduling', label: 'Exam Scheduling', icon: Calendar, roles: ['super_admin', 'registrar_administrator'] },
+      { href: '/admin/exam-scheduling', label: 'Exam Scheduling', icon: Calendar, roles: ['super_admin', 'registrar_administrator'] },
     ]},
     { label: 'Guidance Office', items: [
-      { href: '/admin/test-scheduling', label: 'My Sessions', icon: Calendar, roles: ['proctor'] },
-      { href: '/admin/test-scheduling/monitoring', label: 'Exam Monitoring', icon: Activity, roles: ['super_admin', 'test_administrator', 'proctor'] },
+      { href: '/admin/exam-scheduling', label: 'My Sessions', icon: Calendar, roles: ['proctor'] },
+      { href: '/admin/exam-monitoring', label: 'Exam Monitoring', icon: Activity, roles: ['super_admin', 'test_administrator', 'proctor'] },
       { href: '/grading', label: 'Grading', icon: GraduationCap, roles: ['super_admin', 'test_administrator'] },
       { href: '/release', label: 'Release', icon: SendHorizonal, roles: ['super_admin', 'test_administrator'] },
       { href: '/admin/aptitude-areas', label: 'Aptitude Areas', icon: Layers, roles: ['super_admin', 'test_administrator'] },
@@ -85,9 +85,10 @@
   }
 
   function isNavActive(href) {
-    const url = $page.url;
-    if (href === '/dashboard') return url === '/dashboard' || url === '/dashboard/';
-    return url === href || url.startsWith(href + '/');
+    const url = $page.url || '';
+    if (url === href || url === href + '/') return true;
+    if (url.startsWith(href + '/')) return true;
+    return false;
   }
 </script>
 
@@ -345,5 +346,19 @@
   }
   .scrollbar-hide::-webkit-scrollbar {
     display: none;
+  }
+  .scrollbar-thin::-webkit-scrollbar {
+    height: 6px;
+    width: 6px;
+  }
+  .scrollbar-thin::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  .scrollbar-thin::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 3px;
+  }
+  .scrollbar-thin::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
   }
 </style>

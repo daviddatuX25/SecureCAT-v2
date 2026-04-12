@@ -3,16 +3,17 @@
   import { Link, router, usePage } from '@inertiajs/svelte';
   import { Button } from '@/Components/ui/button';
   import { Badge } from '@/Components/ui/badge';
-  import { Plus, Pencil, CheckCircle, XCircle, BookOpen } from 'lucide-svelte';
+  import { Plus, Pencil, Pause, Play, BookOpen } from 'lucide-svelte';
+  import * as Table from '@/Components/ui/table';
 
-  let { seasons } = $props();
+  let { academic_years, success = null } = $props();
 
   function doDeactivate(id) {
     router.post(`/admin/academic-years/${id}/deactivate`, {}, { preserveScroll: true });
   }
 
   const page = usePage();
-  const list = $derived(seasons?.data ?? []);
+  const list = $derived(academic_years?.data ?? []);
   const breadcrumbs = [{ label: 'Academic Years' }];
 </script>
 
@@ -20,23 +21,24 @@
   <div class="space-y-6 min-w-0">
     <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
       <div>
-      <div class="flex flex-wrap gap-3">
-        <Link href="/admin/academic-years/create">
-          <Button class="min-h-[44px]">
-            <Plus class="mr-2 h-4 w-4" />
-            Add Academic Year
-          </Button>
-        </Link>
-        <Link href="/admin/courses">
-          <Button variant="outline" class="min-h-[44px]">
-            <BookOpen class="mr-2 h-4 w-4" />
-            Manage Courses
-          </Button>
-        </Link>
+        <div class="flex flex-wrap gap-3">
+          <Link href="/admin/academic-years/create">
+            <Button class="min-h-[44px]">
+              <Plus class="mr-2 h-4 w-4" />
+              Add Academic Year
+            </Button>
+          </Link>
+          <Link href="/admin/courses">
+            <Button variant="outline" class="min-h-[44px]">
+              <BookOpen class="mr-2 h-4 w-4" />
+              Manage Courses
+            </Button>
+          </Link>
+        </div>
       </div>
     </div>
 
-    {#if !academic_years.some((ay) => ay.is_active)}
+    {#if !list.some((ay) => ay.is_active)}
       <div class="mb-4 rounded-md border border-amber-500/50 bg-amber-500/10 px-4 py-3 text-sm text-foreground">
         No academic year is currently active. Applications are closed until one is activated.
       </div>
@@ -49,89 +51,86 @@
     {/if}
 
     <div class="glass-panel rounded-2xl overflow-hidden min-w-0 max-w-full p-6">
-      <div class="w-full min-w-0 overflow-x-auto">
-        <table class="w-full min-w-[520px] text-sm">
-          <thead class="bg-muted/50">
-            <tr>
-              <th class="px-4 py-3 text-left font-medium">Academic Year</th>
-              <th class="px-4 py-3 text-left font-medium">Application window</th>
-              <th class="px-4 py-3 text-left font-medium">Status</th>
-              <th class="px-4 py-3 text-left font-medium">Applications</th>
-              <th class="px-4 py-3 text-right font-medium">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
+      <div class="w-full min-w-0 overflow-x-auto scrollbar-thin">
+        <Table.Root>
+          <Table.Header class="bg-muted/50">
+            <Table.Row>
+              <Table.Head>Academic Year</Table.Head>
+              <Table.Head>Application window</Table.Head>
+              <Table.Head>Status</Table.Head>
+              <Table.Head>Applications</Table.Head>
+              <Table.Head class="text-center">Actions</Table.Head>
+            </Table.Row>
+          </Table.Header>
+          <Table.Body>
             {#each list as ay}
-              <tr class="border-t border-border hover:bg-muted/30">
-                <td class="px-4 py-3 font-medium">
+              <Table.Row class={ay.is_active ? '' : 'text-muted-foreground/50 transition-colors'}>
+                <Table.Cell class="font-bold tracking-tight">
                   {ay.label ?? (ay.academic_year ?? '—') + ' – ' + (ay.semester_label ?? '—')}
-                </td>
-                <td class="px-4 py-3 text-muted-foreground">
+                </Table.Cell>
+                <Table.Cell class="text-muted-foreground font-medium">
                   {ay.application_window ?? '— — —'}
-                </td>
-                <td class="px-4 py-3">
-                  <Badge variant={ay.is_active ? 'success' : 'muted'}>
+                </Table.Cell>
+                <Table.Cell>
+                  <Badge variant={ay.is_active ? 'success' : 'muted'} class="font-medium">
                     {ay.is_active ? 'Active' : 'Inactive'}
                   </Badge>
-                </td>
-                <td class="px-4 py-3">
+                </Table.Cell>
+                <Table.Cell class="font-mono text-xs">
                   {ay.applications_count ?? 0}
-                </td>
-                <td class="px-4 py-3 text-right">
-                  <div class="flex justify-end gap-2">
-                    {#if ay.is_active}
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        class="min-h-[44px]"
-                        onclick={() => doDeactivate(ay.id)}
-                      >
-                        <XCircle class="mr-1.5 h-4 w-4" />
-                        Deactivate
-                      </Button>
-                    {:else}
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        class="min-h-[44px]"
-                        onclick={() => router.post(`/admin/academic-years/${ay.id}/activate`)}
-                      >
-                        <CheckCircle class="mr-1.5 h-4 w-4" />
-                        Set active
-                      </Button>
-                    {/if}
+                </Table.Cell>
+                <Table.Cell class="text-center">
+                  <div class="flex justify-center gap-2 text-foreground!">
                     <Link href={`/admin/academic-years/${ay.id}/edit`}>
-                      <Button variant="ghost" size="icon" aria-label="Edit">
-                        <Pencil class="h-4 w-4" />
+                      <Button variant="ghost" size="sm" class="h-8 px-2 text-xs font-semibold hover:bg-muted">
+                        <Pencil class="mr-1.5 h-3.5 w-3.5" />
+                        Edit
                       </Button>
                     </Link>
+                    
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      class="h-8 px-2 text-xs font-semibold {ay.is_active 
+                        ? 'text-amber-600 hover:text-amber-700 hover:bg-amber-50' 
+                        : 'text-primary hover:text-primary-700 hover:bg-primary/5'}"
+                      onclick={() => ay.is_active ? doDeactivate(ay.id) : router.post(`/admin/academic-years/${ay.id}/activate`)}
+                    >
+                      {#if ay.is_active}
+                        <Pause class="mr-1.5 h-3.5 w-3.5" />
+                        Deactivate
+                      {:else}
+                        <Play class="mr-1.5 h-3.5 w-3.5" />
+                        Activate
+                      {/if}
+                    </Button>
                   </div>
-                </td>
-              </tr>
+                </Table.Cell>
+              </Table.Row>
             {:else}
-              <tr>
-                <td colspan="5" class="px-4 py-12 text-center text-muted-foreground">
+              <Table.Row>
+                <Table.Cell colspan={5} class="py-12 text-center text-muted-foreground">
                   No academic years yet. Create one and set it active so applications can be submitted.
-                </td>
-              </tr>
+                </Table.Cell>
+              </Table.Row>
             {/each}
-          </tbody>
-        </table>
+          </Table.Body>
+        </Table.Root>
       </div>
 
-      {#if seasons?.last_page > 1}
+      {#if academic_years?.last_page > 1}
         <div class="flex items-center justify-between border-t border-border px-4 py-2">
           <p class="text-sm text-muted-foreground">
-            Page {seasons.current_page} of {seasons.last_page}
+            Page {academic_years.current_page} of {academic_years.last_page}
           </p>
           <div class="flex gap-2">
-            {#if seasons.prev_page_url}
-              <Link href={seasons.prev_page_url}>
+            {#if academic_years.prev_page_url}
+              <Link href={academic_years.prev_page_url}>
                 <Button variant="outline" size="sm">Previous</Button>
               </Link>
             {/if}
-            {#if seasons.next_page_url}
-              <Link href={seasons.next_page_url}>
+            {#if academic_years.next_page_url}
+              <Link href={academic_years.next_page_url}>
                 <Button variant="outline" size="sm">Next</Button>
               </Link>
             {/if}

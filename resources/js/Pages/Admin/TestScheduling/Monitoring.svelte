@@ -2,10 +2,12 @@
   import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.svelte';
   import { Link, router } from '@inertiajs/svelte';
   import * as Table from '@/Components/ui/table';
+  import { Button } from '@/Components/ui/button';
+  import { Badge } from '@/Components/ui/badge';
   import ElapsedTime from '@/Components/ElapsedTime.svelte';
-  import { ClipboardList } from 'lucide-svelte';
+  import { ClipboardList, Eye, Pencil } from 'lucide-svelte';
 
-  let { sessions = [] } = $props();
+  let { sessions = [], isProctorView = false } = $props();
 
   const breadcrumbs = [{ label: 'Exam Monitoring' }];
 
@@ -40,8 +42,8 @@
 <AuthenticatedLayout {breadcrumbs}>
   <div class="space-y-6 min-w-0">
     <p class="text-sm text-muted-foreground">
-        Live status of in-progress exam sessions. Data refreshes every 15 seconds.
-      </p>
+      Live status of in-progress exam sessions. Data refreshes every 15 seconds.
+    </p>
 
     {#if sessions.length === 0}
       <div class="rounded-lg border border-border bg-card p-8 text-center text-muted-foreground">
@@ -50,9 +52,9 @@
       </div>
     {:else}
       <div class="rounded-lg border border-border overflow-hidden min-w-0 max-w-full">
-        <div class="w-full min-w-0 overflow-x-auto">
+        <div class="w-full min-w-0 overflow-x-auto scrollbar-thin">
           <Table.Root>
-            <Table.Header>
+            <Table.Header class="bg-muted/50">
               <Table.Row>
                 <Table.Head>Room</Table.Head>
                 <Table.Head>Date</Table.Head>
@@ -61,7 +63,7 @@
                 <Table.Head>Present</Table.Head>
                 <Table.Head>Submitted</Table.Head>
                 <Table.Head>Elapsed</Table.Head>
-                <Table.Head class="w-[120px]">Actions</Table.Head>
+                <Table.Head class="text-center">Actions</Table.Head>
               </Table.Row>
             </Table.Header>
             <Table.Body>
@@ -76,14 +78,15 @@
                   <Table.Cell>
                     <ElapsedTime startedAt={session.started_at} />
                   </Table.Cell>
-                  <Table.Cell>
-                    <Link
-                      href="/proctor/sessions/{session.id}"
-                      class="inline-flex items-center gap-1.5 text-sm font-medium text-primary hover:underline min-h-[44px] min-w-[44px] items-center"
-                    >
-                      <ClipboardList class="h-4 w-4" />
-                      Examinees
-                    </Link>
+                  <Table.Cell class="text-center">
+                    <div class="flex justify-center gap-2">
+                      <Link href="/proctor/sessions/{session.id}">
+                        <Button variant="ghost" size="sm" class="h-8 px-2 text-xs">
+                          <ClipboardList class="mr-1.5 h-3.5 w-3.5" />
+                          Roster
+                        </Button>
+                      </Link>
+                    </div>
                   </Table.Cell>
                 </Table.Row>
               {/each}

@@ -4,6 +4,7 @@
   import { Button } from '@/Components/ui/button';
   import { Badge } from '@/Components/ui/badge';
   import { Input } from '@/Components/ui/input';
+  import * as Table from '@/Components/ui/table';
   import { ArrowLeft, UserCheck, UserX, FileCheck, Play, Square } from 'lucide-svelte';
 
   let { session, applicants = [], stats = {} } = $props();
@@ -156,7 +157,7 @@
   }
 
   const breadcrumbs = $derived([
-    { label: 'My Sessions', href: '/admin/test-scheduling?view=proctor' },
+    { label: 'My Sessions', href: '/admin/exam-scheduling?view=proctor' },
     { label: session?.id ? 'Session #' + session.id : 'Session' }
   ]);
 </script>
@@ -268,72 +269,74 @@
         </div>
       {/if}
       {#if filteredApplicants.length > 0}
-        <div class="mt-4 overflow-x-auto">
-          <table class="w-full text-sm">
-            <thead class="bg-muted/50">
-              <tr>
-                <th class="px-4 py-3 text-left font-medium">Reference</th>
-                <th class="px-4 py-3 text-left font-medium">Name</th>
-                <th class="px-4 py-3 text-left font-medium">Attendance</th>
-                <th class="px-4 py-3 text-left font-medium">Time in</th>
-                <th class="px-4 py-3 text-left font-medium">Submission</th>
-                <th class="px-4 py-3 text-left font-medium">Submitted at</th>
-                <th class="px-4 py-3 text-right font-medium">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
+        <div class="mt-4 w-full min-w-0 overflow-x-auto scrollbar-thin">
+          <Table.Root class="w-full min-w-[800px] text-sm">
+            <Table.Header class="bg-muted/50">
+              <Table.Row>
+                <Table.Head class="px-4 py-3">Reference</Table.Head>
+                <Table.Head class="px-4 py-3">Name</Table.Head>
+                <Table.Head class="px-4 py-3">Attendance</Table.Head>
+                <Table.Head class="px-4 py-3">Time in</Table.Head>
+                <Table.Head class="px-4 py-3">Submission</Table.Head>
+                <Table.Head class="px-4 py-3">Submitted at</Table.Head>
+                <Table.Head class="text-center">Actions</Table.Head>
+              </Table.Row>
+            </Table.Header>
+            <Table.Body>
               {#each filteredApplicants as row (row.id)}
-                <tr class="border-t border-border hover:bg-muted/30">
-                  <td class="px-4 py-3">{row.reference_number ?? '—'}</td>
-                  <td class="px-4 py-3">{row.name ?? '—'}</td>
-                  <td class="px-4 py-3">
+                <Table.Row>
+                  <Table.Cell class="px-4 py-3">{row.reference_number ?? '—'}</Table.Cell>
+                  <Table.Cell class="px-4 py-3">{row.name ?? '—'}</Table.Cell>
+                  <Table.Cell class="px-4 py-3">
                     <Badge variant={attendanceStatusVariant(row.attendance_status)}>{row.attendance_status}</Badge>
-                  </td>
-                  <td class="px-4 py-3">{formatDateTime(row.attendance_marked_at)}</td>
-                  <td class="px-4 py-3">
+                  </Table.Cell>
+                  <Table.Cell class="px-4 py-3">{formatDateTime(row.attendance_marked_at)}</Table.Cell>
+                  <Table.Cell class="px-4 py-3">
                     <Badge variant={attendanceStatusVariant(row.submission_status)}>{row.submission_status}</Badge>
-                  </td>
-                  <td class="px-4 py-3">{formatDateTime(row.submitted_at)}</td>
-                  <td class="px-4 py-3 text-right">
+                  </Table.Cell>
+                  <Table.Cell class="px-4 py-3">{formatDateTime(row.submitted_at)}</Table.Cell>
+                  <Table.Cell class="text-center">
                     {#if row.attendance_status === 'pending' && canMarkAttendance}
-                      <div class="flex flex-wrap justify-end gap-1">
+                      <div class="flex flex-wrap justify-center gap-1">
                         <Button
                           variant="outline"
                           size="sm"
-                          class="min-h-[44px]"
+                          class="h-8 px-2 text-xs"
                           onclick={() => markPresent(row.id)}
                         >
-                          <UserCheck class="h-4 w-4 mr-1" />
+                          <UserCheck class="h-3.5 w-3.5 mr-1.5" />
                           Present
                         </Button>
                         <Button
                           variant="outline"
                           size="sm"
-                          class="min-h-[44px] text-destructive hover:text-destructive"
+                          class="h-8 px-2 text-xs text-destructive hover:bg-destructive/10 hover:text-destructive"
                           onclick={() => markAbsent(row.id)}
                         >
-                          <UserX class="h-4 w-4 mr-1" />
+                          <UserX class="h-3.5 w-3.5 mr-1.5" />
                           Absent
                         </Button>
                       </div>
                     {:else if row.attendance_status === 'present' && row.submission_status === 'pending' && canLogSubmission}
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        class="min-h-[44px]"
-                        onclick={() => logSubmission(row.id)}
-                      >
-                        <FileCheck class="h-4 w-4 mr-1" />
-                        Log submission
-                      </Button>
+                      <div class="flex justify-center">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          class="h-8 px-2 text-xs"
+                          onclick={() => logSubmission(row.id)}
+                        >
+                          <FileCheck class="h-3.5 w-3.5 mr-1.5" />
+                          Log submission
+                        </Button>
+                      </div>
                     {:else}
                       <span class="text-muted-foreground text-xs">—</span>
                     {/if}
-                  </td>
-                </tr>
+                  </Table.Cell>
+                </Table.Row>
               {/each}
-            </tbody>
-          </table>
+            </Table.Body>
+          </Table.Root>
         </div>
       {:else}
         <p class="mt-4 text-sm text-muted-foreground">

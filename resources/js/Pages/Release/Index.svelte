@@ -158,7 +158,7 @@
 
     <!-- Table -->
     <div class="glass-panel rounded-2xl overflow-hidden min-w-0 p-0">
-      <div class="w-full overflow-x-auto">
+      <div class="w-full overflow-x-auto scrollbar-thin">
         <Table.Root class="w-full min-w-[640px]">
           <Table.Header class="bg-muted/50">
             <Table.Row>

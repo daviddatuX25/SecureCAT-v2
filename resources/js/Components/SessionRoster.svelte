@@ -243,7 +243,7 @@
   function removeApplicant(sessionApplicantId) {
     if (!confirm('Remove this applicant from the session?')) return;
     actionError = '';
-    router.post(`/admin/test-scheduling/${session.id}/remove-applicant`, { session_applicant_id: sessionApplicantId }, {
+    router.post(`/admin/exam-scheduling/${session.id}/remove-applicant`, { session_applicant_id: sessionApplicantId }, {
       onError: handleRosterError,
       onSuccess: () => router.reload(),
     });
@@ -423,7 +423,7 @@
     </div>
 
     {#if filteredApplicants.length > 0}
-      <div class="mt-4 overflow-x-auto">
+      <div class="mt-4 overflow-x-auto scrollbar-thin">
         <table class="w-full text-sm">
           <thead class="bg-muted/50">
             <tr>

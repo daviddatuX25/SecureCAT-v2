@@ -7,6 +7,7 @@
   import * as Table from '@/Components/ui/table';
   import * as ToggleGroup from '@/Components/ui/toggle-group';
   import { Eye, Filter, ChevronDown, Table2, LayoutGrid, MonitorSmartphone, CheckCircle, XCircle, UploadCloud } from 'lucide-svelte';
+  import ActionDropdown from '@/Components/ActionDropdown.svelte';
 
   let { applications, filters = {}, seasons = [], active_season_id = null, statuses = [] } = $props();
 
@@ -201,7 +202,7 @@
     <!-- Table -->
     <div class="{viewMode === 'cards' ? 'hidden' : viewMode === 'table' ? 'block' : 'hidden md:block'} min-w-0">
       <div class="glass-panel rounded-2xl overflow-hidden min-w-0 max-w-full p-0">
-        <div class="w-full min-w-0 overflow-x-auto">
+        <div class="w-full min-w-0 overflow-x-auto scrollbar-thin">
           <Table.Root class="w-full min-w-[640px] text-sm">
             <Table.Header class="bg-muted/50">
               <Table.Row>
@@ -210,7 +211,7 @@
                 <Table.Head class="px-4 py-3">Email</Table.Head>
                 <Table.Head class="px-4 py-3">Status</Table.Head>
                 <Table.Head class="px-4 py-3">Submitted</Table.Head>
-                <Table.Head class="px-4 py-3 text-right">Actions</Table.Head>
+                <Table.Head class="text-center">Actions</Table.Head>
               </Table.Row>
             </Table.Header>
             <Table.Body>
@@ -225,34 +226,37 @@
                   <Table.Cell class="px-4 py-3 text-muted-foreground">
                     {app.submitted_at ? new Date(app.submitted_at).toLocaleDateString() : '—'}
                   </Table.Cell>
-                  <Table.Cell class="px-4 py-3 text-right">
-                    <div class="flex justify-end gap-2">
-                      {#if app.status === 'pending'}
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          class="min-h-[44px] text-primary hover:text-primary"
-                          onclick={() => doAccept(app.id)}
-                        >
-                          <CheckCircle class="mr-1.5 h-4 w-4" />
-                          Accept
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          class="min-h-[44px] text-destructive hover:text-destructive"
-                          onclick={() => doDismiss(app.id)}
-                        >
-                          <XCircle class="mr-1.5 h-4 w-4" />
-                          Dismiss
-                        </Button>
-                      {/if}
+                  <Table.Cell class="text-center">
+                    <div class="flex justify-center gap-2">
                       <Link href={`/applications/${app.id}`}>
-                        <Button variant="ghost" size="sm" class="min-h-[44px]">
-                          <Eye class="mr-1.5 h-4 w-4" />
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          class="h-8 px-2 text-xs"
+                        >
+                          <Eye class="mr-1.5 h-3.5 w-3.5" />
                           View
                         </Button>
                       </Link>
+
+                      <ActionDropdown
+                        items={[
+                          ...(app.status === 'pending' ? [
+                            { 
+                              label: 'Accept', 
+                              icon: CheckCircle, 
+                              onclick: () => doAccept(app.id),
+                              class: 'text-primary'
+                            },
+                            { 
+                              label: 'Dismiss', 
+                              icon: XCircle, 
+                              onclick: () => doDismiss(app.id),
+                              class: 'text-destructive'
+                            }
+                          ] : [])
+                        ]}
+                      />
                     </div>
                   </Table.Cell>
                 </Table.Row>

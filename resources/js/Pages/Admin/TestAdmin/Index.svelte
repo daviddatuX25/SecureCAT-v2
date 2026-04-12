@@ -2,6 +2,7 @@
   import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.svelte';
   import { Link, usePage } from '@inertiajs/svelte';
   import { Badge } from '@/Components/ui/badge';
+  import * as Table from '@/Components/ui/table';
   import { Button } from '@/Components/ui/button';
   import { ClipboardList, ChevronLeft, ChevronRight } from 'lucide-svelte';
 
@@ -69,43 +70,44 @@
     <!-- Session list -->
     <div class="rounded-lg border border-border bg-card">
       {#if (sessions?.data ?? []).length > 0}
-        <div class="overflow-x-auto">
-          <table class="w-full text-sm">
-            <thead class="bg-muted/50">
-              <tr>
-                <th class="px-4 py-3 text-left font-medium">Date</th>
-                <th class="px-4 py-3 text-left font-medium">Time</th>
-                <th class="px-4 py-3 text-left font-medium">Room</th>
-                <th class="px-4 py-3 text-left font-medium">Status</th>
-                <th class="px-4 py-3 text-left font-medium">Applicants</th>
-                <th class="px-4 py-3 text-right font-medium">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
+        <div class="overflow-x-auto scrollbar-thin">
+          <Table.Root>
+            <Table.Header class="bg-muted/50">
+              <Table.Row>
+                <Table.Head>Date</Table.Head>
+                <Table.Head>Time</Table.Head>
+                <Table.Head>Room</Table.Head>
+                <Table.Head>Status</Table.Head>
+                <Table.Head>Applicants</Table.Head>
+                <Table.Head class="text-center">Actions</Table.Head>
+              </Table.Row>
+            </Table.Header>
+            <Table.Body>
               {#each sessions.data as session (session.id)}
-                <tr class="border-t border-border hover:bg-muted/30 transition-colors">
-                  <td class="px-4 py-3 font-medium">{formatDate(session.date)}</td>
-                  <td class="px-4 py-3 text-muted-foreground">
+                <Table.Row>
+                  <Table.Cell class="font-medium">{formatDate(session.date)}</Table.Cell>
+                  <Table.Cell class="text-muted-foreground">
                     {formatTime(session.start_time)}{#if session.end_time} – {formatTime(session.end_time)}{/if}
-                  </td>
-                  <td class="px-4 py-3">{session.room?.name ?? '—'}</td>
-                  <td class="px-4 py-3">
+                  </Table.Cell>
+                  <Table.Cell>{session.room?.name ?? '—'}</Table.Cell>
+                  <Table.Cell>
                     <Badge variant={statusVariant(session.status)}>{statusLabel(session.status)}</Badge>
-                  </td>
-                  <td class="px-4 py-3 text-muted-foreground">{session.applicants_count ?? '—'}</td>
-                  <td class="px-4 py-3 text-right">
-                    <Link
-                      href="/admin/test-admin/sessions/{session.id}/roster"
-                      class="inline-flex items-center gap-1.5 rounded-md bg-primary px-3 py-2 text-xs font-semibold text-primary-foreground hover:bg-primary/90 min-h-[36px] transition-colors"
-                    >
-                      <ClipboardList class="h-3.5 w-3.5" />
-                      Open examinees
-                    </Link>
-                  </td>
-                </tr>
+                  </Table.Cell>
+                  <Table.Cell class="text-muted-foreground">{session.applicants_count ?? '—'}</Table.Cell>
+                  <Table.Cell class="text-center">
+                    <div class="flex justify-center">
+                      <Link href={`/admin/test-admin/sessions/${session.id}/roster`}>
+                        <Button size="sm" class="h-8 px-2 text-xs">
+                          <ClipboardList class="mr-1.5 h-3.5 w-3.5" />
+                          Open examinees
+                        </Button>
+                      </Link>
+                    </div>
+                  </Table.Cell>
+                </Table.Row>
               {/each}
-            </tbody>
-          </table>
+            </Table.Body>
+          </Table.Root>
         </div>
 
         <!-- Pagination -->
