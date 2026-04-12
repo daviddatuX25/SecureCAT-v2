@@ -16,6 +16,15 @@ class ApplicationPolicy
         return $user->hasAnyRole(['super_admin', 'registrar_administrator', 'staff']);
     }
 
+    /**
+     * Staff can create applications on behalf of applicants.
+     * Bypasses application window restrictions.
+     */
+    public function create(User $user): bool
+    {
+        return $user->hasAnyRole(['super_admin', 'staff', 'registrar_administrator']);
+    }
+
     public function view(User $user, Application $application): bool
     {
         return $user->hasAnyRole(['super_admin', 'registrar_administrator', 'staff']);

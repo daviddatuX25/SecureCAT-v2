@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\DismissApplicationRequest;
 use App\Http\Requests\StoreApplicationRequest;
+use App\Http\Requests\UpdateApplicationRequest;
 use App\Jobs\SendApplicantSetupEmail;
 use App\Models\AcademicYear;
 use App\Models\Applicant;
@@ -170,7 +171,10 @@ class ApplicationController extends Controller
         $courses = $this->getCourses();
         $appointments = $this->getAppointments();
 
-        $allowApply = $activeAcademicYear !== null && $activeAcademicYear->isApplicationWindowOpen();
+        // Public users: check application window; staff (authenticated): bypass window check
+        $allowApply = auth()->check()
+            ? true
+            : ($activeAcademicYear !== null && $activeAcademicYear->isApplicationWindowOpen());
 
         return Inertia::render('Applications/Apply', [
             'courses' => $courses,
@@ -178,6 +182,164 @@ class ApplicationController extends Controller
             'active_season' => $activeAcademicYear ? ['id' => $activeAcademicYear->id, 'academic_year' => $activeAcademicYear->academic_year, 'semester' => $activeAcademicYear->semester, 'semester_label' => $activeAcademicYear->semesterLabel()] : null,
             'allow_apply' => $allowApply,
         ]);
+    }
+
+    /**
+     * Staff create application on behalf of applicant - bypasses application window.
+     */
+    public function storeAdmin(StoreApplicationRequest $request): RedirectResponse
+    {
+        $activeAcademicYear = AcademicYear::active();
+
+        $validated = $request->validated();
+
+        $birthdate = Carbon::parse($validated['birthdate']);
+        $age = (int) $birthdate->diffInYears(now());
+
+        $referenceNumber = Application::nextReferenceNumber();
+
+        $application = Application::create([
+            'academic_year_id' => $activeAcademicYear->id,
+            'reference_number' => $referenceNumber,
+            'first_name' => $validated['first_name'],
+            'middle_name' => $validated['middle_name'] ?? null,
+            'last_name' => $validated['last_name'],
+            'suffix' => $validated['suffix'] ?? null,
+            'birthdate' => $validated['birthdate'],
+            'age' => $age,
+            'sex' => $validated['sex'],
+            'email' => $validated['email'],
+            'phone' => $validated['phone'] ?? null,
+            'address_line' => $validated['address_line'] ?? null,
+            'city' => $validated['city'] ?? null,
+            'province' => $validated['province'] ?? null,
+            'zip_code' => $validated['zip_code'] ?? null,
+            'course_preference_1' => $validated['course_preference_1'],
+            'course_preference_2' => ! empty($validated['course_preference_2']) ? (int) $validated['course_preference_2'] : null,
+            'course_preference_3' => ! empty($validated['course_preference_3']) ? (int) $validated['course_preference_3'] : null,
+            'status' => $validated['status'] ?? 'pending',
+            'appointment_id' => $validated['appointment_id'] ?? null,
+            'submitted_at' => now(),
+            'processed_by' => auth()->id(),
+            'processed_at' => now(),
+        ]);
+
+        if (! empty($validated['appointment_id'])) {
+            Appointment::where('id', $validated['appointment_id'])->increment('booked_count');
+        }
+
+        Log::info('Application created by staff', [
+            'application_id' => $application->id,
+            'reference_number' => $application->reference_number,
+            'staff_id' => auth()->id(),
+        ]);
+
+        return redirect()
+            ->route('admin.applications.show', $application)
+            ->with('success', 'Application created successfully.');
+    }
+
+    /**
+     * Staff edit application form.
+     */
+    public function edit(Application $application): Response
+    {
+        $this->authorize('create', Application::class);
+
+        $activeAcademicYear = AcademicYear::active();
+        $courses = $this->getCourses();
+        $appointments = $this->getAppointments();
+
+        $application->load(['coursePreference1', 'coursePreference2', 'coursePreference3', 'appointment', 'academicYear']);
+
+        return Inertia::render('Applications/Edit', [
+            'application' => [
+                'id' => $application->id,
+                'reference_number' => $application->reference_number,
+                'first_name' => $application->first_name,
+                'middle_name' => $application->middle_name,
+                'last_name' => $application->last_name,
+                'suffix' => $application->suffix,
+                'birthdate' => $application->birthdate->format('Y-m-d'),
+                'sex' => $application->sex,
+                'email' => $application->email,
+                'phone' => $application->phone,
+                'address_line' => $application->address_line,
+                'city' => $application->city,
+                'province' => $application->province,
+                'zip_code' => $application->zip_code,
+                'course_preference_1' => $application->course_preference_1,
+                'course_preference_2' => $application->course_preference_2,
+                'course_preference_3' => $application->course_preference_3,
+                'status' => $application->status,
+                'rejection_reason' => $application->rejection_reason,
+                'appointment_id' => $application->appointment_id,
+                'submitted_at' => $application->submitted_at?->toIso8601String(),
+            ],
+            'courses' => $courses,
+            'appointments' => $appointments,
+            'active_season' => $activeAcademicYear ? ['id' => $activeAcademicYear->id, 'academic_year' => $activeAcademicYear->academic_year, 'semester' => $activeAcademicYear->semester, 'semester_label' => $activeAcademicYear->semesterLabel()] : null,
+            'statuses' => [
+                ['value' => 'pending', 'label' => 'Pending'],
+                ['value' => 'accepted', 'label' => 'Accepted'],
+                ['value' => 'dismissed', 'label' => 'Dismissed'],
+            ],
+        ]);
+    }
+
+    /**
+     * Staff update application - bypasses application window.
+     */
+    public function updateAdmin(UpdateApplicationRequest $request, Application $application): RedirectResponse
+    {
+        $validated = $request->validated();
+
+        // Handle appointment changes
+        $oldAppointmentId = $application->appointment_id;
+        $newAppointmentId = $validated['appointment_id'] ?? null;
+
+        if ($oldAppointmentId && $oldAppointmentId !== $newAppointmentId) {
+            Appointment::where('id', $oldAppointmentId)->where('booked_count', '>', 0)->decrement('booked_count');
+        }
+        if ($newAppointmentId && $newAppointmentId !== $oldAppointmentId) {
+            Appointment::where('id', $newAppointmentId)->increment('booked_count');
+        }
+
+        // Build update data - only include provided fields
+        $updateData = [];
+        $fillable = [
+            'first_name', 'middle_name', 'last_name', 'suffix', 'birthdate',
+            'sex', 'email', 'phone', 'address_line', 'city', 'province', 'zip_code',
+            'course_preference_1', 'course_preference_2', 'course_preference_3',
+            'appointment_id', 'status', 'rejection_reason',
+        ];
+
+        foreach ($fillable as $field) {
+            if (array_key_exists($field, $validated)) {
+                $updateData[$field] = $validated[$field];
+            }
+        }
+
+        // Update age if birthdate changed
+        if (isset($updateData['birthdate'])) {
+            $updateData['age'] = (int) Carbon::parse($updateData['birthdate'])->diffInYears(now());
+        }
+
+        $updateData['processed_by'] = auth()->id();
+        $updateData['processed_at'] = now();
+
+        $application->update($updateData);
+
+        Log::info('Application updated by staff', [
+            'application_id' => $application->id,
+            'reference_number' => $application->reference_number,
+            'staff_id' => auth()->id(),
+            'changes' => array_keys($updateData),
+        ]);
+
+        return redirect()
+            ->route('admin.applications.show', $application)
+            ->with('success', 'Application updated successfully.');
     }
 
     public function store(StoreApplicationRequest $request): RedirectResponse
