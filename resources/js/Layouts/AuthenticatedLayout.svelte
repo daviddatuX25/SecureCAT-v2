@@ -347,18 +347,4 @@
   .scrollbar-hide::-webkit-scrollbar {
     display: none;
   }
-  .scrollbar-thin::-webkit-scrollbar {
-    height: 3px;
-    width: 3px;
-  }
-  .scrollbar-thin::-webkit-scrollbar-track {
-    background: transparent;
-  }
-  .scrollbar-thin::-webkit-scrollbar-thumb {
-    background: #94a3b8;
-    border-radius: 2px;
-  }
-  .scrollbar-thin::-webkit-scrollbar-thumb:hover {
-    background: #94a3b8;
-  }
 </style>
