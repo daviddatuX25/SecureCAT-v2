@@ -45,6 +45,13 @@
 ### Phase E9: Application Management
 - [ ] Application create/edit for staff/admin
 
+### Phase E10: Bulk Applicant Data Import
+- [ ] Import applicant records via CSV/spreadsheet
+- [ ] Reusable import service infrastructure
+
+### Phase E11: Bulk Score Import
+- [ ] Import applicant scores via CSV/spreadsheet
+
 ### Phase 1: application create edit for staff admin registrar superadmin
 
 **Goal:** Enable staff/admin to create and edit applications bypassing public application window restrictions
@@ -55,6 +62,18 @@
 Plans:
 - [x] 01-01-PLAN.md — Backend: UpdateApplicationRequest, policy create(), routes, controller methods
 - [x] 01-02-PLAN.md — Frontend: Admin Create.svelte and Edit.svelte pages
+
+### Phase 2: toast notification system with smooth sound
+
+**Goal:** Brief, auto-dismissing toast notifications with optional sound for key events
+**Requirements:** D-01, D-02, D-03, D-04, D-05, D-06, D-07
+**Depends on:** Phase 1
+**Plans:** 3/3 plans complete
+
+Plans:
+- [x] 02-01-PLAN.md — Infrastructure: svelte-french-toast package, sound, toast CSS
+- [x] 02-02-PLAN.md — Frontend: ToastManager component, layouts integration
+- [x] 02-03-PLAN.md — Integration: Polling triggers toast with edge cases
 
 ---
 
