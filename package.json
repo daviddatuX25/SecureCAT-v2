@@ -26,6 +26,7 @@
         "@sveltejs/vite-plugin-svelte": "^6.2.4",
         "html5-qrcode": "^2.3.8",
         "lucide-svelte": "^0.574.0",
-        "svelte": "^5.51.3"
+        "svelte": "^5.51.3",
+        "svelte-french-toast": "^1.2.0"
     }
 }
