@@ -423,7 +423,7 @@
     </div>
 
     {#if filteredApplicants.length > 0}
-      <div class="mt-4 overflow-x-auto scrollbar-thin">
+      <div class="mt-4 overflow-x-auto scrollbar-hide">
         <table class="w-full text-sm">
           <thead class="bg-muted/50">
             <tr>

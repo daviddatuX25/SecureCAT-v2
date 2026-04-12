@@ -70,7 +70,7 @@
     <!-- Session list -->
     <div class="rounded-lg border border-border bg-card">
       {#if (sessions?.data ?? []).length > 0}
-        <div class="overflow-x-auto scrollbar-thin">
+        <div class="overflow-x-auto scrollbar-hide">
           <Table.Root>
             <Table.Header class="bg-muted/50">
               <Table.Row>

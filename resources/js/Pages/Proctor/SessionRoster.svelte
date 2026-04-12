@@ -269,7 +269,7 @@
         </div>
       {/if}
       {#if filteredApplicants.length > 0}
-        <div class="mt-4 w-full min-w-0 overflow-x-auto scrollbar-thin">
+        <div class="mt-4 w-full min-w-0 overflow-x-auto scrollbar-hide">
           <Table.Root class="w-full min-w-[800px] text-sm">
             <Table.Header class="bg-muted/50">
               <Table.Row>

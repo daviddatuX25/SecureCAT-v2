@@ -166,7 +166,7 @@
         </div>
       </div>
       {#if (assigned_applicants ?? []).length > 0}
-        <div class="mt-4 overflow-x-auto scrollbar-thin">
+        <div class="mt-4 overflow-x-auto scrollbar-hide">
           <Table.Root>
             <Table.Header class="bg-muted/50">
               <Table.Row>
@@ -208,7 +208,7 @@
       <h2 class="text-lg font-semibold">Available applicants</h2>
       <p class="mt-1 text-sm text-muted-foreground">Accepted applicants not yet assigned to a session. Select and assign.</p>
       {#if (available_applicants ?? []).length > 0}
-        <div class="mt-4 overflow-x-auto scrollbar-thin">
+        <div class="mt-4 overflow-x-auto scrollbar-hide">
           <Table.Root>
             <Table.Header class="bg-muted/50">
               <Table.Row>

@@ -51,7 +51,7 @@
     {/if}
 
     <div class="glass-panel rounded-2xl overflow-hidden min-w-0 max-w-full p-6">
-      <div class="w-full min-w-0 overflow-x-auto scrollbar-thin">
+      <div class="w-full min-w-0 overflow-x-auto scrollbar-hide">
         <Table.Root>
           <Table.Header class="bg-muted/50">
             <Table.Row>

@@ -202,7 +202,7 @@
     <!-- Table -->
     <div class="{viewMode === 'cards' ? 'hidden' : viewMode === 'table' ? 'block' : 'hidden md:block'} min-w-0">
       <div class="glass-panel rounded-2xl overflow-hidden min-w-0 max-w-full p-0">
-        <div class="w-full min-w-0 overflow-x-auto scrollbar-thin">
+        <div class="w-full min-w-0 overflow-x-auto scrollbar-hide">
           <Table.Root class="w-full min-w-[640px] text-sm">
             <Table.Header class="bg-muted/50">
               <Table.Row>
