@@ -1,6 +1,16 @@
 // Notification sound utility using Web Audio API
 // Provides a pleasant chime sound for notifications
 
+// Singleton AudioContext instance
+let audioContext = null;
+
+function getAudioContext() {
+    if (!audioContext) {
+        audioContext = new (window.AudioContext || window.webkitAudioContext)();
+    }
+    return audioContext;
+}
+
 /**
  * Play a subtle notification chime sound
  * Uses Web Audio API to generate a pleasant frequency sweep
@@ -8,7 +18,7 @@
 export function playNotificationSound() {
     if (typeof window === 'undefined') return;
 
-    const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+    const audioContext = getAudioContext();
     const oscillator = audioContext.createOscillator();
     const gainNode = audioContext.createGain();
 
@@ -34,7 +44,7 @@ export function playNotificationSound() {
 export function playSound(type = 'info') {
     if (typeof window === 'undefined') return;
 
-    const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+    const audioContext = getAudioContext();
     const oscillator = audioContext.createOscillator();
     const gainNode = audioContext.createGain();
 
