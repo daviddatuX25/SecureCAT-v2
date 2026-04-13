@@ -52,6 +52,12 @@
 ### Phase E11: Bulk Score Import
 - [ ] Import applicant scores via CSV/spreadsheet
 
+### Phase E12: Bulk Import UX Improvements
+- [ ] Column mapping UI - user maps CSV headers to fields
+- [ ] Preview step - show parsed data before importing
+- [ ] Selective import - skip invalid rows, import valid only
+- [ ] Validation flags on UI - highlight missing/invalid fields
+
 ### Phase 1: application create edit for staff admin registrar superadmin
 
 **Goal:** Enable staff/admin to create and edit applications bypassing public application window restrictions
@@ -74,6 +80,28 @@ Plans:
 - [x] 02-01-PLAN.md — Infrastructure: svelte-french-toast package, sound, toast CSS
 - [x] 02-02-PLAN.md — Frontend: ToastManager component, layouts integration
 - [x] 02-03-PLAN.md — Integration: Polling triggers toast with edge cases
+
+### Phase 3: add toast feedback to admin create edit pages
+
+**Goal:** Add success toast notifications to admin create/edit form submissions
+**Requirements:** T3-01, T3-02, T3-03
+**Depends on:** Phase 2
+**Plans:** 1/1 plan complete
+
+Plans:
+- [x] 03-01-PLAN.md — Add onSuccess toast callback to 18 admin CREATE/EDIT pages
+
+### Phase 4: Applicant AI Companion chat interface - floating expandable chat area for applicants to chat with AI Companion when enabled
+
+**Goal:** A floating expandable chat widget that appears on all applicant portal pages when AI Companion mode is enabled. Applicants can chat with the AI assistant from anywhere in the portal.
+**Requirements:** 04-FW-01, 04-FW-02
+**Depends on:** Phase 3
+**Plans:** 3/3 plans
+
+Plans:
+- [x] 04-01-PLAN.md — Create AiCompanionChatWidget.svelte (FAB + expand panel)
+- [x] 04-02-PLAN.md — Integrate widget into PortalLayout.svelte
+- [x] 04-03-PLAN.md — Fix ai_companion_enabled to include consultation status check
 
 ---
 
