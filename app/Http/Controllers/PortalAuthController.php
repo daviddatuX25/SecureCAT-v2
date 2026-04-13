@@ -16,7 +16,6 @@ use App\Services\AuditService;
 use Carbon\Carbon;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Notifications\DatabaseNotification;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
@@ -107,7 +106,7 @@ class PortalAuthController extends Controller
         $applicant = Applicant::where('setup_token', $token)->first();
 
         if (! $applicant || ! $applicant->isSetupTokenValid()) {
-            return redirect()->route('portal.login')->with('error', 'This setup link is invalid or has expired.');
+            return redirect()->route('login')->with('error', 'This setup link is invalid or has expired.');
         }
 
         return Inertia::render('Portal/Setup', [
@@ -124,7 +123,7 @@ class PortalAuthController extends Controller
         $applicant = Applicant::where('setup_token', $token)->first();
 
         if (! $applicant || ! $applicant->isSetupTokenValid()) {
-            return redirect()->route('portal.login')->with('error', 'This setup link is invalid or has expired.');
+            return redirect()->route('login')->with('error', 'This setup link is invalid or has expired.');
         }
 
         $applicant->password = Hash::make($request->validated('password'));
@@ -137,7 +136,7 @@ class PortalAuthController extends Controller
             'applicant_id' => $applicant->id,
         ], 'Applicant setup completed');
 
-        return redirect()->route('portal.login')->with('success', 'Your password has been set. You can now sign in.');
+        return redirect()->route('login')->with('success', 'Your password has been set. You can now sign in.');
     }
 
     /**
@@ -225,7 +224,7 @@ class PortalAuthController extends Controller
             'applicant_id' => $applicant->id,
         ], 'Applicant password reset');
 
-        return redirect()->route('portal.login')->with('success', 'Your password has been reset. You can now sign in.');
+        return redirect()->route('login')->with('success', 'Your password has been reset. You can now sign in.');
     }
 
     /**
@@ -262,20 +261,6 @@ class PortalAuthController extends Controller
         $examSchedule = $this->buildExamSchedule($primarySession);
         $scoreRelease = $this->buildScoreRelease($primarySession);
 
-        $notifications = $applicant->notifications()
-            ->orderBy('created_at', 'desc')
-            ->limit(50)
-            ->get()
-            ->map(fn (DatabaseNotification $n) => [
-                'id' => $n->id,
-                'type' => $n->type,
-                'message' => ($n->data['message'] ?? $n->data['title'] ?? class_basename($n->type)),
-                'read' => $n->read_at !== null,
-                'created_at' => $n->created_at?->toIso8601String(),
-            ])
-            ->values()
-            ->all();
-
         $consultation = [
             'status' => $summary?->status ?? 'pending',
             'summary' => $summary && $summary->status === 'released' ? [
@@ -296,12 +281,17 @@ class PortalAuthController extends Controller
                 'reference_number' => $referenceNumber,
                 'email' => $applicant->email,
             ],
+            'application' => $application ? [
+                'is_editable' => $application->isEditableByApplicant(),
+                'assigned_session_status' => $application->assignedSessionStatus(),
+            ] : null,
             'status_tracker' => $statusTracker,
             'exam_schedule' => $examSchedule,
             'score_release' => $scoreRelease,
             'consultation' => $consultation,
-            'ai_companion_enabled' => SystemSetting::aiCompanionEnabled(),
-            'notifications' => $notifications,
+            // Widget only shows when AI companion is system-enabled AND consultation results are released
+            'ai_companion_enabled' => SystemSetting::aiCompanionEnabled()
+                && ($consultation['status'] ?? 'pending') === 'released',
             'results_blocked' => ($releaseMode === 'f2f'),
         ]);
     }
@@ -440,6 +430,6 @@ class PortalAuthController extends Controller
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
-        return redirect()->route('portal.login');
+        return redirect()->route('login');
     }
 }
