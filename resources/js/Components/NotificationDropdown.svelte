@@ -2,7 +2,7 @@
   import { Bell, Check, CheckCheck, X, ExternalLink } from 'lucide-svelte';
   import { usePoll } from '@inertiajs/svelte';
   import { router } from '@inertiajs/svelte';
-  import ToastManager from '@/Components/ToastManager.svelte';
+  import { success, message } from '@/Components/ToastManager.svelte';
 
   let { initialNotifications = [] } = $props();
 
@@ -42,13 +42,13 @@
 
           // Determine toast type based on notification type
           if (latestNew.type?.includes('application_status')) {
-            ToastManager.success(latestNew.message || 'Application status updated');
+            success(latestNew.message || 'Application status updated');
           } else if (latestNew.type?.includes('exam_session')) {
-            ToastManager.message(latestNew.message || 'Exam session updated');
+            message(latestNew.message || 'Exam session updated');
           } else if (latestNew.type?.includes('result')) {
-            ToastManager.success(latestNew.message || 'Grading results available');
+            success(latestNew.message || 'Grading results available');
           } else {
-            ToastManager.message(latestNew.message || 'New notification');
+            message(latestNew.message || 'New notification');
           }
 
           lastToastTime = now;
