@@ -2,6 +2,8 @@
   import { Link, usePage, router } from '@inertiajs/svelte';
   import { Button } from '@/Components/ui/button';
   import { Bell, LogOut, Sun, Moon } from 'lucide-svelte';
+  import ToastManager from '@/Components/ToastManager.svelte';
+  import AiCompanionChatWidget from '@/Components/AiCompanionChatWidget.svelte';
 
   function toggleTheme() {
     document.documentElement.classList.toggle('dark');
@@ -13,6 +15,8 @@
   const applicant = $derived($page.props.auth?.applicant ?? null);
   const notificationsUnreadCount = $derived($page.props.auth?.notifications_unread_count ?? 0);
   const notificationsRecent = $derived($page.props.auth?.notifications_recent ?? []);
+  const ai_companion_enabled = $derived($page.props.ai_companion_enabled ?? false);
+  const csrf_token = $derived($page.props.csrf_token ?? '');
 
   function logout() {
     router.post('/portal/logout');
@@ -113,6 +117,7 @@
             {/if}
           </div>
         </details>
+        <ToastManager />
         <Button type="button" variant="ghost" size="icon" class="min-h-[44px] min-w-[44px]" aria-label="Log out" onclick={logout}>
           <LogOut class="h-5 w-5" />
         </Button>
@@ -129,4 +134,8 @@
       <p>&copy; {new Date().getFullYear()} SecureCAT. All rights reserved.</p>
     </div>
   </footer>
+
+  {#if ai_companion_enabled}
+    <AiCompanionChatWidget ai_companion_enabled={ai_companion_enabled} csrf_token={csrf_token} />
+  {/if}
 </div>
