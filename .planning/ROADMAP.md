@@ -103,6 +103,13 @@ Plans:
 - [x] 04-02-PLAN.md — Integrate widget into PortalLayout.svelte
 - [x] 04-03-PLAN.md — Fix ai_companion_enabled to include consultation status check
 
+### Phase 5: AI Companion Edge Cases & Security Hardening
+
+**Goal:** Implement comprehensive security hardening and edge case handling for AI Companion: abuse prevention (code generation guardrails, prompt injection protection), input validation (message length warnings, history limit warnings), rate limiting per user, content safety, history management improvements, session handling, error handling, and data privacy enhancements.
+**Requirements:** Security hardening for AI Companion feature
+**Depends on:** Phase 4
+**Plans:** 3/3 plans complete
+
 ---
 
 ## Future Milestones
