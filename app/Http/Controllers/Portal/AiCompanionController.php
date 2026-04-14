@@ -78,6 +78,16 @@ class AiCompanionController extends Controller
         try {
             $result = $this->companionService->chat($applicant, $message);
 
+            // Handle blocked responses from guardrails
+            if (isset($result['blocked']) && $result['blocked'] === true) {
+                $response = ['reply' => $result['reply']];
+                if ($warning !== []) {
+                    $response['warning'] = $warning;
+                }
+
+                return response()->json($response);
+            }
+
             $response = ['reply' => $result['reply']];
             if ($warning !== []) {
                 $response['warning'] = $warning;

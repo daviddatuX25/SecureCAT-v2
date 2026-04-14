@@ -23,9 +23,90 @@ class AiCompanionService
 
     public const WARNING_THRESHOLD_HISTORY = 17;
 
+    /**
+     * Patterns that indicate code generation requests.
+     */
+    private const CODE_GENERATION_PATTERNS = [
+        '/write\s+(a\s+)?(php|javascript|python|sql|html|css)\s+(code|function|script)/i',
+        '/generate\s+(a\s+)?(php|javascript|python|sql|html|css)\s+(code|function|script)/i',
+        '/create\s+(a\s+)?(program|script|exploit|payload)/i',
+        '/how\s+to\s+(hack|exploit|bypass|inject)/i',
+    ];
+
+    /**
+     * Patterns that indicate prompt injection attempts.
+     */
+    private const PROMPT_INJECTION_PATTERNS = [
+        '/ignore\s+(previous|all|above)\s+(instructions?|rules?|prompts?)/i',
+        '/system\s*:/i',
+        '/<\|.*\|>/',
+        '/\[SYSTEM\]/i',
+        '/\#\#\#\s*SYSTEM/i',
+        '/override\s+(your\s+)?(instructions?|rules?)/i',
+    ];
+
+    /**
+     * Patterns that indicate unsafe content.
+     */
+    private const UNSAFE_CONTENT_PATTERNS = [
+        '/violence/i',
+        '/threat/i',
+        '/self[-\s]?harm/i',
+    ];
+
     public function __construct(
         protected KnowledgeRetrievalService $retrieval
     ) {}
+
+    /**
+     * Check if the message contains a code generation request.
+     */
+    private function containsCodeGenerationRequest(string $message): bool
+    {
+        foreach (self::CODE_GENERATION_PATTERNS as $pattern) {
+            if (preg_match($pattern, $message)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Check if the message contains a prompt injection attempt.
+     */
+    private function containsPromptInjection(string $message): bool
+    {
+        foreach (self::PROMPT_INJECTION_PATTERNS as $pattern) {
+            if (preg_match($pattern, $message)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Check if the message contains unsafe content.
+     */
+    private function containsUnsafeContent(string $message): bool
+    {
+        foreach (self::UNSAFE_CONTENT_PATTERNS as $pattern) {
+            if (preg_match($pattern, $message)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Sanitize user input by stripping HTML tags.
+     */
+    private function sanitizeInput(string $message): string
+    {
+        return strip_tags($message);
+    }
 
     /**
      * Build applicant context summary (scores + course preferences) for the system prompt.
@@ -120,10 +201,37 @@ class AiCompanionService
      * Send a single user message, persist user + assistant, and return the assistant reply (T7).
      * Loads last N messages for context; stores both user and assistant messages.
      *
-     * @return array{reply: string}
+     * @return array{reply: string, blocked?: bool}
      */
     public function chat(Applicant $applicant, string $userMessage, int $maxHistory = self::DEFAULT_MAX_HISTORY): array
     {
+        // (0) Sanitize input
+        $userMessage = $this->sanitizeInput($userMessage);
+
+        // (0.1) Check for code generation requests
+        if ($this->containsCodeGenerationRequest($userMessage)) {
+            return [
+                'reply' => "I'm sorry, but I cannot help with code generation. I can assist with questions about our courses, admission requirements, and application process.",
+                'blocked' => true,
+            ];
+        }
+
+        // (0.2) Check for prompt injection attempts
+        if ($this->containsPromptInjection($userMessage)) {
+            return [
+                'reply' => "I noticed an unusual request. Let's focus on helping with your application questions.",
+                'blocked' => true,
+            ];
+        }
+
+        // (0.3) Check for unsafe content
+        if ($this->containsUnsafeContent($userMessage)) {
+            return [
+                'reply' => "I'm here to help with admission-related questions. Please rephrase your question.",
+                'blocked' => true,
+            ];
+        }
+
         // (1) Append user message to DB (T7.1)
         $userMsg = AiCompanionMessage::create([
             'applicant_id' => $applicant->id,
