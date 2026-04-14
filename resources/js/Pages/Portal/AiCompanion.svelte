@@ -11,6 +11,7 @@
   let input = $state('');
   let loading = $state(false);
   let error = $state('');
+  let warning = $state('');
 
   async function send() {
     const text = input.trim();
@@ -44,6 +45,13 @@
 
       if (data.reply) {
         messages = [...messages, { role: 'assistant', content: data.reply }];
+      }
+
+      // Check for warnings from server
+      if (data.warning?.length) {
+        warning = data.warning.length;
+      } else if (data.warning?.history) {
+        warning = data.warning.history;
       }
     } catch (e) {
       error = 'Network error. Please try again.';
@@ -85,7 +93,7 @@
 </script>
 
 <svelte:head>
-  <title>Chat with advisor - SecureCAT</title>
+  <title>Cat-Bot - SecureCAT</title>
 </svelte:head>
 
 <PortalLayout>
@@ -110,11 +118,14 @@
       <Card.Header>
         <Card.Title class="flex items-center gap-2">
           <MessageSquare class="h-5 w-5" />
-          Chat with advisor
+          Cat-Bot
         </Card.Title>
         <Card.Description>
           Ask about your results and course fit. Advice is based on your scores and the data we have.
         </Card.Description>
+        <p class="text-xs text-muted-foreground">
+          Please do not share sensitive personal information like passwords or financial details.
+        </p>
       </Card.Header>
       <Card.Content class="space-y-4">
         {#if error}
@@ -137,6 +148,9 @@
                 </div>
               </div>
             {/each}
+            {#if warning}
+              <p class="text-xs text-amber-600 dark:text-amber-400 mt-2 bg-amber-50 dark:bg-amber-900/20 rounded px-2 py-1">{warning}</p>
+            {/if}
           {/if}
         </div>
 
