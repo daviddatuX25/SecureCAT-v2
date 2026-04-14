@@ -3,6 +3,7 @@
 use App\Http\Controllers\Admin\AcademicYearController;
 use App\Http\Controllers\Admin\AdmissionSlipTemplateController;
 use App\Http\Controllers\Admin\AiCompanionAdminController;
+use App\Http\Controllers\Admin\ApplicationImportController;
 use App\Http\Controllers\Admin\AptitudeAreaController;
 use App\Http\Controllers\Admin\AuditLogController;
 use App\Http\Controllers\Admin\CourseController;
@@ -21,7 +22,9 @@ use App\Http\Controllers\Grading\GradingController;
 use App\Http\Controllers\Grading\GradingPrintController;
 use App\Http\Controllers\Grading\GradingScoreController;
 use App\Http\Controllers\Grading\GradingSessionController;
+use App\Http\Controllers\Grading\ScoreImportController;
 use App\Http\Controllers\HomeController;
+use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\Portal\AiCompanionController;
 use App\Http\Controllers\Portal\NotificationController as PortalNotificationController;
 use App\Http\Controllers\PortalAuthController;
@@ -70,13 +73,23 @@ Route::middleware(['web', 'auth:applicant'])->prefix('portal')->name('portal.')-
     Route::get('notifications', [PortalNotificationController::class, 'index'])->name('notifications.index');
     Route::post('notifications/{id}/read', [PortalNotificationController::class, 'markRead'])->name('notifications.read');
     Route::get('ai-companion', [AiCompanionController::class, 'index'])->name('ai-companion.index');
-    Route::post('ai-companion/chat', [AiCompanionController::class, 'chat'])->name('ai-companion.chat');
-    Route::post('ai-companion/clear-history', [AiCompanionController::class, 'clearHistory'])->name('ai-companion.clear-history');
+    Route::post('ai-companion/chat', [AiCompanionController::class, 'chat'])->middleware('throttle:ai-companion')->name('ai-companion.chat');
+    Route::post('ai-companion/clear-history', [AiCompanionController::class, 'clearHistory'])->middleware('throttle:ai-companion-clear')->name('ai-companion.clear-history');
+
+    // Applicant's own application
+    Route::get('application', [ApplicationController::class, 'portalShow'])->name('application.show');
+    Route::get('application/edit', [ApplicationController::class, 'portalEdit'])->name('application.edit');
+    Route::put('application', [ApplicationController::class, 'portalUpdate'])->name('application.update');
 });
 
 Route::middleware(['auth'])->group(function () {
     Route::post('/logout', [AuthController::class, 'destroy'])->name('logout');
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+
+    // Authenticated user notifications (staff/admin/proctor etc.)
+    Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');
+    Route::post('/notifications/{id}/read', [NotificationController::class, 'markAsRead'])->name('notifications.read');
+    Route::post('/notifications/read-all', [NotificationController::class, 'markAllAsRead'])->name('notifications.read-all');
 
     Route::middleware('role:super_admin')->prefix('admin')->name('admin.')->group(function () {
         Route::resource('users', UserController::class)->except('show')->parameters(['users' => 'user']);
@@ -149,10 +162,25 @@ Route::middleware(['auth'])->group(function () {
 
     // Staff create/edit applications - bypasses application window restrictions
     Route::middleware('role:super_admin,staff,registrar_administrator')->prefix('admin')->name('admin.applications.')->group(function () {
+        // Bulk applicant import - MUST come before {application} wildcard
+        Route::get('applications/import', [ApplicationImportController::class, 'importForm'])->name('import');
+        Route::post('applications/import', [ApplicationImportController::class, 'import'])->name('import.store');
+        Route::post('applications/import/preview', [ApplicationImportController::class, 'preview'])->name('import.preview');
+        Route::post('applications/import/confirm', [ApplicationImportController::class, 'confirm'])->name('import.confirm');
+
         Route::get('applications/create', [ApplicationController::class, 'create'])->name('create');
         Route::post('applications', [ApplicationController::class, 'storeAdmin'])->name('store-admin');
+        Route::get('applications/{application}', [ApplicationController::class, 'show'])->name('show');
         Route::get('applications/{application}/edit', [ApplicationController::class, 'edit'])->name('edit');
         Route::put('applications/{application}', [ApplicationController::class, 'updateAdmin'])->name('update');
+    });
+
+    // Bulk score import (admin prefixed)
+    Route::middleware('role:super_admin,test_administrator')->prefix('admin')->name('admin.grading.')->group(function () {
+        Route::get('grading/import', [ScoreImportController::class, 'importForm'])->name('import');
+        Route::post('grading/import', [ScoreImportController::class, 'import'])->name('import.store');
+        Route::post('grading/import/preview', [ScoreImportController::class, 'preview'])->name('import.preview');
+        Route::post('grading/import/confirm', [ScoreImportController::class, 'confirm'])->name('import.confirm');
     });
 
     Route::get('/applications', [ApplicationController::class, 'index'])->name('applications.index')->middleware('role:super_admin,registrar_administrator,staff');
@@ -164,6 +192,12 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/applications/bulk-dismiss', [ApplicationController::class, 'bulkDismiss'])->name('applications.bulk-dismiss')->middleware('role:super_admin,staff,registrar_administrator');
     Route::put('/applications/{application}/reopen', [ApplicationController::class, 'reopen'])->name('applications.reopen')->middleware('role:super_admin,staff,registrar_administrator');
     Route::delete('/applications/{application}', [ApplicationController::class, 'destroy'])->name('applications.destroy')->middleware('role:super_admin,registrar_administrator');
+    // Bulk applicant import
+    Route::get('/applications/import', [ApplicationImportController::class, 'importForm'])->name('applications.import')->middleware('role:super_admin,staff,registrar_administrator');
+    Route::post('/applications/import', [ApplicationImportController::class, 'import'])->name('applications.import.store')->middleware('role:super_admin,staff,registrar_administrator');
+    // Preview flow for bulk import
+    Route::post('/applications/import/preview', [ApplicationImportController::class, 'preview'])->name('applications.import.preview')->middleware('role:super_admin,staff,registrar_administrator');
+    Route::post('/applications/import/confirm', [ApplicationImportController::class, 'confirm'])->name('applications.import.confirm')->middleware('role:super_admin,staff,registrar_administrator');
     Route::get('/applications/{application}/admission-slip', [ApplicationController::class, 'admissionSlip'])->name('applications.admission-slip')->middleware('role:super_admin,registrar_administrator,staff');
     Route::get('/proctor', fn () => redirect()->route('admin.exam-scheduling.index'))->middleware('role:super_admin,proctor');
     Route::middleware('role:super_admin,registrar_administrator,proctor,test_administrator')->prefix('proctor')->name('proctor.')->group(function () {
@@ -193,6 +227,12 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/sessions/{grading_session}/mark-printed', [GradingPrintController::class, 'markPrinted'])->name('sessions.mark-printed');
         Route::get('/sessions/{grading_session}/print-bulk', [GradingPrintController::class, 'printBulk'])->name('sessions.print-bulk');
         Route::get('/sessions/{grading_session}/applicants/{applicant}/result-sheet', [GradingPrintController::class, 'resultSheet'])->name('sessions.result-sheet');
+        // Bulk score import
+        Route::get('/import', [ScoreImportController::class, 'importForm'])->name('import');
+        Route::post('/import', [ScoreImportController::class, 'import'])->name('import.store');
+        // Preview flow
+        Route::post('/import/preview', [ScoreImportController::class, 'preview'])->name('import.preview');
+        Route::post('/import/confirm', [ScoreImportController::class, 'confirm'])->name('import.confirm');
     });
 
     // Release Management

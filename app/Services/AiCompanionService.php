@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\AiCompanionMessage;
 use App\Models\Applicant;
+use App\Models\Course;
 use App\Models\SystemSetting;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
@@ -17,6 +18,10 @@ use MoeMizrak\LaravelOpenrouter\Types\RoleType;
 class AiCompanionService
 {
     public const DEFAULT_MAX_HISTORY = 20;
+
+    public const WARNING_THRESHOLD_LENGTH = 1800;
+
+    public const WARNING_THRESHOLD_HISTORY = 17;
 
     public function __construct(
         protected KnowledgeRetrievalService $retrieval
@@ -80,13 +85,35 @@ class AiCompanionService
         $persona = SystemSetting::personaPrompt();
         $institutional = $this->retrieval->retrieveForApplicant($applicant, $userMessage);
         $applicantSummary = $this->buildApplicantSummary($applicant);
+        $coursesInfo = $this->buildCoursesInfo();
 
         return $persona
             ."\n\nInstitutional data (use only this; do not invent):\n"
             .$institutional
             ."\n\n--- Applicant data ---\n"
             .$applicantSummary
-            ."\n--- End applicant data ---\n\nUse only the institutional and applicant data above when giving advice. Do not invent statistics. If the data does not cover a question, say so.";
+            ."\n--- End applicant data ---\n"
+            ."\n--- Available courses ---\n"
+            .$coursesInfo
+            ."\n--- End available courses ---\n\nUse only the institutional, applicant, and course data above when giving advice. Do not invent statistics. If the data does not cover a question, say so.";
+    }
+
+    /**
+     * Build a list of available courses for the AI context.
+     */
+    private function buildCoursesInfo(): string
+    {
+        $activeCourses = Course::where('is_active', true)
+            ->orderBy('name')
+            ->get(['name', 'code']);
+
+        if ($activeCourses->isEmpty()) {
+            return 'No courses are currently available for enrollment.';
+        }
+
+        $courseList = $activeCourses->map(fn ($c) => "{$c->name} ({$c->code})")->implode(', ');
+
+        return "Available courses for application: {$courseList}";
     }
 
     /**

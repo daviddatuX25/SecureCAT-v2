@@ -23,7 +23,7 @@ class AiCompanionController extends Controller
     ) {}
 
     /**
-     * Show chat page. Redirect to dashboard if companion disabled or results not released.
+     * Show chat page. Redirect to dashboard if companion disabled.
      */
     public function index(Request $request): Response|JsonResponse|RedirectResponse
     {
@@ -35,12 +35,6 @@ class AiCompanionController extends Controller
         $applicant = Auth::guard('applicant')->user();
         if (! $applicant) {
             return redirect()->route('portal.login');
-        }
-
-        $applicant->load('consultationSummary');
-        $summary = $applicant->consultationSummary;
-        if (! $summary || $summary->status !== 'released') {
-            return redirect()->route('portal.dashboard')->with('error', 'Your results have not been released yet.');
         }
 
         $messages = AiCompanionMessage::lastForApplicant($applicant->id, AiCompanionService::DEFAULT_MAX_HISTORY)
@@ -67,19 +61,29 @@ class AiCompanionController extends Controller
 
         /** @var Applicant $applicant */
         $applicant = Auth::guard('applicant')->user();
-        $applicant->load('consultationSummary');
-
-        $summary = $applicant->consultationSummary;
-        if (! $summary || $summary->status !== 'released') {
-            return response()->json(['message' => 'Results have not been released yet.'], 403);
-        }
 
         $message = $request->validated('message');
+
+        // Check warning thresholds
+        $warning = [];
+        if (strlen($message) > AiCompanionService::WARNING_THRESHOLD_LENGTH) {
+            $warning['length'] = 'You are approaching the 2000 character limit.';
+        }
+
+        $historyCount = AiCompanionMessage::where('applicant_id', $applicant->id)->count();
+        if ($historyCount >= AiCompanionService::WARNING_THRESHOLD_HISTORY) {
+            $warning['history'] = 'You are approaching the message history limit. Consider clearing history.';
+        }
 
         try {
             $result = $this->companionService->chat($applicant, $message);
 
-            return response()->json(['reply' => $result['reply']]);
+            $response = ['reply' => $result['reply']];
+            if ($warning !== []) {
+                $response['warning'] = $warning;
+            }
+
+            return response()->json($response);
         } catch (\Throwable $e) {
             Log::warning('AiCompanion chat error', [
                 'applicant_id' => $applicant->id,
@@ -97,7 +101,7 @@ class AiCompanionController extends Controller
     /**
      * POST /portal/ai-companion/clear-history — clear chat history for applicant (T7.4).
      */
-    public function clearHistory(): \Illuminate\Http\JsonResponse
+    public function clearHistory(): JsonResponse
     {
         if (! SystemSetting::aiCompanionEnabled()) {
             return response()->json(['message' => 'AI companion is not enabled.'], 403);
@@ -107,12 +111,6 @@ class AiCompanionController extends Controller
         $applicant = Auth::guard('applicant')->user();
         if (! $applicant) {
             return response()->json(['message' => 'Unauthorized.'], 401);
-        }
-
-        $applicant->load('consultationSummary');
-        $summary = $applicant->consultationSummary;
-        if (! $summary || $summary->status !== 'released') {
-            return response()->json(['message' => 'Results have not been released yet.'], 403);
         }
 
         $this->companionService->clearHistory($applicant);

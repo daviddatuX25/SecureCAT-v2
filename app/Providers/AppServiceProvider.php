@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use App\Models\Applicant;
 use App\Models\Application;
 use App\Models\AptitudeArea;
 use App\Models\AuditLog;
@@ -72,6 +73,33 @@ class AppServiceProvider extends ServiceProvider
                 ->response(fn () => back()->withErrors([
                     'email' => "Too many login attempts. Please try again in {$decayMinutes} minutes.",
                 ]));
+        });
+
+        // AI Companion chat rate limit: 10 requests per minute per applicant
+        RateLimiter::for('ai-companion', function (Request $request) {
+            /** @var Applicant|null $applicant */
+            $applicant = $request->user();
+
+            $key = $applicant
+                ? 'ai-companion:'.$applicant->id
+                : 'ai-companion:'.$request->ip();
+
+            return Limit::perMinute(10)
+                ->by($key)
+                ->response(fn () => response()->json([
+                    'message' => 'Too many requests. Please wait a moment.',
+                    'retry_after' => 60,
+                ], 429));
+        });
+
+        // AI Companion clear-history rate limit: 5 requests per minute
+        RateLimiter::for('ai-companion-clear', function (Request $request) {
+            return Limit::perMinute(5)
+                ->by('ai-companion-clear:'.($request->user()?->id ?? $request->ip()))
+                ->response(fn () => response()->json([
+                    'message' => 'Too many requests. Please wait a moment.',
+                    'retry_after' => 60,
+                ], 429));
         });
     }
 }
