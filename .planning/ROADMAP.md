@@ -110,6 +110,16 @@ Plans:
 **Depends on:** Phase 4
 **Plans:** 3/3 plans complete
 
+### Phase 6: QA Audit Fixes — Admin CRUD gaps
+
+**Goal:** [To be planned]
+**Requirements**: TBD
+**Depends on:** Phase 5
+**Plans:** 0 plans
+
+Plans:
+- [ ] TBD (run /gsd-plan-phase 6 to break down)
+
 ---
 
 ## Future Milestones

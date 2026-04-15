@@ -3,6 +3,7 @@
   import { Link, useForm } from '@inertiajs/svelte';
   import { Button } from '@/Components/ui/button';
   import { Input } from '@/Components/ui/input';
+  import { success } from '@/lib/toast';
 
   let { aptitude_area } = $props();
 
@@ -15,12 +16,19 @@
     is_active: aptitude_area.is_active,
   });
 
+  $form.onFinish = () => {
+    if (!$form.errors || Object.keys($form.errors).length === 0) {
+      success('Aptitude area updated');
+    }
+  };
+
   function submitForm(e) {
     e.preventDefault();
     $form.put(`/admin/aptitude-areas/${aptitude_area.id}`);
   }
 
   const breadcrumbs = [
+    { label: 'Grading', href: '/admin/grading' },
     { label: 'Aptitude Areas', href: '/admin/aptitude-areas' },
     { label: 'Edit' },
   ];

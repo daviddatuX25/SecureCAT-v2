@@ -9,13 +9,13 @@ use App\Models\AptitudeArea;
 use App\Models\ResultSheetTemplate;
 use App\Services\ResultSheetTemplateService;
 use Illuminate\Http\JsonResponse;
-use Mews\Purifier\Facades\Purifier;
-use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 use Inertia\Response;
+use Mews\Purifier\Facades\Purifier;
 
 class ResultSheetTemplateController extends Controller
 {
@@ -81,13 +81,13 @@ class ResultSheetTemplateController extends Controller
             $file = $request->file('docx');
             $path = $file->storeAs(
                 'result-sheet-templates',
-                $template->id . '.docx',
+                $template->id.'.docx',
                 'local'
             );
             $template->update(['docx_path' => $path]);
         }
 
-        return redirect()->route('admin.result-sheet-templates.index')->with('success', 'Template created.');
+        return redirect()->route('admin.release.result-templates.index')->with('success', 'Template created.');
     }
 
     public function edit(ResultSheetTemplate $result_sheet_template): Response
@@ -143,7 +143,7 @@ class ResultSheetTemplateController extends Controller
                 }
                 $path = $request->file('docx')->storeAs(
                     'result-sheet-templates',
-                    $result_sheet_template->id . '.docx',
+                    $result_sheet_template->id.'.docx',
                     'local'
                 );
                 $data['docx_path'] = $path;
@@ -154,7 +154,7 @@ class ResultSheetTemplateController extends Controller
 
         $result_sheet_template->update($data);
 
-        return redirect()->route('admin.result-sheet-templates.index')->with('success', 'Template updated.');
+        return redirect()->route('admin.release.result-templates.index')->with('success', 'Template updated.');
     }
 
     public function destroy(ResultSheetTemplate $result_sheet_template): RedirectResponse
@@ -164,7 +164,7 @@ class ResultSheetTemplateController extends Controller
         }
         $result_sheet_template->delete();
 
-        return redirect()->route('admin.result-sheet-templates.index')->with('success', 'Template deleted.');
+        return redirect()->route('admin.release.result-templates.index')->with('success', 'Template deleted.');
     }
 
     public function preview(Request $request): JsonResponse
@@ -173,7 +173,7 @@ class ResultSheetTemplateController extends Controller
             'mode' => ['required', Rule::in(['html', 'docx'])],
             'content' => ['required_if:mode,html', 'nullable', 'string'],
             'template_id' => ['nullable', 'exists:result_sheet_templates,id'],
-            'docx' => ['nullable', 'file', 'mimes:docx', 'max:5120'],
+            'docx' => ['nullable', 'file', 'max:5120'],
         ]);
 
         $mode = $request->input('mode');
@@ -190,7 +190,8 @@ class ResultSheetTemplateController extends Controller
                 $html = $this->templateService->renderHtmlContent($content, [], true);
             } else {
                 if ($request->hasFile('docx')) {
-                    $path = $request->file('docx')->getRealPath();
+                    $uploaded = $request->file('docx');
+                    $path = $uploaded->getRealPath() ?: $uploaded->getPathname();
                     $html = $this->templateService->renderDocxFile($path, [], true);
                 } else {
                     $template = ResultSheetTemplate::findOrFail($request->input('template_id'));

@@ -3,6 +3,7 @@
   import { Link, useForm } from '@inertiajs/svelte';
   import { Button } from '@/Components/ui/button';
   import { Input } from '@/Components/ui/input';
+  import { success, error } from '@/lib/toast';
 
   const form = useForm({
     academic_year: '',
@@ -10,6 +11,14 @@
     application_start_date: '',
     application_end_date: '',
   });
+
+  $form.onFinish = () => {
+    if (!$form.errors || Object.keys($form.errors).length === 0) {
+      success('Academic year created');
+    } else {
+      error('Please fix the errors in the form');
+    }
+  };
 
   function submitForm(e) {
     e.preventDefault();
@@ -20,12 +29,6 @@
 
 <AuthenticatedLayout {breadcrumbs}>
   <div class="max-w-lg space-y-6">
-    {#if Object.keys($form.errors || {}).length > 0 && !$form.processing}
-      <div class="rounded-lg border border-destructive/50 bg-destructive/10 px-4 py-3 text-sm text-destructive">
-        Please fix the errors below.
-      </div>
-    {/if}
-
     <form onsubmit={submitForm} class="space-y-4 rounded-lg border border-border bg-card p-6">
       <div class="space-y-2">
         <label for="academic_year" class="text-sm font-medium">Academic year</label>

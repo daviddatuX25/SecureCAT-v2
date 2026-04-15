@@ -9,6 +9,8 @@
     UserMinus, BarChart2,
   } from 'lucide-svelte';
   import axios from 'axios';
+  import { success as showSuccess, error as showError } from '@/lib/toast';
+  import { onMount } from 'svelte';
 
   /**
    * Props
@@ -41,8 +43,13 @@
   });
 
   const page = usePage();
-  const success = $derived($page.props.flash?.success ?? null);
-  const error   = $derived($page.props.flash?.error   ?? null);
+
+  // Show toasts on mount for flash messages
+  onMount(() => {
+    const flash = $page.props.flash;
+    if (flash?.success) showSuccess(flash.success);
+    if (flash?.error) showError(flash.error);
+  });
 
   let searchQuery   = $state('');
   let actionError   = $state('');
@@ -276,14 +283,6 @@
       <ArrowLeft class="h-4 w-4" /> {backLabel}
     </Link>
   </div>
-
-  <!-- Flash messages -->
-  {#if success}
-    <div class="rounded-lg bg-primary/10 px-4 py-3 text-sm text-primary">{success}</div>
-  {/if}
-  {#if error || actionError}
-    <div class="rounded-lg bg-destructive/10 px-4 py-3 text-sm text-destructive">{actionError || error}</div>
-  {/if}
 
   <!-- Session info card -->
   <div class="rounded-lg border border-border bg-card p-6">

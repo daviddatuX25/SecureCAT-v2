@@ -4,7 +4,7 @@
   import EditForm from './EditForm.svelte';
 
   let { session, rooms = [], proctors = [] } = $props();
-const breadcrumbs = [{ label: 'Exam Scheduling', href: '/admin/test-scheduling' }, { label: 'Edit' }];
+const breadcrumbs = [{ label: 'Exam Scheduling', href: '/admin/exam-scheduling' }, { label: 'Edit' }];
 </script>
 
 <AuthenticatedLayout {breadcrumbs}>

@@ -5,7 +5,10 @@
       "mcp__plugin_honcho_honcho__search",
       "mcp__plugin_everything-claude-code_playwright__browser_navigate",
       "mcp__laravel-boost__database-schema",
-      "mcp__laravel-boost__database-query"
+      "mcp__laravel-boost__database-query",
+      "mcp__laravel-boost__read-log-entries",
+      "mcp__laravel-boost__browser-logs",
+      "Skill(gsd-do)"
     ]
   },
   "enableAllProjectMcpServers": true,

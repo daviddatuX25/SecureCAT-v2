@@ -91,7 +91,7 @@ class ExamSchedulingAssistantTest extends TestCase
         ]);
 
         $this->actingAs($user)
-            ->deleteJson('/admin/test-scheduling/schedule-assistant/conversation')
+            ->deleteJson('/admin/exam-scheduling/schedule-assistant/conversation')
             ->assertOk()
             ->assertJson(['message' => 'Conversation reset.']);
 
@@ -104,7 +104,7 @@ class ExamSchedulingAssistantTest extends TestCase
         $user->assignRole('staff');
 
         $this->actingAs($user)
-            ->deleteJson('/admin/test-scheduling/schedule-assistant/conversation')
+            ->deleteJson('/admin/exam-scheduling/schedule-assistant/conversation')
             ->assertForbidden();
     }
 

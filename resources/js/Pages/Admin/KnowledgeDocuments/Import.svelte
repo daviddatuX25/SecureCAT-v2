@@ -3,7 +3,8 @@
   import { Link, useForm } from '@inertiajs/svelte';
   import { Button } from '@/Components/ui/button';
   import { Input } from '@/Components/ui/input';
-  import { FileSpreadsheet, Upload } from 'lucide-svelte';
+  import { FileUpload } from '@/Components/ui/file-upload';
+  import { Upload } from 'lucide-svelte';
 
   const breadcrumbs = [
     { label: 'Knowledge Documents', href: '/admin/knowledge-documents' },
@@ -23,12 +24,6 @@
 
   let tagsInput = $state('');
   let selectedFile = $state(null);
-  let fileInputRef = $state(null);
-
-  function onFileChange(e) {
-    const input = e.target;
-    selectedFile = input.files?.[0] ?? null;
-  }
 
   function submitForm(e) {
     e.preventDefault();
@@ -54,19 +49,13 @@
     <form onsubmit={submitForm} class="space-y-4 rounded-lg border border-border bg-card p-6">
       <div class="space-y-2">
         <label for="file" class="text-sm font-medium leading-none">CSV file</label>
-        <div class="flex items-center gap-3 rounded-md border border-input bg-background px-3 py-2 min-h-[44px]">
-          <FileSpreadsheet class="size-5 text-muted-foreground" />
-          <input
-            id="file"
-            type="file"
-            accept=".csv,.txt"
-            onchange={onFileChange}
-            bind:this={fileInputRef}
-            class="flex-1 text-sm file:mr-3 file:rounded file:border-0 file:bg-primary file:px-3 file:py-1 file:text-primary-foreground"
-            required
-          />
-        </div>
-        <p class="text-xs text-muted-foreground">Max 2MB. UTF-8 encoding. First row is used as headers.</p>
+        <FileUpload
+          label="Upload CSV file"
+          accept=".csv,.txt"
+          maxSize="2MB"
+          bind:files={selectedFile}
+        />
+        <p class="text-xs text-muted-foreground">UTF-8 encoding. First row is used as headers.</p>
         {#if $form.errors?.file}
           <p class="text-sm text-destructive">{$form.errors.file}</p>
         {/if}

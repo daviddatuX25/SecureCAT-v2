@@ -334,7 +334,7 @@ class ExamSchedulingAssistantController extends Controller
 
         return response()->json([
             'message' => 'Schedule applied successfully.',
-            'redirect_url' => route('admin.test-scheduling.index'),
+            'redirect_url' => route('admin.exam-scheduling.index'),
         ]);
     }
 

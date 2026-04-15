@@ -96,19 +96,19 @@ class DashboardService
                 'key' => 'sessions_upcoming',
                 'label' => 'Upcoming Sessions',
                 'value' => $upcoming,
-                'href' => '/admin/test-scheduling',
+                'href' => '/admin/exam-scheduling',
             ],
             [
                 'key' => 'attendance_due',
                 'label' => 'Attendance Due',
                 'value' => $attendanceDue,
-                'href' => '/admin/test-scheduling',
+                'href' => '/admin/exam-scheduling',
             ],
             [
                 'key' => 'submissions_due',
                 'label' => 'Submissions Due',
                 'value' => $submissionsDue,
-                'href' => '/admin/test-scheduling',
+                'href' => '/admin/exam-scheduling',
             ],
         ];
     }

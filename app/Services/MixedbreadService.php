@@ -39,13 +39,16 @@ class MixedbreadService
         file_put_contents($tmpPath, $content);
 
         try {
+            // Use the /files/upload endpoint which handles both file upload and store addition in one call
             $response = Http::withToken($this->apiKey)
-                ->timeout(30)
-                ->attach('file', fopen($tmpPath, 'r'), "{$title}.txt", ['Content-Type' => 'text/plain'])
-                ->post("{$this->baseUrl}/stores/{$storeId}/files", array_filter([
-                    'external_id' => $title,
-                    'metadata' => ! empty($metadata) ? json_encode($metadata) : null,
-                ]));
+                ->timeout(60)
+                ->attach('file', file_get_contents($tmpPath), "{$title}.txt")
+                ->post("{$this->baseUrl}/stores/{$storeId}/files/upload", [
+                    'params' => json_encode(array_filter([
+                        'external_id' => $title,
+                        'metadata' => ! empty($metadata) ? $metadata : null,
+                    ])),
+                ]);
         } finally {
             @unlink($tmpPath);
         }

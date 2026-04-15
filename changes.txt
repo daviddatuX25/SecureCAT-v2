@@ -1,0 +1,206 @@
+# SecureCAT-v2 — QA Findings & Change Requests
+# Organized by phase for implementation priority and context ordering.
+
+---
+
+## PHASE 1: Critical Bugs (Breaking / Blocking)
+
+These must be resolved before any demo or further feature work.
+
+### 1.1 — AI Exam Scheduler: First-Load Errors
+- On first open of the AI scheduler modal, the submit button is disabled throughout.
+- Pressing Enter does nothing.
+- Two console errors appear:
+  - `Show.svelte:104 — Uncaught TypeError: releaseDateForm.transform is not a function`
+  - `Uncaught Svelte error: effect_update_depth_exceeded — Maximum update depth exceeded`
+    (an effect is reading and writing the same state)
+- After a page refresh, the chat works correctly.
+- Root cause must be investigated systematically — do not just patch the symptom.
+
+### 1.2 — AI Exam Scheduler: Generate Schedule Button Unlocks Too Early
+- The "Generate Schedule" button becomes clickable before a valid schedule is ready.
+- Clicking it at that point registers the click but produces no AI response or action.
+- Fix the unlock condition to only enable it when a valid preview is ready.
+
+### 1.3 — AI Exam Scheduler: JSON Not Mapping to Preview Table
+- The chat produces a valid-looking JSON response (e.g., `{ "sessions": [...] }`).
+- After clicking "Generate Schedule", the preview table shows:
+  - Type: New
+  - Room: undefined
+  - Date and Time: - (literal dash)
+  - Applicants: 3 (correct)
+- The data is not being mapped back from the JSON to the preview table properly.
+- Investigate how `room_id` and date/time fields are parsed and passed to the preview.
+
+### 1.4 — AI Exam Scheduler: Duplicate Table in Chat
+- After generating a schedule, a table is rendered again inside the chat.
+- We already have a preview table below the chat box — the in-chat table is redundant.
+- Prevent the chat from rendering a table when a preview is already present below.
+
+### 1.5 — Exam Sessions: Attendance/Submission Allowed Past End Time
+- Proctors can still mark attendance and submissions even after the exam's scheduled end time.
+- This must be enforced strictly: once the end time has passed, those actions must be blocked.
+- Consider a cron job that transitions `published` → `ongoing` when the exam window is active,
+  and only allow attendance/submission marking during `ongoing` status.
+
+### 1.6 — Mark Submitted Button Missing on Proctor Sessions Page
+- The "Mark Submitted" action is no longer visible in the actions menu on `/proctor/sessions/*`.
+- This was working before and needs to be restored.
+
+### 1.7 — 403 on Exam Monitoring for Test Administrator
+- Visiting the exam monitoring page as a Test Administrator returns:
+  `403 Unauthorized. Required role: super_admin or admin or proctor`
+- This is inconsistent — grading and release pages work fine for the same role.
+- Fix the middleware/policy guard on exam monitoring to allow Test Administrator access.
+
+### 1.8 — Old `/portal/login` Route Still Referenced
+- We moved the applicant login to `/login`, but some places still link to `/portal/login`.
+- Find and update all references to use the new route.
+
+---
+
+## PHASE 2: UI / UX Fixes (Per Page)
+
+### 2.1 — `/apply` Page
+- Align action buttons to the right.
+- Center the header/page title.
+- Success message says "test scheduling" — change to "exam scheduling".
+- After applying, there are two "Back to Home" buttons. Remove the redundant one.
+
+### 2.2 — `/login` Page
+- The tab selection between Applicant Portal and Staff & Admin login is not persisted.
+- Persist the last selected tab on the frontend for better UX (e.g., localStorage or URL param).
+
+### 2.3 — `/applications` Page
+- The "Import" button is visible to admins — it should be hidden for that role.
+- Incomplete documents status should be removed (see Phase 3.6).
+
+### 2.4 — Staff Dashboard
+- The dashboard looks bare. Revamp to be more informative or actionable.
+- Remove the "Print Admission Slip" action — admission slips are deprecated.
+
+### 2.5 — Admin Dashboard
+- The layout is inconsistent. Reorganize it as follows:
+  - **Institution Information** section: contains Room Management and Course Management action buttons.
+- Remove any remaining Admission Slip Template page from superadmin/admin views.
+
+### 2.6 — General Table UI
+- Tables across the app take up too much space.
+- Refactor the shared table component to be more compact and readable.
+
+### 2.7 — Feature Description Paragraphs → Info Icon Pattern
+- Long paragraph explanations for features (e.g., on the AI scheduler) should not be displayed inline.
+- Replace with an `[i]` icon that shows a tooltip or popover on hover/click.
+- Example: the "Chat with the assistant to refine your schedule. After you get a reply, Generate s..."
+  text should be collapsed behind an info icon.
+
+### 2.8 — Sticky Navigation Header
+- The staff layout navigation header should be sticky (fixed to the top on scroll).
+
+---
+
+## PHASE 3: Logic Corrections & Feature Adjustments
+
+### 3.1 — Remove "Incomplete Documents" Status Entirely
+- The incomplete documents status is no longer needed — pending covers that case.
+- Remove it from: the demo flow, all related modules, and any UI that references it.
+
+### 3.2 — Remove "Seasons" / "Add Season" Terminology
+- Some pages still reference deprecated "seasons" language (e.g., "Add Season" button).
+- Audit and replace all instances with the correct current terminology.
+
+### 3.3 — Academic Year: Toggle for Active Season
+- The active academic year should use a toggle button (like the ones on Course and Room pages).
+- This should support a "no active season" state, which disables application acceptance
+  and shows an appropriate message on the applicant portal.
+
+### 3.4 — Rename "Domains" → "Aptitude Areas"
+- On `/grading/sessions/*`, the term "domains" is still used (e.g., "3 / 6 domains").
+- Rename all instances to "aptitude areas".
+
+### 3.5 — Rename "Roster" → "Examinees"
+- On exam monitoring and my sessions pages, "roster" should be replaced with "examinees".
+
+### 3.6 — Test Administrator Role Rename and Scope Fix
+- "Test Administrator" should be renamed to "Registrar Administrator".
+- Guidance office pages must be scoped to: Registrar Administrator, Superadmin, and Proctor (limited).
+- The Registrar Administrator must NOT be able to manage applications (role segregation).
+
+### 3.7 — /applications: Bulk Actions
+- Add "Select All" and bulk action support on the applications list.
+- Supported bulk actions: mark as accepted, mark as dismissed.
+
+### 3.8 — /applications: Re-open Dismissed Applications
+- Allow moving a dismissed application back to pending status.
+- Gate this: only allowed if the application window period is still open.
+
+### 3.9 — /applications: Delete Application
+- Add the ability to delete an application from the list.
+
+### 3.10 — Proctor Sessions: Bulk Attendance & Submission Actions
+- On `/proctor/sessions/*`, add selection/bulk action support.
+- Supported bulk actions: mark as present, mark as absent, mark as submitted.
+
+### 3.11 — Remove Score Release Date from Exam Scheduling
+- The "Score Release Date" field on the scheduling page is redundant — the release module handles this.
+- Remove it from the scheduling form and any related applicant portal display.
+
+### 3.12 — Applicant Portal: Update Status Indicators
+- Remove the "Consultation released" status — the consultation module is gone.
+- Rename "Results available" → "Results released".
+- Review and clean up the full status flow shown to the applicant.
+
+### 3.13 — AI Scheduler: Info Shown Once, Not Repeatedly
+- Feature explanation or how-it-works content for the AI scheduler appears multiple times.
+- Ensure it is shown only once per session or UI view.
+
+### 3.14 — AI Scheduler: Hide "Generate Schedule" Until Preview Exists
+- The "Generate Schedule" button should not be visible until a schedule preview is available.
+- When there is no preview yet, only show the chat send button.
+
+### 3.15 — AI Scheduler: Replace Inline Info with Beta Icon
+- Move the feature description to an info/beta icon indicator.
+- Include note: beta feature, future support for editing existing schedules, etc.
+
+### 3.16 — Email Expiry: Demo Override via ENV
+- Add an environment variable that allows setting a custom expiry duration for email links
+  so that expiry flows can be simulated during demo/setup.
+
+### 3.17 — Remove QR Scan Feature from Attendance
+- The QR scan option on the attendance marking page should be removed entirely.
+
+---
+
+## PHASE 4: Demo Preparation
+
+### 4.1 — Full Applicant Lifecycle Demo Flow
+- The demo should walk through the complete lifecycle:
+  apply → dismissed/accepted → account setup → first dashboard view →
+  scheduled → exam taken → scored → results released.
+- Each state transition should be demonstrable without unnecessary account switching.
+
+### 4.2 — Demo Data: Include Non-Released Records
+- Current demo data has all records in "released" status.
+- Add records in pre-release state so we can demo:
+  - Score input
+  - Adding notes and recommended course
+  - Releasing results
+- For f2f mode: conditionally skip the notes/course modal and just update status to released.
+
+### 4.3 — Demo Flow Soundness
+- The current flow requires jumping back into the applicant account after the test administrator
+  finishes scoring — this is a poor demo experience.
+- Redesign the flow so it is linear, covers all use cases, and makes cause-and-effect clear.
+
+---
+
+## PHASE 5: Upcoming Features (Breaking / High Value)
+
+These are significant features not yet built. Scope and plan separately.
+
+1. **Notification System** — In-app notifications for key events.
+2. **Toast Notifications** — Global toast feedback for actions across the app.
+3. **Bulk Score Import** — Import applicant scores via CSV or spreadsheet.
+4. **Create Application as Admin/Registrar** — Manual application creation from the admin side;
+   submission is auto-accepted; includes email field to trigger account setup invite.
+5. **Bulk Applicant Data Import** — Import applicant records via CSV or spreadsheet.

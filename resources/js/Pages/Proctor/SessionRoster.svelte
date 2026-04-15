@@ -6,12 +6,27 @@
   import { Input } from '@/Components/ui/input';
   import * as Table from '@/Components/ui/table';
   import { ArrowLeft, UserCheck, UserX, FileCheck, Play, Square } from 'lucide-svelte';
+  import { success as showSuccess, error as showError } from '@/lib/toast';
+  import { onMount } from 'svelte';
 
   let { session, applicants = [], stats = {} } = $props();
 
   const page = usePage();
-  const success = $derived($page.props.flash?.success ?? null);
-  const error = $derived($page.props.flash?.error ?? null);
+
+  // Show toasts on mount for flash messages
+  onMount(() => {
+    const flash = $page.props.flash;
+    if (flash?.success) showSuccess(flash.success);
+    if (flash?.error) showError(flash.error);
+  });
+
+  // Show toast when exam window has ended (once on initial load)
+  $effect(() => {
+    if (session?.is_past_end && !window._examWindowEndedToast) {
+      window._examWindowEndedToast = true;
+      showError('Exam window ended. Actions locked.');
+    }
+  });
 
   let searchQuery = $state('');
   let actionError = $state('');
@@ -167,110 +182,72 @@
 </svelte:head>
 
 <AuthenticatedLayout breadcrumbs={breadcrumbs}>
-  <div class="space-y-6">
-    {#if success}
-      <div class="rounded-lg bg-primary/10 px-4 py-3 text-sm text-primary">{success}</div>
-    {/if}
-    {#if error || actionError}
-      <div class="rounded-lg bg-destructive/10 px-4 py-3 text-sm text-destructive">{actionError || error}</div>
-    {/if}
+  <div class="space-y-3">
+    <!-- Session Header -->
+    <div class="rounded-lg border border-border bg-card p-4">
+      <div class="flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <h1 class="text-lg font-bold">Session #{session.id}</h1>
+          <p class="mt-1 text-sm text-muted-foreground">
+            {formatDate(session.date)} · {formatTime(session.start_time)}{#if session.end_time} - {formatTime(session.end_time)}{/if} · {session.room?.name ?? '-'}
+          </p>
+        </div>
+        <div class="flex items-center gap-2">
+          <Badge variant={sessionStatusVariant(session.status)}>{sessionStatusLabel(session.status)}</Badge>
+          {#if canStart}
+            <Button size="sm" onclick={startSession}>
+              <Play class="h-4 w-4 mr-1" />
+              Start
+            </Button>
+          {/if}
+          {#if canClose}
+            <Button size="sm" variant="outline" onclick={closeSession}>
+              <Square class="h-4 w-4 mr-1" />
+              Close
+            </Button>
+          {/if}
+        </div>
+      </div>
+      {#if outsideStartWindow && !session.can_override_schedule}
+        <p class="mt-2 text-sm text-muted-foreground">Outside scheduled time window</p>
+      {/if}
+    </div>
 
-    <div class="rounded-lg border border-border bg-card p-6">
-      <h1 class="text-2xl font-bold">Session Roster</h1>
-      <dl class="mt-4 grid gap-3 sm:grid-cols-2">
-        <div>
-          <dt class="text-sm text-muted-foreground">Date</dt>
-          <dd class="font-medium">{formatDate(session.date)}</dd>
-        </div>
-        <div>
-          <dt class="text-sm text-muted-foreground">Time</dt>
-          <dd class="font-medium">{formatTime(session.start_time)}{#if session.end_time} – {formatTime(session.end_time)}{/if}</dd>
-        </div>
-        <div>
-          <dt class="text-sm text-muted-foreground">Room</dt>
-          <dd class="font-medium">{session.room?.name ?? '—'}</dd>
-        </div>
-        <div>
-          <dt class="text-sm text-muted-foreground">Status</dt>
-          <dd>
-            <Badge variant={sessionStatusVariant(session.status)}>{sessionStatusLabel(session.status)}</Badge>
-          </dd>
-        </div>
-        {#if session.started_at}
-          <div>
-            <dt class="text-sm text-muted-foreground">Started</dt>
-            <dd class="font-medium">{formatDateTime(session.started_at)}</dd>
-          </div>
-        {/if}
-        {#if session.closed_at}
-          <div>
-            <dt class="text-sm text-muted-foreground">Closed</dt>
-            <dd class="font-medium">{formatDateTime(session.closed_at)}</dd>
-          </div>
-        {/if}
-      </dl>
-
-      <div class="mt-4 flex flex-wrap gap-3">
-        {#if outsideStartWindow && !session.can_override_schedule}
-          <p class="text-sm text-muted-foreground">Outside scheduled time. Only an admin can start this session.</p>
-        {:else if showAdminOverrideHint}
-          <p class="text-sm text-amber-600 dark:text-amber-500">Outside schedule; you have admin override.</p>
-        {/if}
-        {#if canStart}
-          <Button class="min-h-[44px]" onclick={startSession}>
-            <Play class="h-4 w-4 mr-2" />
-            Start session
-          </Button>
-        {/if}
-        {#if canClose}
-          <Button class="min-h-[44px]" variant="outline" onclick={closeSession}>
-            <Square class="h-4 w-4 mr-2" />
-            Close session
-          </Button>
-        {/if}
+    <!-- Stats -->
+    <div class="rounded-lg border border-border bg-card p-4">
+      <div class="flex flex-wrap gap-4 text-sm">
+        <div><span class="text-muted-foreground">Total:</span> <strong>{stats.total ?? 0}</strong></div>
+        <div><span class="text-muted-foreground">Present:</span> <strong>{stats.present ?? 0}</strong></div>
+        <div><span class="text-muted-foreground">Absent:</span> <strong>{stats.absent ?? 0}</strong></div>
+        <div><span class="text-muted-foreground">Pending:</span> <strong>{stats.pending ?? 0}</strong></div>
+        <div><span class="text-muted-foreground">Submitted:</span> <strong>{stats.submitted ?? 0}</strong></div>
       </div>
     </div>
 
-    <div class="rounded-lg border border-border bg-card p-6">
-      <h2 class="text-lg font-semibold">Stats</h2>
-      <div class="mt-3 flex flex-wrap gap-4">
-        <span class="text-sm text-muted-foreground">Total: <strong class="text-foreground">{stats.total ?? 0}</strong></span>
-        <span class="text-sm text-muted-foreground">Present: <strong class="text-foreground">{stats.present ?? 0}</strong></span>
-        <span class="text-sm text-muted-foreground">Absent: <strong class="text-foreground">{stats.absent ?? 0}</strong></span>
-        <span class="text-sm text-muted-foreground">Pending (attendance): <strong class="text-foreground">{stats.pending ?? 0}</strong></span>
-        <span class="text-sm text-muted-foreground">Submitted: <strong class="text-foreground">{stats.submitted ?? 0}</strong></span>
-        {#if (stats.present_pending_submission ?? 0) > 0}
-          <span class="text-sm text-muted-foreground">Present, not yet submitted: <strong class="text-foreground">{stats.present_pending_submission ?? 0}</strong></span>
-        {/if}
-      </div>
-    </div>
-
-    <div class="rounded-lg border border-border bg-card p-6">
-      <h2 class="text-lg font-semibold">Applicants</h2>
-      <p class="mt-1 text-sm text-muted-foreground">Mark attendance and log submission. Attendance cannot be changed once set.</p>
-      <div class="mt-4 flex flex-wrap items-center gap-3">
+    <!-- Applicants -->
+    <div class="rounded-lg border border-border bg-card p-4">
+      <div class="flex flex-wrap items-center gap-3">
+        <h2 class="text-base font-semibold">Applicants</h2>
         <Input
           type="search"
           placeholder="Search by name or reference..."
-          class="max-w-xs"
+          class="h-9 max-w-xs"
           bind:value={searchQuery}
           aria-label="Search applicants"
         />
         {#if canBulkSubmit}
-          <Button variant="outline" class="min-h-[44px]" onclick={logSubmissionBulk}>
-            <FileCheck class="h-4 w-4 mr-2" />
-            Mark all present as submitted
+          <Button size="sm" variant="outline" onclick={logSubmissionBulk}>
+            <FileCheck class="h-4 w-4 mr-1" />
+            Mark all submitted
           </Button>
         {/if}
       </div>
       {#if session.is_past_end}
-        <div class="mt-3 rounded-lg bg-destructive/10 px-4 py-3 text-sm text-destructive">
-          The exam window has ended. Attendance and submission actions are locked.
-        </div>
+        <p class="mt-3 text-sm text-destructive">Exam window ended. Actions locked.</p>
       {/if}
       {#if filteredApplicants.length > 0}
-        <div class="mt-4 w-full min-w-0 overflow-x-auto scrollbar-hide">
-          <Table.Root class="w-full min-w-[800px] text-sm">
+        <div class="overflow-x-auto">
+          <Table.Root class="w-full">
             <Table.Header class="bg-muted/50">
               <Table.Row>
                 <Table.Head class="px-4 py-3">Reference</Table.Head>
@@ -279,14 +256,14 @@
                 <Table.Head class="px-4 py-3">Time in</Table.Head>
                 <Table.Head class="px-4 py-3">Submission</Table.Head>
                 <Table.Head class="px-4 py-3">Submitted at</Table.Head>
-                <Table.Head class="text-center">Actions</Table.Head>
+                <Table.Head class="text-center px-4 py-3">Action</Table.Head>
               </Table.Row>
             </Table.Header>
             <Table.Body>
               {#each filteredApplicants as row (row.id)}
                 <Table.Row>
-                  <Table.Cell class="px-4 py-3">{row.reference_number ?? '—'}</Table.Cell>
-                  <Table.Cell class="px-4 py-3">{row.name ?? '—'}</Table.Cell>
+                  <Table.Cell class="px-4 py-3">{row.reference_number ?? '-'}</Table.Cell>
+                  <Table.Cell class="px-4 py-3">{row.name ?? '-'}</Table.Cell>
                   <Table.Cell class="px-4 py-3">
                     <Badge variant={attendanceStatusVariant(row.attendance_status)}>{row.attendance_status}</Badge>
                   </Table.Cell>
@@ -295,42 +272,16 @@
                     <Badge variant={attendanceStatusVariant(row.submission_status)}>{row.submission_status}</Badge>
                   </Table.Cell>
                   <Table.Cell class="px-4 py-3">{formatDateTime(row.submitted_at)}</Table.Cell>
-                  <Table.Cell class="text-center">
+                  <Table.Cell class="px-4 py-3 text-center">
                     {#if row.attendance_status === 'pending' && canMarkAttendance}
-                      <div class="flex flex-wrap justify-center gap-1">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          class="h-8 px-2 text-xs"
-                          onclick={() => markPresent(row.id)}
-                        >
-                          <UserCheck class="h-3.5 w-3.5 mr-1.5" />
-                          Present
-                        </Button>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          class="h-8 px-2 text-xs text-destructive hover:bg-destructive/10 hover:text-destructive"
-                          onclick={() => markAbsent(row.id)}
-                        >
-                          <UserX class="h-3.5 w-3.5 mr-1.5" />
-                          Absent
-                        </Button>
+                      <div class="flex justify-center gap-1">
+                        <Button size="sm" variant="outline" onclick={() => markPresent(row.id)}>Present</Button>
+                        <Button size="sm" variant="outline" onclick={() => markAbsent(row.id)}>Absent</Button>
                       </div>
                     {:else if row.attendance_status === 'present' && row.submission_status === 'pending' && canLogSubmission}
-                      <div class="flex justify-center">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          class="h-8 px-2 text-xs"
-                          onclick={() => logSubmission(row.id)}
-                        >
-                          <FileCheck class="h-3.5 w-3.5 mr-1.5" />
-                          Log submission
-                        </Button>
-                      </div>
+                      <Button size="sm" variant="outline" onclick={() => logSubmission(row.id)}>Submit</Button>
                     {:else}
-                      <span class="text-muted-foreground text-xs">—</span>
+                      <span class="text-muted-foreground">-</span>
                     {/if}
                   </Table.Cell>
                 </Table.Row>
@@ -339,8 +290,8 @@
           </Table.Root>
         </div>
       {:else}
-        <p class="mt-4 text-sm text-muted-foreground">
-          {searchQuery.trim() ? 'No applicants match your search.' : 'No applicants assigned to this session.'}
+        <p class="mt-3 text-sm text-muted-foreground">
+          {searchQuery.trim() ? 'No applicants match your search.' : 'No applicants assigned.'}
         </p>
       {/if}
     </div>

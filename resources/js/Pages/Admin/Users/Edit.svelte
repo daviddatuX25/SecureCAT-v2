@@ -3,6 +3,7 @@
   import { Link, useForm } from '@inertiajs/svelte';
   import { Button } from '@/Components/ui/button';
   import { Input } from '@/Components/ui/input';
+  import { success } from '@/lib/toast';
 
   let { user, roles, googleLinked } = $props();
 
@@ -18,6 +19,12 @@
     password_confirmation: '',
     roles: initialRoles,
   });
+
+  $form.onFinish = () => {
+    if (!$form.errors || Object.keys($form.errors).length === 0) {
+      success('User updated');
+    }
+  };
 
   function toggleRole(name) {
     if (selectedRoles.includes(name)) {

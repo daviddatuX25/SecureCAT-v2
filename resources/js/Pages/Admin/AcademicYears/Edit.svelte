@@ -3,19 +3,26 @@
   import { Link, useForm } from '@inertiajs/svelte';
   import { Button } from '@/Components/ui/button';
   import { Input } from '@/Components/ui/input';
+  import { success } from '@/lib/toast';
 
-  let { season } = $props();
+  let { academicYear } = $props();
 
   const form = useForm({
-    academic_year: season.academic_year,
-    semester: season.semester,
-    application_start_date: season.application_start_date ?? '',
-    application_end_date: season.application_end_date ?? '',
+    academic_year: academicYear.academic_year,
+    semester: academicYear.semester,
+    application_start_date: academicYear.application_start_date ?? '',
+    application_end_date: academicYear.application_end_date ?? '',
   });
+
+  $form.onFinish = () => {
+    if (!$form.errors || Object.keys($form.errors).length === 0) {
+      success('Academic year updated');
+    }
+  };
 
   function submitForm(e) {
     e.preventDefault();
-    $form.put(`/admin/academic-years/${season.id}`);
+    $form.put(`/admin/academic-years/${academicYear.id}`);
   }
   const breadcrumbs = [{ label: 'Academic Years', href: '/admin/academic-years' }, { label: 'Edit' }];
 </script>
@@ -75,7 +82,7 @@
         {/if}
       </div>
 
-      {#if season.is_active}
+      {#if academicYear.is_active}
         <p class="text-sm text-muted-foreground">This academic year is currently active. Use &quot;Set active&quot; on another year from the list to change.</p>
       {/if}
 

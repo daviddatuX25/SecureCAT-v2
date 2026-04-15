@@ -48,6 +48,11 @@ class HandleInertiaRequests extends Middleware
             'auth' => [
                 'user' => $authUser,
             ],
+            'flash' => [
+                'success' => $request->session()->get('success'),
+                'error' => $request->session()->get('error'),
+                'message' => $request->session()->get('message'),
+            ],
             'csrf_token' => $request->session()->token(),
             'ai_exam_companion_enabled' => SystemSetting::aiCompanionEnabled(),
             'googleOAuthEnabled' => GoogleOAuthConfig::isConfigured(),
@@ -93,7 +98,8 @@ class HandleInertiaRequests extends Middleware
             'admin.aptitude-areas.index' => 'Aptitude Areas',
             'admin.ai-companion.index' => 'AI Companion',
             'admin.admission-slip-templates.index' => 'Admission slip templates',
-            'admin.result-sheet-templates.index' => 'Result templates',
+            'admin.release.index' => 'Release',
+            'admin.release.result-templates.index' => 'Result templates',
             'applications.index' => 'Applications',
         ];
 

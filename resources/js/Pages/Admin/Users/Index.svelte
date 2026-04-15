@@ -4,12 +4,17 @@
   import { usePage } from '@inertiajs/svelte';
   import { Button } from '@/Components/ui/button';
   import { Input } from '@/Components/ui/input';
+  import { Badge } from '@/Components/ui/badge';
+  import * as Table from '@/Components/ui/table';
   import { Plus, Pencil, Trash2, ChevronDown, Filter } from 'lucide-svelte';
+  import ViewModeToggle from '@/Components/ViewModeToggle.svelte';
 
   let { users, roles, filters = {} } = $props();
 
   const page = usePage();
   const success = $derived($page.props.flash?.success ?? null);
+
+  let viewMode = $state('responsive');
 
   let filterSearch = $state('');
   let filterRole = $state('');
@@ -49,13 +54,18 @@
 
 <AuthenticatedLayout breadcrumbs={breadcrumbs}>
   <div class="space-y-6 min-w-0">
-    <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-      <Link href="/admin/users/create">
-        <Button class="min-h-[44px]">
-          <Plus class="mr-2 h-4 w-4" />
-          Create User
-        </Button>
-      </Link>
+    <div class="flex items-center justify-between">
+      <div>
+        <p class="text-sm text-muted-foreground">View and manage system users and their roles</p>
+      </div>
+      <div class="flex flex-wrap items-center gap-2 sm:gap-3">
+        <Link href="/admin/users/create">
+          <Button class="min-h-[44px] gap-2">
+            <Plus class="h-4 w-4" />
+            <span class="hidden sm:inline">Create User</span>
+          </Button>
+        </Link>
+      </div>
     </div>
 
     {#if success}
@@ -121,23 +131,30 @@
       </div>
     </div>
 
-    <div class="glass-panel rounded-2xl overflow-hidden min-w-0 max-w-full p-6">
-      <div class="w-full min-w-0 overflow-x-scroll overscroll-x-contain">
-        <table class="w-full min-w-[640px] text-sm">
-          <thead class="bg-muted/50">
-            <tr>
-              <th class="px-4 py-3 text-left font-medium">Name</th>
-              <th class="px-4 py-3 text-left font-medium">Email</th>
-              <th class="px-4 py-3 text-left font-medium">Roles</th>
-              <th class="px-4 py-3 text-right font-medium">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
+    <div class="space-y-3">
+      <!-- View toggle as sibling to table container -->
+      <div class="flex justify-end">
+        <ViewModeToggle bind:value={viewMode} />
+      </div>
+
+      <div class="min-w-0">
+        <!-- Table View -->
+      <div class="w-full min-w-0 overflow-x-scroll overscroll-x-contain {viewMode === 'cards' ? 'hidden' : viewMode === 'table' ? 'block' : 'hidden md:block'}">
+        <Table.Root class="w-full min-w-[640px] text-sm">
+          <Table.Header class="bg-muted/50">
+            <Table.Row>
+              <Table.Head class="px-4 py-3">Name</Table.Head>
+              <Table.Head class="px-4 py-3">Email</Table.Head>
+              <Table.Head class="px-4 py-3">Roles</Table.Head>
+              <Table.Head class="text-center px-4 py-3">Actions</Table.Head>
+            </Table.Row>
+          </Table.Header>
+          <Table.Body>
             {#each users.data as user (user.id)}
-              <tr class="border-t border-border hover:bg-muted/30">
-                <td class="px-4 py-3">{user.name}</td>
-                <td class="px-4 py-3">{user.email}</td>
-                <td class="px-4 py-3">
+              <Table.Row>
+                <Table.Cell>{user.name}</Table.Cell>
+                <Table.Cell>{user.email}</Table.Cell>
+                <Table.Cell>
                   <span class="inline-flex flex-wrap gap-1">
                     {#each (user.roles ?? []) as r}
                       <span class="rounded-full bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary">
@@ -145,30 +162,64 @@
                       </span>
                     {/each}
                   </span>
-                </td>
-                <td class="px-4 py-3 text-right">
-                  <div class="flex justify-end gap-2">
-                    <Link href={`/admin/users/${user.id}/edit`}>
-                      <Button variant="ghost" size="icon" aria-label="Edit">
-                        <Pencil class="h-4 w-4" />
+                </Table.Cell>
+                  <Table.Cell class="text-center">
+                    <div class="flex justify-center gap-2">
+                      <Link href={`/admin/users/${user.id}/edit`}>
+                        <Button variant="ghost" size="sm" class="h-8 px-2 text-xs">
+                          <Pencil class="mr-1.5 h-3.5 w-3.5" />
+                          Edit
+                        </Button>
+                      </Link>
+                      <Button variant="ghost" size="sm" class="h-8 px-2 text-xs text-destructive" onclick={() => confirmDelete(user.id)}>
+                        <Trash2 class="mr-1.5 h-3.5 w-3.5" />
+                        Delete
                       </Button>
-                    </Link>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      aria-label="Delete"
-                      class="text-destructive hover:text-destructive"
-                      onclick={() => confirmDelete(user.id)}
-                    >
-                      <Trash2 class="h-4 w-4" />
-                    </Button>
-                  </div>
-                </td>
-              </tr>
+                    </div>
+                  </Table.Cell>
+              </Table.Row>
             {/each}
-          </tbody>
-        </table>
+          </Table.Body>
+        </Table.Root>
       </div>
+
+      <!-- Card View -->
+      <div class="{viewMode === 'table' ? 'hidden' : viewMode === 'cards' ? 'block' : 'block md:hidden'} p-4">
+        {#if (users?.data ?? []).length > 0}
+          <ul class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3" role="list">
+            {#each (users?.data ?? []) as user}
+              <li class="flex flex-col gap-3 rounded-xl border border-border bg-card p-4 transition-all shadow-sm">
+                <div class="min-w-0">
+                  <p class="font-semibold truncate">{user.name}</p>
+                  <p class="text-sm text-muted-foreground truncate">{user.email}</p>
+                </div>
+                <div class="flex flex-wrap gap-1">
+                  {#each (user.roles ?? []) as r}
+                    <span class="rounded-full bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary">
+                      {r.display_name}
+                    </span>
+                  {/each}
+                </div>
+                <div class="mt-auto flex gap-2 pt-2">
+                  <Link href={`/admin/users/${user.id}/edit`} class="flex-1">
+                    <Button variant="outline" size="sm" class="w-full min-h-[40px] font-semibold">
+                      <Pencil class="h-3.5 w-3.5 mr-1.5" />
+                      Edit
+                    </Button>
+                  </Link>
+                  <Button variant="outline" size="sm" class="flex-1 min-h-[40px] font-semibold text-destructive border-destructive/20 hover:bg-destructive/5" onclick={() => confirmDelete(user.id)}>
+                    <Trash2 class="h-3.5 w-3.5 mr-1.5" />
+                    Delete
+                  </Button>
+                </div>
+              </li>
+            {/each}
+          </ul>
+        {:else}
+          <p class="py-12 text-center text-muted-foreground">No users found.</p>
+        {/if}
+      </div>
+
       {#if users.last_page > 1}
         <div class="flex items-center justify-between border-t border-border px-4 py-2">
           <p class="text-sm text-muted-foreground">

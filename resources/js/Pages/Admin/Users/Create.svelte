@@ -3,6 +3,7 @@
   import { Link, useForm } from '@inertiajs/svelte';
   import { Button } from '@/Components/ui/button';
   import { Input } from '@/Components/ui/input';
+  import { success } from '@/lib/toast';
 
   let { roles = [] } = $props();
 
@@ -21,6 +22,12 @@
     password_confirmation: '',
     roles: [],
   });
+
+  $form.onFinish = () => {
+    if (!$form.errors || Object.keys($form.errors).length === 0) {
+      success('User created');
+    }
+  };
 
   function toggleRole(name) {
     if (selectedRoles.includes(name)) {

@@ -2,7 +2,7 @@
   import { Bell, Check, CheckCheck, X, ExternalLink } from 'lucide-svelte';
   import { usePoll } from '@inertiajs/svelte';
   import { router } from '@inertiajs/svelte';
-  import { success, message } from '@/Components/ToastManager.svelte';
+  import { success, message } from '@/lib/toast.js';
 
   let { initialNotifications = [] } = $props();
 

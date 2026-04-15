@@ -3,6 +3,7 @@
   import { Link, useForm } from '@inertiajs/svelte';
   import { Button } from '@/Components/ui/button';
   import { Input } from '@/Components/ui/input';
+  import { success } from '@/lib/toast';
 
   const form = useForm({
     name: '',
@@ -10,6 +11,12 @@
     floor: '',
     capacity: '',
   });
+
+  $form.onFinish = () => {
+    if (!$form.errors || Object.keys($form.errors).length === 0) {
+      success('Room created');
+    }
+  };
 
   function submitForm(e) {
     e.preventDefault();
@@ -19,7 +26,7 @@
     }));
     $form.post('/admin/rooms');
   }
-const breadcrumbs = [{ label: 'Exam Scheduling', href: '/admin/test-scheduling' }, { label: 'Rooms', href: '/admin/rooms' }, { label: 'Add Room' }];
+const breadcrumbs = [{ label: 'Exam Scheduling', href: '/admin/exam-scheduling' }, { label: 'Rooms', href: '/admin/rooms' }, { label: 'Add Room' }];
 </script>
 
 <AuthenticatedLayout {breadcrumbs}>

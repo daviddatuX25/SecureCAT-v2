@@ -268,7 +268,7 @@
         <ViewModeToggle bind:value={viewMode} />
       </div>
 
-      <div class="min-w-0">
+      <div class="min-w-0 {viewMode === 'cards' ? 'hidden' : ''}">
         <div class="w-full min-w-0 overflow-x-auto scrollbar-hide">
         <Table.Root class="w-full min-w-[640px] text-sm">
           <Table.Header class="bg-muted/50">
@@ -303,7 +303,7 @@
                     <div class="flex justify-center gap-2">
                       {#if !isProctorView && session.status === 'draft'}
                         <Link href={`/admin/exam-scheduling/${session.id}/edit`}>
-                          <Button variant="ghost" size="sm" class="h-8 px-2 text-xs">
+                          <Button variant="ghost" size="sm" class="h-8 px-2 text-xs" onclick={(e) => e.stopPropagation()}>
                             <Pencil class="mr-1.5 h-3.5 w-3.5" />
                             Edit
                           </Button>

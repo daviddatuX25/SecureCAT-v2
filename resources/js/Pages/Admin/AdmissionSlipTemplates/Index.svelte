@@ -6,6 +6,7 @@
   import { Badge } from '@/Components/ui/badge';
   import * as Table from '@/Components/ui/table';
   import { Plus, Pencil, Trash2 } from 'lucide-svelte';
+  import ActionDropdown from '@/Components/ActionDropdown.svelte';
 
   let { templates = [] } = $props();
 
@@ -53,16 +54,16 @@
       </div>
     {/if}
 
-    <div class="glass-panel rounded-2xl overflow-hidden min-w-0 max-w-full p-6">
+    <div class="min-w-0">
       <div class="w-full min-w-0">
-        <Table.Root class="w-full min-w-[640px]">
+        <Table.Root class="w-full min-w-[640px] text-sm">
           <Table.Header class="bg-muted/50">
             <Table.Row>
               <Table.Head class="px-4 py-3">Name</Table.Head>
               <Table.Head class="px-4 py-3">Mode</Table.Head>
               <Table.Head class="px-4 py-3">Paper</Table.Head>
               <Table.Head class="px-4 py-3">Status</Table.Head>
-              <Table.Head class="px-4 py-3 text-right">Actions</Table.Head>
+              <Table.Head class="text-center">Actions</Table.Head>
             </Table.Row>
           </Table.Header>
           <Table.Body>
@@ -74,14 +75,24 @@
                 <Table.Cell class="px-4 py-3">
                   <Badge variant={t.is_active ? 'success' : 'muted'}>{t.is_active ? 'Active' : 'Inactive'}</Badge>
                 </Table.Cell>
-                <Table.Cell class="px-4 py-3 text-right">
-                  <div class="flex justify-end gap-2">
+                <Table.Cell class="text-center">
+                  <div class="flex justify-center gap-2">
                     <Link href={`/admin/admission-slip-templates/${t.id}/edit`}>
-                      <Button variant="ghost" size="icon" aria-label="Edit"><Pencil class="h-4 w-4" /></Button>
+                      <Button variant="ghost" size="sm" class="h-8 px-2 text-xs">
+                        <Pencil class="mr-1.5 h-3.5 w-3.5" />
+                        Edit
+                      </Button>
                     </Link>
-                    <Button variant="ghost" size="icon" aria-label="Delete" class="text-destructive" onclick={() => confirmDelete(t.id)}>
-                      <Trash2 class="h-4 w-4" />
-                    </Button>
+                    <ActionDropdown
+                      items={[
+                        {
+                          label: 'Delete',
+                          icon: Trash2,
+                          onclick: () => confirmDelete(t.id),
+                          class: 'text-destructive'
+                        }
+                      ]}
+                    />
                   </div>
                 </Table.Cell>
               </Table.Row>

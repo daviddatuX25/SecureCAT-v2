@@ -7,6 +7,7 @@ use App\Http\Requests\StoreAptitudeAreaRequest;
 use App\Http\Requests\UpdateAptitudeAreaRequest;
 use App\Models\AptitudeArea;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -21,13 +22,13 @@ class AptitudeAreaController extends Controller
             ->orderBy('id')
             ->get()
             ->map(fn (AptitudeArea $a) => [
-                'id'            => $a->id,
-                'name'          => $a->name,
-                'code'          => $a->code,
-                'description'   => $a->description,
-                'max_items'     => $a->max_items,
+                'id' => $a->id,
+                'name' => $a->name,
+                'code' => $a->code,
+                'description' => $a->description,
+                'max_items' => $a->max_items,
                 'display_order' => $a->display_order,
-                'is_active'     => $a->is_active,
+                'is_active' => $a->is_active,
             ]);
 
         return Inertia::render('Admin/AptitudeAreas/Index', [
@@ -47,12 +48,12 @@ class AptitudeAreaController extends Controller
         $data = $request->validated();
 
         AptitudeArea::create([
-            'name'          => $data['name'],
-            'code'          => $data['code'],
-            'description'   => $data['description'] ?? null,
-            'max_items'     => (int) $data['max_items'],
+            'name' => $data['name'],
+            'code' => $data['code'],
+            'description' => $data['description'] ?? null,
+            'max_items' => (int) $data['max_items'],
             'display_order' => isset($data['display_order']) ? (int) $data['display_order'] : 0,
-            'is_active'     => $data['is_active'] ?? true,
+            'is_active' => $data['is_active'] ?? true,
         ]);
 
         return redirect()->route('admin.aptitude-areas.index')
@@ -65,13 +66,13 @@ class AptitudeAreaController extends Controller
 
         return Inertia::render('Admin/AptitudeAreas/Edit', [
             'aptitude_area' => [
-                'id'            => $aptitudeArea->id,
-                'name'          => $aptitudeArea->name,
-                'code'          => $aptitudeArea->code,
-                'description'   => $aptitudeArea->description ?? '',
-                'max_items'     => $aptitudeArea->max_items,
+                'id' => $aptitudeArea->id,
+                'name' => $aptitudeArea->name,
+                'code' => $aptitudeArea->code,
+                'description' => $aptitudeArea->description ?? '',
+                'max_items' => $aptitudeArea->max_items,
                 'display_order' => $aptitudeArea->display_order,
-                'is_active'     => $aptitudeArea->is_active,
+                'is_active' => $aptitudeArea->is_active,
             ],
         ]);
     }
@@ -81,15 +82,42 @@ class AptitudeAreaController extends Controller
         $data = $request->validated();
 
         $aptitudeArea->update([
-            'name'          => $data['name'],
-            'code'          => $data['code'],
-            'description'   => $data['description'] ?? null,
-            'max_items'     => (int) $data['max_items'],
+            'name' => $data['name'],
+            'code' => $data['code'],
+            'description' => $data['description'] ?? null,
+            'max_items' => (int) $data['max_items'],
             'display_order' => isset($data['display_order']) ? (int) $data['display_order'] : 0,
-            'is_active'     => $data['is_active'] ?? true,
+            'is_active' => $data['is_active'] ?? true,
         ]);
 
         return redirect()->route('admin.aptitude-areas.index')
             ->with('success', 'Aptitude area updated.');
+    }
+
+    public function reorder(Request $request): RedirectResponse
+    {
+        $this->authorize('reorder', AptitudeArea::class);
+
+        $order = $request->input('order', []);
+
+        if (! is_array($order)) {
+            return redirect()->back()->with('error', 'Invalid order format');
+        }
+
+        foreach ($order as $index => $id) {
+            AptitudeArea::where('id', $id)->update(['display_order' => $index]);
+        }
+
+        return redirect()->back()->with('success', 'Order saved successfully');
+    }
+
+    public function destroy(AptitudeArea $aptitudeArea): RedirectResponse
+    {
+        $this->authorize('delete', $aptitudeArea);
+
+        $aptitudeArea->delete();
+
+        return redirect()->route('admin.aptitude-areas.index')
+            ->with('success', 'Aptitude area deleted.');
     }
 }

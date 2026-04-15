@@ -24,4 +24,9 @@ class AptitudeAreaPolicy
     {
         return $user->hasAnyRole(['super_admin', 'test_administrator']);
     }
+
+    public function reorder(User $user): bool
+    {
+        return $user->hasAnyRole(['super_admin', 'test_administrator']);
+    }
 }

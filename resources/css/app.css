@@ -9,10 +9,10 @@
 :root {
     --background: oklch(0.97 0.01 87.41);
     --foreground: oklch(0.31 0.02 148.20);
-    --card: oklch(1 0 0 / 0.7);
+    --card: oklch(1 0 0 / 0.95);
     --card-solid: oklch(0.97 0.01 87.41);
     --card-foreground: oklch(0.30 0.04 29.20);
-    --glass-panel-bg: oklch(1 0 0 / 0.7);
+    --glass-panel-bg: oklch(1 0 0 / 0.95);
     --glass-panel-border: oklch(0.88 0 0 / 0.5);
     --popover: oklch(0.97 0.01 87.41);
     --popover-foreground: oklch(0.30 0.04 29.20);
@@ -26,6 +26,12 @@
     --accent-foreground: oklch(0.43 0.12 144.33);
     --destructive: oklch(0.54 0.19 26.90);
     --destructive-foreground: oklch(1.00 0 0);
+    --success: oklch(0.62 0.15 142.90);
+    --success-foreground: oklch(1.00 0 0);
+    --warning: oklch(0.85 0.12 43.20);
+    --warning-foreground: oklch(0.25 0.06 28.30);
+    --info: oklch(0.55 0.14 190.10);
+    --info-foreground: oklch(1.00 0 0);
     --border: oklch(0.88 0 0);
     --input: oklch(0.88 0.02 77.29);
     --ring: oklch(0.52 0.13 144.33);
@@ -63,10 +69,10 @@
 .dark {
     --background: oklch(0.31 0.03 149.96);
     --foreground: oklch(0.84 0.01 145.30);
-    --card: oklch(0.35 0.03 148.55 / 0.6);
+    --card: oklch(0.35 0.03 148.55 / 0.95);
     --card-solid: oklch(0.35 0.03 148.55);
     --card-foreground: oklch(0.84 0.01 145.30);
-    --glass-panel-bg: oklch(0.35 0.03 148.55 / 0.6);
+    --glass-panel-bg: oklch(0.35 0.03 148.55 / 0.95);
     --glass-panel-border: oklch(0.39 0.03 143.09 / 0.3);
     --popover: oklch(0.33 0.03 146.53);
     --popover-foreground: oklch(0.94 0.01 72.65);
@@ -80,6 +86,12 @@
     --accent-foreground: oklch(0.94 0.01 72.65);
     --destructive: oklch(0.54 0.19 26.90);
     --destructive-foreground: oklch(1.00 0 0);
+    --success: oklch(0.62 0.15 142.90);
+    --success-foreground: oklch(1.00 0 0);
+    --warning: oklch(0.85 0.12 43.20);
+    --warning-foreground: oklch(0.25 0.06 28.30);
+    --info: oklch(0.55 0.14 190.10);
+    --info-foreground: oklch(1.00 0 0);
     --border: oklch(0.39 0.03 143.09);
     --input: oklch(0.39 0.03 143.09);
     --ring: oklch(0.67 0.16 144.06);
@@ -125,6 +137,12 @@
     --color-accent-foreground: var(--accent-foreground);
     --color-destructive: var(--destructive);
     --color-destructive-foreground: var(--destructive-foreground);
+    --color-success: var(--success);
+    --color-success-foreground: var(--success-foreground);
+    --color-warning: var(--warning);
+    --color-warning-foreground: var(--warning-foreground);
+    --color-info: var(--info);
+    --color-info-foreground: var(--info-foreground);
     --color-border: var(--border);
     --color-input: var(--input);
     --color-ring: var(--ring);
@@ -207,4 +225,73 @@ body {
 }
 .scrollbar-hide::-webkit-scrollbar {
     display: none;
+}
+
+/* Custom Scrollbar Styling - Industrial/Theme-aware */
+@layer base {
+    /* Vertical scrollbar */
+    ::-webkit-scrollbar {
+        width: 6px;
+        height: 6px;
+    }
+
+    /* Horizontal scrollbar track */
+    ::-webkit-scrollbar-track {
+        background: var(--muted);
+        border-radius: 0;
+    }
+
+    /* Scrollbar thumb - industrial brutalist style */
+    ::-webkit-scrollbar-thumb {
+        background: var(--muted-foreground);
+        border-radius: 0;
+        border: 1px solid var(--border);
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+        background: var(--accent);
+    }
+
+    /* Horizontal scrollbar specific */
+    ::-webkit-scrollbar-track-piece:horizontal {
+        background: var(--muted);
+    }
+
+    ::-webkit-scrollbar-thumb:horizontal {
+        background: var(--muted-foreground);
+        border-radius: 0;
+        border: 1px solid var(--border);
+    }
+
+    ::-webkit-scrollbar-thumb:horizontal:hover {
+        background: var(--accent);
+    }
+
+    /* Corner between scrollbars */
+    ::-webkit-scrollbar-corner {
+        background: var(--muted);
+    }
+}
+
+/* Table container with horizontal scroll */
+.table-scroll-container {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+.table-scroll-container::-webkit-scrollbar {
+    height: 4px;
+}
+
+.table-scroll-container::-webkit-scrollbar-track {
+    background: var(--muted);
+}
+
+.table-scroll-container::-webkit-scrollbar-thumb {
+    background: var(--muted-foreground);
+    border-radius: 0;
+}
+
+.table-scroll-container::-webkit-scrollbar-thumb:hover {
+    background: var(--primary);
 }

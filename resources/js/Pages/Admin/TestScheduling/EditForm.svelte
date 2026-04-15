@@ -2,6 +2,7 @@
   import { Link, useForm } from '@inertiajs/svelte';
   import { Button } from '@/Components/ui/button';
   import { Input } from '@/Components/ui/input';
+  import { success } from '@/lib/toast';
 
   let { session, rooms = [], proctors = [] } = $props();
 
@@ -11,6 +12,12 @@
     start_time: session?.start_time ? String(session.start_time).slice(0, 5) : '',
     end_time: session?.end_time ? String(session.end_time).slice(0, 5) : '',
   });
+
+  $form.onFinish = () => {
+    if (!$form.errors || Object.keys($form.errors).length === 0) {
+      success('Exam session updated');
+    }
+  };
 
   let selectedProctorIds = $state((session?.proctors ?? []).map((p) => p.id));
 
@@ -29,7 +36,7 @@
       room_id: data.room_id ? parseInt(data.room_id, 10) : null,
       proctor_ids: selectedProctorIds,
     }));
-    $form.put(`/admin/test-scheduling/${session.id}`);
+    $form.put(`/admin/exam-scheduling/${session.id}`);
   }
 </script>
 
@@ -101,7 +108,7 @@
     <Button type="submit" disabled={$form.processing}>
       {$form.processing ? 'Saving...' : 'Save'}
     </Button>
-    <Link href={`/admin/test-scheduling/${session?.id}`}>
+    <Link href={`/admin/exam-scheduling/${session?.id}`}>
       <Button type="button" variant="outline">Cancel</Button>
     </Link>
   </div>

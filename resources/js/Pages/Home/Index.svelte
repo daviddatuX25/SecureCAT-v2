@@ -44,19 +44,11 @@
         </h1>
 
         <div class="mt-8 w-full flex justify-center z-20 animate-in fade-in slide-in-from-bottom-5 duration-700 delay-150">
-          {#if isAuthenticated}
-            <Link href={auth.user ? '/dashboard' : '/portal'}>
-              <Button size="lg" class="h-14 px-10 text-base font-bold shadow-xl shadow-primary/25 hover:shadow-2xl transition-all rounded-full bg-gradient-to-r from-primary to-blue-600 hover:-translate-y-1 border-0">
-                Go to Dashboard
-              </Button>
-            </Link>
-          {:else}
             <Link href="/apply">
               <Button size="lg" class="h-14 px-12 text-lg font-extrabold shadow-xl shadow-primary/30 hover:shadow-primary/50 hover:-translate-y-1 transition-all rounded-full bg-gradient-to-r from-primary to-emerald-600 hover:from-primary/95 hover:to-emerald-500 border-0 uppercase tracking-widest text-primary-foreground">
                 Admissions
               </Button>
             </Link>
-          {/if}
         </div>
       </div>
     </div>

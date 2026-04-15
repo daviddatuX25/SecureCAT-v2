@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\AuditLog;
+use App\Services\AuditService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 use Inertia\Inertia;
@@ -36,15 +37,30 @@ class AuditLogController extends Controller
 
         $logs = $query->paginate(25)->withQueryString();
 
-        $events = AuditLog::query()->select('event')->distinct()->orderBy('event')->pluck('event')->map(fn ($v) => ['value' => $v, 'label' => $v])->values()->toArray();
-        $categories = AuditLog::query()->select('category')->distinct()->whereNotNull('category')->orderBy('category')->pluck('category')->map(fn ($v) => ['value' => $v, 'label' => $v])->values()->toArray();
+        // Use friendly labels from AuditService (falls back to raw values for unknown events)
+        $events = AuditService::getEventOptions();
+        $categories = AuditService::getCategoryOptions();
+
+        // Add any events/categories that exist in DB but aren't in our mapping
+        $knownEvents = array_column($events, 'value');
+        $knownCategories = array_column($categories, 'value');
+
+        $dbEvents = AuditLog::query()->select('event')->distinct()->pluck('event')->filter(fn ($v) => ! in_array($v, $knownEvents, true))->values();
+        $dbCategories = AuditLog::query()->select('category')->distinct()->whereNotNull('category')->pluck('category')->filter(fn ($v) => ! in_array($v, $knownCategories, true))->values();
+
+        foreach ($dbEvents as $event) {
+            $events[] = ['value' => $event, 'label' => $event];
+        }
+        foreach ($dbCategories as $category) {
+            $categories[] = ['value' => $category, 'label' => $category];
+        }
 
         return Inertia::render('Admin/Logs/Index', [
             'logs' => $logs,
             'filters' => $request->only(['event', 'category', 'actor_id', 'date_from', 'date_to']),
             'events' => $events,
             'categories' => $categories,
-            'scopeLabel' => 'Activity log',
+            'scopeLabel' => 'System audit trail and user activity logs',
             'showActorFilter' => true,
         ]);
     }
@@ -81,12 +97,11 @@ class AuditLogController extends Controller
             fputcsv($handle, ['id', 'created_at', 'event', 'category', 'actor_id', 'actor_type', 'summary']);
 
             $query->cursor()->each(function (AuditLog $log) use ($handle) {
-                $actorName = $log->actor?->name ?? $log->actor?->email ?? null;
                 fputcsv($handle, [
                     $log->id,
                     $log->created_at?->toIso8601String(),
-                    $log->event,
-                    $log->category,
+                    AuditService::getEventLabel($log->event),
+                    AuditService::getCategoryLabel($log->category ?? 'other'),
                     $log->actor_id,
                     $log->actor_type,
                     $log->summary,

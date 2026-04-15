@@ -3,11 +3,18 @@
   import { Link, useForm } from '@inertiajs/svelte';
   import { Button } from '@/Components/ui/button';
   import { Input } from '@/Components/ui/input';
+  import { success } from '@/lib/toast';
 
   const form = useForm({
     name: '',
     code: '',
   });
+
+  $form.onFinish = () => {
+    if (!$form.errors || Object.keys($form.errors).length === 0) {
+      success('Course created');
+    }
+  };
 
   function submitForm(e) {
     e.preventDefault();

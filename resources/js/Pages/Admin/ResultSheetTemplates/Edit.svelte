@@ -3,9 +3,15 @@
   import { Link, useForm, usePage } from '@inertiajs/svelte';
   import { Button } from '@/Components/ui/button';
   import { Input } from '@/Components/ui/input';
+  import { FileUpload } from '@/Components/ui/file-upload';
+  import Switch from '@/Components/ui/switch/switch.svelte';
+  import { ToggleGroup, ToggleGroupItem } from '@/Components/ui/toggle-group';
+  import { success } from '@/lib/toast';
+  import { FileCode, FileText, ChevronDown, ChevronUp, HelpCircle, Copy } from 'lucide-svelte';
 
   const breadcrumbs = [
-    { label: 'Result Sheet Templates', href: '/admin/result-sheet-templates' },
+    { label: 'Release Management', href: '/admin/release' },
+    { label: 'Result Sheet Templates', href: '/admin/release/result-templates' },
     { label: 'Edit' },
   ];
 
@@ -32,6 +38,24 @@
     is_active: template?.is_active ?? true,
   });
 
+  // $state for reactivity tracking only — Svelte 5 wraps objects in Proxy,
+  // which breaks FormData.append (internal slots require a real File).
+  let docxFile = $state(null);
+  let rawDocxFile = null; // plain var holds the actual File object
+  let helpOpen = $state(false);
+
+  $form.onFinish = () => {
+    if (!$form.errors || Object.keys($form.errors).length === 0) {
+      success('Result sheet template updated');
+    }
+  };
+
+  function handleDocxFile(e) {
+    const file = e.detail?.files?.[0] ?? e.files?.[0];
+    rawDocxFile = file;  // raw File for FormData / Inertia
+    docxFile = file;     // triggers $effect reactivity
+  }
+
   let previewHtml = $state('');
   let previewLoading = $state(false);
   let previewError = $state(null);
@@ -39,7 +63,8 @@
 
   function submitForm(e) {
     e.preventDefault();
-    $form.put(`/admin/result-sheet-templates/${template.id}`);
+    $form.transform((data) => ({ ...data, docx: rawDocxFile }));
+    $form.put(`/admin/release/result-templates/${template.id}`, { forceFormData: true });
   }
 
   function fetchPreview() {
@@ -53,10 +78,10 @@
       fd.append('orientation', $form.orientation);
       fd.append('logical_unit', $form.logical_unit);
 
-      if ($form.mode === 'html') {
-        fd.append('content', $form.content || '');
-      } else if ($form.docx) {
-        fd.append('docx', $form.docx);
+      if ($form.mode === 'html' && $form.content?.trim()) {
+        fd.append('content', $form.content);
+      } else if (rawDocxFile) {
+        fd.append('docx', rawDocxFile);
       } else if (template?.id && $form.mode === 'docx') {
         fd.append('template_id', template.id);
       } else {
@@ -65,7 +90,7 @@
         return;
       }
 
-      fetch('/admin/result-sheet-templates/preview', {
+      fetch('/admin/release/result-templates/preview', {
         method: 'POST',
         body: fd,
         headers: {
@@ -74,13 +99,12 @@
           'X-CSRF-TOKEN': csrfToken,
         },
       })
-        .then((r) => {
+        .then(async (r) => {
           if (!r.ok) {
-            return r.text().then((text) => {
-              let msg = 'Preview failed';
-              try { msg = JSON.parse(text)?.error ?? msg; } catch {}
-              throw new Error(msg + ` (${r.status})`);
-            });
+            const text = await r.text();
+            let msg = 'Preview failed';
+            try { msg = JSON.parse(text)?.error ?? JSON.parse(text)?.message ?? msg; } catch {}
+            throw new Error(msg + ` (${r.status})`);
           }
           return r.json();
         })
@@ -97,8 +121,11 @@
   }
 
   $effect(() => {
+    $form.mode;
+    docxFile;
+    $form.content;
     if ($form.mode === 'html' && $form.content) fetchPreview();
-    else if ($form.mode === 'docx' && $form.docx) fetchPreview();
+    else if ($form.mode === 'docx' && docxFile) fetchPreview();
     else if ($form.mode === 'docx' && template?.docx_path) fetchPreview();
     else if ($form.mode === 'docx') previewHtml = '<p class="text-muted-foreground p-4">Upload a DOCX file to replace, or save to use current.</p>';
     else previewHtml = '';
@@ -106,35 +133,125 @@
 
   $effect(() => {
     $form.logical_unit;
+    $form.paper_size;
+    $form.orientation;
     if ($form.mode === 'html' && $form.content) fetchPreview();
-    else if ($form.mode === 'docx' && ($form.docx || template?.docx_path)) fetchPreview();
+    else if ($form.mode === 'docx' && (docxFile || template?.docx_path)) fetchPreview();
   });
 </script>
 
 <AuthenticatedLayout {breadcrumbs}>
   <div class="max-w-6xl space-y-6">
-    <p class="text-sm text-muted-foreground">Common placeholders: {placeholders.slice(0, 6).join(', ')}…</p>
+    <!-- Consolidated Placeholder Help Section -->
+    <div class="rounded-lg border bg-card">
+      <button
+        type="button"
+        onclick={() => helpOpen = !helpOpen}
+        class="flex w-full items-center justify-between px-4 py-3 text-left hover:bg-muted/50"
+      >
+        <div class="flex items-center gap-2">
+          <HelpCircle class="size-4 text-muted-foreground" />
+          <span class="text-sm font-medium">Placeholder Reference & Templates Guide</span>
+        </div>
+        {#if helpOpen}
+          <ChevronUp class="size-4 text-muted-foreground" />
+        {:else}
+          <ChevronDown class="size-4 text-muted-foreground" />
+        {/if}
+      </button>
+
+      {#if helpOpen}
+        <div class="border-t px-4 py-4 space-y-4 text-sm">
+          <!-- Common Placeholders -->
+          <div>
+            <h4 class="font-medium mb-2">Common Placeholders</h4>
+            <p class="text-xs text-muted-foreground mb-2">Click to copy</p>
+            <div class="flex flex-wrap gap-1.5">
+              {#each placeholders as ph}
+                <button
+                  type="button"
+                  title="Click to copy {ph}"
+                  onclick={() => { navigator.clipboard.writeText(ph); }}
+                  class="inline-flex items-center gap-1 rounded-full bg-secondary px-2.5 py-1 text-xs font-medium hover:bg-secondary/80 transition-colors"
+                >
+                  <span class="text-foreground">{ph.replace(/[{}]/g, '')}</span>
+                  <Copy class="size-3 text-muted-foreground" />
+                </button>
+              {/each}
+            </div>
+          </div>
+
+          <!-- Domain Placeholders (DOCX only) -->
+          {#if domainPlaceholders.length > 0}
+            <div>
+              <h4 class="font-medium mb-2">Domain Tags</h4>
+              <p class="text-xs text-muted-foreground mb-2">Click to copy. Add <code class="bg-muted px-1">_2</code> for applicant 2.</p>
+              <div class="flex flex-wrap gap-1.5">
+                {#each domainPlaceholders as dp}
+                  <button
+                    type="button"
+                    title="Click to copy {dp.example}"
+                    onclick={() => { navigator.clipboard.writeText(dp.example); }}
+                    class="inline-flex items-center gap-1 rounded-full bg-secondary px-2.5 py-1 text-xs font-medium hover:bg-secondary/80 transition-colors"
+                  >
+                    <span class="text-foreground">{dp.slug}</span>
+                    <Copy class="size-3 text-muted-foreground" />
+                  </button>
+                {/each}
+              </div>
+            </div>
+          {/if}
+
+          <!-- Mode-specific rules -->
+          {#if $form.mode === 'html'}
+            {#if htmlTemplateRules}
+              <div>
+                <h4 class="font-medium mb-2">HTML Rules</h4>
+                <p class="text-xs text-muted-foreground">{htmlTemplateRules}</p>
+              </div>
+            {/if}
+            {#if htmlScoresNote}
+              <div>
+                <h4 class="font-medium mb-2">Scores Table</h4>
+                <p class="text-xs text-muted-foreground">{@html htmlScoresNote}</p>
+              </div>
+            {/if}
+          {:else}
+            {#if docxPlaceholderNote}
+              <div>
+                <h4 class="font-medium mb-2">DOCX Notes</h4>
+                <p class="text-xs text-muted-foreground">{docxPlaceholderNote}</p>
+              </div>
+            {/if}
+          {/if}
+        </div>
+      {/if}
+    </div>
 
     <div class="grid gap-6 lg:grid-cols-2">
-      <form onsubmit={submitForm} class="space-y-4 rounded-lg border border-border bg-card p-6">
-        <div class="space-y-2">
+      <form onsubmit={submitForm} class="space-y-4 rounded-lg border bg-card p-6">
+        <div>
           <label for="name" class="text-sm font-medium">Name</label>
-          <Input id="name" bind:value={$form.name} placeholder="e.g., Default" required maxlength="100" />
-          {#if $form.errors?.name}<p class="text-sm text-destructive">{$form.errors.name}</p>{/if}
+          <Input id="name" bind:value={$form.name} placeholder="Default" required class="mt-1" />
+          {#if $form.errors?.name}<p class="text-sm text-destructive mt-1">{$form.errors.name}</p>{/if}
         </div>
 
-        <div>
+        <!-- Mode Switch -->
+        <div class="flex items-center gap-3">
           <label class="text-sm font-medium">Mode</label>
-          <div class="mt-1 flex gap-4">
-            <label class="flex items-center gap-2">
-              <input type="radio" name="mode" value="html" bind:group={$form.mode} class="rounded" />
+          <ToggleGroup bind:value={$form.mode} type="single" variant="default" class="bg-muted p-1 rounded-md">
+            <ToggleGroupItem value="html" class="gap-1.5 px-3 py-1.5" disabled={$form.mode === 'docx' && !docxFile && !template?.docx_path}>
+              <FileCode class="size-4" />
               <span class="text-sm">HTML</span>
-            </label>
-            <label class="flex items-center gap-2">
-              <input type="radio" name="mode" value="docx" bind:group={$form.mode} class="rounded" />
-              <span class="text-sm">DOCX upload</span>
-            </label>
-          </div>
+            </ToggleGroupItem>
+            <ToggleGroupItem value="docx" class="gap-1.5 px-3 py-1.5" disabled={$form.mode === 'html' && $form.content}>
+              <FileText class="size-4" />
+              <span class="text-sm">DOCX</span>
+            </ToggleGroupItem>
+          </ToggleGroup>
+          {#if template?.docx_path && $form.mode === 'docx'}
+            <span class="text-xs text-muted-foreground">Current file exists. Upload to replace.</span>
+          {/if}
         </div>
 
         {#if $form.mode === 'html'}
@@ -149,62 +266,43 @@
         {/if}
 
         {#if $form.mode === 'html'}
-          <div class="space-y-2">
+          <div>
             <label for="content" class="text-sm font-medium">HTML + CSS (JavaScript not allowed)</label>
-            <p class="text-xs text-muted-foreground">Enter custom HTML and CSS. Use placeholders like &#123;&#123;applicant_name&#125;&#125;. Scripts and event handlers are stripped for security.</p>
-            {#if htmlTemplateRules}
-              <p class="text-xs text-muted-foreground mt-1 rounded bg-muted/50 p-2 font-medium">Template rules: {htmlTemplateRules}</p>
-            {/if}
-            {#if htmlScoresNote}
-              <p class="text-xs text-muted-foreground mt-1 rounded bg-muted/50 p-2">{@html htmlScoresNote}</p>
-            {/if}
+            <p class="text-xs text-muted-foreground mt-0.5">Enter custom HTML and CSS. Use placeholders like &#123;&#123;applicant_name&#125;&#125;. Scripts and event handlers are stripped for security.</p>
             <textarea
               id="content"
               bind:value={$form.content}
               required={$form.mode === 'html'}
-              rows="12"
-              class="flex w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm font-mono"
+              rows="16"
+              placeholder="<div style=&quot;padding: 1rem;&quot;><p>Hello <strong>&#123;&#123;applicant_name&#125;&#125;</strong></p></div>"
+              class="mt-2 flex w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm font-mono"
             ></textarea>
-            {#if $form.errors?.content}<p class="text-sm text-destructive">{$form.errors.content}</p>{/if}
+            {#if $form.errors?.content}<p class="text-sm text-destructive mt-1">{$form.errors.content}</p>{/if}
           </div>
         {:else}
-          <div class="space-y-2">
+          <div>
             <label for="docx" class="text-sm font-medium">DOCX file</label>
-            {#if docxPlaceholderNote}
-              <p class="text-xs text-muted-foreground mt-0.5 mb-2">{docxPlaceholderNote}</p>
-            {/if}
-            {#if domainPlaceholders?.length > 0}
-              <div class="mb-3 rounded border border-border/50 bg-muted/30 p-3 text-xs">
-                <p class="font-medium mb-2">Per-domain placeholders (percentage and raw):</p>
-                <ul class="space-y-1 font-mono">
-                  {#each domainPlaceholders as dp}
-                    <li><code class="rounded bg-muted px-1">{dp.example}</code> (%), <code class="rounded bg-muted px-1">{dp.exampleRaw}</code> (raw/max)</li>
-                  {/each}
-                </ul>
-              </div>
-            {/if}
-            {#if template?.docx_path}
-              <p class="text-xs text-muted-foreground">Current file exists. Upload a new file to replace.</p>
-            {/if}
-            <input
-              id="docx"
-              type="file"
+            <FileUpload
+              label="Upload DOCX template"
               accept=".docx"
-              class="flex w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm"
-              onchange={(e) => form.set('docx', e.target.files?.[0] ?? null)}
+              maxSize="5MB"
+              onfiles={handleDocxFile}
             />
-            {#if $form.errors?.docx}<p class="text-sm text-destructive">{$form.errors.docx}</p>{/if}
+            {#if $form.errors?.docx}<p class="text-sm text-destructive mt-1">{$form.errors.docx}</p>{/if}
           </div>
         {/if}
 
-        <div class="flex items-center gap-2">
-          <input type="checkbox" id="is_active" bind:checked={$form.is_active} class="rounded" />
-          <label for="is_active" class="text-sm">Active (use for printing)</label>
+        <div class="flex items-center gap-3">
+          <Switch
+            checked={$form.is_active}
+            onCheckedChange={(checked) => $form.is_active = checked}
+          />
+          <label for="is_active" class="text-sm">Active</label>
         </div>
 
         <div class="flex gap-2 pt-4">
           <Button type="submit" disabled={$form.processing}>{$form.processing ? 'Saving...' : 'Save'}</Button>
-          <Link href="/admin/result-sheet-templates"><Button type="button" variant="outline">Cancel</Button></Link>
+          <Link href="/admin/release/result-templates"><Button type="button" variant="outline">Cancel</Button></Link>
         </div>
       </form>
 

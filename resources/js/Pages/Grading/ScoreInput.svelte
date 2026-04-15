@@ -11,8 +11,8 @@
   const isReadOnly = $derived(workflowStatus === 'completed');
 
   const breadcrumbs = $derived([
-    { label: 'Grading', href: '/grading' },
-    { label: 'Session #' + sid, href: `/grading/sessions/${sid}` },
+    { label: 'Grading', href: '/admin/grading' },
+    { label: 'Session #' + sid, href: `/admin/grading/sessions/${sid}` },
     { label: applicant?.name ?? 'Applicant' }
   ]);
 
@@ -67,7 +67,7 @@
       raw_score: sc.raw_score,
       max_score: sc.max_score,
     }));
-    router.put(`/grading/sessions/${sid}/applicants/${applicantId}/scores`, { scores: s }, {
+    router.put(`/admin/grading/sessions/${sid}/applicants/${applicantId}/scores`, { scores: s }, {
       onError: (err) => {
         saving = false;
         saveError = Object.values(err).flat().join(', ') || 'Failed to save scores.';
@@ -125,7 +125,7 @@
             {saving ? 'Saving…' : 'Save scores'}
           </Button>
           {/if}
-          <Link href={`/grading/sessions/${sid}`}>
+          <Link href={`/admin/grading/sessions/${sid}`}>
             <Button variant="outline" class="min-h-[44px]">
               <ChevronRight class="h-4 w-4 mr-2" />
               Back to applicant list

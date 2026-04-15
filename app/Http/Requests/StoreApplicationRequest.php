@@ -30,6 +30,7 @@ class StoreApplicationRequest extends FormRequest
             'course_preference_2' => ['nullable', 'integer', 'exists:courses,id', 'different:course_preference_1'],
             'course_preference_3' => ['nullable', 'integer', 'exists:courses,id', 'different:course_preference_1', 'different:course_preference_2'],
             'appointment_id' => ['nullable', 'integer', 'exists:appointments,id'],
+            'accept_immediately' => ['nullable', 'boolean'],
         ];
     }
 }

@@ -50,7 +50,7 @@ class AuthController extends Controller
                 'ip' => $request->ip(),
             ], 'Staff login');
 
-            return redirect()->intended(route('dashboard'));
+            return redirect()->intended(route('dashboard'))->with('success', 'Welcome back! You are now signed in.');
         }
 
         Log::info('User login failed', [

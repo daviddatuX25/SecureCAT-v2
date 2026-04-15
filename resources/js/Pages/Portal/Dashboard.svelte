@@ -9,19 +9,14 @@
 
   let {
     applicant = {},
+    application = null,
     status_tracker,
     exam_schedule = null,
     consultation = { status: 'pending', summary: null },
     ai_companion_enabled = false,
-    notifications,
     results_blocked = false,
   } = $props();
   const safeStatusTracker = $derived(Array.isArray(status_tracker) ? status_tracker : []);
-  const safeNotifications = $derived(Array.isArray(notifications) ? notifications : []);
-
-  function markRead(id) {
-    router.post(`/portal/notifications/${id}/read`, {}, { preserveScroll: true, onSuccess: () => router.reload() });
-  }
 </script>
 
 <PortalLayout>
@@ -74,6 +69,29 @@
           {/if}
         </Card.Content>
       </Card.Root>
+
+      <!-- Edit Application Button (if editable) -->
+      {#if application?.is_editable}
+        <Card.Root class="border-primary/30 bg-primary/5">
+          <Card.Content class="p-6">
+            <div class="flex items-center justify-between">
+              <div>
+                <p class="font-medium">Application Details</p>
+                <p class="text-sm text-muted-foreground">You can update your application information</p>
+              </div>
+              <Link href="/portal/application/edit">
+                <Button>Edit Application</Button>
+              </Link>
+            </div>
+          </Card.Content>
+        </Card.Root>
+      {:else if application?.assigned_session_status === 'published'}
+        <Card.Root class="border-muted">
+          <Card.Content class="p-6 text-center">
+            <p class="text-muted-foreground">Your application is locked. Contact the registrar's office for assistance.</p>
+          </Card.Content>
+        </Card.Root>
+      {/if}
 
       <!-- Results blocked banner (f2f mode) -->
       {#if results_blocked}
@@ -136,30 +154,6 @@
         </Card.Root>
       {/if}
 
-      <!-- Notifications -->
-      {#if safeNotifications.length > 0}
-        <Card.Root>
-          <Card.Header class="pb-3 border-b">
-            <Card.Title class="text-lg">Recent Notifications</Card.Title>
-          </Card.Header>
-          <Card.Content class="pt-4 p-0">
-            <ul class="divide-y">
-              {#each safeNotifications as notif}
-                <li class="flex flex-col gap-2 p-4 {notif.read ? 'bg-muted/30 opacity-70' : 'bg-background hover:bg-accent/50 transition-colors'}">
-                  <span class="text-sm">{notif.message}</span>
-                  {#if !notif.read}
-                    <div class="flex justify-end">
-                      <Button type="button" variant="outline" size="sm" class="h-7 text-xs" onclick={() => markRead(notif.id)}>
-                        Mark read
-                      </Button>
-                    </div>
-                  {/if}
-                </li>
-              {/each}
-            </ul>
-          </Card.Content>
-        </Card.Root>
-      {/if}
-    </div>
+      </div>
   </div>
 </PortalLayout>

@@ -12,7 +12,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('grading_session_id')->constrained()->cascadeOnDelete();
             $table->foreignId('applicant_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('aptitude_area_id')->constrained('aptitude_areas')->cascadeOnDelete();
+            $table->unsignedBigInteger('aptitude_area_id')->nullable();
             $table->unsignedSmallInteger('raw_score');
             $table->unsignedSmallInteger('max_score');
             $table->decimal('normalized_score', 5, 2)->nullable();

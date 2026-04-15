@@ -9,7 +9,10 @@
 
   let { templates = [] } = $props();
 
-  const breadcrumbs = [{ label: 'Result Sheet Templates' }];
+  const breadcrumbs = [
+    { label: 'Release Management', href: '/release' },
+    { label: 'Result Sheet Templates' }
+  ];
 
   const page = usePage();
   const success = $derived($page.props.flash?.success ?? null);
@@ -26,7 +29,7 @@
 
   function doDelete() {
     if (deleteId) {
-      router.delete(`/admin/result-sheet-templates/${deleteId}`, { onSuccess: () => (deleteId = null) });
+      router.delete(`/admin/release/result-templates/${deleteId}`, { onSuccess: () => (deleteId = null) });
     }
   }
 </script>
@@ -38,7 +41,7 @@
         <p class="mt-1 text-sm text-muted-foreground">Manage templates for printing result sheets</p>
       </div>
       <div class="flex flex-wrap items-center gap-3">
-        <Link href="/admin/result-sheet-templates/create">
+        <Link href="/admin/release/result-templates/create">
           <Button class="min-h-[44px]">
             <Plus class="mr-2 h-4 w-4" />
             Create template
@@ -53,16 +56,16 @@
       </div>
     {/if}
 
-    <div class="glass-panel rounded-2xl overflow-hidden min-w-0 max-w-full p-6">
+    <div class="min-w-0">
       <div class="w-full min-w-0">
-        <Table.Root class="w-full min-w-[640px]">
+        <Table.Root class="w-full min-w-[640px] text-sm">
           <Table.Header class="bg-muted/50">
             <Table.Row>
               <Table.Head class="px-4 py-3">Name</Table.Head>
               <Table.Head class="px-4 py-3">Mode</Table.Head>
               <Table.Head class="px-4 py-3">Paper</Table.Head>
               <Table.Head class="px-4 py-3">Status</Table.Head>
-              <Table.Head class="px-4 py-3 text-right">Actions</Table.Head>
+              <Table.Head class="text-center">Actions</Table.Head>
             </Table.Row>
           </Table.Header>
           <Table.Body>
@@ -74,13 +77,17 @@
                 <Table.Cell class="px-4 py-3">
                   <Badge variant={t.is_active ? 'success' : 'muted'}>{t.is_active ? 'Active' : 'Inactive'}</Badge>
                 </Table.Cell>
-                <Table.Cell class="px-4 py-3 text-right">
-                  <div class="flex justify-end gap-2">
-                    <Link href={`/admin/result-sheet-templates/${t.id}/edit`}>
-                      <Button variant="ghost" size="icon" aria-label="Edit"><Pencil class="h-4 w-4" /></Button>
+                <Table.Cell class="text-center">
+                  <div class="flex justify-center gap-2">
+                    <Link href={`/admin/release/result-templates/${t.id}/edit`}>
+                      <Button variant="ghost" size="sm" class="h-8 px-2 text-xs">
+                        <Pencil class="mr-1.5 h-3.5 w-3.5" />
+                        Edit
+                      </Button>
                     </Link>
-                    <Button variant="ghost" size="icon" aria-label="Delete" class="text-destructive" onclick={() => confirmDelete(t.id)}>
-                      <Trash2 class="h-4 w-4" />
+                    <Button variant="ghost" size="sm" class="h-8 px-2 text-xs text-destructive" onclick={() => confirmDelete(t.id)}>
+                      <Trash2 class="mr-1.5 h-3.5 w-3.5" />
+                      Delete
                     </Button>
                   </div>
                 </Table.Cell>

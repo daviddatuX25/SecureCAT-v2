@@ -5,6 +5,8 @@
   import { Badge } from '@/Components/ui/badge';
   import * as Table from '@/Components/ui/table';
 
+  import { FileText } from 'lucide-svelte';
+
   let { summaries, release_mode = 'online', courses = [] } = $props();
 
   const page = usePage();
@@ -117,8 +119,19 @@
 
 <AuthenticatedLayout {breadcrumbs}>
   <div class="space-y-6 min-w-0">
-
-    <!-- Mode banner -->
+    <div class="flex items-center justify-between">
+      <div>
+        <p class="text-sm text-muted-foreground">Release exam results to applicants</p>
+      </div>
+      <div class="flex flex-wrap items-center gap-2 sm:gap-3">
+        <Link href="/admin/release/result-templates">
+          <Button variant="outline" class="min-h-[44px] gap-2">
+            <FileText class="h-4 w-4" />
+            <span class="hidden sm:inline">Result Templates</span>
+          </Button>
+        </Link>
+      </div>
+    </div>
     {#if release_mode === 'f2f'}
       <div class="rounded-lg border border-border bg-muted/40 px-4 py-3 text-sm">
         <strong>F2F mode:</strong> Results will be provided to applicants in person. Email delivery is disabled.
@@ -132,13 +145,6 @@
         <strong>Online + F2F mode:</strong> Applicants will receive a portal notification and email when released.
       </div>
     {/if}
-
-    <!-- Quick links -->
-    <div class="flex items-center gap-3">
-      <Link href="/release/result-sheet-templates" class="text-sm text-primary hover:underline">
-        Result Sheet Templates →
-      </Link>
-    </div>
 
     <!-- Bulk action bar -->
     <div class="flex items-center gap-3">

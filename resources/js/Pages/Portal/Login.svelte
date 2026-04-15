@@ -24,12 +24,6 @@
       <Card.Description>Sign in with the email you used when you applied</Card.Description>
     </Card.Header>
     <Card.Content>
-      {#if flash.success}
-        <p class="mb-4 text-sm text-green-600 dark:text-green-400">{flash.success}</p>
-      {/if}
-      {#if flash.error}
-        <p class="mb-4 text-sm text-destructive">{flash.error}</p>
-      {/if}
       <form onsubmit={handleSubmit} class="space-y-4">
         <div class="space-y-2">
           <label for="email" class="text-sm font-medium leading-none">Email</label>

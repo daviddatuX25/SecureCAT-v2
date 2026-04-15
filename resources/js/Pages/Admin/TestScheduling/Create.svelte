@@ -3,6 +3,7 @@
   import { Link, useForm } from '@inertiajs/svelte';
   import { Button } from '@/Components/ui/button';
   import { Input } from '@/Components/ui/input';
+  import { success } from '@/lib/toast';
 
   let { rooms = [], proctors = [] } = $props();
 
@@ -12,6 +13,12 @@
     start_time: '',
     end_time: '',
   });
+
+  $form.onFinish = () => {
+    if (!$form.errors || Object.keys($form.errors).length === 0) {
+      success('Exam session created');
+    }
+  };
 
   // Per developing-gotchas: checkbox array state does not sync into useForm; use local state and merge in transform
   let selectedProctorIds = $state([]);
@@ -31,9 +38,9 @@
       room_id: data.room_id ? parseInt(data.room_id, 10) : null,
       proctor_ids: selectedProctorIds,
     }));
-    $form.post('/admin/test-scheduling');
+    $form.post('/admin/exam-scheduling');
   }
-const breadcrumbs = [{ label: 'Exam Scheduling', href: '/admin/test-scheduling' }, { label: 'Create' }];
+const breadcrumbs = [{ label: 'Exam Scheduling', href: '/admin/exam-scheduling' }, { label: 'Create' }];
 </script>
 
 <AuthenticatedLayout {breadcrumbs}>
@@ -106,7 +113,7 @@ const breadcrumbs = [{ label: 'Exam Scheduling', href: '/admin/test-scheduling' 
         <Button type="submit" disabled={$form.processing}>
           {$form.processing ? 'Creating...' : 'Create Session'}
         </Button>
-        <Link href="/admin/test-scheduling">
+        <Link href="/admin/exam-scheduling">
           <Button type="button" variant="outline">Cancel</Button>
         </Link>
       </div>

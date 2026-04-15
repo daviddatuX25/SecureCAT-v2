@@ -3,6 +3,7 @@
   import { Link, useForm } from '@inertiajs/svelte';
   import { Button } from '@/Components/ui/button';
   import { Input } from '@/Components/ui/input';
+  import { success } from '@/lib/toast';
 
   const form = useForm({
     name: '',
@@ -13,12 +14,19 @@
     is_active: true,
   });
 
+  $form.onFinish = () => {
+    if (!$form.errors || Object.keys($form.errors).length === 0) {
+      success('Aptitude area created');
+    }
+  };
+
   function submitForm(e) {
     e.preventDefault();
     $form.post('/admin/aptitude-areas');
   }
 
   const breadcrumbs = [
+    { label: 'Grading', href: '/admin/grading' },
     { label: 'Aptitude Areas', href: '/admin/aptitude-areas' },
     { label: 'Create' },
   ];

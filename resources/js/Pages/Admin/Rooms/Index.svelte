@@ -2,12 +2,12 @@
   import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.svelte';
   import { Link, router } from '@inertiajs/svelte';
   import { usePage } from '@inertiajs/svelte';
-  import * as ToggleGroup from '@/Components/ui/toggle-group';
   import { Button } from '@/Components/ui/button';
   import { Badge } from '@/Components/ui/badge';
   import { Input } from '@/Components/ui/input';
   import * as Table from '@/Components/ui/table';
-  import { Plus, Pencil, CircleOff, LayoutGrid, Table2, MonitorSmartphone, CheckCircle, Trash2 } from 'lucide-svelte';
+  import { Plus, Pencil, Pause, Play, Trash2 } from 'lucide-svelte';
+  import ViewModeToggle from '@/Components/ViewModeToggle.svelte';
 
   let { rooms, filters = {} } = $props();
 
@@ -70,39 +70,20 @@
 
   // 'responsive' = cards on small, table on md+; 'table' | 'cards' = explicit override
   let viewMode = $state('responsive');
-const breadcrumbs = [{ label: 'Exam Scheduling', href: '/admin/test-scheduling' }, { label: 'Rooms' }];
+const breadcrumbs = [{ label: 'Exam Scheduling', href: '/admin/exam-scheduling' }, { label: 'Rooms' }];
 </script>
 
 <AuthenticatedLayout {breadcrumbs}>
   <div class="space-y-6 min-w-0">
-    <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+    <div class="flex items-center justify-between">
       <div>
-      <div class="flex flex-wrap items-center gap-3">
-        <ToggleGroup.Root
-          type="single"
-          bind:value={viewMode}
-          variant="outline"
-          size="sm"
-          class="min-h-[44px] rounded-lg border border-border"
-          aria-label="View layout"
-        >
-          <ToggleGroup.Item value="responsive" aria-label="Auto (responsive)" class="min-h-[44px]">
-            <MonitorSmartphone class="h-4 w-4 md:mr-1.5" />
-            <span class="hidden md:inline">Auto</span>
-          </ToggleGroup.Item>
-          <ToggleGroup.Item value="table" aria-label="Table view" class="min-h-[44px]">
-            <Table2 class="h-4 w-4 md:mr-1.5" />
-            <span class="hidden md:inline">Table</span>
-          </ToggleGroup.Item>
-          <ToggleGroup.Item value="cards" aria-label="Card view" class="min-h-[44px]">
-            <LayoutGrid class="h-4 w-4 md:mr-1.5" />
-            <span class="hidden md:inline">Cards</span>
-          </ToggleGroup.Item>
-        </ToggleGroup.Root>
+        <p class="text-sm text-muted-foreground">View and manage exam rooms and venues</p>
+      </div>
+      <div class="flex flex-wrap items-center gap-2 sm:gap-3">
         <Link href="/admin/rooms/create">
-          <Button class="min-h-[44px]">
-            <Plus class="mr-2 h-4 w-4" />
-            Add Room
+          <Button class="min-h-[44px] gap-2">
+            <Plus class="h-4 w-4" />
+            <span class="hidden sm:inline">Add Room</span>
           </Button>
         </Link>
       </div>
@@ -133,8 +114,14 @@ const breadcrumbs = [{ label: 'Exam Scheduling', href: '/admin/test-scheduling' 
       </div>
     </div>
 
-    <div class="glass-panel rounded-2xl overflow-hidden min-w-0 max-w-full p-6">
-      <!-- Table view: single scroll container (Table.Root inner div); outer only constrains width -->
+    <div class="space-y-3">
+      <!-- View toggle as sibling to table container -->
+      <div class="flex justify-end">
+        <ViewModeToggle bind:value={viewMode} />
+      </div>
+
+      <div class="min-w-0">
+        <!-- Table view: single scroll container (Table.Root inner div); outer only constrains width -->
       <div
         class="w-full min-w-0 {viewMode === 'cards'
           ? 'hidden'
@@ -150,40 +137,55 @@ const breadcrumbs = [{ label: 'Exam Scheduling', href: '/admin/test-scheduling' 
               <Table.Head class="px-4 py-3">Floor</Table.Head>
               <Table.Head class="px-4 py-3">Capacity</Table.Head>
               <Table.Head class="px-4 py-3">Status</Table.Head>
-              <Table.Head class="px-4 py-3 text-right">Actions</Table.Head>
+              <Table.Head class="px-4 py-3 text-center">Actions</Table.Head>
             </Table.Row>
           </Table.Header>
           <Table.Body>
             {#each rooms.data as room (room.id)}
-              <Table.Row>
-                <Table.Cell class="px-4 py-3">{room.name}</Table.Cell>
+              <Table.Row class={room.is_active ? '' : 'text-muted-foreground/50 transition-colors'}>
+                <Table.Cell class="px-4 py-3 font-medium">{room.name}</Table.Cell>
                 <Table.Cell class="px-4 py-3">{room.building}</Table.Cell>
                 <Table.Cell class="px-4 py-3">{room.floor ?? '—'}</Table.Cell>
-                <Table.Cell class="px-4 py-3">{room.capacity}</Table.Cell>
+                <Table.Cell class="px-4 py-3 font-mono text-xs">{room.capacity}</Table.Cell>
                 <Table.Cell class="px-4 py-3">
-                  <Badge variant={room.is_active ? 'success' : 'muted'}>{room.is_active ? 'Active' : 'Inactive'}</Badge>
+                  <Badge variant={room.is_active ? 'success' : 'muted'} class="font-medium">
+                    {room.is_active ? 'Active' : 'Inactive'}
+                  </Badge>
                 </Table.Cell>
-                <Table.Cell class="px-4 py-3 text-right">
-                  <div class="flex justify-end gap-2">
-                    <Link href={`/admin/rooms/${room.id}/edit`}>
-                      <Button variant="ghost" size="icon" aria-label="Edit">
-                        <Pencil class="h-4 w-4" />
-                      </Button>
-                    </Link>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      aria-label={room.is_active ? 'Deactivate' : 'Activate'}
-                      class={room.is_active ? 'text-amber-600 hover:text-amber-600' : 'text-primary hover:text-primary'}
-                      onclick={() => doToggle(room.id, room.is_active)}
-                    >
-                      {#if room.is_active}
-                        <CircleOff class="h-4 w-4" />
-                      {:else}
-                        <CheckCircle class="h-4 w-4" />
-                      {/if}
-                    </Button>
-                  </div>
+                <Table.Cell class="text-center px-4 py-3">
+                   <div class="w-[280px] inline-grid grid-cols-3 gap-2">
+                     <Link href={`/admin/rooms/${room.id}/edit`}>
+                       <Button variant="ghost" size="sm" class="h-8 px-2 text-xs font-semibold hover:bg-muted">
+                         <Pencil class="mr-1.5 h-3.5 w-3.5" />
+                         Edit
+                       </Button>
+                     </Link>
+                     <Button
+                       variant="ghost"
+                       size="sm"
+                       class="h-8 px-2 text-xs font-semibold text-destructive hover:text-destructive hover:bg-destructive/5"
+                       onclick={() => { if (confirm('Permanently delete this room?')) doDeletePermanent(room.id); }}
+                     >
+                       <Trash2 class="mr-1.5 h-3.5 w-3.5" />
+                       Delete
+                     </Button>
+                     <Button
+                       variant="ghost"
+                       size="sm"
+                       class="h-8 px-2 text-xs font-semibold {room.is_active
+                         ? 'text-amber-600 hover:text-amber-700 hover:bg-amber-50'
+                         : 'text-primary hover:text-primary-700 hover:bg-primary/5'}"
+                       onclick={() => doToggle(room.id, room.is_active)}
+                     >
+                       {#if room.is_active}
+                         <Pause class="mr-1.5 h-3.5 w-3.5" />
+                         Deactivate
+                       {:else}
+                         <Play class="mr-1.5 h-3.5 w-3.5" />
+                         Activate
+                       {/if}
+                     </Button>
+                   </div>
                 </Table.Cell>
               </Table.Row>
             {:else}
@@ -209,38 +211,41 @@ const breadcrumbs = [{ label: 'Exam Scheduling', href: '/admin/test-scheduling' 
           <ul class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3" role="list">
             {#each (rooms?.data ?? []) as room (room.id)}
               <li
-                class="flex flex-col gap-3 rounded-lg border border-border bg-card p-4"
+                class="flex flex-col gap-3 rounded-xl border border-border bg-card p-4 transition-all {room.is_active ? 'shadow-sm' : 'opacity-60 grayscale-[0.5]'}"
               >
-                <div class="flex items-start justify-between gap-2">
-                  <h3 class="font-semibold">{room.name}</h3>
-                  <Badge variant={room.is_active ? 'success' : 'muted'}>{room.is_active ? 'Active' : 'Inactive'}</Badge>
+                <div class="flex items-start justify-between gap-2 text-foreground!">
+                  <h3 class="font-bold tracking-tight">{room.name}</h3>
+                  <Badge variant={room.is_active ? 'success' : 'muted'} class="font-medium shrink-0">{room.is_active ? 'Active' : 'Inactive'}</Badge>
                 </div>
                 <dl class="grid grid-cols-2 gap-x-4 gap-y-1 text-sm">
                   <dt class="text-muted-foreground">Building</dt>
-                  <dd>{room.building}</dd>
+                  <dd class="font-medium">{room.building}</dd>
                   <dt class="text-muted-foreground">Floor</dt>
                   <dd>{room.floor ?? '—'}</dd>
                   <dt class="text-muted-foreground">Capacity</dt>
-                  <dd>{room.capacity}</dd>
+                  <dd class="font-mono">{room.capacity}</dd>
                 </dl>
-                <div class="mt-auto flex gap-2 pt-2">
+                <div class="mt-auto flex gap-2 pt-2 text-foreground!">
                   <Link href={`/admin/rooms/${room.id}/edit`} class="flex-1">
-                    <Button variant="outline" size="sm" class="w-full min-h-[44px]">
-                      <Pencil class="h-4 w-4 mr-1.5" />
+                    <Button variant="outline" size="sm" class="w-full min-h-[40px] font-semibold">
+                      <Pencil class="h-3.5 w-3.5 mr-1.5" />
                       Edit
                     </Button>
                   </Link>
                   <Button
                     variant="outline"
                     size="sm"
-                    class={room.is_active ? 'min-h-[44px] text-amber-600 hover:text-amber-600' : 'min-h-[44px] text-primary hover:text-primary'}
-                    aria-label={room.is_active ? 'Deactivate' : 'Activate'}
+                    class="flex-1 min-h-[40px] font-semibold {room.is_active 
+                      ? 'text-amber-600 border-amber-200 hover:bg-amber-50 hover:text-amber-700' 
+                      : 'text-primary border-primary/20 hover:bg-primary/5 hover:text-primary-700'}"
                     onclick={() => doToggle(room.id, room.is_active)}
                   >
                     {#if room.is_active}
-                      <CircleOff class="h-4 w-4" />
+                      <Pause class="h-3.5 w-3.5 mr-1.5" />
+                      Deactivate
                     {:else}
-                      <CheckCircle class="h-4 w-4" />
+                      <Play class="h-3.5 w-3.5 mr-1.5" />
+                      Activate
                     {/if}
                   </Button>
                 </div>

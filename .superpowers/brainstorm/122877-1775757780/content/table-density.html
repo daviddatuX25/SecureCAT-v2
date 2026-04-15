@@ -1,0 +1,132 @@
+<h2>Table Density — Which feels right?</h2>
+<p class="subtitle">All three use the same data. Pick the density that best fits a staff management tool.</p>
+
+<div class="cards" style="flex-direction:column; gap: 24px;">
+
+  <div class="card" data-choice="a" onclick="toggleSelect(this)" style="padding:0; overflow:hidden;">
+    <div class="card-body" style="padding: 10px 14px; background: #1e293b; border-bottom: 1px solid #334155;">
+      <span style="font-size:11px; text-transform:uppercase; letter-spacing:.08em; color:#94a3b8; font-weight:600;">A — Current (default padding)</span>
+    </div>
+    <div class="card-image" style="padding: 0; background:#0f172a; overflow:auto;">
+      <table style="width:100%; border-collapse:collapse; font-size:14px; color:#e2e8f0;">
+        <thead>
+          <tr style="border-bottom:1px solid #334155;">
+            <th style="padding:16px 16px; text-align:left; font-weight:500; color:#94a3b8; font-size:12px; text-transform:uppercase; letter-spacing:.05em;">Applicant</th>
+            <th style="padding:16px 16px; text-align:left; font-weight:500; color:#94a3b8; font-size:12px; text-transform:uppercase; letter-spacing:.05em;">Status</th>
+            <th style="padding:16px 16px; text-align:left; font-weight:500; color:#94a3b8; font-size:12px; text-transform:uppercase; letter-spacing:.05em;">Season</th>
+            <th style="padding:16px 16px; text-align:left; font-weight:500; color:#94a3b8; font-size:12px; text-transform:uppercase; letter-spacing:.05em;">Applied</th>
+            <th style="padding:16px 16px; text-align:left; font-weight:500; color:#94a3b8; font-size:12px; text-transform:uppercase; letter-spacing:.05em;">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr style="border-bottom:1px solid #1e293b;">
+            <td style="padding:16px 16px;">Juan dela Cruz</td>
+            <td style="padding:16px 16px;"><span style="background:#16a34a22; color:#4ade80; border-radius:4px; padding:3px 8px; font-size:12px;">Accepted</span></td>
+            <td style="padding:16px 16px; color:#94a3b8;">AY 2025–2026</td>
+            <td style="padding:16px 16px; color:#94a3b8;">Mar 10, 2026</td>
+            <td style="padding:16px 16px;"><span style="color:#60a5fa; font-size:13px;">View ›</span></td>
+          </tr>
+          <tr style="border-bottom:1px solid #1e293b;">
+            <td style="padding:16px 16px;">Maria Santos</td>
+            <td style="padding:16px 16px;"><span style="background:#ca8a0422; color:#fbbf24; border-radius:4px; padding:3px 8px; font-size:12px;">Pending</span></td>
+            <td style="padding:16px 16px; color:#94a3b8;">AY 2025–2026</td>
+            <td style="padding:16px 16px; color:#94a3b8;">Mar 12, 2026</td>
+            <td style="padding:16px 16px;"><span style="color:#60a5fa; font-size:13px;">View ›</span></td>
+          </tr>
+          <tr>
+            <td style="padding:16px 16px;">Pedro Reyes</td>
+            <td style="padding:16px 16px;"><span style="background:#dc262622; color:#f87171; border-radius:4px; padding:3px 8px; font-size:12px;">Dismissed</span></td>
+            <td style="padding:16px 16px; color:#94a3b8;">AY 2025–2026</td>
+            <td style="padding:16px 16px; color:#94a3b8;">Mar 14, 2026</td>
+            <td style="padding:16px 16px;"><span style="color:#60a5fa; font-size:13px;">View ›</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="card" data-choice="b" onclick="toggleSelect(this)" style="padding:0; overflow:hidden;">
+    <div class="card-body" style="padding: 10px 14px; background: #1e293b; border-bottom: 1px solid #334155;">
+      <span style="font-size:11px; text-transform:uppercase; letter-spacing:.08em; color:#94a3b8; font-weight:600;">B — Compact (tighter rows, same font)</span>
+    </div>
+    <div class="card-image" style="padding: 0; background:#0f172a; overflow:auto;">
+      <table style="width:100%; border-collapse:collapse; font-size:14px; color:#e2e8f0;">
+        <thead>
+          <tr style="border-bottom:1px solid #334155;">
+            <th style="padding:8px 14px; text-align:left; font-weight:500; color:#94a3b8; font-size:12px; text-transform:uppercase; letter-spacing:.05em;">Applicant</th>
+            <th style="padding:8px 14px; text-align:left; font-weight:500; color:#94a3b8; font-size:12px; text-transform:uppercase; letter-spacing:.05em;">Status</th>
+            <th style="padding:8px 14px; text-align:left; font-weight:500; color:#94a3b8; font-size:12px; text-transform:uppercase; letter-spacing:.05em;">Season</th>
+            <th style="padding:8px 14px; text-align:left; font-weight:500; color:#94a3b8; font-size:12px; text-transform:uppercase; letter-spacing:.05em;">Applied</th>
+            <th style="padding:8px 14px; text-align:left; font-weight:500; color:#94a3b8; font-size:12px; text-transform:uppercase; letter-spacing:.05em;">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr style="border-bottom:1px solid #1e293b;">
+            <td style="padding:8px 14px;">Juan dela Cruz</td>
+            <td style="padding:8px 14px;"><span style="background:#16a34a22; color:#4ade80; border-radius:4px; padding:2px 7px; font-size:11px;">Accepted</span></td>
+            <td style="padding:8px 14px; color:#94a3b8;">AY 2025–2026</td>
+            <td style="padding:8px 14px; color:#94a3b8;">Mar 10, 2026</td>
+            <td style="padding:8px 14px;"><span style="color:#60a5fa; font-size:13px;">View ›</span></td>
+          </tr>
+          <tr style="border-bottom:1px solid #1e293b;">
+            <td style="padding:8px 14px;">Maria Santos</td>
+            <td style="padding:8px 14px;"><span style="background:#ca8a0422; color:#fbbf24; border-radius:4px; padding:2px 7px; font-size:11px;">Pending</span></td>
+            <td style="padding:8px 14px; color:#94a3b8;">AY 2025–2026</td>
+            <td style="padding:8px 14px; color:#94a3b8;">Mar 12, 2026</td>
+            <td style="padding:8px 14px;"><span style="color:#60a5fa; font-size:13px;">View ›</span></td>
+          </tr>
+          <tr>
+            <td style="padding:8px 14px;">Pedro Reyes</td>
+            <td style="padding:8px 14px;"><span style="background:#dc262622; color:#f87171; border-radius:4px; padding:2px 7px; font-size:11px;">Dismissed</span></td>
+            <td style="padding:8px 14px; color:#94a3b8;">AY 2025–2026</td>
+            <td style="padding:8px 14px; color:#94a3b8;">Mar 14, 2026</td>
+            <td style="padding:8px 14px;"><span style="color:#60a5fa; font-size:13px;">View ›</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="card" data-choice="c" onclick="toggleSelect(this)" style="padding:0; overflow:hidden;">
+    <div class="card-body" style="padding: 10px 14px; background: #1e293b; border-bottom: 1px solid #334155;">
+      <span style="font-size:11px; text-transform:uppercase; letter-spacing:.08em; color:#94a3b8; font-weight:600;">C — Dense (smaller font + tight rows)</span>
+    </div>
+    <div class="card-image" style="padding: 0; background:#0f172a; overflow:auto;">
+      <table style="width:100%; border-collapse:collapse; font-size:12px; color:#e2e8f0;">
+        <thead>
+          <tr style="border-bottom:1px solid #334155;">
+            <th style="padding:6px 12px; text-align:left; font-weight:500; color:#94a3b8; font-size:11px; text-transform:uppercase; letter-spacing:.05em;">Applicant</th>
+            <th style="padding:6px 12px; text-align:left; font-weight:500; color:#94a3b8; font-size:11px; text-transform:uppercase; letter-spacing:.05em;">Status</th>
+            <th style="padding:6px 12px; text-align:left; font-weight:500; color:#94a3b8; font-size:11px; text-transform:uppercase; letter-spacing:.05em;">Season</th>
+            <th style="padding:6px 12px; text-align:left; font-weight:500; color:#94a3b8; font-size:11px; text-transform:uppercase; letter-spacing:.05em;">Applied</th>
+            <th style="padding:6px 12px; text-align:left; font-weight:500; color:#94a3b8; font-size:11px; text-transform:uppercase; letter-spacing:.05em;">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr style="border-bottom:1px solid #1e293b;">
+            <td style="padding:6px 12px;">Juan dela Cruz</td>
+            <td style="padding:6px 12px;"><span style="background:#16a34a22; color:#4ade80; border-radius:3px; padding:1px 6px; font-size:10px;">Accepted</span></td>
+            <td style="padding:6px 12px; color:#94a3b8;">AY 2025–2026</td>
+            <td style="padding:6px 12px; color:#94a3b8;">Mar 10</td>
+            <td style="padding:6px 12px;"><span style="color:#60a5fa; font-size:12px;">View ›</span></td>
+          </tr>
+          <tr style="border-bottom:1px solid #1e293b;">
+            <td style="padding:6px 12px;">Maria Santos</td>
+            <td style="padding:6px 12px;"><span style="background:#ca8a0422; color:#fbbf24; border-radius:3px; padding:1px 6px; font-size:10px;">Pending</span></td>
+            <td style="padding:6px 12px; color:#94a3b8;">AY 2025–2026</td>
+            <td style="padding:6px 12px; color:#94a3b8;">Mar 12</td>
+            <td style="padding:6px 12px;"><span style="color:#60a5fa; font-size:12px;">View ›</span></td>
+          </tr>
+          <tr>
+            <td style="padding:6px 12px;">Pedro Reyes</td>
+            <td style="padding:6px 12px;"><span style="background:#dc262622; color:#f87171; border-radius:3px; padding:1px 6px; font-size:10px;">Dismissed</span></td>
+            <td style="padding:6px 12px; color:#94a3b8;">AY 2025–2026</td>
+            <td style="padding:6px 12px; color:#94a3b8;">Mar 14</td>
+            <td style="padding:6px 12px;"><span style="color:#60a5fa; font-size:12px;">View ›</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</div>

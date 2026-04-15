@@ -3,13 +3,14 @@
 
 	let {
 		ref = $bindable(null),
+		scrollable = true,
 		class: className,
 		children,
 		...restProps
 	} = $props();
 </script>
 
-<div data-slot="table-container" class="relative w-full">
+<div data-slot="table-container" class="relative w-full {scrollable ? 'table-scroll-container' : ''}">
 	<table
 		bind:this={ref}
 		data-slot="table"

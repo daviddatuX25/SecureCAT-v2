@@ -2,6 +2,7 @@
   import { Link } from '@inertiajs/svelte';
   import { Button } from '@/Components/ui/button';
   import { Sun, Moon } from 'lucide-svelte';
+  import ToastManager from '@/Components/ToastManager.svelte';
 
   let { children } = $props();
 
@@ -14,6 +15,8 @@
 <svelte:head>
   <title>Applicant Portal - SecureCAT</title>
 </svelte:head>
+
+<ToastManager />
 
 <div class="min-h-screen flex flex-col items-center justify-center px-4 py-12 relative">
   <Button variant="ghost" size="icon" onclick={toggleTheme} aria-label="Toggle theme" class="absolute top-4 right-4 rounded-full min-h-[44px] min-w-[44px]">

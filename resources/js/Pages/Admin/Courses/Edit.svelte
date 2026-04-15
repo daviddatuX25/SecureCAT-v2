@@ -4,6 +4,7 @@
   import { Button } from '@/Components/ui/button';
   import { Input } from '@/Components/ui/input';
   import Switch from '@/Components/ui/switch/switch.svelte';
+  import { success } from '@/lib/toast';
 
   const { course } = $props();
 
@@ -12,6 +13,12 @@
     code: course.code,
     is_active: course.is_active,
   });
+
+  $form.onFinish = () => {
+    if (!$form.errors || Object.keys($form.errors).length === 0) {
+      success('Course updated');
+    }
+  };
 
   function submitForm(e) {
     e.preventDefault();

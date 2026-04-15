@@ -6,10 +6,12 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Support\Facades\DB;
 
 class Application extends Model
 {
     use HasFactory;
+
     protected $fillable = [
         'academic_year_id',
         'reference_number',
@@ -86,8 +88,61 @@ class Application extends Model
     {
         $year = date('Y');
         $prefix = "APP-{$year}-";
-        $count = static::where('reference_number', 'like', $prefix.'%')->count();
 
-        return $prefix.str_pad((string) ($count + 1), 5, '0', STR_PAD_LEFT);
+        return DB::transaction(function () use ($prefix) {
+            $count = static::where('reference_number', 'like', $prefix.'%')->count();
+
+            return $prefix.str_pad((string) ($count + 1), 5, '0', STR_PAD_LEFT);
+        });
+    }
+
+    /**
+     * Get the exam session status if this application has an assigned session.
+     * Returns null if no session assigned.
+     */
+    public function assignedSessionStatus(): ?string
+    {
+        $applicant = $this->applicant;
+        if (! $applicant) {
+            return null;
+        }
+
+        $examSession = $applicant->examSessions()->first();
+
+        return $examSession?->status;
+    }
+
+    /**
+     * Check if the applicant can edit this application.
+     * Rules:
+     * - Application status must be 'accepted'
+     * - No exam session assigned OR assigned session is 'draft'
+     */
+    public function isEditableByApplicant(): bool
+    {
+        // Must be accepted first
+        if ($this->status !== 'accepted') {
+            return false;
+        }
+
+        // Must have an applicant record
+        if (! $this->applicant) {
+            return false;
+        }
+
+        $sessionStatus = $this->assignedSessionStatus();
+
+        // No session assigned → editable
+        if ($sessionStatus === null) {
+            return true;
+        }
+
+        // Session is draft → editable
+        if ($sessionStatus === ExamSession::STATUS_DRAFT) {
+            return true;
+        }
+
+        // Session is published/in_progress/completed/cancelled → locked
+        return false;
     }
 }

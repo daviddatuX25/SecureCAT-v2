@@ -5,7 +5,7 @@
   import { Button } from '@/Components/ui/button';
   import * as Table from '@/Components/ui/table';
   import { Badge } from '@/Components/ui/badge';
-  import { UserPlus, UserMinus, Send, ClipboardList, RotateCcw } from 'lucide-svelte';
+  import { UserPlus, UserMinus, Send, ClipboardList, RotateCcw, Pencil } from 'lucide-svelte';
 
   let { session, assigned_applicants = [], available_applicants = [], proctors = [], view = 'admin' } = $props();
   const isProctorView = $derived(view === 'proctor');
@@ -98,6 +98,24 @@
 
 <AuthenticatedLayout breadcrumbs={breadcrumbs}>
   <div class="space-y-6">
+    {#if !isProctorView}
+    <div class="flex items-center justify-between">
+      <div>
+        <p class="text-sm text-muted-foreground">View session details, assign applicants, and manage scheduling.</p>
+      </div>
+      <div class="flex flex-wrap items-center gap-2 sm:gap-3">
+        {#if session.status === 'draft'}
+          <Link href={`/admin/exam-scheduling/${session.id}/edit`}>
+            <Button class="min-h-[44px] gap-2">
+              <Pencil class="h-4 w-4" />
+              <span class="hidden sm:inline">Edit session</span>
+            </Button>
+          </Link>
+        {/if}
+      </div>
+    </div>
+    {/if}
+
     {#if success}
       <div class="rounded-lg bg-primary/10 px-4 py-3 text-sm text-primary">
         {success}
@@ -182,6 +200,7 @@
                   <Table.Cell>{row.name}</Table.Cell>
                   <Table.Cell class="text-center">
                     <div class="flex justify-center">
+                      {#if session.status !== 'completed'}
                       <Button
                         variant="ghost"
                         size="sm"
@@ -191,6 +210,7 @@
                         <UserMinus class="mr-1.5 h-3.5 w-3.5" />
                         Remove
                       </Button>
+                      {/if}
                     </div>
                   </Table.Cell>
                 </Table.Row>
@@ -202,8 +222,10 @@
         <p class="mt-4 text-sm text-muted-foreground">No applicants assigned yet. Select from available below and click Assign.</p>
       {/if}
     </div>
+    {/if}
 
     <!-- Available applicants (bulk assign) -->
+    {#if !isProctorView && session.status !== 'completed'}
     <div class="rounded-lg border border-border bg-card p-6">
       <h2 class="text-lg font-semibold">Available applicants</h2>
       <p class="mt-1 text-sm text-muted-foreground">Accepted applicants not yet assigned to a session. Select and assign.</p>

@@ -15,7 +15,7 @@
   const sid = $derived(String(sessionId));
 
   const breadcrumbs = $derived([
-    { label: 'Grading', href: '/grading' },
+    { label: 'Grading', href: '/admin/grading' },
     { label: session?.exam_session_id ? 'Session #' + session.exam_session_id : 'Session' }
   ]);
 
@@ -43,7 +43,7 @@
 
   function toggleStatus() {
     const next = workflowStatus === 'in_progress' ? 'finalized' : 'in_progress';
-    router.put(`/grading/sessions/${sid}/workflow`, { status: next });
+    router.put(`/admin/grading/sessions/${sid}/workflow`, { status: next });
   }
 </script>
 
@@ -71,7 +71,7 @@
           Mark as {workflowStatus === 'in_progress' ? 'Completed' : 'In progress'}
         </Button>
         {#if workflowStatus === 'completed'}
-          <Link href={`/grading/sessions/${sid}/print`}>
+          <Link href={`/admin/grading/sessions/${sid}/print`}>
             <Button class="min-h-[44px]">
               <Printer class="h-4 w-4 mr-2" />
               Print results
@@ -95,7 +95,7 @@
                 <Table.Head class="px-4 py-3">Reference</Table.Head>
                 <Table.Head class="px-4 py-3">Name</Table.Head>
                 <Table.Head class="px-4 py-3">Progress</Table.Head>
-                <Table.Head class="px-4 py-3 text-right">Action</Table.Head>
+                <Table.Head class="text-center">Action</Table.Head>
               </Table.Row>
             </Table.Header>
             <Table.Body>
@@ -118,9 +118,9 @@
                       </Badge>
                     {/if}
                   </Table.Cell>
-                  <Table.Cell class="px-4 py-3 text-right">
-                    <Link href={`/grading/sessions/${sid}/applicants/${app.applicant_id}`}>
-                      <Button variant="outline" size="sm" class="min-h-[44px]">
+                  <Table.Cell class="text-center">
+                    <Link href={`/admin/grading/sessions/${sid}/applicants/${app.applicant_id}`}>
+                      <Button variant="outline" size="sm" class="h-8 px-2 text-xs">
                         {#if workflowStatus === 'completed'}
                           View scores
                         {:else}

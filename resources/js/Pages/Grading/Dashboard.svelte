@@ -5,7 +5,7 @@
   import { Badge } from '@/Components/ui/badge';
   import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/Components/ui/card';
   import * as Table from '@/Components/ui/table';
-  import { GraduationCap, PlusCircle, Layers, FileQuestion } from 'lucide-svelte';
+  import { GraduationCap, PlusCircle, Layers, FileQuestion, UploadCloud, DoorOpen } from 'lucide-svelte';
 
   let {
     title = 'Grading',
@@ -35,7 +35,7 @@
   }
 
   function openGradingSession(examSessionId) {
-    router.post('/grading', { exam_session_id: examSessionId });
+    router.post('/admin/grading', { exam_session_id: examSessionId });
   }
 
   const breadcrumbs = $derived([{ label: 'Grading' }]);
@@ -73,10 +73,26 @@
       <!-- Active grading sessions -->
       <Card variant="glass">
         <CardHeader>
-          <CardTitle class="flex items-center gap-2">
-            <GraduationCap class="h-5 w-5" />
-            Grading sessions
-          </CardTitle>
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-2">
+              <GraduationCap class="h-5 w-5" />
+              <CardTitle>Grading sessions</CardTitle>
+            </div>
+            <div class="flex items-center gap-2">
+              <Link href="/admin/grading/import">
+                <Button variant="outline" size="sm">
+                  <UploadCloud class="mr-1.5 h-4 w-4" />
+                  Import Scores
+                </Button>
+              </Link>
+              <Link href="/admin/aptitude-areas">
+                <Button variant="outline" size="sm">
+                  <Layers class="mr-1.5 h-4 w-4" />
+                  <span class="hidden sm:inline">Aptitude Areas</span>
+                </Button>
+              </Link>
+            </div>
+          </div>
           <CardDescription>Open sessions where scores are being or have been entered.</CardDescription>
         </CardHeader>
         <CardContent>
@@ -88,7 +104,7 @@
                     <Table.Head class="px-4 py-3">Session</Table.Head>
                     <Table.Head class="px-4 py-3">Date</Table.Head>
                     <Table.Head class="px-4 py-3">Progress</Table.Head>
-                    <Table.Head class="px-4 py-3 text-right">Action</Table.Head>
+                    <Table.Head class="text-center">Action</Table.Head>
                   </Table.Row>
                 </Table.Header>
                 <Table.Body>
@@ -105,9 +121,9 @@
                           {gs.applicants_scored ?? 0} / {gs.applicants_total ?? 0} scored
                         </Badge>
                       </Table.Cell>
-                      <Table.Cell class="px-4 py-3 text-right">
-                        <Link href={`/grading/sessions/${gs.id}`}>
-                          <Button variant="outline" size="sm" class="min-h-[44px]">
+                      <Table.Cell class="text-center">
+                        <Link href={`/admin/grading/sessions/${gs.id}`}>
+                          <Button variant="outline" size="sm" class="h-8 px-2 text-xs">
                             {gs.status === 'finalized' ? 'View' : 'Input scores'}
                           </Button>
                         </Link>
@@ -141,7 +157,7 @@
                     <Table.Head class="px-4 py-3">Session</Table.Head>
                     <Table.Head class="px-4 py-3">Date</Table.Head>
                     <Table.Head class="px-4 py-3">Applicants</Table.Head>
-                    <Table.Head class="px-4 py-3 text-right">Action</Table.Head>
+                    <Table.Head class="text-center">Action</Table.Head>
                   </Table.Row>
                 </Table.Header>
                 <Table.Body>
@@ -150,9 +166,14 @@
                       <Table.Cell class="px-4 py-3 font-medium">#{es.id} — {es.room_name ?? '—'}</Table.Cell>
                       <Table.Cell class="px-4 py-3 text-muted-foreground">{formatDate(es.exam_date)} {formatTime(es.exam_time)}</Table.Cell>
                       <Table.Cell class="px-4 py-3">{es.applicants_count ?? 0}</Table.Cell>
-                      <Table.Cell class="px-4 py-3 text-right">
-                        <Button variant="default" size="sm" class="min-h-[44px]" onclick={() => openGradingSession(es.id)}>
-                          <PlusCircle class="mr-2 h-4 w-4" />
+                      <Table.Cell class="text-center">
+                        <Button
+                          variant="default"
+                          size="sm"
+                          class="h-8 px-2 text-xs"
+                          onclick={() => openGradingSession(es.id)}
+                        >
+                          <PlusCircle class="mr-1.5 h-3.5 w-3.5" />
                           Open grading session
                         </Button>
                       </Table.Cell>

@@ -3,6 +3,7 @@
   import { Button } from '@/Components/ui/button';
   import { Input } from '@/Components/ui/input';
   import Switch from '@/Components/ui/switch/switch.svelte';
+  import { success } from '@/lib/toast';
 
   let { room } = $props();
 
@@ -13,6 +14,12 @@
     capacity: String(room?.capacity ?? ''),
     is_active: room?.is_active ?? true,
   });
+
+  $form.onFinish = () => {
+    if (!$form.errors || Object.keys($form.errors).length === 0) {
+      success('Room updated');
+    }
+  };
 
   function submitForm(e) {
     e.preventDefault();

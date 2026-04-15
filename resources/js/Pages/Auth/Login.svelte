@@ -87,7 +87,7 @@
           <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
             <path stroke-linecap="round" stroke-linejoin="round" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
           </svg>
-          Staff & Admin
+          Admin Portal
         </button>
       </div>
 
@@ -106,7 +106,7 @@
             {/if}
           </div>
           <Card.Title class="text-3xl font-extrabold tracking-tight text-foreground">
-            {activeTab === 'applicant' ? 'Applicant Login' : 'Staff Login'}
+            {activeTab === 'applicant' ? 'Applicant Login' : 'Admin Login'}
           </Card.Title>
           <Card.Description class="text-balance mt-3 text-base font-medium">
             {activeTab === 'applicant' 
@@ -191,7 +191,7 @@
           {#if activeTab === 'staff'}
             <form onsubmit={handleSubmitStaff} class="space-y-6 animate-in fade-in duration-300">
               <div class="space-y-2">
-                <label for="staff_email" class="text-sm font-bold text-foreground">Staff Email</label>
+                <label for="staff_email" class="text-sm font-bold text-foreground">Email Address</label>
                 <Input
                   id="staff_email"
                   type="email"
@@ -265,7 +265,7 @@
               {/if}
 
               <Button variant="secondary" type="submit" class="w-full h-14 text-lg font-bold shadow-md hover:shadow-lg hover:-translate-y-0.5 transition-all rounded-xl mt-2 border border-border/50" disabled={$staffForm.processing}>
-                {$staffForm.processing ? 'Authenticating…' : 'Sign in as Staff'}
+                {$staffForm.processing ? 'Authenticating…' : 'Sign in as Admin'}
               </Button>
             </form>
           {/if}

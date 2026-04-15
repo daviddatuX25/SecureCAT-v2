@@ -15,8 +15,8 @@
   const printDisabled = $derived((_page.props.release_mode ?? 'online') === 'online');
 
   const breadcrumbs = $derived([
-    { label: 'Grading', href: '/grading' },
-    { label: 'Session #' + sid, href: `/grading/sessions/${sid}` },
+    { label: 'Grading', href: '/admin/grading' },
+    { label: 'Session #' + sid, href: `/admin/grading/sessions/${sid}` },
     { label: 'Print Batch' }
   ]);
 
@@ -45,13 +45,13 @@
   }
 
   function markAsPrinted() {
-    router.post(`/grading/sessions/${sid}/mark-printed`, { applicant_ids: Array.from(selected), printed: true }, {
+    router.post(`/admin/grading/sessions/${sid}/mark-printed`, { applicant_ids: Array.from(selected), printed: true }, {
       onSuccess: () => (selected = new Set()),
     });
   }
 
   function unmarkPrinted() {
-    router.post(`/grading/sessions/${sid}/mark-printed`, { applicant_ids: Array.from(selected), printed: false }, {
+    router.post(`/admin/grading/sessions/${sid}/mark-printed`, { applicant_ids: Array.from(selected), printed: false }, {
       onSuccess: () => (selected = new Set()),
     });
   }
@@ -59,15 +59,15 @@
   function printBulk() {
     const ids = Array.from(selected);
     if (ids.length === 1) {
-      window.open(`/grading/sessions/${sid}/applicants/${ids[0]}/result-sheet`, '_blank', 'noopener');
+      window.open(`/admin/grading/sessions/${sid}/applicants/${ids[0]}/result-sheet`, '_blank', 'noopener');
     } else {
-      router.visit(`/grading/sessions/${sid}/print-bulk?ids=${ids.join(',')}`);
+      router.visit(`/admin/grading/sessions/${sid}/print-bulk?ids=${ids.join(',')}`);
     }
   }
 
   function togglePrinted(app) {
     const printed = !app.printed;
-    router.post(`/grading/sessions/${sid}/mark-printed`, {
+    router.post(`/admin/grading/sessions/${sid}/mark-printed`, {
       applicant_ids: [app.applicant_id],
       printed,
     });
@@ -135,7 +135,7 @@
                 <Table.Head class="px-4 py-3">Reference</Table.Head>
                 <Table.Head class="px-4 py-3">Name</Table.Head>
                 <Table.Head class="px-4 py-3">Printed</Table.Head>
-                <Table.Head class="px-4 py-3 text-right">Action</Table.Head>
+                <Table.Head class="text-center">Action</Table.Head>
               </Table.Row>
             </Table.Header>
             <Table.Body>
@@ -155,20 +155,36 @@
                   <Table.Cell class="px-4 py-3">
                     <Badge variant={app.printed ? 'success' : 'muted'}>{app.printed ? 'Printed' : 'Not printed'}</Badge>
                   </Table.Cell>
-                  <Table.Cell class="px-4 py-3 text-right">
-                    <div class="flex justify-end gap-2">
-                      <Link href={`/grading/sessions/${sid}/applicants/${app.applicant_id}/result-sheet`} target="_blank">
-                        <Button variant="outline" size="sm" disabled={printDisabled} title={printDisabled ? 'Switch to F2F or Both release mode in Settings to enable printing.' : undefined} class="min-h-[44px]">
-                          <Printer class="h-4 w-4 mr-1.5" />
+                  <Table.Cell class="text-center">
+                    <div class="flex justify-center gap-2">
+                      <Link href={`/admin/grading/sessions/${sid}/applicants/${app.applicant_id}/result-sheet`} target="_blank">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          disabled={printDisabled}
+                          title={printDisabled ? 'Switch to F2F or Both release mode in Settings to enable printing.' : undefined}
+                          class="h-8 px-2 text-xs"
+                        >
+                          <Printer class="mr-1.5 h-3.5 w-3.5" />
                           Print
                         </Button>
                       </Link>
                       {#if app.printed}
-                        <Button variant="ghost" size="sm" class="min-h-[44px]" onclick={() => togglePrinted(app)}>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          class="h-8 px-2 text-xs"
+                          onclick={() => togglePrinted(app)}
+                        >
                           Unmark printed
                         </Button>
                       {:else}
-                        <Button variant="outline" size="sm" class="min-h-[44px]" onclick={() => togglePrinted(app)}>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          class="h-8 px-2 text-xs"
+                          onclick={() => togglePrinted(app)}
+                        >
                           Mark printed
                         </Button>
                       {/if}

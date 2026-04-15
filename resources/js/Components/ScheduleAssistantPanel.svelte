@@ -103,7 +103,7 @@
     if (requestStructured) generating = true;
 
     try {
-      const res = await fetch('/admin/test-scheduling/schedule-assistant/chat', {
+      const res = await fetch('/admin/exam-scheduling/schedule-assistant/chat', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -166,7 +166,7 @@
     applyError = '';
 
     try {
-      const res = await fetch('/admin/test-scheduling/schedule-assistant/apply-schedule', {
+      const res = await fetch('/admin/exam-scheduling/schedule-assistant/apply-schedule', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -190,7 +190,7 @@
       } else if (data.redirect_url) {
         router.visit(data.redirect_url, { preserveState: false });
       } else {
-        router.visit('/admin/test-scheduling', { preserveState: false });
+        router.visit('/admin/exam-scheduling', { preserveState: false });
       }
     } catch (e) {
       applyError = 'Network error. Please try again.';
@@ -202,7 +202,7 @@
   async function resetConversation() {
     if (!confirm('Reset the conversation? This cannot be undone.')) return;
     try {
-      const res = await fetch('/admin/test-scheduling/schedule-assistant/conversation', {
+      const res = await fetch('/admin/exam-scheduling/schedule-assistant/conversation', {
         method: 'DELETE',
         headers: {
           'X-CSRF-TOKEN': csrf_token,
@@ -339,9 +339,12 @@
             maxlength="4000"
             disabled={loading}
           ></textarea>
-          <Button type="button" onclick={() => send(false)} disabled={loading || !input.trim()} class="min-h-[44px] shrink-0" title="Send message">
+          <Button type="button" onclick={() => send(false)} disabled={loading || generating || !input.trim()} class="min-h-[44px] shrink-0" title="Send message">
             {#if loading}
-              Sending…
+              <svg class="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
             {:else}
               <Send class="h-4 w-4" />
             {/if}
@@ -357,7 +360,11 @@
             title={generateButtonTitle}
           >
             {#if generating}
-              Generating…
+              <svg class="animate-spin h-4 w-4 mr-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+            {:else}
             {:else}
               <Sparkles class="h-4 w-4 mr-2 inline" />
               Generate schedule

@@ -81,7 +81,7 @@ class PortalAuthController extends Controller
                 'ip' => $request->ip(),
             ], 'Applicant login');
 
-            return redirect()->intended(route('portal.dashboard'));
+            return redirect()->intended(route('portal.dashboard'))->with('success', 'Welcome back! You are now signed in.');
         }
 
         Log::info('Applicant login failed', [
@@ -236,7 +236,10 @@ class PortalAuthController extends Controller
         $applicant->load([
             'application',
             'consultationSummary',
-            'examSessions' => fn ($q) => $q->with(['room', 'gradingSession'])->orderBy('date'),
+            'examSessions' => fn ($q) => $q
+                ->where('status', 'published')
+                ->with(['room', 'gradingSession'])
+                ->orderBy('date'),
         ]);
 
         $application = $applicant->application;
@@ -289,9 +292,8 @@ class PortalAuthController extends Controller
             'exam_schedule' => $examSchedule,
             'score_release' => $scoreRelease,
             'consultation' => $consultation,
-            // Widget only shows when AI companion is system-enabled AND consultation results are released
-            'ai_companion_enabled' => SystemSetting::aiCompanionEnabled()
-                && ($consultation['status'] ?? 'pending') === 'released',
+            // Widget shows when AI companion is enabled via system setting
+            'ai_companion_enabled' => SystemSetting::aiCompanionEnabled(),
             'results_blocked' => ($releaseMode === 'f2f'),
         ]);
     }
@@ -357,14 +359,11 @@ class PortalAuthController extends Controller
             'timestamp' => $scoresFinalized ? $gradingSession->finalized_at?->format('M j, Y g:i A') : null,
         ];
 
-        $resultsAvailable = ($summary && $summary->status === 'released')
-            || ($primarySession && $primarySession->score_release_date && $primarySession->score_release_date->isPast());
+        $resultsAvailable = $summary && $summary->status === 'released';
         $stages[] = [
             'stage' => 'Results available',
             'completed' => (bool) $resultsAvailable,
-            'timestamp' => $summary && $summary->status === 'released'
-                ? $summary->released_at?->format('M j, Y g:i A')
-                : ($primarySession?->score_release_date?->format('M j, Y')),
+            'timestamp' => $resultsAvailable ? $summary->released_at?->format('M j, Y g:i A') : null,
         ];
 
         $stages[] = [
@@ -405,14 +404,7 @@ class PortalAuthController extends Controller
      */
     private function buildScoreRelease(?ExamSession $session): ?array
     {
-        if (! $session || ! $session->score_release_date) {
-            return null;
-        }
-
-        return [
-            'date_set' => true,
-            'release_date' => $session->score_release_date->format('M j, Y'),
-        ];
+        return null;
     }
 
     /**

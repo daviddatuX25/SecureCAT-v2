@@ -7,6 +7,7 @@
   import { Input } from '@/Components/ui/input';
   import * as Table from '@/Components/ui/table';
   import { Plus, Pencil, Trash2, FileText, Upload, RefreshCw } from 'lucide-svelte';
+  import ActionDropdown from '@/Components/ActionDropdown.svelte';
 
   let { documents, filters = {} } = $props();
 
@@ -100,8 +101,8 @@
       <Button onclick={applyFilters} class="min-h-[44px]">Apply</Button>
     </div>
 
-    <div class="glass-panel rounded-2xl overflow-hidden min-w-0 p-6">
-      <Table.Root class="w-full min-w-[640px]">
+    <div class="min-w-0">
+      <Table.Root class="w-full min-w-[640px] text-sm">
         <Table.Header class="bg-muted/50">
           <Table.Row>
             <Table.Head class="px-4 py-3">Title</Table.Head>
@@ -109,7 +110,7 @@
             <Table.Head class="px-4 py-3">Source</Table.Head>
             <Table.Head class="px-4 py-3">Sync</Table.Head>
             <Table.Head class="px-4 py-3">Updated</Table.Head>
-            <Table.Head class="px-4 py-3 text-right">Actions</Table.Head>
+            <Table.Head class="text-center">Actions</Table.Head>
           </Table.Row>
         </Table.Header>
         <Table.Body>
@@ -128,42 +129,43 @@
                   <Badge variant="muted" class="ml-1">Inactive</Badge>
                 {/if}
               </Table.Cell>
-              <Table.Cell class="px-4 py-3">
-                {#if doc.mxb_sync_status === 'indexed'}
-                  <Badge variant="success">Indexed</Badge>
-                {:else if doc.mxb_sync_status === 'pending'}
-                  <Badge variant="warning">Pending</Badge>
-                {:else if doc.mxb_sync_status === 'failed'}
-                  <div class="flex items-center gap-2">
+                <Table.Cell class="px-4 py-3">
+                  {#if doc.mxb_sync_status === 'indexed'}
+                    <Badge variant="success">Indexed</Badge>
+                  {:else if doc.mxb_sync_status === 'pending'}
+                    <Badge variant="warning">Pending</Badge>
+                  {:else if doc.mxb_sync_status === 'failed'}
                     <Badge variant="danger">Failed</Badge>
-                    <Button variant="outline" size="sm" class="min-h-[32px] text-xs" onclick={() => retrySync(doc.id)}>
-                      <RefreshCw class="mr-1 h-3 w-3" />
-                      Retry
-                    </Button>
-                  </div>
-                {:else}
-                  <Badge variant="outline">—</Badge>
-                {/if}
-              </Table.Cell>
+                  {:else}
+                    <Badge variant="outline">—</Badge>
+                  {/if}
+                </Table.Cell>
               <Table.Cell class="px-4 py-3 text-sm text-muted-foreground">{formatDate(doc.updated_at)}</Table.Cell>
-              <Table.Cell class="px-4 py-3 text-right">
-                <div class="flex justify-end gap-2">
-                  <Link href={`/admin/knowledge-documents/${doc.id}/edit`}>
-                    <Button variant="ghost" size="icon" class="min-h-[44px] min-w-[44px]" aria-label="Edit">
-                      <Pencil class="h-4 w-4" />
-                    </Button>
-                  </Link>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    class="min-h-[44px] min-w-[44px] text-destructive hover:text-destructive"
-                    aria-label="Delete"
-                    onclick={() => confirmDelete(doc.id)}
-                  >
-                    <Trash2 class="h-4 w-4" />
-                  </Button>
-                </div>
-              </Table.Cell>
+                <Table.Cell class="text-center">
+                  <div class="flex justify-center gap-2">
+                    <Link href={`/admin/knowledge-documents/${doc.id}/edit`}>
+                      <Button variant="ghost" size="sm" class="h-8 px-2 text-xs">
+                        <Pencil class="mr-1.5 h-3.5 w-3.5" />
+                        Edit
+                      </Button>
+                    </Link>
+                    <ActionDropdown
+                      items={[
+                        ...(doc.mxb_sync_status === 'failed' ? [{
+                          label: 'Retry Sync',
+                          icon: RefreshCw,
+                          onclick: () => retrySync(doc.id)
+                        }] : []),
+                        {
+                          label: 'Delete',
+                          icon: Trash2,
+                          onclick: () => confirmDelete(doc.id),
+                          class: 'text-destructive'
+                        }
+                      ]}
+                    />
+                  </div>
+                </Table.Cell>
             </Table.Row>
           {:else}
             <Table.Row>

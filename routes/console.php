@@ -9,3 +9,5 @@ Artisan::command('inspire', function () {
 })->purpose('Display an inspiring quote');
 
 Schedule::command('seasons:expire-applications')->dailyAt('00:05');
+Schedule::command('notifications:exam-reminder --days=1')->dailyAt('06:00');
+Schedule::command('notifications:exam-reminder --days=3')->dailyAt('06:00');

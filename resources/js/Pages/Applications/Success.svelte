@@ -1,6 +1,5 @@
 <script>
   import GuestLayout from '@/Layouts/GuestLayout.svelte';
-  import { Link } from '@inertiajs/svelte';
   import { Button } from '@/Components/ui/button';
   import { CheckCircle } from 'lucide-svelte';
 
@@ -37,11 +36,6 @@
       <p class="text-sm text-muted-foreground italic">
         * You will receive your portal login and finalized exam schedule via email once the registrar verifies your documents.
       </p>
-    </div>
-    <div class="mt-8 flex justify-center gap-4">
-      <Link href="/">
-        <Button>Back to Home</Button>
-      </Link>
     </div>
   </div>
 </GuestLayout>

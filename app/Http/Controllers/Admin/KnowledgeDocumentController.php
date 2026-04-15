@@ -25,10 +25,28 @@ class KnowledgeDocumentController extends Controller
 
     private function syncToMixedbread(KnowledgeDocument $doc): void
     {
-        $storeId = config('services.mixedbread.store_id', '');
+        // Use env() directly to bypass config cache issues - test both paths
+        $storeId = config('services.mixedbread.store_id') ?: env('MIXEDBREAD_STORE_ID', '');
+        $apiKey = config('services.mixedbread.api_key') ?: env('MIXEDBREAD_API_KEY', '');
+
+        // Debug: Log ALL configs for diagnosis
+        Log::debug('Mixedbread sync attempt', [
+            'doc_id' => $doc->id,
+            'store_id' => $storeId,
+            'api_key_first_10' => $apiKey ? substr($apiKey, 0, 10) : 'EMPTY',
+        ]);
+
         if (empty($storeId)) {
+            Log::warning('Mixedbread sync skipped: store_id config is empty', [
+                'doc_id' => $doc->id,
+                'api_key_set' => ! empty($apiKey),
+            ]);
+
             return;
         }
+
+        // Set initial pending status so we can track attempts
+        $doc->update(['mxb_sync_status' => KnowledgeDocument::SYNC_PENDING]);
         try {
             $result = $this->mixedbread->uploadDocument(
                 $storeId,
@@ -172,11 +190,11 @@ class KnowledgeDocumentController extends Controller
 
         if ($knowledgeDocument->mxb_sync_status === KnowledgeDocument::SYNC_INDEXED) {
             return redirect()->route('admin.knowledge-documents.index')
-                ->with('success', 'Sync retried for: ' . $knowledgeDocument->title);
+                ->with('success', 'Sync retried for: '.$knowledgeDocument->title);
         }
 
         return redirect()->route('admin.knowledge-documents.index')
-            ->with('error', 'Sync still failing for: ' . $knowledgeDocument->title);
+            ->with('error', 'Sync still failing for: '.$knowledgeDocument->title);
     }
 
     public function destroy(KnowledgeDocument $knowledgeDocument): RedirectResponse

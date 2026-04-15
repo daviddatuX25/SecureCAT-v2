@@ -7,6 +7,7 @@ use App\Models\ResultSheetTemplate;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use PhpOffice\PhpWord\IOFactory;
+use PhpOffice\PhpWord\Settings;
 use PhpOffice\PhpWord\TemplateProcessor;
 
 class ResultSheetTemplateService
@@ -119,11 +120,17 @@ class ResultSheetTemplateService
                 'scores_rows' => $this->buildScoresRows($sample['scores']),
                 'overall_pct' => (string) $sample['overall_pct'],
                 'qr_code' => $this->qrPlaceholder($sample['reference']),
+                // Applicant 2 (dual layout)
+                'applicant_name_2' => $sample['name_2'] ?? '—',
+                'applicant_reference_2' => $sample['reference_2'] ?? '—',
+                'room_name_2' => $sample['room_name_2'] ?? '—',
+                'scores_rows_2' => $this->buildScoresRows($sample['scores_2'] ?? []),
+                'overall_pct_2' => (string) ($sample['overall_pct_2'] ?? 0),
             ];
             $this->addPerDomainReplacements($replacements, [], $sample, true);
         }
 
-        return $this->renderDocx($path, $replacements);
+        return $this->renderDocxFromFullPath($path, $replacements);
     }
 
     /**
@@ -189,10 +196,21 @@ class ResultSheetTemplateService
             return '<p class="text-muted-foreground">No DOCX template.</p>';
         }
 
-        $fullPath = Storage::path($docxPath);
+        return $this->renderDocxFromFullPath(Storage::path($docxPath), $replacements);
+    }
+
+    protected function renderDocxFromFullPath(string $fullPath, array $replacements): string
+    {
         if (! is_file($fullPath)) {
             return '<p class="text-destructive">DOCX file not found.</p>';
         }
+
+        // Use a dedicated temp directory to avoid Windows permission issues
+        $tempDir = storage_path('app/temp/phpword');
+        if (! is_dir($tempDir)) {
+            mkdir($tempDir, 0755, true);
+        }
+        Settings::setTempDir($tempDir);
 
         $processor = new TemplateProcessor($fullPath);
         $processor->setMacroChars('{{', '}}');
@@ -200,12 +218,12 @@ class ResultSheetTemplateService
             $processor->setValue($key, $value);
         }
 
-        $tempDocx = tempnam(sys_get_temp_dir(), 'rst_').'.docx';
+        $tempDocx = tempnam($tempDir, 'rst_').'.docx';
         $processor->saveAs($tempDocx);
 
         try {
             $phpWord = IOFactory::load($tempDocx);
-            $tempHtml = tempnam(sys_get_temp_dir(), 'rst_').'.html';
+            $tempHtml = tempnam($tempDir, 'rst_').'.html';
             $writer = IOFactory::createWriter($phpWord, 'HTML');
             $writer->save($tempHtml);
             $html = file_get_contents($tempHtml);
@@ -243,10 +261,10 @@ class ResultSheetTemplateService
     protected function sampleApplicantData(): array
     {
         return [
-            'name' => 'Juan Dela Cruz',
-            'reference' => 'APP-2026-00001',
+            'name' => 'Juan M. Dela Cruz',
+            'reference' => 'EXAM-2026-00042',
             'exam_date' => now()->format('F j, Y'),
-            'room_name' => 'Room 101',
+            'room_name' => 'Conference Hall A - Seat 12',
             'scores' => [
                 ['domain' => 'Spatial Awareness', 'raw' => 20, 'max' => 25, 'pct' => 80],
                 ['domain' => 'Numerical Ability', 'raw' => 22, 'max' => 25, 'pct' => 88],
@@ -256,6 +274,19 @@ class ResultSheetTemplateService
                 ['domain' => 'Perceptual Speed & Accuracy', 'raw' => 17, 'max' => 20, 'pct' => 85],
             ],
             'overall_pct' => 82,
+            // Sample for applicant 2 (dual layout)
+            'name_2' => 'Maria L. Santos',
+            'reference_2' => 'EXAM-2026-00043',
+            'room_name_2' => 'Conference Hall A - Seat 13',
+            'scores_2' => [
+                ['domain' => 'Spatial Awareness', 'raw' => 18, 'max' => 25, 'pct' => 72],
+                ['domain' => 'Numerical Ability', 'raw' => 24, 'max' => 25, 'pct' => 96],
+                ['domain' => 'Verbal Reasoning', 'raw' => 21, 'max' => 25, 'pct' => 84],
+                ['domain' => 'Abstract Reasoning', 'raw' => 14, 'max' => 20, 'pct' => 70],
+                ['domain' => 'Logical Reasoning', 'raw' => 19, 'max' => 25, 'pct' => 76],
+                ['domain' => 'Perceptual Speed & Accuracy', 'raw' => 15, 'max' => 20, 'pct' => 75],
+            ],
+            'overall_pct_2' => 79,
         ];
     }
 

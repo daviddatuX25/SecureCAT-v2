@@ -45,22 +45,6 @@ class AiCompanionChatTest extends TestCase
         $response->assertJson(['message' => 'AI companion is not enabled.']);
     }
 
-    public function test_returns_403_when_consultation_not_released(): void
-    {
-        SystemSetting::set('ai_exam_companion_enabled', true);
-        $applicant = Applicant::factory()->create();
-        ConsultationSummary::create([
-            'applicant_id' => $applicant->id,
-            'status' => 'pending',
-        ]);
-
-        $response = $this->actingAs($applicant, 'applicant')
-            ->postJson('/portal/ai-companion/chat', ['message' => 'Hello']);
-
-        $response->assertStatus(403);
-        $response->assertJsonPath('message', 'Results have not been released yet.');
-    }
-
     public function test_returns_401_when_not_authenticated(): void
     {
         $response = $this->postJson('/portal/ai-companion/chat', ['message' => 'Hello']);

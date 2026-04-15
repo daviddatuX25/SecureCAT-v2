@@ -15,6 +15,7 @@
         "laravel/tinker": "^2.10.1",
         "mews/purifier": "^3.4",
         "moe-mizrak/laravel-openrouter": "^2.8",
+        "phpoffice/phpspreadsheet": "4.0",
         "phpoffice/phpword": "^1.4"
     },
     "require-dev": {
@@ -87,6 +88,9 @@
         "allow-plugins": {
             "pestphp/pest-plugin": true,
             "php-http/discovery": true
+        },
+        "audit": {
+            "block-insecure": false
         }
     },
     "minimum-stability": "stable",

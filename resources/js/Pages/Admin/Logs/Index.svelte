@@ -5,6 +5,7 @@
   import * as Table from '@/Components/ui/table';
   import { Button } from '@/Components/ui/button';
   import { Input } from '@/Components/ui/input';
+  import ViewModeToggle from '@/Components/ViewModeToggle.svelte';
   import { ChevronDown, Filter, Download, ChevronRight, X } from 'lucide-svelte';
 
   let { logs, filters = {}, events = [], categories = [], scopeLabel = 'Activity log', showActorFilter = false } = $props();
@@ -22,6 +23,7 @@
   let detailLog = $state(null);
   let exportLoading = $state(false);
   let exportError = $state(null);
+  let viewMode = $state('responsive');
 
   $effect(() => {
     filterEvent = filters.event ?? '';
@@ -92,19 +94,21 @@
 
 <AuthenticatedLayout {breadcrumbs}>
   <div class="space-y-6 min-w-0">
-    <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+    <div class="flex items-center justify-between">
       <div>
-        <p class="mt-1 text-sm text-muted-foreground">{scopeLabel}</p>
+        <p class="text-sm text-muted-foreground">{scopeLabel}</p>
       </div>
-      <Button
-        variant="outline"
-        class="min-h-[44px]"
-        onclick={doExport}
-        disabled={exportLoading}
-      >
-        <Download class="mr-2 h-4 w-4" />
-        {exportLoading ? 'Exporting…' : 'Export CSV'}
-      </Button>
+      <div class="flex flex-wrap items-center gap-2 sm:gap-3">
+        <Button
+          variant="outline"
+          class="min-h-[44px] gap-2"
+          onclick={doExport}
+          disabled={exportLoading}
+        >
+          <Download class="h-4 w-4" />
+          <span class="hidden sm:inline">{exportLoading ? 'Exporting…' : 'Export CSV'}</span>
+        </Button>
+      </div>
     </div>
 
     {#if error || exportError}
@@ -238,8 +242,14 @@
       </div>
     </div>
 
-    <div class="glass-panel rounded-2xl overflow-hidden min-w-0 max-w-full p-6">
-      <Table.Root class="w-full min-w-0">
+    <div class="space-y-3">
+      <!-- View toggle as sibling to table container -->
+      <div class="flex justify-end">
+        <ViewModeToggle bind:value={viewMode} />
+      </div>
+
+      <div class="min-w-0">
+        <Table.Root class="w-full min-w-[640px] text-sm">
         <Table.Header class="bg-muted/50">
           <Table.Row>
             <Table.Head class="px-4 py-3">Time</Table.Head>

@@ -3,6 +3,7 @@
   import { Link, useForm } from '@inertiajs/svelte';
   import { Button } from '@/Components/ui/button';
   import { Input } from '@/Components/ui/input';
+  import { success } from '@/lib/toast';
 
   const breadcrumbs = [
     { label: 'Knowledge Documents', href: '/admin/knowledge-documents' },
@@ -19,6 +20,12 @@
       tags: [],
     },
   });
+
+  $form.onFinish = () => {
+    if (!$form.errors || Object.keys($form.errors).length === 0) {
+      success('Knowledge document created');
+    }
+  };
 
   let tagsInput = $state('');
 

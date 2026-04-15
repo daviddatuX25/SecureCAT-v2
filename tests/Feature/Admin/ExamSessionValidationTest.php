@@ -5,6 +5,7 @@ namespace Tests\Feature\Admin;
 use App\Models\Role;
 use App\Models\Room;
 use App\Models\User;
+use Database\Seeders\RoleSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -15,7 +16,7 @@ class ExamSessionValidationTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->seed(\Database\Seeders\RoleSeeder::class);
+        $this->seed(RoleSeeder::class);
     }
 
     private function admin(): User
@@ -35,7 +36,7 @@ class ExamSessionValidationTest extends TestCase
     {
         $room = $this->createRoom();
 
-        $response = $this->actingAs($this->admin())->post(route('admin.test-scheduling.store'), [
+        $response = $this->actingAs($this->admin())->post(route('admin.exam-scheduling.store'), [
             'room_id' => $room->id,
             'date' => '2020-01-01',
             'start_time' => '09:00',
@@ -49,7 +50,7 @@ class ExamSessionValidationTest extends TestCase
     {
         $room = $this->createRoom();
 
-        $response = $this->actingAs($this->admin())->post(route('admin.test-scheduling.store'), [
+        $response = $this->actingAs($this->admin())->post(route('admin.exam-scheduling.store'), [
             'room_id' => $room->id,
             'date' => now()->toDateString(),
             'start_time' => '09:00',
@@ -63,7 +64,7 @@ class ExamSessionValidationTest extends TestCase
     {
         $room = $this->createRoom();
 
-        $response = $this->actingAs($this->admin())->post(route('admin.test-scheduling.store'), [
+        $response = $this->actingAs($this->admin())->post(route('admin.exam-scheduling.store'), [
             'room_id' => $room->id,
             'date' => now()->toDateString(),
             'start_time' => '25:99',
@@ -77,7 +78,7 @@ class ExamSessionValidationTest extends TestCase
     {
         $room = $this->createRoom();
 
-        $response = $this->actingAs($this->admin())->post(route('admin.test-scheduling.store'), [
+        $response = $this->actingAs($this->admin())->post(route('admin.exam-scheduling.store'), [
             'room_id' => $room->id,
             'date' => now()->toDateString(),
             'start_time' => '08:00',
@@ -91,7 +92,7 @@ class ExamSessionValidationTest extends TestCase
     {
         $room = $this->createRoom();
 
-        $response = $this->actingAs($this->admin())->post(route('admin.test-scheduling.store'), [
+        $response = $this->actingAs($this->admin())->post(route('admin.exam-scheduling.store'), [
             'room_id' => $room->id,
             'date' => now()->toDateString(),
             'start_time' => '09:00',
