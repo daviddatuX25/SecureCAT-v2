@@ -58,5 +58,6 @@ progress:
 |---|-------------|------|--------|-----------|
 | 260413-2p5 | hide table scrollbar | 2026-04-12 | | [260413-2p5-hide-table-scrollbar](./quick/260413-2p5-hide-table-scrollbar/) |
 | 260415-ff2 | Add phone and address fields to apply form, add terms checkbox | 2026-04-15 | | [260415-ff2-add-phone-and-address-fields-to-the-appl](./quick/260415-ff2-add-phone-and-address-fields-to-the-appl/) |
+| 260415-ftz | Fix exam scheduling edit button to only show in draft mode | 2026-04-15 | 410e0f2 | [260415-ftz-fix-exam-scheduling-edit-button-to-link-](./quick/260415-ftz-fix-exam-scheduling-edit-button-to-link-/) |
 
-Last activity: 2026-04-15
+Last activity: 2026-04-15 - Completed quick task 260415-ftz: Fix exam scheduling edit button to only show in draft mode
