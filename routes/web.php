@@ -119,7 +119,6 @@ Route::middleware(['auth'])->group(function () {
         Route::get('exam-scheduling', [ExamSessionController::class, 'index'])->name('exam-scheduling.index');
         Route::get('exam-scheduling/create', [ExamSessionController::class, 'create'])->name('exam-scheduling.create');
         Route::get('exam-scheduling/schedule-assistant', fn () => redirect()->route('admin.exam-scheduling.index'))->name('exam-scheduling.schedule-assistant.index');
-        Route::get('exam-scheduling/{exam_session}', [ExamSessionController::class, 'show'])->name('exam-scheduling.show');
     });
 
     // Exam monitoring: separate top-level route, not nested under exam-scheduling
@@ -141,6 +140,9 @@ Route::middleware(['auth'])->group(function () {
         Route::get('exam-scheduling/{exam_session}/edit', [ExamSessionController::class, 'edit'])->name('exam-scheduling.edit');
         Route::put('exam-scheduling/{exam_session}', [ExamSessionController::class, 'update'])->name('exam-scheduling.update');
         Route::delete('exam-scheduling/{exam_session}', [ExamSessionController::class, 'destroy'])->name('exam-scheduling.destroy');
+        // Wildcard show: placed LAST so all specific routes (edit, publish, etc.) are matched first.
+        // Accessible by test_administrator and proctor too (matching original group).
+        Route::middleware('role:super_admin,registrar_administrator,test_administrator,proctor')->get('exam-scheduling/{exam_session}', [ExamSessionController::class, 'show'])->name('exam-scheduling.show');
         Route::resource('academic-years', AcademicYearController::class)->except('show', 'destroy')->parameters(['academic_years' => 'academic_year']);
         Route::post('academic-years/{academic_year}/activate', [AcademicYearController::class, 'activate'])->name('academic-years.activate');
         Route::post('academic-years/{academic_year}/deactivate', [AcademicYearController::class, 'deactivate'])->name('academic-years.deactivate');
@@ -155,9 +157,8 @@ Route::middleware(['auth'])->group(function () {
     });
 
     Route::middleware('role:super_admin,test_administrator')->prefix('admin')->name('admin.')->group(function () {
-        Route::resource('aptitude-areas', AptitudeAreaController::class)->except('show', 'destroy')->parameters(['aptitude_areas' => 'aptitude_area']);
-        Route::post('result-sheet-templates/preview', [ResultSheetTemplateController::class, 'preview'])->name('result-sheet-templates.preview');
-        Route::resource('result-sheet-templates', ResultSheetTemplateController::class)->except('show')->parameters(['result_sheet_templates' => 'result_sheet_template']);
+        Route::resource('aptitude-areas', AptitudeAreaController::class)->except('show')->parameters(['aptitude_areas' => 'aptitude_area']);
+        Route::post('aptitude-areas/reorder', [AptitudeAreaController::class, 'reorder'])->name('aptitude-areas.reorder');
     });
 
     // Staff create/edit applications - bypasses application window restrictions
@@ -216,33 +217,36 @@ Route::middleware(['auth'])->group(function () {
         Route::get('sessions/{exam_session}/roster', [ExamSessionController::class, 'testAdminRoster'])->name('sessions.roster');
     });
     // Grading
-    Route::middleware('role:super_admin,test_administrator')->prefix('grading')->name('grading.')->group(function () {
-        Route::get('/', [GradingController::class, 'index']);
-        Route::post('/', [GradingController::class, 'store']);
-        Route::get('/sessions/{grading_session}', [GradingSessionController::class, 'show'])->name('sessions.show');
-        Route::put('/sessions/{grading_session}/workflow', [GradingSessionController::class, 'updateWorkflowStatus'])->name('sessions.workflow');
-        Route::get('/sessions/{grading_session}/applicants/{applicant}', [GradingScoreController::class, 'show'])->name('sessions.applicants.scores');
-        Route::put('/sessions/{grading_session}/applicants/{applicant}/scores', [GradingScoreController::class, 'update'])->name('sessions.applicants.scores.update');
-        Route::get('/sessions/{grading_session}/print', [GradingPrintController::class, 'index'])->name('sessions.print');
-        Route::post('/sessions/{grading_session}/mark-printed', [GradingPrintController::class, 'markPrinted'])->name('sessions.mark-printed');
-        Route::get('/sessions/{grading_session}/print-bulk', [GradingPrintController::class, 'printBulk'])->name('sessions.print-bulk');
-        Route::get('/sessions/{grading_session}/applicants/{applicant}/result-sheet', [GradingPrintController::class, 'resultSheet'])->name('sessions.result-sheet');
+    Route::middleware('role:super_admin,test_administrator')->prefix('admin')->name('admin.grading.')->group(function () {
+        Route::get('grading', [GradingController::class, 'index'])->name('index');
+        Route::post('grading', [GradingController::class, 'store']);
+        Route::get('grading/sessions/{grading_session}', [GradingSessionController::class, 'show'])->name('sessions.show');
+        Route::put('grading/sessions/{grading_session}/workflow', [GradingSessionController::class, 'updateWorkflowStatus'])->name('sessions.workflow');
+        Route::get('grading/sessions/{grading_session}/applicants/{applicant}', [GradingScoreController::class, 'show'])->name('sessions.applicants.scores');
+        Route::put('grading/sessions/{grading_session}/applicants/{applicant}/scores', [GradingScoreController::class, 'update'])->name('sessions.applicants.scores.update');
+        Route::get('grading/sessions/{grading_session}/print', [GradingPrintController::class, 'index'])->name('sessions.print');
+        Route::post('grading/sessions/{grading_session}/mark-printed', [GradingPrintController::class, 'markPrinted'])->name('sessions.mark-printed');
+        Route::get('grading/sessions/{grading_session}/print-bulk', [GradingPrintController::class, 'printBulk'])->name('sessions.print-bulk');
+        Route::get('grading/sessions/{grading_session}/applicants/{applicant}/result-sheet', [GradingPrintController::class, 'resultSheet'])->name('sessions.result-sheet');
         // Bulk score import
-        Route::get('/import', [ScoreImportController::class, 'importForm'])->name('import');
-        Route::post('/import', [ScoreImportController::class, 'import'])->name('import.store');
+        Route::get('grading/import', [ScoreImportController::class, 'importForm'])->name('import');
+        Route::post('grading/import', [ScoreImportController::class, 'import'])->name('import.store');
         // Preview flow
-        Route::post('/import/preview', [ScoreImportController::class, 'preview'])->name('import.preview');
-        Route::post('/import/confirm', [ScoreImportController::class, 'confirm'])->name('import.confirm');
+        Route::post('grading/import/preview', [ScoreImportController::class, 'preview'])->name('import.preview');
+        Route::post('grading/import/confirm', [ScoreImportController::class, 'confirm'])->name('import.confirm');
     });
 
     // Release Management
     Route::middleware('role:super_admin,test_administrator')
-        ->prefix('release')
-        ->name('release.')
+        ->prefix('admin/release')
+        ->name('admin.release.')
         ->group(function () {
             Route::get('/', [ReleaseController::class, 'index'])->name('index');
             Route::post('/summaries/{summary}/release', [ReleaseController::class, 'release'])->name('summaries.release');
             Route::post('/summaries/bulk-release', [ReleaseController::class, 'releaseBulk'])->name('summaries.bulk-release');
             Route::put('/summaries/by-applicant/{applicantId}', [ReleaseController::class, 'storeOrUpdateByApplicant'])->name('summaries.storeOrUpdate');
+            // Result Sheet Templates
+            Route::post('result-templates/preview', [ResultSheetTemplateController::class, 'preview'])->name('result-templates.preview');
+            Route::resource('result-templates', ResultSheetTemplateController::class)->except('show')->parameters(['result_templates' => 'result_template']);
         });
 });
