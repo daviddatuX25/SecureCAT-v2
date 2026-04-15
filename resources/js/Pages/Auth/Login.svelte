@@ -34,7 +34,6 @@
     ...($page.props.errors ?? {}), 
     ...(activeTab === 'applicant' ? $applicantForm.errors : $staffForm.errors ?? {}) 
   });
-  const flash = $derived($page.props.flash ?? {});
   const googleOAuthEnabled = $derived($page.props.googleOAuthEnabled ?? false);
 
   function handleSubmitApplicant(e) {
@@ -116,19 +115,6 @@
         </Card.Header>
         
         <Card.Content class="space-y-4 pb-8 px-8">
-          {#if flash.success}
-            <div class="glass-panel p-4 rounded-xl border border-success/30 bg-success/10 text-success text-sm flex items-center gap-3 font-semibold">
-              <svg class="h-5 w-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
-              {flash.success}
-            </div>
-          {/if}
-          {#if flash.error}
-            <div class="glass-panel p-4 rounded-xl border border-destructive/30 bg-destructive/10 text-destructive text-sm flex items-center gap-3 font-semibold">
-              <svg class="h-5 w-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
-              {flash.error}
-            </div>
-          {/if}
-
           <!-- APPLICANT FORM -->
           {#if activeTab === 'applicant'}
             <form onsubmit={handleSubmitApplicant} class="space-y-6 animate-in fade-in duration-300">

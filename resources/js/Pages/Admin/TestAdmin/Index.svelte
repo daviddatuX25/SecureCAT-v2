@@ -1,6 +1,6 @@
 <script>
   import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.svelte';
-  import { Link, usePage } from '@inertiajs/svelte';
+  import { Link } from '@inertiajs/svelte';
   import { Badge } from '@/Components/ui/badge';
   import * as Table from '@/Components/ui/table';
   import { Button } from '@/Components/ui/button';
@@ -10,9 +10,6 @@
 
   const breadcrumbs = [{ label: 'My Sessions' }];
 
-  const page = usePage();
-  const success = $derived($page.props.flash?.success ?? null);
-  const error   = $derived($page.props.flash?.error   ?? null);
 
   function statusVariant(status) {
     if (status === 'draft')       return 'muted';
@@ -60,12 +57,6 @@
       </div>
     </div>
 
-    {#if success}
-      <div class="rounded-lg bg-primary/10 px-4 py-3 text-sm text-primary">{success}</div>
-    {/if}
-    {#if error}
-      <div class="rounded-lg bg-destructive/10 px-4 py-3 text-sm text-destructive">{error}</div>
-    {/if}
 
     <!-- Session list -->
     <div class="rounded-lg border border-border bg-card">

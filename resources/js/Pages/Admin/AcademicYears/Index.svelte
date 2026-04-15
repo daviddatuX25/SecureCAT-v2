@@ -1,16 +1,13 @@
 <script>
   import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.svelte';
-  import { Link, router, usePage } from '@inertiajs/svelte';
+  import { Link, router } from '@inertiajs/svelte';
   import { Button } from '@/Components/ui/button';
   import { Badge } from '@/Components/ui/badge';
   import * as Table from '@/Components/ui/table';
   import { Plus, Pencil, Pause, Play, BookOpen, Trash2 } from 'lucide-svelte';
   import ViewModeToggle from '@/Components/ViewModeToggle.svelte';
 
-  let { academic_years, success = null } = $props();
-
-  const page = usePage();
-  const successMsg = $derived($page.props.flash?.success ?? null);
+  let { academic_years } = $props();
   const list = $derived(academic_years?.data ?? []);
   const breadcrumbs = [{ label: 'Academic Years' }];
 
@@ -52,12 +49,6 @@
     {#if !list.some((ay) => ay.is_active)}
       <div class="mb-4 rounded-md border border-amber-500/50 bg-amber-500/10 px-4 py-3 text-sm text-foreground">
         No academic year is currently active. Applications are closed until one is activated.
-      </div>
-    {/if}
-
-    {#if successMsg}
-      <div class="rounded-lg bg-primary/10 px-4 py-3 text-sm text-primary">
-        {successMsg}
       </div>
     {/if}
 

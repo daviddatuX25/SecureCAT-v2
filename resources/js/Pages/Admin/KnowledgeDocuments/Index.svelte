@@ -1,7 +1,6 @@
 <script>
   import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.svelte';
   import { Link, router } from '@inertiajs/svelte';
-  import { usePage } from '@inertiajs/svelte';
   import { Button } from '@/Components/ui/button';
   import { Badge } from '@/Components/ui/badge';
   import { Input } from '@/Components/ui/input';
@@ -13,8 +12,6 @@
 
   const breadcrumbs = [{ label: 'Knowledge Documents' }];
 
-  const page = usePage();
-  const success = $derived($page.props.flash?.success ?? null);
 
   let filterSearch = $state('');
   let deleteId = $state(null);
@@ -84,11 +81,6 @@
       </div>
     </div>
 
-    {#if success}
-      <div class="rounded-lg bg-primary/10 px-4 py-3 text-sm text-primary">
-        {success}
-      </div>
-    {/if}
 
     <div class="flex flex-wrap items-center gap-3">
       <Input

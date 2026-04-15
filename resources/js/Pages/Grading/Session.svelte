@@ -1,7 +1,6 @@
 <script>
   import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.svelte';
   import { Link, router } from '@inertiajs/svelte';
-  import { usePage } from '@inertiajs/svelte';
   import { Button } from '@/Components/ui/button';
   import { Badge } from '@/Components/ui/badge';
   import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/Components/ui/card';
@@ -10,8 +9,6 @@
 
   let { sessionId = '1', session = {}, applicants = [], workflowStatus = 'in_progress' } = $props();
 
-  const page = usePage();
-  const success = $derived($page.props.flash?.success ?? null);
   const sid = $derived(String(sessionId));
 
   const breadcrumbs = $derived([
@@ -49,9 +46,6 @@
 
 <AuthenticatedLayout breadcrumbs={breadcrumbs}>
   <div class="space-y-6 min-w-0">
-    {#if success}
-      <div class="rounded-lg bg-primary/10 px-4 py-3 text-sm text-primary">{success}</div>
-    {/if}
 
     <!-- Session header -->
     <Card>

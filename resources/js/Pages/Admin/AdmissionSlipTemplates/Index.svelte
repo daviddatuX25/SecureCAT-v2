@@ -1,7 +1,6 @@
 <script>
   import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.svelte';
   import { Link, router } from '@inertiajs/svelte';
-  import { usePage } from '@inertiajs/svelte';
   import { Button } from '@/Components/ui/button';
   import { Badge } from '@/Components/ui/badge';
   import * as Table from '@/Components/ui/table';
@@ -12,8 +11,6 @@
 
   const breadcrumbs = [{ label: 'Admission Slip Templates' }];
 
-  const page = usePage();
-  const success = $derived($page.props.flash?.success ?? null);
 
   let deleteId = $state(null);
 
@@ -48,11 +45,6 @@
       </div>
     </div>
 
-    {#if success}
-      <div class="rounded-lg bg-primary/10 px-4 py-3 text-sm text-primary">
-        {success}
-      </div>
-    {/if}
 
     <div class="min-w-0">
       <div class="w-full min-w-0">

@@ -1,7 +1,6 @@
 <script>
   import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.svelte';
   import { Link, router } from '@inertiajs/svelte';
-  import { usePage } from '@inertiajs/svelte';
   import * as Table from '@/Components/ui/table';
   import { Button } from '@/Components/ui/button';
   import { Input } from '@/Components/ui/input';
@@ -10,8 +9,6 @@
 
   let { logs, filters = {}, events = [], categories = [], scopeLabel = 'Activity log', showActorFilter = false } = $props();
 
-  const page = usePage();
-  const error = $derived($page.props.flash?.error ?? null);
   const breadcrumbs = [{ label: 'Audit Log' }];
 
   let filterEvent = $state('');
@@ -111,9 +108,9 @@
       </div>
     </div>
 
-    {#if error || exportError}
+    {#if exportError}
       <div class="rounded-lg bg-destructive/10 px-4 py-3 text-sm text-destructive">
-        {exportError ?? error}
+        {exportError}
       </div>
     {/if}
 

@@ -1,6 +1,6 @@
 <script>
   import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.svelte';
-  import { Link, router, usePage } from '@inertiajs/svelte';
+  import { Link, router } from '@inertiajs/svelte';
   import { Button } from '@/Components/ui/button';
   import { Badge } from '@/Components/ui/badge';
   import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/Components/ui/card';
@@ -15,8 +15,6 @@
     aptitude_areas_count = 0,
   } = $props();
 
-  const page = usePage();
-  const success = $derived($page.props.flash?.success ?? null);
 
   function formatDate(value) {
     if (!value) return '—';
@@ -43,9 +41,6 @@
 
 <AuthenticatedLayout breadcrumbs={breadcrumbs}>
   <div class="space-y-6 min-w-0">
-    {#if success}
-      <div class="rounded-lg bg-primary/10 px-4 py-3 text-sm text-primary">{success}</div>
-    {/if}
 
     {#if aptitude_areas_count === 0}
       <Card variant="glass" class="border-amber-500/50 bg-amber-500/5">

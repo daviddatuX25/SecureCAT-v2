@@ -1,6 +1,6 @@
 <script>
   import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.svelte';
-  import { Link, router, usePage } from '@inertiajs/svelte';
+  import { Link, router } from '@inertiajs/svelte';
   import { useForm } from '@inertiajs/svelte';
   import { Button } from '@/Components/ui/button';
   import { Badge } from '@/Components/ui/badge';
@@ -10,8 +10,7 @@
 
   let { documents = [], ai_companion_persona = '' } = $props();
 
-  const page = usePage();
-  const flash = $derived($page.props.flash ?? {});
+
   const breadcrumbs = [{ label: 'AI Companion' }];
 
   // Tab state
@@ -49,11 +48,6 @@
       <h2 class="text-2xl font-semibold tracking-tight">AI Companion</h2>
       <p class="mt-1 text-sm text-muted-foreground">Configure the chat advisor that helps applicants understand their exam results.</p>
     </div>
-
-    <!-- Flash message -->
-    {#if flash.success}
-      <div class="rounded-lg bg-primary/10 px-4 py-3 text-sm text-primary">{flash.success}</div>
-    {/if}
 
     <!-- Tab navigation - styled as segmented control -->
     <div class="inline-flex items-center rounded-lg border border-border bg-muted/50 p-1">

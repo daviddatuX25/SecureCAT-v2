@@ -1,16 +1,12 @@
 <script>
   import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.svelte';
-  import { Link, router, usePage } from '@inertiajs/svelte';
+  import { Link, router } from '@inertiajs/svelte';
   import { Button } from '@/Components/ui/button';
   import { Badge } from '@/Components/ui/badge';
   import { Card, CardContent, CardHeader, CardTitle } from '@/Components/ui/card';
   import { ArrowLeft, CheckCircle, XCircle, Mail } from 'lucide-svelte';
 
   let { application, courses = [], within_application_window = false, application_window_label = null } = $props();
-
-  const page = usePage();
-  const success = $derived($page.props.flash?.success ?? null);
-  const error = $derived($page.props.flash?.error ?? null);
 
   function statusVariant(status) {
     if (status === 'pending') return 'warning';
@@ -88,17 +84,6 @@
 
 <AuthenticatedLayout breadcrumbs={breadcrumbs}>
   <div class="space-y-6 min-w-0">
-    {#if success}
-      <div class="rounded-lg bg-primary/10 px-4 py-3 text-sm text-primary">
-        {success}
-      </div>
-    {/if}
-    {#if error}
-      <div class="rounded-lg bg-destructive/10 px-4 py-3 text-sm text-destructive">
-        {error}
-      </div>
-    {/if}
-
     <!-- Status + action bar -->
     <div class="flex flex-wrap items-center justify-between gap-4 rounded-lg border border-border bg-card px-4 py-3">
       <div class="flex flex-wrap items-center gap-3">

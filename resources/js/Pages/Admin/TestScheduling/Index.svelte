@@ -1,7 +1,6 @@
 <script>
   import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.svelte';
   import { Link, router } from '@inertiajs/svelte';
-  import { usePage } from '@inertiajs/svelte';
   import * as Table from '@/Components/ui/table';
   import * as ToggleGroup from '@/Components/ui/toggle-group';
   import * as Dialog from '@/Components/ui/dialog';
@@ -15,8 +14,6 @@
 
   let { sessions, filters = {}, statuses = [], view = 'admin', schedule_assistant = null } = $props();
 
-  const page = usePage();
-  const success = $derived($page.props.flash?.success ?? null);
   const isProctorView = $derived(view === 'proctor');
   const breadcrumbs = $derived(
     view === 'proctor'
@@ -162,11 +159,6 @@
       </div>
     </div>
 
-    {#if success}
-      <div class="rounded-lg bg-primary/10 px-4 py-3 text-sm text-primary">
-        {success}
-      </div>
-    {/if}
 
     <!-- Filters: one row on desktop; on mobile search + collapsible "Filters" dropdown, dates always together, Apply always visible -->
     <div class="flex flex-col gap-3">

@@ -1,6 +1,6 @@
 <script>
   import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.svelte';
-  import { Link, router, usePage } from '@inertiajs/svelte';
+  import { Link, router } from '@inertiajs/svelte';
   import { Button } from '@/Components/ui/button';
   import { Badge } from '@/Components/ui/badge';
   import { Plus, Pencil, Pause, Play, Trash2 } from 'lucide-svelte';
@@ -9,8 +9,6 @@
 
   let { courses } = $props();
 
-  const page = usePage();
-  const success = $derived($page.props.flash?.success ?? null);
 
   let viewMode = $state('responsive');
 
@@ -52,11 +50,6 @@ const breadcrumbs = [{ label: 'Academic Years', href: '/admin/academic-years' },
       </div>
     </div>
 
-    {#if success}
-      <div class="rounded-lg bg-primary/10 px-4 py-3 text-sm text-primary">
-        {success}
-      </div>
-    {/if}
 
     <div class="space-y-3">
       <!-- View toggle as sibling to table container -->

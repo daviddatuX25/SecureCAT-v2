@@ -1,6 +1,6 @@
 <script>
   import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.svelte';
-  import { Link, usePage } from '@inertiajs/svelte';
+  import { Link } from '@inertiajs/svelte';
   import { Button } from '@/Components/ui/button';
   import { Badge } from '@/Components/ui/badge';
   import * as Table from '@/Components/ui/table';
@@ -9,8 +9,6 @@
 
   let { aptitude_areas = [] } = $props();
 
-  const page = usePage();
-  const success = $derived($page.props.flash?.success ?? null);
   const list = $derived(Array.isArray(aptitude_areas) ? aptitude_areas : []);
 
   const breadcrumbs = [{ label: 'Grading', href: '/admin/grading' }, { label: 'Aptitude Areas' }];
@@ -60,11 +58,6 @@
       </div>
     </div>
 
-    {#if success}
-      <div class="rounded-lg bg-primary/10 px-4 py-3 text-sm text-primary">
-        {success}
-      </div>
-    {/if}
 
     <div class="min-w-0">
       <div class="w-full min-w-0 overflow-x-auto scrollbar-hide">

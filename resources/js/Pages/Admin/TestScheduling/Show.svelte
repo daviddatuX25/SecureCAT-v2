@@ -1,7 +1,6 @@
 <script>
   import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.svelte';
   import { Link, router } from '@inertiajs/svelte';
-  import { usePage } from '@inertiajs/svelte';
   import { Button } from '@/Components/ui/button';
   import * as Table from '@/Components/ui/table';
   import { Badge } from '@/Components/ui/badge';
@@ -22,9 +21,6 @@
         ]
   );
 
-  const page = usePage();
-  const success = $derived($page.props.flash?.success ?? null);
-  const error = $derived($page.props.flash?.error ?? null);
 
   let selectedAvailable = $state([]);
 
@@ -116,16 +112,6 @@
     </div>
     {/if}
 
-    {#if success}
-      <div class="rounded-lg bg-primary/10 px-4 py-3 text-sm text-primary">
-        {success}
-      </div>
-    {/if}
-    {#if error}
-      <div class="rounded-lg bg-destructive/10 px-4 py-3 text-sm text-destructive">
-        {error}
-      </div>
-    {/if}
 
     <div class="rounded-lg border border-border bg-card p-6">
       <dl class="mt-4 grid gap-3 sm:grid-cols-2">

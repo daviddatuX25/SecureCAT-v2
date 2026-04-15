@@ -1,7 +1,6 @@
 <script>
   import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.svelte';
   import { Link, router } from '@inertiajs/svelte';
-  import { usePage } from '@inertiajs/svelte';
   import { Button } from '@/Components/ui/button';
   import { Badge } from '@/Components/ui/badge';
   import { Input } from '@/Components/ui/input';
@@ -10,10 +9,6 @@
   import ViewModeToggle from '@/Components/ViewModeToggle.svelte';
 
   let { rooms, filters = {} } = $props();
-
-  const page = usePage();
-  const success = $derived($page.props.flash?.success ?? null);
-  const error = $derived($page.props.flash?.error ?? null);
 
   let filterSearch = $state('');
   $effect(() => {
@@ -88,17 +83,6 @@ const breadcrumbs = [{ label: 'Exam Scheduling', href: '/admin/exam-scheduling' 
         </Link>
       </div>
     </div>
-
-    {#if success}
-      <div class="rounded-lg bg-primary/10 px-4 py-3 text-sm text-primary">
-        {success}
-      </div>
-    {/if}
-    {#if error}
-      <div class="rounded-lg bg-destructive/10 px-4 py-3 text-sm text-destructive">
-        {error}
-      </div>
-    {/if}
 
     <!-- Filters: one row on desktop; same on mobile (search + Apply) -->
     <div class="flex flex-col gap-3">

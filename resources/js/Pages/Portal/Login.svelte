@@ -9,7 +9,7 @@
   const form = useForm({ email: '', password: '' });
   const page = usePage();
   const errors = $derived({ ...($page.props.errors ?? {}), ...($form.errors ?? {}) });
-  const flash = $derived($page.props.flash ?? {});
+
 
   function handleSubmit(e) {
     e.preventDefault();

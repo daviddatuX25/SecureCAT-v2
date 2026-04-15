@@ -1,7 +1,6 @@
 <script>
   import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.svelte';
   import { Link, router } from '@inertiajs/svelte';
-  import { usePage } from '@inertiajs/svelte';
   import { Button } from '@/Components/ui/button';
   import { Input } from '@/Components/ui/input';
   import { Badge } from '@/Components/ui/badge';
@@ -11,8 +10,6 @@
 
   let { users, roles, filters = {} } = $props();
 
-  const page = usePage();
-  const success = $derived($page.props.flash?.success ?? null);
 
   let viewMode = $state('responsive');
 
@@ -68,11 +65,6 @@
       </div>
     </div>
 
-    {#if success}
-      <div class="rounded-lg bg-primary/10 px-4 py-3 text-sm text-primary">
-        {success}
-      </div>
-    {/if}
 
     <!-- Filters: one row on desktop; on mobile search + collapsible "Filters" dropdown, Apply always visible -->
     <div class="flex flex-col gap-3">

@@ -1,6 +1,6 @@
 <script>
   import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.svelte';
-  import { useForm, usePage } from '@inertiajs/svelte';
+  import { useForm } from '@inertiajs/svelte';
   import { Button } from '@/Components/ui/button';
   import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/Components/ui/card';
   import Switch from '@/Components/ui/switch/switch.svelte';
@@ -14,8 +14,6 @@
     release_mode,
   });
 
-  const page = usePage();
-  const flash = $derived($page.props.flash ?? {});
   const breadcrumbs = [{ label: 'Settings' }];
   let saving = $state(false);
 
@@ -74,10 +72,6 @@
     <div>
       <p class="mt-1 text-sm text-muted-foreground">System-wide feature toggles and configuration.</p>
     </div>
-
-    {#if flash.success}
-      <p class="text-sm text-green-600 dark:text-green-400">{flash.success}</p>
-    {/if}
 
     <form onsubmit={submitSettings} class="space-y-6">
       <Card>
