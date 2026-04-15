@@ -67,7 +67,7 @@
       { href: '/admin/exam-monitoring', label: 'Exam Monitoring', icon: Activity, roles: ['super_admin', 'test_administrator', 'proctor'] },
       { href: '/admin/grading', label: 'Grading', icon: GraduationCap, roles: ['super_admin', 'test_administrator'] },
       { href: '/release', label: 'Release', icon: SendHorizonal, roles: ['super_admin', 'test_administrator'], items: [
-        { href: '/release', label: 'Release Management' },
+        { href: '/release', label: 'Release Management', icon: SendHorizonal },
         { href: '/release/result-sheet-templates', label: 'Result Sheet Templates', icon: FileText },
       ]},
     ]},
