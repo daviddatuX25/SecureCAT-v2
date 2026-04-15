@@ -1,6 +1,6 @@
 <script>
   import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.svelte';
-  import { router, usePage } from '@inertiajs/svelte';
+  import { Link, router, usePage } from '@inertiajs/svelte';
   import { Button } from '@/Components/ui/button';
   import { Badge } from '@/Components/ui/badge';
   import * as Table from '@/Components/ui/table';
@@ -118,13 +118,6 @@
 <AuthenticatedLayout {breadcrumbs}>
   <div class="space-y-6 min-w-0">
 
-    {#if flash.success}
-      <div class="rounded-lg bg-primary/10 px-4 py-3 text-sm text-primary">{flash.success}</div>
-    {/if}
-    {#if flash.error}
-      <div class="rounded-lg bg-destructive/10 px-4 py-3 text-sm text-destructive">{flash.error}</div>
-    {/if}
-
     <!-- Mode banner -->
     {#if release_mode === 'f2f'}
       <div class="rounded-lg border border-border bg-muted/40 px-4 py-3 text-sm">
@@ -139,6 +132,13 @@
         <strong>Online + F2F mode:</strong> Applicants will receive a portal notification and email when released.
       </div>
     {/if}
+
+    <!-- Quick links -->
+    <div class="flex items-center gap-3">
+      <Link href="/release/result-sheet-templates" class="text-sm text-primary hover:underline">
+        Result Sheet Templates →
+      </Link>
+    </div>
 
     <!-- Bulk action bar -->
     <div class="flex items-center gap-3">
@@ -157,9 +157,9 @@
     </div>
 
     <!-- Table -->
-    <div class="glass-panel rounded-2xl overflow-hidden min-w-0 p-0">
+    <div class="min-w-0">
       <div class="w-full overflow-x-auto scrollbar-hide">
-        <Table.Root class="w-full min-w-[640px]">
+        <Table.Root class="w-full min-w-[640px] text-sm">
           <Table.Header class="bg-muted/50">
             <Table.Row>
               <Table.Head class="w-10 px-4 py-3">
