@@ -5,9 +5,10 @@
   import { Badge } from '@/Components/ui/badge';
   import { Input } from '@/Components/ui/input';
   import * as Table from '@/Components/ui/table';
-  import * as ToggleGroup from '@/Components/ui/toggle-group';
-  import { Eye, Filter, ChevronDown, Table2, LayoutGrid, MonitorSmartphone, CheckCircle, XCircle, UploadCloud } from 'lucide-svelte';
-  import ActionDropdown from '@/Components/ActionDropdown.svelte';
+  import { Filter, ChevronDown, CheckCircle, XCircle, UploadCloud, Plus, Pencil } from 'lucide-svelte';
+  import ViewModeToggle from '@/Components/ViewModeToggle.svelte';
+  import { success as showSuccess, error as showError } from '@/lib/toast';
+  import { onMount } from 'svelte';
 
   let { applications, filters = {}, seasons = [], active_season_id = null, statuses = [] } = $props();
 
@@ -15,29 +16,63 @@
   const authUser = $derived($page.props.auth?.user ?? null);
   const roles = $derived(authUser?.roles?.map((r) => r.name) ?? []);
   function hasRole(r) { return roles.includes(r); }
-  const success = $derived($page.props.flash?.success ?? null);
-  const error = $derived($page.props.flash?.error ?? null);
+
+  // Show toasts on mount for flash messages
+  onMount(() => {
+    const flash = $page.props.flash;
+    if (flash?.success) showSuccess(flash.success);
+    if (flash?.error) showError(flash.error);
+
+    // Initialize filters after mount
+    initFilters();
+  });
 
   let filterSearch = $state('');
   let filterStatus = $state('');
-  let filterSeasonId = $state('');
+  let filterAcademicYearId = $state('');
   let filterDateFrom = $state('');
   let filterDateTo = $state('');
   let filtersOpen = $state(false);
 
-  $effect(() => {
+  // Initialize filters - runs when props change
+  function initFilters() {
     filterSearch = filters.search ?? '';
     filterStatus = filters.status ?? '';
-    filterSeasonId = filters.season_id ?? (active_season_id != null ? String(active_season_id) : '');
+
+    // Auto-select active season if no filter provided
+    const seasonFromFilter = filters.academic_year_id;
+    if (seasonFromFilter) {
+      filterAcademicYearId = String(seasonFromFilter);
+    } else if (active_season_id != null) {
+      filterAcademicYearId = active_season_id;
+    } else {
+      filterAcademicYearId = '';
+    }
+
+    // Dates are not auto-populated from season window
     filterDateFrom = filters.date_from ?? '';
     filterDateTo = filters.date_to ?? '';
+  }
+
+  // React to prop changes
+  $effect(() => {
+    // Track dependencies
+    const _ = filters.search;
+    const __ = filters.status;
+    const ___ = filters.academic_year_id;
+    const ____ = filters.date_from;
+    const _____ = filters.date_to;
+    const ______ = active_season_id;
+    const _______ = seasons.length;
+
+    initFilters();
   });
 
   function applyFilters() {
-    router.get('/applications', {
+    router.get('/admin/applications', {
       search: filterSearch || undefined,
       status: filterStatus || undefined,
-      season_id: filterSeasonId || undefined,
+      academic_year_id: filterAcademicYearId || undefined,
       date_from: filterDateFrom || undefined,
       date_to: filterDateTo || undefined,
       page: 1,
@@ -58,14 +93,14 @@
   }
 
   function doAccept(id) {
-    router.put(`/applications/${id}/accept`, {}, {
+    router.put(`/admin/applications/${id}/accept`, {}, {
       onSuccess: () => {},
     });
   }
 
   function doDismiss(id) {
     if (confirm('Are you sure you want to dismiss this application?')) {
-      router.put(`/applications/${id}/dismiss`, {}, {
+      router.put(`/admin/applications/${id}/dismiss`, {}, {
         onSuccess: () => {},
       });
     }
@@ -84,53 +119,29 @@
 
 <AuthenticatedLayout breadcrumbs={breadcrumbs}>
   <div class="space-y-6 min-w-0">
-    <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+    <div class="flex items-center justify-between">
       <div>
         <p class="mt-1 text-sm text-muted-foreground">View and manage applications by season</p>
       </div>
-      <div class="flex flex-wrap items-center gap-3">
+      <div class="flex flex-wrap items-center gap-2 sm:gap-3">
+        {#if hasRole('super_admin') || hasRole('staff') || hasRole('registrar_administrator')}
+          <Link href="/admin/applications/create">
+            <Button class="min-h-[44px] gap-2">
+              <Plus class="h-4 w-4" />
+              <span class="hidden sm:inline">Create</span>
+            </Button>
+          </Link>
+        {/if}
         {#if hasRole('super_admin')}
           <Link href="/admin/applications/import">
             <Button variant="outline" class="min-h-[44px] gap-2">
               <UploadCloud class="h-4 w-4" />
-              Import
+              <span class="hidden sm:inline">Import</span>
             </Button>
           </Link>
         {/if}
-        <ToggleGroup.Root
-          type="single"
-          bind:value={viewMode}
-          variant="outline"
-          size="sm"
-          class="min-h-[44px] rounded-lg border border-border"
-          aria-label="View layout"
-        >
-          <ToggleGroup.Item value="responsive" aria-label="Auto (responsive)" class="min-h-[44px]">
-            <MonitorSmartphone class="h-4 w-4 md:mr-1.5" />
-            <span class="hidden md:inline">Auto</span>
-          </ToggleGroup.Item>
-          <ToggleGroup.Item value="table" aria-label="Table view" class="min-h-[44px]">
-            <Table2 class="h-4 w-4 md:mr-1.5" />
-            <span class="hidden md:inline">Table</span>
-          </ToggleGroup.Item>
-          <ToggleGroup.Item value="cards" aria-label="Card view" class="min-h-[44px]">
-            <LayoutGrid class="h-4 w-4 md:mr-1.5" />
-            <span class="hidden md:inline">Cards</span>
-          </ToggleGroup.Item>
-        </ToggleGroup.Root>
       </div>
     </div>
-
-    {#if success}
-      <div class="rounded-lg bg-primary/10 px-4 py-3 text-sm text-primary">
-        {success}
-      </div>
-    {/if}
-    {#if error}
-      <div class="rounded-lg bg-destructive/10 px-4 py-3 text-sm text-destructive">
-        {error}
-      </div>
-    {/if}
 
     <!-- Filters -->
     <div class="flex flex-col gap-3">
@@ -158,7 +169,7 @@
                 {/each}
               </select>
               <label for="filter-season-mobile" class="block text-sm font-medium">Season</label>
-              <select id="filter-season-mobile" bind:value={filterSeasonId} class="w-full rounded-md border border-input bg-background px-3 py-2 text-sm min-h-[44px]">
+              <select id="filter-season-mobile" bind:value={filterAcademicYearId} class="w-full rounded-md border border-input bg-background px-3 py-2 text-sm min-h-[44px]">
                 <option value="">Active</option>
                 {#each seasons as s}
                   <option value={s.id}>{seasonLabel(s)}</option>
@@ -184,7 +195,7 @@
               <option value={s.value}>{s.label}</option>
             {/each}
           </select>
-          <select bind:value={filterSeasonId} class="rounded-md border border-input bg-background px-3 py-2 text-sm min-h-[40px]">
+          <select bind:value={filterAcademicYearId} class="rounded-md border border-input bg-background px-3 py-2 text-sm min-h-[40px]">
             <option value="">Active season</option>
             {#each seasons as s}
               <option value={s.id}>{seasonLabel(s)}</option>
@@ -199,11 +210,16 @@
       </div>
     </div>
 
-    <!-- Table -->
-    <div class="{viewMode === 'cards' ? 'hidden' : viewMode === 'table' ? 'block' : 'hidden md:block'} min-w-0">
-      <div class="glass-panel rounded-2xl overflow-hidden min-w-0 max-w-full p-0">
+    <!-- Table and Cards wrapped together with shared view toggle -->
+    <div class="space-y-3">
+      <!-- View toggle as sibling to both table and cards -->
+      <div class="flex justify-end">
+        <ViewModeToggle bind:value={viewMode} />
+      </div>
+
+      <div class="{viewMode === 'cards' ? 'hidden' : viewMode === 'table' ? 'block' : 'hidden md:block'} min-w-0">
         <div class="w-full min-w-0 overflow-x-auto scrollbar-hide">
-          <Table.Root class="w-full min-w-[640px] text-sm">
+        <Table.Root class="w-full min-w-[640px] text-sm">
             <Table.Header class="bg-muted/50">
               <Table.Row>
                 <Table.Head class="px-4 py-3">Reference</Table.Head>
@@ -217,46 +233,37 @@
             <Table.Body>
               {#each list as app}
                 <Table.Row class="border-t border-border hover:bg-muted/30">
-                  <Table.Cell class="px-4 py-3 font-mono text-xs">{app.reference_number ?? '—'}</Table.Cell>
-                  <Table.Cell class="px-4 py-3">{app.full_name ?? '—'}</Table.Cell>
-                  <Table.Cell class="px-4 py-3 text-muted-foreground">{app.email ?? '—'}</Table.Cell>
-                  <Table.Cell class="px-4 py-3">
+                  <Table.Cell class="px-4 py-3 font-mono text-xs cursor-pointer" onclick={() => router.visit(`/admin/applications/${app.id}`)}>{app.reference_number ?? '—'}</Table.Cell>
+                  <Table.Cell class="px-4 py-3 cursor-pointer" onclick={() => router.visit(`/admin/applications/${app.id}`)}>{app.full_name ?? '—'}</Table.Cell>
+                  <Table.Cell class="px-4 py-3 text-muted-foreground cursor-pointer" onclick={() => router.visit(`/admin/applications/${app.id}`)}>{app.email ?? '—'}</Table.Cell>
+                  <Table.Cell class="px-4 py-3 cursor-pointer" onclick={() => router.visit(`/admin/applications/${app.id}`)}>
                     <Badge variant={statusVariant(app.status)}>{statusLabel(app.status)}</Badge>
                   </Table.Cell>
-                  <Table.Cell class="px-4 py-3 text-muted-foreground">
+                  <Table.Cell class="px-4 py-3 text-muted-foreground cursor-pointer" onclick={() => router.visit(`/admin/applications/${app.id}`)}>
                     {app.submitted_at ? new Date(app.submitted_at).toLocaleDateString() : '—'}
                   </Table.Cell>
-                  <Table.Cell class="text-center">
-                    <div class="flex justify-center gap-2">
-                      <Link href={`/applications/${app.id}`}>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          class="h-8 px-2 text-xs"
-                        >
-                          <Eye class="mr-1.5 h-3.5 w-3.5" />
-                          View
-                        </Button>
+                  <Table.Cell class="text-left" onclick={(e) => e.stopPropagation()}>
+                    <div class="flex justify-start gap-3" onclick={(e) => e.stopPropagation()}>
+                      <Link href={`/admin/applications/${app.id}/edit`} class="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground">
+                        <Pencil class="h-3.5 w-3.5" />
+                        Edit
                       </Link>
-
-                      <ActionDropdown
-                        items={[
-                          ...(app.status === 'pending' ? [
-                            { 
-                              label: 'Accept', 
-                              icon: CheckCircle, 
-                              onclick: () => doAccept(app.id),
-                              class: 'text-primary'
-                            },
-                            { 
-                              label: 'Dismiss', 
-                              icon: XCircle, 
-                              onclick: () => doDismiss(app.id),
-                              class: 'text-destructive'
-                            }
-                          ] : [])
-                        ]}
-                      />
+                      {#if app.status === 'pending'}
+                        <button
+                          class="inline-flex items-center gap-1.5 text-xs text-green-600 hover:text-green-700 hover:underline"
+                          onclick={(e) => { e.stopPropagation(); doAccept(app.id); }}
+                        >
+                          <CheckCircle class="h-3.5 w-3.5" />
+                          Accept
+                        </button>
+                        <button
+                          class="inline-flex items-center gap-1.5 text-xs text-red-600 hover:text-red-700 hover:underline"
+                          onclick={(e) => { e.stopPropagation(); doDismiss(app.id); }}
+                        >
+                          <XCircle class="h-3.5 w-3.5" />
+                          Dismiss
+                        </button>
+                      {/if}
                     </div>
                   </Table.Cell>
                 </Table.Row>
@@ -269,70 +276,69 @@
               {/each}
             </Table.Body>
           </Table.Root>
-        </div>
-        {#if applications?.last_page > 1}
-          <div class="flex items-center justify-between border-t border-border px-4 py-2">
-            <p class="text-sm text-muted-foreground">
-              Page {applications.current_page} of {applications.last_page}
-            </p>
-            <div class="flex gap-2">
-              {#if applications.prev_page_url}
-                <Link href={applications.prev_page_url}>
-                  <Button variant="outline" size="sm">Previous</Button>
-                </Link>
-              {/if}
-              {#if applications.next_page_url}
-                <Link href={applications.next_page_url}>
-                  <Button variant="outline" size="sm">Next</Button>
-                </Link>
-              {/if}
+          {#if applications?.last_page > 1}
+            <div class="flex items-center justify-between border-t border-border px-4 py-2">
+              <p class="text-sm text-muted-foreground">
+                Page {applications.current_page} of {applications.last_page}
+              </p>
+              <div class="flex gap-2">
+                {#if applications.prev_page_url}
+                  <Link href={applications.prev_page_url}>
+                    <Button variant="outline" size="sm">Previous</Button>
+                  </Link>
+                {/if}
+                {#if applications.next_page_url}
+                  <Link href={applications.next_page_url}>
+                    <Button variant="outline" size="sm">Next</Button>
+                  </Link>
+                {/if}
+              </div>
             </div>
-          </div>
-        {/if}
+          {/if}
+        </div>
       </div>
-    </div>
 
     <!-- Cards -->
     <div class="{viewMode === 'table' ? 'hidden' : viewMode === 'cards' ? 'block' : 'block md:hidden'}">
       <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
         {#each list as app}
-          <div class="rounded-xl border border-border bg-card p-4 shadow-sm">
-            <p class="font-mono text-xs text-muted-foreground">{app.reference_number ?? '—'}</p>
-            <p class="mt-1 font-medium">{app.full_name ?? '—'}</p>
-            <p class="text-sm text-muted-foreground">{app.email ?? '—'}</p>
-            <p class="mt-2">
+          <div
+            class="rounded-xl border border-border bg-card p-4 shadow-sm cursor-pointer hover:bg-muted/30"
+            onclick={(e) => e.stopPropagation()}
+            onkeydown={(e) => e.key === 'Enter' && router.visit(`/admin/applications/${app.id}`)}
+            role="button"
+            tabindex="0"
+          >
+            <p class="font-mono text-xs text-muted-foreground" onclick={() => router.visit(`/admin/applications/${app.id}`)}>{app.reference_number ?? '—'}</p>
+            <p class="mt-1 font-medium" onclick={() => router.visit(`/admin/applications/${app.id}`)}>{app.full_name ?? '—'}</p>
+            <p class="text-sm text-muted-foreground" onclick={() => router.visit(`/admin/applications/${app.id}`)}>{app.email ?? '—'}</p>
+            <p class="mt-2" onclick={() => router.visit(`/admin/applications/${app.id}`)}>
               <Badge variant={statusVariant(app.status)}>{statusLabel(app.status)}</Badge>
             </p>
-            <p class="mt-1 text-xs text-muted-foreground">
+            <p class="mt-1 text-xs text-muted-foreground" onclick={() => router.visit(`/admin/applications/${app.id}`)}>
               {app.submitted_at ? new Date(app.submitted_at).toLocaleDateString() : '—'}
             </p>
-            <div class="mt-3 flex flex-wrap gap-2">
-              {#if app.status === 'pending'}
-                <Button
-                  variant="outline"
-                  size="sm"
-                  class="min-h-[44px] text-primary border-primary/30 hover:border-primary hover:bg-primary/10"
-                  onclick={() => doAccept(app.id)}
-                >
-                  <CheckCircle class="mr-1.5 h-4 w-4" />
-                  Accept
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  class="min-h-[44px] text-destructive border-destructive/30 hover:border-destructive hover:bg-destructive/10"
-                  onclick={() => doDismiss(app.id)}
-                >
-                  <XCircle class="mr-1.5 h-4 w-4" />
-                  Dismiss
-                </Button>
-              {/if}
-              <Link href={`/applications/${app.id}`} class="inline-block">
-                <Button variant="outline" size="sm" class="min-h-[44px]">
-                  <Eye class="mr-1.5 h-4 w-4" />
-                  View
-                </Button>
+            <div class="mt-3 flex flex-wrap gap-3" onclick={(e) => e.stopPropagation()}>
+              <Link href={`/admin/applications/${app.id}/edit`} class="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground" onclick={(e) => e.stopPropagation()}>
+                <Pencil class="h-4 w-4" />
+                Edit
               </Link>
+              {#if app.status === 'pending'}
+                <button
+                  class="inline-flex items-center gap-1.5 text-sm text-green-600 hover:text-green-700 hover:underline"
+                  onclick={(e) => { e.stopPropagation(); doAccept(app.id); }}
+                >
+                  <CheckCircle class="h-4 w-4" />
+                  Accept
+                </button>
+                <button
+                  class="inline-flex items-center gap-1.5 text-sm text-red-600 hover:text-red-700 hover:underline"
+                  onclick={(e) => { e.stopPropagation(); doDismiss(app.id); }}
+                >
+                  <XCircle class="h-4 w-4" />
+                  Dismiss
+                </button>
+              {/if}
             </div>
           </div>
         {:else}

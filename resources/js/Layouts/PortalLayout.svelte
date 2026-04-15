@@ -15,7 +15,7 @@
   const applicant = $derived($page.props.auth?.applicant ?? null);
   const notificationsUnreadCount = $derived($page.props.auth?.notifications_unread_count ?? 0);
   const notificationsRecent = $derived($page.props.auth?.notifications_recent ?? []);
-  const ai_companion_enabled = $derived($page.props.ai_companion_enabled ?? false);
+  const ai_companion_enabled = $derived($page.props.ai_exam_companion_enabled ?? false);
   const csrf_token = $derived($page.props.csrf_token ?? '');
 
   function logout() {
@@ -49,7 +49,7 @@
 </svelte:head>
 
 <div class="min-h-screen flex flex-col">
-  <header class="sticky top-0 z-10 glass-panel border-b">
+  <header class="sticky top-0 z-50 glass-panel border-b">
     <div class="container flex h-14 items-center justify-between px-4">
       <Link href="/portal" class="font-semibold text-foreground no-underline hover:text-primary">
         SecureCAT <span class="text-muted-foreground font-normal">Portal</span>

@@ -3,6 +3,7 @@
   import { Link, useForm } from '@inertiajs/svelte';
   import { Button } from '@/Components/ui/button';
   import { Input } from '@/Components/ui/input';
+  import { success, error } from '@/lib/toast';
 
   let { application, courses = [], appointments = [], active_season = null, statuses = [] } = $props();
 
@@ -26,6 +27,14 @@
     status: application?.status || 'pending',
     rejection_reason: application?.rejection_reason || '',
   });
+
+  $form.onFinish = () => {
+    if (!$form.errors || Object.keys($form.errors).length === 0) {
+      success('Application updated');
+    } else {
+      error('Please fix the errors in the form');
+    }
+  };
 
   const coursesUnique = $derived(
     courses.filter((c, i, a) => a.findIndex((x) => x.id === c.id) === i)
@@ -87,12 +96,6 @@
           <span class="text-muted-foreground">Submitted:</span>
           <span class="ml-2">{new Date(application.submitted_at).toLocaleString()}</span>
         </div>
-      </div>
-    {/if}
-
-    {#if Object.keys($form.errors || {}).length > 0 && !$form.processing}
-      <div class="rounded-lg border border-destructive/50 bg-destructive/10 px-4 py-3 text-sm text-destructive">
-        Please fix the errors below.
       </div>
     {/if}
 
@@ -210,16 +213,6 @@
             <p class="text-sm text-destructive">{$form.errors.course_preference_1}</p>
           {/if}
         </div>
-      </div>
-
-      <div class="space-y-4">
-        <h3 class="text-lg font-semibold">Appointment (Optional)</h3>
-        <select bind:value={$form.appointment_id} class="w-full rounded-md border border-input bg-background px-3 py-2 text-sm">
-          <option value="">No appointment</option>
-          {#each appointments as apt}
-            <option value={apt.id}>{apt.label} ({apt.booked_count}/{apt.max_slots} slots)</option>
-          {/each}
-        </select>
       </div>
 
       <div class="space-y-4">

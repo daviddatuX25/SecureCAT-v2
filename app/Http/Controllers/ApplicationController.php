@@ -11,6 +11,7 @@ use App\Models\Applicant;
 use App\Models\Application;
 use App\Models\Appointment;
 use App\Models\Course;
+use App\Notifications\ApplicationStatusChanged;
 use App\Services\AdmissionSlipService;
 use Carbon\Carbon;
 use Illuminate\Http\RedirectResponse;
@@ -90,7 +91,10 @@ class ApplicationController extends Controller
             ];
         });
 
-        $academicYears = AcademicYear::query()->orderByDesc('academic_year')->orderBy('semester')->get(['id', 'academic_year', 'semester', 'is_active']);
+        $academicYears = AcademicYear::query()
+            ->orderByDesc('academic_year')
+            ->orderBy('semester')
+            ->get(['id', 'academic_year', 'semester', 'is_active', 'application_start_date', 'application_end_date']);
 
         return Inertia::render('Applications/Index', [
             'applications' => $applications,
@@ -176,11 +180,15 @@ class ApplicationController extends Controller
             ? true
             : ($activeAcademicYear !== null && $activeAcademicYear->isApplicationWindowOpen());
 
+        // Check if user is staff (for showing auto-accept toggle)
+        $isStaff = auth()->check() && auth()->user()->hasAnyRole(['super_admin', 'staff', 'registrar_administrator']);
+
         return Inertia::render('Applications/Apply', [
             'courses' => $courses,
             'appointments' => $appointments,
             'active_season' => $activeAcademicYear ? ['id' => $activeAcademicYear->id, 'academic_year' => $activeAcademicYear->academic_year, 'semester' => $activeAcademicYear->semester, 'semester_label' => $activeAcademicYear->semesterLabel()] : null,
             'allow_apply' => $allowApply,
+            'is_staff' => $isStaff,
         ]);
     }
 
@@ -189,6 +197,8 @@ class ApplicationController extends Controller
      */
     public function storeAdmin(StoreApplicationRequest $request): RedirectResponse
     {
+        $this->authorize('create', Application::class);
+
         $activeAcademicYear = AcademicYear::active();
 
         $validated = $request->validated();
@@ -197,6 +207,10 @@ class ApplicationController extends Controller
         $age = (int) $birthdate->diffInYears(now());
 
         $referenceNumber = Application::nextReferenceNumber();
+
+        // Handle auto-accept toggle
+        $acceptImmediately = $validated['accept_immediately'] ?? false;
+        $status = $acceptImmediately ? 'accepted' : ($validated['status'] ?? 'pending');
 
         $application = Application::create([
             'academic_year_id' => $activeAcademicYear->id,
@@ -217,12 +231,25 @@ class ApplicationController extends Controller
             'course_preference_1' => $validated['course_preference_1'],
             'course_preference_2' => ! empty($validated['course_preference_2']) ? (int) $validated['course_preference_2'] : null,
             'course_preference_3' => ! empty($validated['course_preference_3']) ? (int) $validated['course_preference_3'] : null,
-            'status' => $validated['status'] ?? 'pending',
+            'status' => $status,
             'appointment_id' => $validated['appointment_id'] ?? null,
             'submitted_at' => now(),
             'processed_by' => auth()->id(),
             'processed_at' => now(),
         ]);
+
+        // If auto-accept is enabled, create applicant and send setup email
+        if ($acceptImmediately) {
+            $setupToken = Applicant::generateSetupToken();
+            $expiresAt = now()->addHours(config('auth.setup_token_expires_hours', 72));
+            $applicant = Applicant::create([
+                'application_id' => $application->id,
+                'email' => $application->email,
+                'setup_token' => $setupToken,
+                'setup_token_expires_at' => $expiresAt,
+            ]);
+            SendApplicantSetupEmail::dispatch($applicant);
+        }
 
         if (! empty($validated['appointment_id'])) {
             Appointment::where('id', $validated['appointment_id'])->increment('booked_count');
@@ -232,6 +259,7 @@ class ApplicationController extends Controller
             'application_id' => $application->id,
             'reference_number' => $application->reference_number,
             'staff_id' => auth()->id(),
+            'accept_immediately' => $acceptImmediately,
         ]);
 
         return redirect()
@@ -252,7 +280,7 @@ class ApplicationController extends Controller
 
         $application->load(['coursePreference1', 'coursePreference2', 'coursePreference3', 'appointment', 'academicYear']);
 
-        return Inertia::render('Applications/Edit', [
+        return Inertia::render('Admin/Applications/Edit', [
             'application' => [
                 'id' => $application->id,
                 'reference_number' => $application->reference_number,
@@ -427,6 +455,7 @@ class ApplicationController extends Controller
         }
 
         DB::transaction(function () use ($application) {
+            $oldStatus = $application->status;
             $application->update([
                 'status' => 'accepted',
                 'processed_by' => auth()->id(),
@@ -446,6 +475,11 @@ class ApplicationController extends Controller
                 SendApplicantSetupEmail::dispatch($applicant);
             }
 
+            // Notify applicant of status change
+            if ($oldStatus !== 'accepted') {
+                $application->applicant?->notify(new ApplicationStatusChanged($application, $oldStatus, 'accepted'));
+            }
+
             Log::info('Application accepted', [
                 'application_id' => $application->id,
                 'reference_number' => $application->reference_number,
@@ -454,7 +488,7 @@ class ApplicationController extends Controller
         });
 
         return redirect()
-            ->route('applications.show', $application)
+            ->route('admin.applications.admin-show', $application)
             ->with('success', 'Application accepted. Setup email has been sent to the applicant.');
     }
 
@@ -481,7 +515,7 @@ class ApplicationController extends Controller
 
         if ($applicant->hasCompletedSetup()) {
             return redirect()
-                ->route('applications.show', $application)
+                ->route('admin.applications.admin-show', $application)
                 ->with('success', 'This applicant has already set up their portal account. They can sign in at the portal.');
         }
 
@@ -498,7 +532,7 @@ class ApplicationController extends Controller
         ]);
 
         return redirect()
-            ->route('applications.show', $application)
+            ->route('admin.applications.admin-show', $application)
             ->with('success', 'Portal setup email has been resent to the applicant.');
     }
 
@@ -525,12 +559,16 @@ class ApplicationController extends Controller
             Appointment::where('id', $application->appointment_id)->where('booked_count', '>', 0)->decrement('booked_count');
         }
 
+        $oldStatus = $application->status;
         $application->update([
             'status' => 'dismissed',
             'rejection_reason' => $request->validated('reason'),
             'processed_by' => auth()->id(),
             'processed_at' => now(),
         ]);
+
+        // Notify applicant of status change
+        $application->applicant?->notify(new ApplicationStatusChanged($application, $oldStatus, 'dismissed'));
 
         Log::info('Application dismissed', [
             'application_id' => $application->id,
@@ -539,7 +577,7 @@ class ApplicationController extends Controller
         ]);
 
         return redirect()
-            ->route('applications.show', $application)
+            ->route('admin.applications.admin-show', $application)
             ->with('success', 'Application has been dismissed.');
     }
 
@@ -567,15 +605,37 @@ class ApplicationController extends Controller
     {
         $ids = $request->validate(['ids' => 'required|array', 'ids.*' => 'integer'])['ids'];
 
-        Application::whereIn('id', $ids)
+        $applications = Application::whereIn('id', $ids)
             ->where('status', 'pending')
-            ->update([
+            ->get();
+
+        foreach ($applications as $application) {
+            $oldStatus = $application->status;
+            $application->update([
                 'status' => 'accepted',
                 'processed_by' => auth()->id(),
                 'processed_at' => now(),
             ]);
 
-        return back()->with('success', 'Selected applications accepted.');
+            // Create applicant and send setup email (same as single accept method)
+            $applicant = Applicant::where('application_id', $application->id)->first();
+            if (! $applicant) {
+                $setupToken = Applicant::generateSetupToken();
+                $expiresAt = now()->addHours(config('auth.setup_token_expires_hours', 72));
+                $applicant = Applicant::create([
+                    'application_id' => $application->id,
+                    'email' => $application->email,
+                    'setup_token' => $setupToken,
+                    'setup_token_expires_at' => $expiresAt,
+                ]);
+                SendApplicantSetupEmail::dispatch($applicant);
+            }
+
+            // Notify applicant of status change
+            $application->applicant?->notify(new ApplicationStatusChanged($application, $oldStatus, 'accepted'));
+        }
+
+        return back()->with('success', 'Selected applications accepted. Setup emails have been sent.');
     }
 
     /**
@@ -585,32 +645,53 @@ class ApplicationController extends Controller
     {
         $ids = $request->validate(['ids' => 'required|array', 'ids.*' => 'integer'])['ids'];
 
-        Application::whereIn('id', $ids)
+        $applications = Application::whereIn('id', $ids)
             ->where('status', 'pending')
-            ->update([
+            ->get();
+
+        foreach ($applications as $application) {
+            $oldStatus = $application->status;
+            $application->update([
                 'status' => 'dismissed',
                 'processed_by' => auth()->id(),
                 'processed_at' => now(),
             ]);
 
+            // Notify applicant of status change
+            $application->applicant?->notify(new ApplicationStatusChanged($application, $oldStatus, 'dismissed'));
+        }
+
         return back()->with('success', 'Selected applications dismissed.');
     }
 
     /**
-     * Re-open a dismissed application back to pending.
+     * Revert application status to pending. Allowed from accepted or dismissed.
      * Gated: application window of the linked academic year must still be open.
      */
     public function reopen(Application $application): RedirectResponse
     {
         $this->authorize('update', $application);
 
+        $allowedStatuses = ['accepted', 'dismissed'];
+        if (! in_array($application->status, $allowedStatuses, true)) {
+            return back()->withErrors(['error' => 'Only accepted or dismissed applications can be reverted to pending.']);
+        }
+
         if (! $application->academicYear?->isApplicationWindowOpen()) {
             return back()->withErrors(['error' => 'The application window is closed.']);
         }
 
-        $application->update(['status' => 'pending']);
+        $oldStatus = $application->status;
+        $application->update([
+            'status' => 'pending',
+            'processed_by' => null,
+            'processed_at' => null,
+        ]);
 
-        return back()->with('success', 'Application re-opened.');
+        // Delete applicant record if exists (will be recreated if accepted again)
+        $application->applicant?->delete();
+
+        return back()->with('success', 'Application reverted to pending.');
     }
 
     /**
@@ -623,6 +704,155 @@ class ApplicationController extends Controller
         $application->delete();
 
         return redirect('/applications')->with('success', 'Application deleted.');
+    }
+
+    /**
+     * Portal: Show applicant's own application.
+     */
+    public function portalShow(): Response
+    {
+        /** @var Applicant $applicant */
+        $applicant = auth()->user();
+        $application = $applicant->application;
+
+        if (! $application) {
+            abort(404, 'Application not found.');
+        }
+
+        $this->authorize('viewApplicant', $application);
+
+        $application->load(['coursePreference1:id,name,code', 'coursePreference2:id,name,code', 'coursePreference3:id,name,code', 'academicYear']);
+
+        $courses = $this->getCourses();
+
+        $applicationData = [
+            'id' => $application->id,
+            'reference_number' => $application->reference_number,
+            'first_name' => $application->first_name,
+            'middle_name' => $application->middle_name,
+            'last_name' => $application->last_name,
+            'suffix' => $application->suffix,
+            'birthdate' => $application->birthdate?->format('Y-m-d'),
+            'age' => $application->age,
+            'sex' => $application->sex,
+            'email' => $application->email,
+            'phone' => $application->phone,
+            'address_line' => $application->address_line,
+            'city' => $application->city,
+            'province' => $application->province,
+            'zip_code' => $application->zip_code,
+            'course_preference_1' => $application->course_preference_1,
+            'course_preference_2' => $application->course_preference_2,
+            'course_preference_3' => $application->course_preference_3,
+            'course_preference_1_label' => $application->coursePreference1?->name,
+            'course_preference_2_label' => $application->coursePreference2?->name,
+            'course_preference_3_label' => $application->coursePreference3?->name,
+            'status' => $application->status,
+            'submitted_at' => $application->submitted_at?->toIso8601String(),
+            'is_editable' => $application->isEditableByApplicant(),
+            'assigned_session_status' => $application->assignedSessionStatus(),
+        ];
+
+        return Inertia::render('Portal/ApplicationShow', [
+            'application' => $applicationData,
+            'courses' => $courses,
+        ]);
+    }
+
+    /**
+     * Portal: Edit applicant's own application.
+     */
+    public function portalEdit(): Response
+    {
+        /** @var Applicant $applicant */
+        $applicant = auth()->user();
+        $application = $applicant->application;
+
+        if (! $application) {
+            abort(404, 'Application not found.');
+        }
+
+        $this->authorize('editApplicant', $application);
+
+        $application->load(['coursePreference1', 'coursePreference2', 'coursePreference3', 'academicYear']);
+
+        $courses = $this->getCourses();
+
+        $applicationData = [
+            'id' => $application->id,
+            'reference_number' => $application->reference_number,
+            'first_name' => $application->first_name,
+            'middle_name' => $application->middle_name,
+            'last_name' => $application->last_name,
+            'suffix' => $application->suffix,
+            'birthdate' => $application->birthdate?->format('Y-m-d'),
+            'sex' => $application->sex,
+            'email' => $application->email,
+            'phone' => $application->phone,
+            'address_line' => $application->address_line,
+            'city' => $application->city,
+            'province' => $application->province,
+            'zip_code' => $application->zip_code,
+            'course_preference_1' => $application->course_preference_1,
+            'course_preference_2' => $application->course_preference_2,
+            'course_preference_3' => $application->course_preference_3,
+            'is_editable' => $application->isEditableByApplicant(),
+            'assigned_session_status' => $application->assignedSessionStatus(),
+        ];
+
+        return Inertia::render('Portal/ApplicationEdit', [
+            'application' => $applicationData,
+            'courses' => $courses,
+        ]);
+    }
+
+    /**
+     * Portal: Update applicant's own application.
+     */
+    public function portalUpdate(UpdateApplicationRequest $request): RedirectResponse
+    {
+        /** @var Applicant $applicant */
+        $applicant = auth()->user();
+        $application = $applicant->application;
+
+        if (! $application) {
+            abort(404, 'Application not found.');
+        }
+
+        $this->authorize('editApplicant', $application);
+
+        $validated = $request->validated();
+
+        // Build update data - only include provided fields
+        $updateData = [];
+        $fillable = [
+            'first_name', 'middle_name', 'last_name', 'suffix', 'birthdate',
+            'sex', 'email', 'phone', 'address_line', 'city', 'province', 'zip_code',
+            'course_preference_1', 'course_preference_2', 'course_preference_3',
+        ];
+
+        foreach ($fillable as $field) {
+            if (array_key_exists($field, $validated)) {
+                $updateData[$field] = $validated[$field];
+            }
+        }
+
+        // Update age if birthdate changed
+        if (isset($updateData['birthdate'])) {
+            $updateData['age'] = (int) Carbon::parse($updateData['birthdate'])->diffInYears(now());
+        }
+
+        $application->update($updateData);
+
+        Log::info('Application updated by applicant', [
+            'application_id' => $application->id,
+            'reference_number' => $application->reference_number,
+            'applicant_id' => $applicant->id,
+        ]);
+
+        return redirect()
+            ->route('portal.application.show')
+            ->with('success', 'Application updated successfully.');
     }
 
     private function getCourses(): array

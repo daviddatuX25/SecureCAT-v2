@@ -1,7 +1,7 @@
 <script>
   import { Link, router } from '@inertiajs/svelte';
   import { usePage } from '@inertiajs/svelte';
-  import { ChevronDown, ChevronRight, Menu, LayoutDashboard, Users, FileText, Calendar, GraduationCap, Bot, Settings, ScrollText, Activity, CalendarRange, Layers, ShieldCheck, Sun, Moon, Search, SendHorizonal } from 'lucide-svelte';
+  import { ChevronDown, ChevronRight, Menu, LayoutDashboard, Users, FileText, Calendar, GraduationCap, Bot, Settings, ScrollText, Activity, CalendarRange, Layers, ShieldCheck, Sun, Moon, SendHorizonal } from 'lucide-svelte';
   import NotificationDropdown from '@/Components/NotificationDropdown.svelte';
   import ToastManager from '@/Components/ToastManager.svelte';
   import { Button } from '@/Components/ui/button';
@@ -59,16 +59,16 @@
     { label: null, items: [{ href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard, roles: ['*'] }] },
     { label: 'Registrar Office', items: [
       { href: '/admin/academic-years', label: 'Academic Years', icon: CalendarRange, roles: ['super_admin', 'registrar_administrator'] },
-      { href: '/applications', label: 'Applications', icon: FileText, roles: ['super_admin', 'registrar_administrator', 'staff'] },
+      { href: '/admin/applications', label: 'Applications', icon: FileText, roles: ['super_admin', 'registrar_administrator', 'staff'] },
       { href: '/admin/exam-scheduling', label: 'Exam Scheduling', icon: Calendar, roles: ['super_admin', 'registrar_administrator'] },
     ]},
     { label: 'Guidance Office', items: [
       { href: '/admin/exam-scheduling', label: 'My Sessions', icon: Calendar, roles: ['proctor'] },
       { href: '/admin/exam-monitoring', label: 'Exam Monitoring', icon: Activity, roles: ['super_admin', 'test_administrator', 'proctor'] },
       { href: '/admin/grading', label: 'Grading', icon: GraduationCap, roles: ['super_admin', 'test_administrator'] },
-      { href: '/release', label: 'Release', icon: SendHorizonal, roles: ['super_admin', 'test_administrator'], items: [
-        { href: '/release', label: 'Release Management', icon: SendHorizonal },
-        { href: '/release/result-sheet-templates', label: 'Result Sheet Templates', icon: FileText },
+      { href: '/admin/release', label: 'Release', icon: SendHorizonal, roles: ['super_admin', 'test_administrator'], items: [
+        { href: '/admin/release', label: 'Release Management', icon: SendHorizonal },
+        { href: '/admin/release/result-templates', label: 'Result Templates', icon: FileText },
       ]},
     ]},
     { label: 'Administration', collapsible: true, items: [
@@ -320,17 +320,6 @@
       </div>
 
       <div class="flex items-center gap-2 sm:gap-4">
-        <div class="relative hidden sm:block">
-          <Search class="w-5 h-5 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none" />
-          <input
-            type="text"
-            placeholder="Search..."
-            class="pl-10 pr-4 py-2 bg-muted/50 border border-border/50 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all w-48 lg:w-64"
-            readonly
-            tabindex="-1"
-            aria-label="Search"
-          />
-        </div>
         <Button variant="ghost" size="icon" onclick={toggleTheme} aria-label={darkMode ? 'Switch to light mode' : 'Switch to dark mode'} class="rounded-full min-h-[44px] min-w-[44px]">
           <Sun class="h-5 w-5 dark:hidden" />
           <Moon class="h-5 w-5 hidden dark:block" />

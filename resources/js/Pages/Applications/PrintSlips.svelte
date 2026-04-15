@@ -34,13 +34,13 @@
   }
 
   function markAsPrinted() {
-    router.post('/applications/print-slips/mark-printed', { application_ids: Array.from(selected), printed: true }, {
+    router.post('/admin/applications/print-slips/mark-printed', { application_ids: Array.from(selected), printed: true }, {
       onSuccess: () => (selected = new Set()),
     });
   }
 
   function unmarkPrinted() {
-    router.post('/applications/print-slips/mark-printed', { application_ids: Array.from(selected), printed: false }, {
+    router.post('/admin/applications/print-slips/mark-printed', { application_ids: Array.from(selected), printed: false }, {
       onSuccess: () => (selected = new Set()),
     });
   }
@@ -48,22 +48,22 @@
   function printBulk() {
     const ids = Array.from(selected);
     if (ids.length === 1) {
-      window.open(`/applications/print-slips/${ids[0]}/single`, '_blank', 'noopener');
+      window.open(`/admin/applications/print-slips/${ids[0]}/single`, '_blank', 'noopener');
     } else {
-      router.visit(`/applications/print-slips/bulk?ids=${ids.join(',')}`);
+      router.visit(`/admin/applications/print-slips/bulk?ids=${ids.join(',')}`);
     }
   }
 
   function togglePrinted(app) {
     const printed = !app.printed;
-    router.post('/applications/print-slips/mark-printed', {
+    router.post('/admin/applications/print-slips/mark-printed', {
       application_ids: [app.id],
       printed,
     });
   }
 
   const breadcrumbs = $derived([
-    { label: 'Applications', href: '/applications' },
+    { label: 'Applications', href: '/admin/applications' },
     { label: 'Print Slips' }
   ]);
 </script>
@@ -143,7 +143,7 @@
                   </Table.Cell>
                   <Table.Cell class="px-4 py-3 text-right">
                     <div class="flex justify-end gap-2">
-                      <Link href={`/applications/print-slips/${app.id}/single`} target="_blank">
+                      <Link href={`/admin/applications/print-slips/${app.id}/single`} target="_blank">
                         <Button variant="outline" size="sm" class="min-h-[44px]">
                           <Printer class="h-4 w-4 mr-1.5" />
                           Print

@@ -169,11 +169,20 @@ Route::middleware(['auth'])->group(function () {
         Route::post('applications/import/preview', [ApplicationImportController::class, 'preview'])->name('import.preview');
         Route::post('applications/import/confirm', [ApplicationImportController::class, 'confirm'])->name('import.confirm');
 
+        Route::get('applications', [ApplicationController::class, 'index'])->name('index');
         Route::get('applications/create', [ApplicationController::class, 'create'])->name('create');
-        Route::post('applications', [ApplicationController::class, 'storeAdmin'])->name('store-admin');
-        Route::get('applications/{application}', [ApplicationController::class, 'show'])->name('show');
+        Route::post('applications', [ApplicationController::class, 'storeAdmin'])->name('store');
+        Route::get('applications/{application}', [ApplicationController::class, 'show'])->name('admin-show');
         Route::get('applications/{application}/edit', [ApplicationController::class, 'edit'])->name('edit');
         Route::put('applications/{application}', [ApplicationController::class, 'updateAdmin'])->name('update');
+        Route::put('applications/{application}/accept', [ApplicationController::class, 'accept'])->name('accept');
+        Route::post('applications/{application}/resend-setup-email', [ApplicationController::class, 'resendSetupEmail'])->name('resend-setup-email');
+        Route::put('applications/{application}/dismiss', [ApplicationController::class, 'dismiss'])->name('dismiss');
+        Route::post('applications/bulk-accept', [ApplicationController::class, 'bulkAccept'])->name('bulk-accept');
+        Route::post('applications/bulk-dismiss', [ApplicationController::class, 'bulkDismiss'])->name('bulk-dismiss');
+        Route::put('applications/{application}/reopen', [ApplicationController::class, 'reopen'])->name('reopen');
+        Route::delete('applications/{application}', [ApplicationController::class, 'destroy'])->name('destroy');
+        Route::get('applications/{application}/admission-slip', [ApplicationController::class, 'admissionSlip'])->name('admission-slip');
     });
 
     // Bulk score import (admin prefixed)
@@ -183,23 +192,6 @@ Route::middleware(['auth'])->group(function () {
         Route::post('grading/import/preview', [ScoreImportController::class, 'preview'])->name('import.preview');
         Route::post('grading/import/confirm', [ScoreImportController::class, 'confirm'])->name('import.confirm');
     });
-
-    Route::get('/applications', [ApplicationController::class, 'index'])->name('applications.index')->middleware('role:super_admin,registrar_administrator,staff');
-    Route::get('/applications/{application}', [ApplicationController::class, 'show'])->name('applications.show')->middleware('role:super_admin,staff,registrar_administrator');
-    Route::put('/applications/{application}/accept', [ApplicationController::class, 'accept'])->name('applications.accept')->middleware('role:super_admin,staff,registrar_administrator');
-    Route::post('/applications/{application}/resend-setup-email', [ApplicationController::class, 'resendSetupEmail'])->name('applications.resend-setup-email')->middleware('role:super_admin,staff,registrar_administrator');
-    Route::put('/applications/{application}/dismiss', [ApplicationController::class, 'dismiss'])->name('applications.dismiss')->middleware('role:super_admin,staff,registrar_administrator');
-    Route::post('/applications/bulk-accept', [ApplicationController::class, 'bulkAccept'])->name('applications.bulk-accept')->middleware('role:super_admin,staff,registrar_administrator');
-    Route::post('/applications/bulk-dismiss', [ApplicationController::class, 'bulkDismiss'])->name('applications.bulk-dismiss')->middleware('role:super_admin,staff,registrar_administrator');
-    Route::put('/applications/{application}/reopen', [ApplicationController::class, 'reopen'])->name('applications.reopen')->middleware('role:super_admin,staff,registrar_administrator');
-    Route::delete('/applications/{application}', [ApplicationController::class, 'destroy'])->name('applications.destroy')->middleware('role:super_admin,registrar_administrator');
-    // Bulk applicant import
-    Route::get('/applications/import', [ApplicationImportController::class, 'importForm'])->name('applications.import')->middleware('role:super_admin,staff,registrar_administrator');
-    Route::post('/applications/import', [ApplicationImportController::class, 'import'])->name('applications.import.store')->middleware('role:super_admin,staff,registrar_administrator');
-    // Preview flow for bulk import
-    Route::post('/applications/import/preview', [ApplicationImportController::class, 'preview'])->name('applications.import.preview')->middleware('role:super_admin,staff,registrar_administrator');
-    Route::post('/applications/import/confirm', [ApplicationImportController::class, 'confirm'])->name('applications.import.confirm')->middleware('role:super_admin,staff,registrar_administrator');
-    Route::get('/applications/{application}/admission-slip', [ApplicationController::class, 'admissionSlip'])->name('applications.admission-slip')->middleware('role:super_admin,registrar_administrator,staff');
     Route::get('/proctor', fn () => redirect()->route('admin.exam-scheduling.index'))->middleware('role:super_admin,proctor');
     Route::middleware('role:super_admin,registrar_administrator,proctor,test_administrator')->prefix('proctor')->name('proctor.')->group(function () {
         Route::get('sessions/{exam_session}', [SessionRosterController::class, 'show'])->name('sessions.show');

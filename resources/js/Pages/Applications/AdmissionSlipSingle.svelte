@@ -18,7 +18,7 @@
   function toggleMarkPrinted() {
     const next = !markedPrinted;
     markedPrinted = next;
-    router.post('/applications/print-slips/mark-printed', {
+    router.post('/admin/applications/print-slips/mark-printed', {
       application_ids: [Number(appId)],
       printed: next,
     }, { preserveScroll: true });
@@ -30,7 +30,7 @@
 </svelte:head>
 
 <div class="print:hidden p-4 space-y-4">
-  <Link href="/applications/print-slips" class="text-sm text-muted-foreground hover:text-foreground inline-flex items-center gap-1">
+  <Link href="/admin/applications/print-slips" class="text-sm text-muted-foreground hover:text-foreground inline-flex items-center gap-1">
     <ArrowLeft class="h-4 w-4" />
     Back to print batch
   </Link>

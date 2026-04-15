@@ -38,7 +38,7 @@
   let showDismissModal = $state(false);
 
   function accept() {
-    router.put(`/applications/${application.id}/accept`);
+    router.put(`/admin/applications/${application.id}/accept`);
   }
 
   function openDismiss() {
@@ -51,13 +51,19 @@
   }
 
   function submitDismiss() {
-    router.put(`/applications/${application.id}/dismiss`, { reason: dismissReason.trim() || undefined });
+    router.put(`/admin/applications/${application.id}/dismiss`, { reason: dismissReason.trim() || undefined });
     showDismissModal = false;
     dismissReason = '';
   }
 
   function resendSetupEmail() {
-    router.post(`/applications/${application.id}/resend-setup-email`);
+    router.post(`/admin/applications/${application.id}/resend-setup-email`);
+  }
+
+  function revertToPending() {
+    if (confirm('Are you sure you want to revert this application to pending status?')) {
+      router.put(`/admin/applications/${application.id}/reopen`);
+    }
   }
 
   const courseLabel = (id) => {
@@ -66,15 +72,16 @@
   };
 
   const canAccept = $derived(
-    within_application_window &&
-    application &&
-    ['pending', 'dismissed'].includes(application.status)
+    within_application_window && application && application.status === 'pending'
   );
   const canDismiss = $derived(
     within_application_window && application && application.status === 'pending'
   );
+  const canRevert = $derived(
+    within_application_window && application && ['accepted', 'dismissed'].includes(application.status)
+  );
   const breadcrumbs = $derived([
-    { label: 'Applications', href: '/applications' },
+    { label: 'Applications', href: '/admin/applications' },
     { label: application?.reference_number ?? 'Application' }
   ]);
 </script>
@@ -123,6 +130,12 @@
           <Button onclick={resendSetupEmail} variant="outline" size="sm" class="min-h-[40px]">
             <Mail class="mr-1.5 h-4 w-4" />
             Resend Setup Email
+          </Button>
+        {/if}
+        {#if canRevert}
+          <Button onclick={revertToPending} variant="outline" size="sm" class="min-h-[40px]">
+            <ArrowLeft class="mr-1.5 h-4 w-4" />
+            Revert to Pending
           </Button>
         {/if}
       </div>
