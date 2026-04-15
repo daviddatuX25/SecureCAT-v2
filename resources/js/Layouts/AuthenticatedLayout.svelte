@@ -3,6 +3,7 @@
   import { usePage } from '@inertiajs/svelte';
   import { ChevronDown, ChevronRight, Menu, LayoutDashboard, Users, FileText, Calendar, GraduationCap, Bot, Settings, ScrollText, Activity, CalendarRange, Layers, ShieldCheck, Sun, Moon, Search, SendHorizonal } from 'lucide-svelte';
   import NotificationDropdown from '@/Components/NotificationDropdown.svelte';
+  import ToastManager from '@/Components/ToastManager.svelte';
   import { Button } from '@/Components/ui/button';
 
   let { children, breadcrumbs = [] } = $props();
@@ -64,10 +65,11 @@
     { label: 'Guidance Office', items: [
       { href: '/admin/exam-scheduling', label: 'My Sessions', icon: Calendar, roles: ['proctor'] },
       { href: '/admin/exam-monitoring', label: 'Exam Monitoring', icon: Activity, roles: ['super_admin', 'test_administrator', 'proctor'] },
-      { href: '/grading', label: 'Grading', icon: GraduationCap, roles: ['super_admin', 'test_administrator'] },
-      { href: '/release', label: 'Release', icon: SendHorizonal, roles: ['super_admin', 'test_administrator'] },
-      { href: '/admin/aptitude-areas', label: 'Aptitude Areas', icon: Layers, roles: ['super_admin', 'test_administrator'] },
-      { href: '/admin/result-sheet-templates', label: 'Result Sheet Templates', icon: FileText, roles: ['super_admin', 'test_administrator'] },
+      { href: '/admin/grading', label: 'Grading', icon: GraduationCap, roles: ['super_admin', 'test_administrator'] },
+      { href: '/release', label: 'Release', icon: SendHorizonal, roles: ['super_admin', 'test_administrator'], items: [
+        { href: '/release', label: 'Release Management' },
+        { href: '/release/result-sheet-templates', label: 'Result Sheet Templates', icon: FileText },
+      ]},
     ]},
     { label: 'Administration', collapsible: true, items: [
       { href: '/admin/users', label: 'Users', icon: Users, roles: ['super_admin'] },
@@ -89,6 +91,15 @@
     const url = $page.url || '';
     if (url === href || url === href + '/') return true;
     if (url.startsWith(href + '/')) return true;
+
+    // Special handling for proctor sessions to highlight "My Sessions" in sidebar
+    // /proctor/sessions/{id} should highlight /admin/exam-scheduling (not /admin/exam-monitoring)
+    if (url === '/proctor/sessions' || url.startsWith('/proctor/sessions/')) {
+      if (href === '/admin/exam-scheduling') {
+        return true;
+      }
+    }
+
     return false;
   }
 </script>
@@ -325,6 +336,7 @@
           <Moon class="h-5 w-5 hidden dark:block" />
         </Button>
         <NotificationDropdown />
+        <ToastManager />
       </div>
     </header>
 
