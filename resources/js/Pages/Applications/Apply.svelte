@@ -5,8 +5,9 @@
   import { Input } from '@/Components/ui/input';
   import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/Components/ui/card';
   import { CalendarX } from 'lucide-svelte';
+  import { Switch } from '@/Components/ui/switch';
 
-  let { courses = [], appointments = [], active_season = null, allow_apply = false } = $props();
+  let { courses = [], appointments = [], active_season = null, allow_apply = false, is_staff = false } = $props();
 
   const form = useForm({
     first_name: '',
@@ -25,7 +26,11 @@
     course_preference_2: '',
     course_preference_3: '',
     appointment_id: '',
+    accept_immediately: false,
+    terms_accepted: false,
   });
+
+  const canSubmit = $derived($form.terms_accepted && !$form.processing);
 
   const coursesUnique = $derived(
     courses.filter((c, i, a) => a.findIndex((x) => x.id === c.id) === i)
@@ -83,9 +88,6 @@
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <Link href="/">
-            <Button variant="outline">Back to Home</Button>
-          </Link>
         </CardContent>
       </Card>
     {:else}
@@ -103,10 +105,10 @@
         <CardContent>
           <form
             method="post"
-            action="/applications"
+            action={is_staff ? '/admin/applications' : '/applications'}
             onsubmit={(e) => {
               e.preventDefault();
-              $form.post('/applications');
+              $form.post(is_staff ? '/admin/applications' : '/applications');
             }}
             class="space-y-4"
           >
@@ -153,6 +155,48 @@
                 {/if}
               </div>
             </div>
+            <details class="rounded-md border border-border p-4">
+              <summary class="cursor-pointer text-sm font-medium">Contact Information (optional)</summary>
+              <div class="mt-3 space-y-4">
+                <div>
+                  <label for="phone" class="block text-sm font-medium">Phone number</label>
+                  <Input id="phone" name="phone" type="tel" bind:value={$form.phone} class="mt-1 min-h-[44px]" />
+                  {#if $form.errors?.phone}
+                    <p class="mt-1 text-sm text-destructive">{$form.errors.phone}</p>
+                  {/if}
+                </div>
+                <div>
+                  <label for="address_line" class="block text-sm font-medium">Street address</label>
+                  <Input id="address_line" name="address_line" bind:value={$form.address_line} class="mt-1 min-h-[44px]" />
+                  {#if $form.errors?.address_line}
+                    <p class="mt-1 text-sm text-destructive">{$form.errors.address_line}</p>
+                  {/if}
+                </div>
+                <div class="grid gap-4 sm:grid-cols-3">
+                  <div>
+                    <label for="city" class="block text-sm font-medium">City</label>
+                    <Input id="city" name="city" bind:value={$form.city} class="mt-1 min-h-[44px]" />
+                    {#if $form.errors?.city}
+                      <p class="mt-1 text-sm text-destructive">{$form.errors.city}</p>
+                    {/if}
+                  </div>
+                  <div>
+                    <label for="province" class="block text-sm font-medium">Province</label>
+                    <Input id="province" name="province" bind:value={$form.province} class="mt-1 min-h-[44px]" />
+                    {#if $form.errors?.province}
+                      <p class="mt-1 text-sm text-destructive">{$form.errors.province}</p>
+                    {/if}
+                  </div>
+                  <div>
+                    <label for="zip_code" class="block text-sm font-medium">Zip code</label>
+                    <Input id="zip_code" name="zip_code" bind:value={$form.zip_code} class="mt-1 min-h-[44px]" />
+                    {#if $form.errors?.zip_code}
+                      <p class="mt-1 text-sm text-destructive">{$form.errors.zip_code}</p>
+                    {/if}
+                  </div>
+                </div>
+              </div>
+            </details>
             <div>
               <label for="course_preference_1" class="block text-sm font-medium">Course preferences *</label>
               <p class="text-xs text-muted-foreground mt-1">Select one or up to three different courses in order of preference.</p>
@@ -180,8 +224,31 @@
                 <p class="mt-1 text-sm text-destructive">{$form.errors.course_preference_1}</p>
               {/if}
             </div>
+            {#if is_staff}
+              <div class="rounded-md border border-border bg-muted/50 p-4">
+                <div class="flex items-center justify-between">
+                  <div class="space-y-1">
+                    <label for="accept_immediately" class="text-sm font-medium">Accept immediately</label>
+                    <p class="text-xs text-muted-foreground">Create application as accepted so applicant can access portal</p>
+                  </div>
+                  <Switch id="accept_immediately" bind:checked={$form.accept_immediately} />
+                </div>
+              </div>
+            {/if}
+            <div class="rounded-md border border-border bg-muted/30 p-4">
+              <label class="flex items-start gap-3 cursor-pointer">
+                <input
+                  type="checkbox"
+                  bind:checked={$form.terms_accepted}
+                  class="mt-0.5 h-4 w-4 rounded border-border text-primary accent-primary cursor-pointer"
+                />
+                <span class="text-sm text-muted-foreground">
+                  I have read and agree to the <a href="#" class="underline hover:text-foreground">Terms and Conditions</a> and <a href="#" class="underline hover:text-foreground">Privacy Policy</a>. *
+                </span>
+              </label>
+            </div>
             <div class="flex justify-end gap-4 pt-4">
-              <Button type="submit" disabled={$form.processing} class="min-h-[44px]">
+              <Button type="submit" disabled={!canSubmit} class="min-h-[44px]">
                 {$form.processing ? 'Submitting…' : 'Submit application'}
               </Button>
               <Link href="/">

@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: Milestone complete
-last_updated: "2026-04-14T00:29:36.316Z"
+last_updated: "2026-04-15T01:06:00.728Z"
 last_activity: 2026-04-14
 progress:
-  total_phases: 20
+  total_phases: 21
   completed_phases: 6
-  total_plans: 16
+  total_plans: 17
   completed_plans: 16
-  percent: 100
+  percent: 94
 ---
 
 # SecureCAT-v2 State
@@ -29,6 +29,7 @@ progress:
 - 2026-04-13: Phase 3 added - add toast feedback to admin create edit pages
 - 2026-04-13: Phase 4 added - Applicant AI Companion chat interface - floating expandable chat area for applicants to chat with AI Companion when enabled
 - 2026-04-14: Phase 5 added - AI Companion Edge Cases & Security Hardening
+- 2026-04-14: Phase 6 added - QA Audit Fixes — Admin CRUD gaps
 
 ## Current Work
 
@@ -56,11 +57,6 @@ progress:
 | # | Description | Date | Commit | Directory |
 |---|-------------|------|--------|-----------|
 | 260413-2p5 | hide table scrollbar | 2026-04-12 | | [260413-2p5-hide-table-scrollbar](./quick/260413-2p5-hide-table-scrollbar/) |
+| 260415-ff2 | Add phone and address fields to apply form, add terms checkbox | 2026-04-15 | | [260415-ff2-add-phone-and-address-fields-to-the-appl](./quick/260415-ff2-add-phone-and-address-fields-to-the-appl/) |
 
-### Quick Tasks Completed
-
-| # | Description | Date | Commit | Directory |
-|---|-------------|------|--------|-----------|
-| 260413-2p5 | hide table scrollbar | 2026-04-12 | | [260413-2p5-hide-table-scrollbar](./quick/260413-2p5-hide-table-scrollbar/) |
-
-Last activity: 2026-04-14
+Last activity: 2026-04-15
