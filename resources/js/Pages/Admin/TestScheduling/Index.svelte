@@ -10,8 +10,8 @@
   import { Input } from '@/Components/ui/input';
   import ScheduleAssistantPanel from '@/Components/ScheduleAssistantPanel.svelte';
   import InfoPopover from '@/Components/InfoPopover.svelte';
+  import ViewModeToggle from '@/Components/ViewModeToggle.svelte';
   import { Plus, LayoutGrid, Table2, MonitorSmartphone, Eye, Pencil, ChevronDown, Filter, ClipboardList, Sparkles, DoorOpen, Send, Undo, X, Trash2 } from 'lucide-svelte';
-  import ActionDropdown from '@/Components/ActionDropdown.svelte';
 
   let { sessions, filters = {}, statuses = [], view = 'admin', schedule_assistant = null } = $props();
 
@@ -102,7 +102,23 @@
   }
 
   let viewMode = $state('responsive');
+  let deleteId = $state(null);
+
   const list = $derived(sessions?.data ?? []);
+
+  function confirmDelete(id) {
+    deleteId = id;
+  }
+
+  function cancelDelete() {
+    deleteId = null;
+  }
+
+  function doDelete() {
+    if (deleteId) {
+      router.delete(`/admin/exam-scheduling/${deleteId}`, { onSuccess: () => (deleteId = null) });
+    }
+  }
 
   function getStateAction(session) {
     if (session.status === 'draft') return { label: 'Publish', icon: Send, method: 'post', href: `/admin/exam-scheduling/${session.id}/publish` };
@@ -114,53 +130,37 @@
 
 <AuthenticatedLayout breadcrumbs={breadcrumbs}>
     <div class="space-y-6 min-w-0">
-    <div class="flex flex-wrap items-center gap-3">
-        <ToggleGroup.Root
-          type="single"
-          bind:value={viewMode}
-          variant="outline"
-          size="sm"
-          class="min-h-[44px] rounded-lg border border-border"
-          aria-label="View layout"
-        >
-          <ToggleGroup.Item value="responsive" aria-label="Auto (responsive)" class="min-h-[44px]">
-            <MonitorSmartphone class="h-4 w-4 md:mr-1.5" />
-            <span class="hidden md:inline">Auto</span>
-          </ToggleGroup.Item>
-          <ToggleGroup.Item value="table" aria-label="Table view" class="min-h-[44px]">
-            <Table2 class="h-4 w-4 md:mr-1.5" />
-            <span class="hidden md:inline">Table</span>
-          </ToggleGroup.Item>
-          <ToggleGroup.Item value="cards" aria-label="Card view" class="min-h-[44px]">
-            <LayoutGrid class="h-4 w-4 md:mr-1.5" />
-            <span class="hidden md:inline">Cards</span>
-          </ToggleGroup.Item>
-        </ToggleGroup.Root>
+    <div class="flex items-center justify-between">
+      <div>
+        <p class="text-sm text-muted-foreground">View and manage exam sessions by date and status</p>
+      </div>
+      <div class="flex flex-wrap items-center gap-2 sm:gap-3">
         {#if !isProctorView && schedule_assistant}
           <Button
             variant="outline"
-            class="min-h-[44px]"
+            class="min-h-[44px] gap-2"
             onclick={() => (assistantOpen = true)}
           >
-            <Sparkles class="mr-2 h-4 w-4" />
-            Schedule with AI
+            <Sparkles class="h-4 w-4" />
+            <span class="hidden sm:inline">Schedule with AI</span>
           </Button>
         {/if}
         {#if !isProctorView}
           <Link href="/admin/exam-scheduling/create">
-            <Button class="min-h-[44px]">
-              <Plus class="mr-2 h-4 w-4" />
-              Create Session
+            <Button class="min-h-[44px] gap-2">
+              <Plus class="h-4 w-4" />
+              <span class="hidden sm:inline">Create Session</span>
             </Button>
           </Link>
           <Link href="/admin/rooms">
-            <Button variant="outline" class="min-h-[44px]">
-              <DoorOpen class="mr-2 h-4 w-4" />
-              Manage Rooms
+            <Button variant="outline" class="min-h-[44px] gap-2">
+              <DoorOpen class="h-4 w-4" />
+              <span class="hidden sm:inline">Manage Rooms</span>
             </Button>
           </Link>
         {/if}
       </div>
+    </div>
 
     {#if success}
       <div class="rounded-lg bg-primary/10 px-4 py-3 text-sm text-primary">
@@ -262,34 +262,34 @@
       </div>
     </div>
 
-    <div class="glass-panel rounded-2xl overflow-hidden min-w-0 max-w-full p-6">
-      <div
-        class="w-full min-w-0 overflow-x-auto scrollbar-hide {viewMode === 'cards'
-          ? 'hidden'
-          : viewMode === 'table'
-            ? 'block'
-            : 'hidden md:block'}"
-      >
-        <Table.Root>
+    <div class="space-y-3">
+      <!-- View toggle as sibling to table container -->
+      <div class="flex justify-end">
+        <ViewModeToggle bind:value={viewMode} />
+      </div>
+
+      <div class="min-w-0">
+        <div class="w-full min-w-0 overflow-x-auto scrollbar-hide">
+        <Table.Root class="w-full min-w-[640px] text-sm">
           <Table.Header class="bg-muted/50">
             <Table.Row>
-              <Table.Head>Date</Table.Head>
-              <Table.Head>Time</Table.Head>
-              <Table.Head>Room</Table.Head>
-              <Table.Head>Status</Table.Head>
-              <Table.Head>Proctors</Table.Head>
-              <Table.Head class="text-center">Actions</Table.Head>
+              <Table.Head class="px-4 py-3">Date</Table.Head>
+              <Table.Head class="px-4 py-3">Time</Table.Head>
+              <Table.Head class="px-4 py-3">Room</Table.Head>
+              <Table.Head class="px-4 py-3">Status</Table.Head>
+              <Table.Head class="px-4 py-3">Proctors</Table.Head>
+              <Table.Head class="text-center px-4 py-3">Actions</Table.Head>
             </Table.Row>
           </Table.Header>
           <Table.Body>
             {#each list as session}
-              <Table.Row>
-                <Table.Cell>{formatDate(session.date)}</Table.Cell>
-                <Table.Cell>
+              <Table.Row class="border-t border-border cursor-pointer hover:bg-muted/30" onclick={() => router.visit(`/admin/exam-scheduling/${session.id}`)}>
+                <Table.Cell class="px-4 py-3">{formatDate(session.date)}</Table.Cell>
+                <Table.Cell class="px-4 py-3">
                   {formatTime(session.start_time)}{#if session.end_time} – {formatTime(session.end_time)}{/if}
                 </Table.Cell>
-                <Table.Cell>{session.room?.name ?? '—'}</Table.Cell>
-                <Table.Cell>
+                <Table.Cell class="px-4 py-3">{session.room?.name ?? '—'}</Table.Cell>
+                <Table.Cell class="px-4 py-3">
                   <Badge variant={statusVariant(session.status)}>{statusLabel(session.status)}</Badge>
                 </Table.Cell>
                 <Table.Cell>
@@ -301,56 +301,25 @@
                 </Table.Cell>
                 <Table.Cell class="text-center">
                     <div class="flex justify-center gap-2">
-                      <Link href={`/admin/exam-scheduling/${session.id}`}>
-                        <Button variant="ghost" size="sm" class="h-8 px-2 text-xs">
-                          <Eye class="mr-1.5 h-3.5 w-3.5" />
-                          Manage
+                      {#if !isProctorView && session.status === 'draft'}
+                        <Link href={`/admin/exam-scheduling/${session.id}/edit`}>
+                          <Button variant="ghost" size="sm" class="h-8 px-2 text-xs">
+                            <Pencil class="mr-1.5 h-3.5 w-3.5" />
+                            Edit
+                          </Button>
+                        </Link>
+                      {/if}
+                      {#if !isProctorView && session.status !== 'completed'}
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          class="h-8 px-2 text-xs text-destructive"
+                          onclick={() => confirmDelete(session.id)}
+                        >
+                          <Trash2 class="mr-1.5 h-3.5 w-3.5" />
+                          Delete
                         </Button>
-                      </Link>
-                      <ActionDropdown
-                        items={[
-                          ...(isProctorView && (session.status === 'published' || session.status === 'in_progress') ? [
-                            {
-                              label: 'Roster',
-                              icon: ClipboardList,
-                              href: `/proctor/sessions/${session.id}`
-                            }
-                          ] : []),
-                          ...(!isProctorView && session.status !== 'completed' && session.status !== 'in_progress' && session.status !== 'cancelled' ? [
-                            {
-                              label: session.status === 'draft' ? 'Publish' : session.status === 'published' ? 'Unpublish' : '',
-                              icon: session.status === 'draft' ? Send : session.status === 'published' ? Undo : null,
-                              method: 'post',
-                              href: session.status === 'draft' ? `/admin/exam-scheduling/${session.id}/publish` : session.status === 'published' ? `/admin/exam-scheduling/${session.id}/unpublish` : null
-                            }
-                          ] : []),
-                          ...(!isProctorView && session.status !== 'in_progress' && session.status !== 'cancelled' && session.status !== 'completed' ? [
-                            {
-                              label: 'Edit',
-                              icon: Pencil,
-                              href: `/admin/exam-scheduling/${session.id}/edit`
-                            }
-                          ] : []),
-                          ...(!isProctorView && (session.status === 'in_progress') ? [
-                            {
-                              label: 'Cancel',
-                              icon: X,
-                              method: 'post',
-                              href: `/admin/exam-scheduling/${session.id}/cancel`,
-                              danger: true
-                            }
-                          ] : []),
-                          ...(!isProctorView ? [
-                            {
-                              label: 'Delete',
-                              icon: Trash2,
-                              method: 'delete',
-                              href: `/admin/exam-scheduling/${session.id}`,
-                              danger: true
-                            }
-                          ] : [])
-                        ]}
-                      />
+                      {/if}
                     </div>
                 </Table.Cell>
               </Table.Row>
@@ -462,5 +431,18 @@
         </div>
       </Dialog.Content>
     </Dialog.Root>
+  {/if}
+
+  {#if deleteId}
+    <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" role="dialog" aria-modal="true">
+      <div class="rounded-lg bg-card p-6 shadow-lg max-w-sm w-full">
+        <h2 class="text-lg font-semibold">Delete exam session?</h2>
+        <p class="mt-2 text-sm text-muted-foreground">This action cannot be undone.</p>
+        <div class="mt-4 flex justify-end gap-2">
+          <Button variant="outline" onclick={cancelDelete}>Cancel</Button>
+          <Button variant="destructive" onclick={doDelete}>Delete</Button>
+        </div>
+      </div>
+    </div>
   {/if}
 </AuthenticatedLayout>
