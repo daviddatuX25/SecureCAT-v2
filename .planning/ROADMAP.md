@@ -120,8 +120,20 @@ Plans:
 Plans:
 - [ ] TBD (run /gsd-plan-phase 6 to break down)
 
----
+### Phase 13: Exam Session Workflow & Notification Enhancements
 
+**Goal:** Overhaul exam session lifecycle (publish->in-progress->complete one-way flow), enhance notification system (status change alerts for all roles, lighter context-aware sound, mobile sizing), fix email handling (acceptance/rejection only), and redesign My Sessions page for proctor/test_admin with proper authorization.
+**Requirements:** Notification sound, email triggers, exam status workflow, role-based restrictions, My Sessions redesign, auth fix, mobile notification UI
+**Depends on:** Phase 2
+**Plans:** 4 plans in 2 waves
+
+Plans:
+- [ ] 13-01-PLAN.md — Backend: Workflow transitions, policy methods, notification classes, email scope fix, reminder env config
+- [ ] 13-02-PLAN.md — Frontend: Two-tier sound system, mobile notification dropdown sizing
+- [ ] 13-03-PLAN.md — My Sessions pages: Proctor and test_admin with date grouping, status badges, quick actions
+- [ ] 13-04-PLAN.md — Integration: Notification dispatch wiring, sound tiers in UI, proctor redirect, workflow tests
+
+---
 ## Future Milestones
 
 ### Phase F1: Student Portal
