@@ -7,11 +7,15 @@ use App\Http\Requests\Proctor\MarkAttendanceRequest;
 use App\Http\Requests\Proctor\MarkSubmissionBulkRequest;
 use App\Http\Requests\Proctor\MarkSubmissionRequest;
 use App\Models\ExamSession;
+use App\Models\User;
+use App\Notifications\ExamSessionCompleted;
+use App\Notifications\ExamSessionStarted;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Notification;
 use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -263,6 +267,15 @@ class SessionRosterController extends Controller
             'started_at' => now(),
         ]);
 
+        // Notify proctors and test_admins (D-07, D-08)
+        $exam_session->load('proctors');
+        $recipients = $exam_session->proctors;
+        $testAdmins = User::whereHas('roles', fn ($q) => $q->where('name', 'test_administrator'))->get();
+        Notification::send(
+            $recipients->merge($testAdmins)->unique('id'),
+            new ExamSessionStarted($exam_session)
+        );
+
         if (request()->wantsJson()) {
             return response()->json(['message' => 'Session started.'], 200);
         }
@@ -282,6 +295,15 @@ class SessionRosterController extends Controller
             'status' => ExamSession::STATUS_COMPLETED,
             'closed_at' => now(),
         ]);
+
+        // Notify proctors and test_admins (D-07, D-08)
+        $exam_session->load('proctors');
+        $recipients = $exam_session->proctors;
+        $testAdmins = User::whereHas('roles', fn ($q) => $q->where('name', 'test_administrator'))->get();
+        Notification::send(
+            $recipients->merge($testAdmins)->unique('id'),
+            new ExamSessionCompleted($exam_session)
+        );
 
         if (request()->wantsJson()) {
             return response()->json(['message' => 'Session closed.'], 200);
