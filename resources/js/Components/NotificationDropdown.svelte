@@ -2,7 +2,7 @@
   import { Bell, Check, CheckCheck, X, ExternalLink } from 'lucide-svelte';
   import { usePoll } from '@inertiajs/svelte';
   import { router } from '@inertiajs/svelte';
-  import { success, message } from '@/lib/toast.js';
+  import { message } from '@/lib/toast.js';
 
   let { initialNotifications = [] } = $props();
 
@@ -40,16 +40,8 @@
           // Show toast for the most recent new notification
           const latestNew = newNotifications[0];
 
-          // Determine toast type based on notification type
-          if (latestNew.type?.includes('application_status')) {
-            success(latestNew.message || 'Application status updated');
-          } else if (latestNew.type?.includes('exam_session')) {
-            message(latestNew.message || 'Exam session updated');
-          } else if (latestNew.type?.includes('result')) {
-            success(latestNew.message || 'Grading results available');
-          } else {
-            message(latestNew.message || 'New notification');
-          }
+          // All poll-based notifications use background-tier sound
+          message(latestNew.message || 'New notification');
 
           lastToastTime = now;
         }
@@ -145,7 +137,7 @@
 
     <!-- Dropdown -->
     <div
-      class="absolute right-0 top-full mt-2 w-80 sm:w-96 rounded-xl border border-border bg-card shadow-xl z-50 overflow-hidden"
+      class="absolute right-0 top-full mt-2 w-[calc(100vw-2rem)] sm:w-96 rounded-xl border border-border bg-card shadow-xl z-50 overflow-hidden"
       role="menu"
     >
       <!-- Header -->
@@ -164,7 +156,7 @@
       </div>
 
       <!-- Notification list -->
-      <div class="max-h-96 overflow-y-auto scrollbar-hide">
+      <div class="max-h-[80vh] overflow-y-auto scrollbar-hide">
         {#if notifications.length === 0}
           <!-- Empty state -->
           <div class="flex flex-col items-center justify-center py-12 px-4 text-center">
