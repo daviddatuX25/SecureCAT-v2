@@ -14,12 +14,16 @@ use App\Models\GradingSession;
 use App\Models\Room;
 use App\Models\SystemSetting;
 use App\Models\User;
+use App\Notifications\ExamSessionCancelled;
+use App\Notifications\ExamSessionCompleted;
 use App\Notifications\ExamSessionPublished;
+use App\Notifications\ExamSessionStarted;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Notification;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -382,6 +386,15 @@ class ExamSessionController extends Controller
             );
         }
 
+        // Notify assigned proctors and test_admins on publish
+        $exam_session->load('proctors');
+        $recipients = $exam_session->proctors;
+        $testAdmins = User::role('test_administrator')->get();
+        Notification::send(
+            $recipients->merge($testAdmins)->unique('id'),
+            new ExamSessionPublished($exam_session)
+        );
+
         return redirect()->route('admin.exam-scheduling.show', $exam_session)->with('success', 'Session published.');
     }
 
@@ -413,7 +426,69 @@ class ExamSessionController extends Controller
 
         $exam_session->update(['status' => ExamSession::STATUS_CANCELLED]);
 
+        // Notify applicants on cancel
+        $exam_session->load('applicants');
+        $exam_session->applicants->each(
+            fn ($applicant) => $applicant->notify(new ExamSessionCancelled($exam_session))
+        );
+
+        // Notify assigned proctors and test_admins on cancel
+        $recipients = $exam_session->proctors;
+        $testAdmins = User::role('test_administrator')->get();
+        Notification::send(
+            $recipients->merge($testAdmins)->unique('id'),
+            new ExamSessionCancelled($exam_session)
+        );
+
         return redirect()->route('admin.exam-scheduling.index')->with('success', 'Session cancelled.');
+    }
+
+    public function start(ExamSession $exam_session): RedirectResponse
+    {
+        $this->authorize('start', $exam_session);
+
+        if (! $exam_session->isWithinStartWindow()) {
+            $user = request()->user();
+            if (! $user->hasAnyRole(['super_admin', 'test_administrator'])) {
+                return redirect()->route('admin.exam-scheduling.show', $exam_session)
+                    ->with('error', 'Cannot start this session outside the scheduled time window.');
+            }
+        }
+
+        $exam_session->update([
+            'status' => ExamSession::STATUS_IN_PROGRESS,
+            'started_at' => now(),
+        ]);
+
+        // Notify assigned proctors and test_admins
+        $recipients = $exam_session->proctors;
+        $testAdmins = User::role('test_administrator')->get();
+        Notification::send(
+            $recipients->merge($testAdmins)->unique('id'),
+            new ExamSessionStarted($exam_session)
+        );
+
+        return back()->with('success', 'Session started.');
+    }
+
+    public function complete(ExamSession $exam_session): RedirectResponse
+    {
+        $this->authorize('complete', $exam_session);
+
+        $exam_session->update([
+            'status' => ExamSession::STATUS_COMPLETED,
+            'closed_at' => now(),
+        ]);
+
+        // Notify assigned proctors and test_admins
+        $recipients = $exam_session->proctors;
+        $testAdmins = User::role('test_administrator')->get();
+        Notification::send(
+            $recipients->merge($testAdmins)->unique('id'),
+            new ExamSessionCompleted($exam_session)
+        );
+
+        return back()->with('success', 'Session completed.');
     }
 
     /**
@@ -440,6 +515,15 @@ class ExamSessionController extends Controller
             'status' => ExamSession::STATUS_IN_PROGRESS,
             'closed_at' => null,
         ]);
+
+        // Notify assigned proctors and test_admins on reopen
+        $exam_session->load('proctors');
+        $recipients = $exam_session->proctors;
+        $testAdmins = User::role('test_administrator')->get();
+        Notification::send(
+            $recipients->merge($testAdmins)->unique('id'),
+            new ExamSessionStarted($exam_session)
+        );
 
         return redirect()->route('admin.exam-scheduling.show', $exam_session)
             ->with('success', 'Session reopened. Proctors can continue marking attendance and submissions.');

@@ -16,24 +16,34 @@ class SendExamReminders extends Command
 
     public function handle(): int
     {
-        $days = (int) $this->option('days');
-        $targetDate = now()->addDays($days)->startOfDay();
-        $endDate = $targetDate->copy()->endOfDay();
+        $daysList = collect(explode(',', env('EXAM_REMINDER_DAYS', '1,3,7')))
+            ->map(fn ($d) => (int) trim($d))
+            ->filter(fn ($d) => $d > 0)
+            ->values();
 
-        $sessions = ExamSession::whereBetween('scheduled_at', [$targetDate, $endDate])
-            ->where('status', ExamSession::STATUS_PUBLISHED)
-            ->with('applicants')
-            ->get();
+        if ($this->option('days') !== null) {
+            $daysList = collect([(int) $this->option('days')]);
+        }
 
         $totalNotified = 0;
-        foreach ($sessions as $session) {
-            foreach ($session->applicants as $applicant) {
-                $applicant->notify(new ExamSessionReminder($session, $days));
-                $totalNotified++;
+        foreach ($daysList as $days) {
+            $targetDate = now()->addDays($days)->startOfDay();
+            $endDate = $targetDate->copy()->endOfDay();
+
+            $sessions = ExamSession::whereBetween('date', [$targetDate, $endDate])
+                ->where('status', ExamSession::STATUS_PUBLISHED)
+                ->with('applicants')
+                ->get();
+
+            foreach ($sessions as $session) {
+                foreach ($session->applicants as $applicant) {
+                    $applicant->notify(new ExamSessionReminder($session, $days));
+                    $totalNotified++;
+                }
             }
         }
 
-        $this->info("Sent {$totalNotified} reminders for sessions in {$days} day(s).");
+        $this->info("Sent {$totalNotified} reminders for sessions in {$daysList->implode(',')} day(s).");
 
         return Command::SUCCESS;
     }

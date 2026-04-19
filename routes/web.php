@@ -135,6 +135,8 @@ Route::middleware(['auth'])->group(function () {
         Route::post('exam-scheduling/{exam_session}/publish', [ExamSessionController::class, 'publish'])->name('exam-scheduling.publish');
         Route::post('exam-scheduling/{exam_session}/unpublish', [ExamSessionController::class, 'unpublish'])->name('exam-scheduling.unpublish');
         Route::post('exam-scheduling/{exam_session}/cancel', [ExamSessionController::class, 'cancel'])->name('exam-scheduling.cancel');
+        Route::post('exam-scheduling/{exam_session}/start', [ExamSessionController::class, 'start'])->name('exam-scheduling.start');
+        Route::post('exam-scheduling/{exam_session}/complete', [ExamSessionController::class, 'complete'])->name('exam-scheduling.complete');
         Route::post('exam-scheduling/{exam_session}/reopen', [ExamSessionController::class, 'reopen'])->name('exam-scheduling.reopen');
         Route::post('exam-scheduling', [ExamSessionController::class, 'store'])->name('exam-scheduling.store');
         Route::get('exam-scheduling/{exam_session}/edit', [ExamSessionController::class, 'edit'])->name('exam-scheduling.edit');

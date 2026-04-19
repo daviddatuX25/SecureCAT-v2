@@ -91,4 +91,30 @@ class ExamSessionPolicy
 
         return $user->hasAnyRole(['super_admin', 'registrar_administrator']);
     }
+
+    /** Start a published session (published -> in_progress). Proctor (assigned) and test_administrator. */
+    public function start(User $user, ExamSession $examSession): bool
+    {
+        if ($examSession->status !== ExamSession::STATUS_PUBLISHED) {
+            return false;
+        }
+        if ($user->hasAnyRole(['test_administrator', 'super_admin'])) {
+            return true;
+        }
+        if ($user->hasRole('proctor')) {
+            return $examSession->proctors()->where('users.id', $user->id)->exists();
+        }
+
+        return false;
+    }
+
+    /** Complete an in-progress session (in_progress -> completed). test_administrator, admin, super_admin. */
+    public function complete(User $user, ExamSession $examSession): bool
+    {
+        if ($examSession->status !== ExamSession::STATUS_IN_PROGRESS) {
+            return false;
+        }
+
+        return $user->hasAnyRole(['test_administrator', 'super_admin', 'registrar_administrator']);
+    }
 }
