@@ -65,7 +65,7 @@
   let closeTargetId = $state(null);
 
   function startSession(sessionId) {
-    router.post(`/admin/exam-sessions/${sessionId}/start`, {}, {
+    router.post(`/admin/exam-scheduling/${sessionId}/start`, {}, {
       onSuccess: () => router.reload(),
       onError: (err) => showError(err?.message ?? 'Unable to start session. Please refresh the page or try again.'),
     });
@@ -81,7 +81,7 @@
     const sessionId = closeTargetId;
     showCloseConfirm = false;
     closeTargetId = null;
-    router.post(`/admin/exam-sessions/${sessionId}/complete`, {}, {
+    router.post(`/admin/exam-scheduling/${sessionId}/complete`, {}, {
       onSuccess: () => router.reload(),
       onError: (err) => showError(err?.message ?? 'Unable to close session. Please refresh the page or try again.'),
     });
