@@ -531,8 +531,9 @@ class ExamSessionController extends Controller
 
     /**
      * Session list for Test Administrators.
-     * - registrar_administrator: sessions where they are assigned as a proctor.
+     * - test_administrator (only): sessions where they are assigned as a proctor.
      * - admin / super_admin: all sessions.
+     * Date-grouped per D-15 with policy-based can_start / can_complete flags per D-16.
      */
     public function testAdminIndex(Request $request): Response
     {
@@ -547,6 +548,7 @@ class ExamSessionController extends Controller
 
         $query = ExamSession::query()
             ->with(['room:id,name,building,capacity', 'proctors:id,name', 'academicYear:id,academic_year,semester'])
+            ->withCount('applicants')
             ->orderBy('date')
             ->orderBy('start_time');
 
@@ -562,14 +564,33 @@ class ExamSessionController extends Controller
             $query->where('status', $request->get('status'));
         }
 
-        $sessions = $query->paginate(15)->withQueryString();
-        $academicYears = AcademicYear::query()->orderByDesc('academic_year')->orderBy('semester')->get(['id', 'academic_year', 'semester', 'is_active']);
+        $sessions = $query->get();
+
+        // Date-group the sessions server-side per D-15 with policy-based flags per D-16
+        $grouped = $sessions->map(fn ($s) => [
+            'id' => $s->id,
+            'date' => $s->date?->format('Y-m-d'),
+            'start_time' => $s->start_time,
+            'end_time' => $s->end_time,
+            'room_name' => $s->room?->name,
+            'building' => $s->room?->building,
+            'status' => $s->status,
+            'applicants_count' => $s->applicants_count,
+            'is_within_start_window' => $s->isWithinStartWindow(),
+            'is_past_end' => $s->isPastEndTime(),
+            'can_start' => $user->can('start', $s),
+            'can_complete' => $user->can('complete', $s),
+        ]);
+
+        $today = $grouped->filter(fn ($s) => \Carbon\Carbon::parse($s['date'])->isToday())->values();
+        $upcoming = $grouped->filter(fn ($s) => \Carbon\Carbon::parse($s['date'])->isFuture() && !\Carbon\Carbon::parse($s['date'])->isToday())->values();
+        $past = $grouped->filter(fn ($s) => \Carbon\Carbon::parse($s['date'])->isPast() && !\Carbon\Carbon::parse($s['date'])->isToday())->values();
 
         return Inertia::render('Admin/TestAdmin/Index', [
-            'sessions' => $sessions,
+            'today' => $today,
+            'upcoming' => $upcoming,
+            'past' => $past,
             'filters' => $request->only(['status', 'academic_year_id']),
-            'seasons' => $academicYears,
-            'active_season_id' => $activeAcademicYear?->id,
             'statuses' => self::statusesList(),
         ]);
     }

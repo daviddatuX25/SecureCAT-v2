@@ -28,6 +28,7 @@ use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\Portal\AiCompanionController;
 use App\Http\Controllers\Portal\NotificationController as PortalNotificationController;
 use App\Http\Controllers\PortalAuthController;
+use App\Http\Controllers\Proctor\ProctorSessionController;
 use App\Http\Controllers\Proctor\SessionRosterController;
 use App\Http\Controllers\ReleaseController;
 use App\Support\GoogleOAuthConfig;
@@ -196,6 +197,7 @@ Route::middleware(['auth'])->group(function () {
     });
     Route::get('/proctor', fn () => redirect()->route('admin.exam-scheduling.index'))->middleware('role:super_admin,proctor');
     Route::middleware('role:super_admin,registrar_administrator,proctor,test_administrator')->prefix('proctor')->name('proctor.')->group(function () {
+        Route::get('my-sessions', [ProctorSessionController::class, 'mySessions'])->name('my-sessions');
         Route::get('sessions/{exam_session}', [SessionRosterController::class, 'show'])->name('sessions.show');
         Route::post('sessions/{exam_session}/attendance', [SessionRosterController::class, 'storeAttendance'])->name('sessions.attendance');
         Route::post('sessions/{exam_session}/submission', [SessionRosterController::class, 'storeSubmission'])->name('sessions.submission');

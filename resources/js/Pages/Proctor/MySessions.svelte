@@ -7,7 +7,7 @@
   import { success as showSuccess, error as showError } from '@/lib/toast';
   import { onMount } from 'svelte';
 
-  let { today = [], upcoming = [], past = [], filters = {}, statuses = [], flash = {} } = $props();
+  let { today = [], upcoming = [], past = [], flash = {} } = $props();
 
   const breadcrumbs = [{ label: 'My Sessions' }];
 
@@ -17,16 +17,16 @@
     if (flash?.error) showError(flash.error);
   });
 
-  function statusVariant(s) {
-    if (s === 'draft') return 'muted';
-    if (s === 'published') return 'success';
-    if (s === 'in_progress') return 'warning';
-    if (s === 'completed') return 'outline';
-    if (s === 'cancelled') return 'danger';
+  function statusVariant(status) {
+    if (status === 'draft') return 'muted';
+    if (status === 'published') return 'success';
+    if (status === 'in_progress') return 'warning';
+    if (status === 'completed') return 'outline';
+    if (status === 'cancelled') return 'danger';
     return 'outline';
   }
 
-  function statusLabel(s) {
+  function statusLabel(status) {
     const labels = {
       draft: 'Draft',
       published: 'Published',
@@ -34,7 +34,7 @@
       completed: 'Completed',
       cancelled: 'Cancelled',
     };
-    return labels[s] ?? s;
+    return labels[status] ?? status;
   }
 
   function formatDate(value) {
@@ -65,7 +65,7 @@
   let closeTargetId = $state(null);
 
   function startSession(sessionId) {
-    router.post(`/admin/exam-sessions/${sessionId}/start`, {}, {
+    router.post(`/proctor/sessions/${sessionId}/start`, {}, {
       onSuccess: () => router.reload(),
       onError: (err) => showError(err?.message ?? 'Unable to start session. Please refresh the page or try again.'),
     });
@@ -81,7 +81,7 @@
     const sessionId = closeTargetId;
     showCloseConfirm = false;
     closeTargetId = null;
-    router.post(`/admin/exam-sessions/${sessionId}/complete`, {}, {
+    router.post(`/proctor/sessions/${sessionId}/close`, {}, {
       onSuccess: () => router.reload(),
       onError: (err) => showError(err?.message ?? 'Unable to close session. Please refresh the page or try again.'),
     });
@@ -97,11 +97,7 @@
   }
 
   function canStart(session) {
-    return session.can_start && session.is_within_start_window;
-  }
-
-  function canComplete(session) {
-    return session.can_complete && session.status === 'in_progress';
+    return session.status === 'published' && session.is_within_start_window;
   }
 
   function outsideStartWindow(session) {
@@ -112,8 +108,8 @@
     return today.length > 0 || upcoming.length > 0 || past.length > 0;
   }
 
-  function sessionRosterHref(session) {
-    return `/admin/test-admin/sessions/${session.id}/roster`;
+  function sessionHref(session) {
+    return `/proctor/sessions/${session.id}`;
   }
 </script>
 
@@ -134,9 +130,9 @@
       <!-- Empty state -->
       <div class="rounded-lg border border-border bg-card px-4 py-16 text-center">
         <ClipboardList class="mx-auto h-12 w-12 text-muted-foreground/40 mb-4" />
-        <p class="text-sm font-medium">No sessions found</p>
+        <p class="text-sm font-medium">No sessions assigned</p>
         <p class="mt-1 text-sm text-muted-foreground">
-          No exam sessions match your current view. Sessions will appear here once published.
+          You have not been assigned to any exam sessions yet. Sessions will appear here once a scheduling administrator publishes them.
         </p>
       </div>
     {:else}
@@ -194,14 +190,14 @@
                       <span class="text-sm text-muted-foreground">Outside scheduled time</span>
                     {/if}
 
-                    {#if canComplete(session)}
+                    {#if isInProgress(session)}
                       <Button size="sm" variant="outline" onclick={() => initiateClose(session.id)}>
                         <Square class="h-4 w-4 mr-1" />
                         Close session
                       </Button>
                     {/if}
 
-                    <a href={sessionRosterHref(session)} class="inline-flex items-center gap-1 text-sm text-primary hover:underline">
+                    <a href={sessionHref(session)} class="inline-flex items-center gap-1 text-sm text-primary hover:underline">
                       <ClipboardList class="h-4 w-4" />
                       Open roster
                     </a>
@@ -265,14 +261,14 @@
                       <span class="text-sm text-muted-foreground">Outside scheduled time</span>
                     {/if}
 
-                    {#if canComplete(session)}
+                    {#if isInProgress(session)}
                       <Button size="sm" variant="outline" onclick={() => initiateClose(session.id)}>
                         <Square class="h-4 w-4 mr-1" />
                         Close session
                       </Button>
                     {/if}
 
-                    <a href={sessionRosterHref(session)} class="inline-flex items-center gap-1 text-sm text-primary hover:underline">
+                    <a href={sessionHref(session)} class="inline-flex items-center gap-1 text-sm text-primary hover:underline">
                       <ClipboardList class="h-4 w-4" />
                       Open roster
                     </a>
@@ -336,14 +332,14 @@
                       <span class="text-sm text-muted-foreground">Outside scheduled time</span>
                     {/if}
 
-                    {#if canComplete(session)}
+                    {#if isInProgress(session)}
                       <Button size="sm" variant="outline" onclick={() => initiateClose(session.id)}>
                         <Square class="h-4 w-4 mr-1" />
                         Close session
                       </Button>
                     {/if}
 
-                    <a href={sessionRosterHref(session)} class="inline-flex items-center gap-1 text-sm text-primary hover:underline">
+                    <a href={sessionHref(session)} class="inline-flex items-center gap-1 text-sm text-primary hover:underline">
                       <ClipboardList class="h-4 w-4" />
                       Open roster
                     </a>
