@@ -30,6 +30,7 @@ progress:
 - 2026-04-13: Phase 4 added - Applicant AI Companion chat interface - floating expandable chat area for applicants to chat with AI Companion when enabled
 - 2026-04-14: Phase 5 added - AI Companion Edge Cases & Security Hardening
 - 2026-04-14: Phase 6 added - QA Audit Fixes — Admin CRUD gaps
+- 2026-04-19: Phase 13 added - Exam Session Workflow & Notification Enhancements
 
 ## Current Work
 
