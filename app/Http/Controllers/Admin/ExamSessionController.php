@@ -389,7 +389,7 @@ class ExamSessionController extends Controller
         // Notify assigned proctors and test_admins on publish
         $exam_session->load('proctors');
         $recipients = $exam_session->proctors;
-        $testAdmins = User::role('test_administrator')->get();
+        $testAdmins = User::whereHas('roles', fn ($q) => $q->where('name', 'test_administrator'))->get();
         Notification::send(
             $recipients->merge($testAdmins)->unique('id'),
             new ExamSessionPublished($exam_session)
@@ -434,7 +434,7 @@ class ExamSessionController extends Controller
 
         // Notify assigned proctors and test_admins on cancel
         $recipients = $exam_session->proctors;
-        $testAdmins = User::role('test_administrator')->get();
+        $testAdmins = User::whereHas('roles', fn ($q) => $q->where('name', 'test_administrator'))->get();
         Notification::send(
             $recipients->merge($testAdmins)->unique('id'),
             new ExamSessionCancelled($exam_session)
@@ -462,7 +462,7 @@ class ExamSessionController extends Controller
 
         // Notify assigned proctors and test_admins
         $recipients = $exam_session->proctors;
-        $testAdmins = User::role('test_administrator')->get();
+        $testAdmins = User::whereHas('roles', fn ($q) => $q->where('name', 'test_administrator'))->get();
         Notification::send(
             $recipients->merge($testAdmins)->unique('id'),
             new ExamSessionStarted($exam_session)
@@ -482,7 +482,7 @@ class ExamSessionController extends Controller
 
         // Notify assigned proctors and test_admins
         $recipients = $exam_session->proctors;
-        $testAdmins = User::role('test_administrator')->get();
+        $testAdmins = User::whereHas('roles', fn ($q) => $q->where('name', 'test_administrator'))->get();
         Notification::send(
             $recipients->merge($testAdmins)->unique('id'),
             new ExamSessionCompleted($exam_session)
@@ -519,7 +519,7 @@ class ExamSessionController extends Controller
         // Notify assigned proctors and test_admins on reopen
         $exam_session->load('proctors');
         $recipients = $exam_session->proctors;
-        $testAdmins = User::role('test_administrator')->get();
+        $testAdmins = User::whereHas('roles', fn ($q) => $q->where('name', 'test_administrator'))->get();
         Notification::send(
             $recipients->merge($testAdmins)->unique('id'),
             new ExamSessionStarted($exam_session)
@@ -582,9 +582,9 @@ class ExamSessionController extends Controller
             'can_complete' => $user->can('complete', $s),
         ]);
 
-        $today = $grouped->filter(fn ($s) => \Carbon\Carbon::parse($s['date'])->isToday())->values();
-        $upcoming = $grouped->filter(fn ($s) => \Carbon\Carbon::parse($s['date'])->isFuture() && !\Carbon\Carbon::parse($s['date'])->isToday())->values();
-        $past = $grouped->filter(fn ($s) => \Carbon\Carbon::parse($s['date'])->isPast() && !\Carbon\Carbon::parse($s['date'])->isToday())->values();
+        $today = $grouped->filter(fn ($s) => Carbon::parse($s['date'])->isToday())->values();
+        $upcoming = $grouped->filter(fn ($s) => Carbon::parse($s['date'])->isFuture() && ! Carbon::parse($s['date'])->isToday())->values();
+        $past = $grouped->filter(fn ($s) => Carbon::parse($s['date'])->isPast() && ! Carbon::parse($s['date'])->isToday())->values();
 
         return Inertia::render('Admin/TestAdmin/Index', [
             'today' => $today,
@@ -667,6 +667,7 @@ class ExamSessionController extends Controller
             'session' => array_merge($exam_session->toArray(), [
                 'is_within_start_window' => $isWithinStartWindow,
                 'can_override_schedule' => $canOverrideSchedule,
+                'is_past_end' => $exam_session->isPastEndTime(),
             ]),
             'applicants' => $applicants->values()->all(),
             'stats' => $stats,

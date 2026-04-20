@@ -129,12 +129,10 @@
     && !session.is_past_end
   );
   const canLogSubmission = $derived(
-    (session.status === 'in_progress' ||
-      (session.status === 'published' && session.is_within_window))
-    && !session.is_past_end
+    session.status === 'in_progress' && !session.is_past_end
   );
   const canBulkSubmit = $derived(
-    session.status === 'in_progress' && (stats.present_pending_submission ?? 0) > 0
+    session.status === 'in_progress' && !session.is_past_end && (stats.present_pending_submission ?? 0) > 0
   );
 
   function formatDate(value) {

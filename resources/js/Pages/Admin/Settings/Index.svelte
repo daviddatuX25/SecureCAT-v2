@@ -17,27 +17,10 @@
   const breadcrumbs = [{ label: 'Settings' }];
   let saving = $state(false);
 
-  let releaseOnline = $state(release_mode === 'online' || release_mode === 'both');
-  let releasef2f    = $state(release_mode === 'f2f'    || release_mode === 'both');
-
-  function computeReleaseMode(online, f2f) {
-    if (online && f2f) return 'both';
-    if (online) return 'online';
-    if (f2f) return 'f2f';
-    return null;
+  function handleReleaseModeToggle() {
+    const next = form.data.release_mode === 'online' ? 'f2f' : 'online';
+    form.update((f) => ({ ...f, release_mode: next }));
   }
-
-  function handleReleaseOnlineChange(checked) {
-    releaseOnline = checked;
-    form.update((f) => ({ ...f, release_mode: computeReleaseMode(checked, releasef2f) }));
-  }
-
-  function handleReleaseF2fChange(checked) {
-    releasef2f = checked;
-    form.update((f) => ({ ...f, release_mode: computeReleaseMode(releaseOnline, checked) }));
-  }
-
-  const releaseModeInvalid = $derived(!releaseOnline && !releasef2f);
 
   $effect(() => {
     form.update((f) => ({
@@ -46,8 +29,6 @@
       notify_on_publish,
       release_mode,
     }));
-    releaseOnline = release_mode === 'online' || release_mode === 'both';
-    releasef2f    = release_mode === 'f2f'    || release_mode === 'both';
   });
 
   function submitSettings(e) {
@@ -129,37 +110,40 @@
             Controls how exam results are delivered to applicants. At least one mode must be enabled.
           </CardDescription>
         </CardHeader>
-        <CardContent class="space-y-4">
-          <div class="flex items-center gap-4">
-            <Switch
-              checked={releaseOnline}
-              onCheckedChange={handleReleaseOnlineChange}
-              aria-label="Enable online release"
-            />
-            <div>
-              <p class="text-sm font-medium">Online release</p>
-              <p class="text-xs text-muted-foreground">Results visible in portal + email delivery</p>
-            </div>
+        <CardContent>
+          <div
+            class="inline-flex rounded-lg border border-border p-1 gap-1 cursor-pointer select-none"
+            role="radiogroup"
+            aria-label="Release mode"
+            onclick={handleReleaseModeToggle}
+          >
+            <button
+              type="button"
+              class="px-4 py-2 rounded-md text-sm font-medium transition-colors {$form.release_mode === 'online' ? 'bg-primary text-primary-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'}"
+              aria-pressed={$form.release_mode === 'online'}
+            >
+              Online
+            </button>
+            <button
+              type="button"
+              class="px-4 py-2 rounded-md text-sm font-medium transition-colors {$form.release_mode === 'f2f' ? 'bg-primary text-primary-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'}"
+              aria-pressed={$form.release_mode === 'f2f'}
+            >
+              F2F
+            </button>
           </div>
-          <div class="flex items-center gap-4">
-            <Switch
-              checked={releasef2f}
-              onCheckedChange={handleReleaseF2fChange}
-              aria-label="Enable F2F release"
-            />
-            <div>
-              <p class="text-sm font-medium">F2F release</p>
-              <p class="text-xs text-muted-foreground">Results handed in person — portal view disabled for applicants</p>
-            </div>
-          </div>
-          {#if releaseModeInvalid}
-            <p class="text-sm text-destructive">At least one release mode must be enabled.</p>
-          {/if}
+          <p class="mt-3 text-xs text-muted-foreground">
+            {#if $form.release_mode === 'online'}
+              Results visible in portal with email delivery
+            {:else}
+              Results handed in person — portal view disabled for applicants
+            {/if}
+          </p>
         </CardContent>
       </Card>
 
       <div class="flex justify-end">
-        <Button type="submit" disabled={saving || releaseModeInvalid} class="min-h-[44px]">
+        <Button type="submit" disabled={saving} class="min-h-[44px]">
           {saving ? 'Saving...' : 'Save'}
         </Button>
       </div>

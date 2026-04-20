@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\UpdateScoresRequest;
 use App\Models\Applicant;
 use App\Models\AptitudeArea;
+use App\Models\ConsultationSummary;
 use App\Models\GradingSession;
 use App\Services\AuditService;
 use App\Services\ScoreInputService;
@@ -72,7 +73,30 @@ class GradingScoreController extends Controller
             'scores' => $request->validated('scores'),
         ], "Scores entered for applicant {$applicant->id} in grading session {$grading_session->id}");
 
-        return redirect()->route('grading.sessions.show', $grading_session->id)
+        $this->ensureDraftSummary($grading_session, $applicant->id);
+
+        return redirect()->route('admin.grading.sessions.show', $grading_session->id)
             ->with('success', 'Scores saved.');
+    }
+
+    private function ensureDraftSummary(GradingSession $gradingSession, int $applicantId): void
+    {
+        $activeAreaCount = AptitudeArea::where('is_active', true)->count();
+        $scoredCount = $gradingSession->applicantScores()
+            ->where('applicant_id', $applicantId)
+            ->count();
+
+        if ($scoredCount < $activeAreaCount) {
+            return;
+        }
+
+        $summary = ConsultationSummary::firstOrCreate(
+            ['applicant_id' => $applicantId],
+            ['status' => ConsultationSummary::STATUS_DRAFT]
+        );
+
+        if ($summary->status === ConsultationSummary::STATUS_PENDING) {
+            $summary->update(['status' => ConsultationSummary::STATUS_DRAFT]);
+        }
     }
 }

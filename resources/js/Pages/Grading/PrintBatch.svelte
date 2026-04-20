@@ -12,7 +12,7 @@
   const sid = $derived(String(sessionId));
 
   const _page = usePage();
-  const printDisabled = $derived((_page.props.release_mode ?? 'online') === 'online');
+  const printDisabled = $derived(($_page?.props?.release_mode ?? 'online') === 'online');
 
   const breadcrumbs = $derived([
     { label: 'Grading', href: '/admin/grading' },

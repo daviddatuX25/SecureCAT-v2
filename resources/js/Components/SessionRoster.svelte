@@ -78,11 +78,11 @@
   const outsideStartWindow    = $derived(session.status === 'published' && session.is_within_start_window === false);
   const showOverrideHint      = $derived(outsideStartWindow && p.canOverrideSchedule);
   const canMarkAttendance     = $derived(
-    p.canMarkAttendance && (session.status === 'published' || session.status === 'in_progress')
+    p.canMarkAttendance && (session.status === 'published' || session.status === 'in_progress') && !session.is_past_end
   );
-  const canLogSubmission      = $derived(p.canLogSubmission && session.status === 'in_progress');
+  const canLogSubmission      = $derived(p.canLogSubmission && session.status === 'in_progress' && !session.is_past_end);
   const canBulkSubmit         = $derived(
-    p.canBulkSubmit && session.status === 'in_progress' && (stats.present_pending_submission ?? 0) > 0
+    p.canBulkSubmit && session.status === 'in_progress' && !session.is_past_end && (stats.present_pending_submission ?? 0) > 0
   );
 
   // ── Helpers ───────────────────────────────────────────────────────────────

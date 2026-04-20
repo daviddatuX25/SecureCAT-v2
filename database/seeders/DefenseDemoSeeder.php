@@ -13,6 +13,7 @@ use App\Models\ExamSession;
 use App\Models\GradingSession;
 use App\Models\Role;
 use App\Models\Room;
+use App\Models\SystemSetting;
 use App\Models\User;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Seeder;
@@ -49,6 +50,7 @@ class DefenseDemoSeeder extends Seeder
             $this->seedSessionB($today, $academicYear, $rooms, $appMap, $users, $domains);
             $this->seedSessionC($today, $academicYear, $rooms, $appMap, $users);
             $this->seedSessionD($today, $academicYear, $rooms);
+            $this->seedSystemSettings();
         });
     }
 
@@ -481,6 +483,26 @@ class DefenseDemoSeeder extends Seeder
         }
 
         return $user;
+    }
+
+    private function seedSystemSettings(): void
+    {
+        SystemSetting::query()->updateOrCreate(
+            ['key' => 'notify_on_publish'],
+            ['value' => '1'],
+        );
+        SystemSetting::query()->updateOrCreate(
+            ['key' => 'ai_exam_companion_enabled'],
+            ['value' => '0'],
+        );
+        SystemSetting::query()->updateOrCreate(
+            ['key' => 'online_release_enabled'],
+            ['value' => '1'],
+        );
+        SystemSetting::query()->updateOrCreate(
+            ['key' => 'release_mode'],
+            ['value' => 'online'],
+        );
     }
 
     private function attachApplicant(ExamSession $es, Applicant $applicant, array $pivot = []): void

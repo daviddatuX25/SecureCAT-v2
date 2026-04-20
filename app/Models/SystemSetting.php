@@ -55,7 +55,7 @@ class SystemSetting extends Model
     }
 
     /**
-     * Returns the result release mode: 'online', 'f2f', or 'both'. Default: 'online'.
+     * Returns the result release mode: 'online' or 'f2f'. Default: 'online'.
      */
     public static function releaseMode(): string
     {
@@ -63,11 +63,11 @@ class SystemSetting extends Model
     }
 
     /**
-     * Whether to email applicants when their exam session is published. Default: false.
+     * Whether to email applicants when their exam session is published. Default: true.
      */
     public static function notifyOnPublish(): bool
     {
-        return (bool) self::get('notify_on_publish', false);
+        return (bool) self::get('notify_on_publish', true);
     }
 
     /**

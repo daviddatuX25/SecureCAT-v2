@@ -20,27 +20,32 @@ class ReleaseController extends Controller
         $mode = SystemSetting::releaseMode();
         $courses = Course::where('is_active', true)->orderBy('name')->get(['id', 'name', 'code']);
 
-        $query = fn () => ConsultationSummary::with([
+        $summaries = ConsultationSummary::with([
             'applicant.application.coursePreference1:id,name,code',
             'applicant.application.coursePreference2:id,name,code',
             'applicant.application.coursePreference3:id,name,code',
-            'recommendedCourse',
+            'recommendedCourse:id,name,code',
         ])
             ->whereIn('status', ['draft', 'released'])
             ->orderBy('updated_at', 'desc')
-            ->paginate(50);
+            ->paginate(50)
+            ->through(function ($summary) {
+                $app = $summary->applicant?->application;
+                if ($summary->applicant && $app) {
+                    $summary->applicant->setAttribute('full_name', trim(implode(' ', array_filter([
+                        $app->first_name,
+                        $app->middle_name,
+                        $app->last_name,
+                        $app->suffix,
+                    ]))));
+                    $summary->applicant->setAttribute('reference_number', $app->reference_number ?? null);
+                }
 
-        if ($mode === 'both') {
-            return Inertia::render('Release/Index', [
-                'online_summaries' => $query(),
-                'f2f_summaries' => $query(),
-                'release_mode' => $mode,
-                'courses' => $courses,
-            ]);
-        }
+                return $summary;
+            });
 
         return Inertia::render('Release/Index', [
-            'summaries' => $query(),
+            'summaries' => $summaries,
             'release_mode' => $mode,
             'courses' => $courses,
         ]);
@@ -85,7 +90,7 @@ class ReleaseController extends Controller
         ]);
 
         $mode = SystemSetting::releaseMode();
-        $context = $request->input('release_context', $mode === 'both' ? 'online' : $mode);
+        $context = $request->input('release_context', $mode);
 
         if ($context === 'f2f') {
             $summary->applicant->notify(new ResultReleasedF2F($summary));
@@ -104,7 +109,7 @@ class ReleaseController extends Controller
         ])['ids'];
 
         $mode = SystemSetting::releaseMode();
-        $context = $request->input('release_context', $mode === 'both' ? 'online' : $mode);
+        $context = $request->input('release_context', $mode);
 
         $summaries = ConsultationSummary::whereIn('id', $ids)
             ->where('status', '!=', ConsultationSummary::STATUS_RELEASED)

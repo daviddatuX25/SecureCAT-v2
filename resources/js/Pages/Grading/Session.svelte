@@ -1,15 +1,19 @@
 <script>
   import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.svelte';
-  import { Link, router } from '@inertiajs/svelte';
+  import { Link, router, usePage } from '@inertiajs/svelte';
   import { Button } from '@/Components/ui/button';
   import { Badge } from '@/Components/ui/badge';
   import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/Components/ui/card';
   import * as Table from '@/Components/ui/table';
-  import { ArrowLeft, UserCheck, CheckCircle2, Circle, Printer, RotateCcw } from 'lucide-svelte';
+  import { ArrowLeft, UserCheck, CheckCircle2, Circle, Printer, RotateCcw, Send } from 'lucide-svelte';
 
   let { sessionId = '1', session = {}, applicants = [], workflowStatus = 'in_progress' } = $props();
 
   const sid = $derived(String(sessionId));
+  const _page = usePage();
+  const releaseMode = $derived($_page?.props?.release_mode ?? 'online');
+  const showPrint = $derived(workflowStatus === 'completed' && releaseMode !== 'online');
+  const showRelease = $derived(workflowStatus === 'completed' && releaseMode !== 'f2f');
 
   const breadcrumbs = $derived([
     { label: 'Grading', href: '/admin/grading' },
@@ -64,11 +68,19 @@
           <RotateCcw class="h-4 w-4 mr-2" />
           Mark as {workflowStatus === 'in_progress' ? 'Completed' : 'In progress'}
         </Button>
-        {#if workflowStatus === 'completed'}
+        {#if showPrint}
           <Link href={`/admin/grading/sessions/${sid}/print`}>
             <Button class="min-h-[44px]">
               <Printer class="h-4 w-4 mr-2" />
               Print results
+            </Button>
+          </Link>
+        {/if}
+        {#if showRelease}
+          <Link href="/admin/release">
+            <Button variant="default" class="min-h-[44px]">
+              <Send class="h-4 w-4 mr-2" />
+              Go to Release
             </Button>
           </Link>
         {/if}

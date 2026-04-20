@@ -199,6 +199,12 @@ class SessionRosterController extends Controller
             return $request->wantsJson() ? response()->json(['message' => $message], 409) : back()->with('error', $message);
         }
 
+        if ($session->isPastEndTime()) {
+            $message = 'The exam window has ended. Submissions cannot be recorded.';
+
+            return $request->wantsJson() ? response()->json(['message' => $message], 422) : back()->with('error', $message);
+        }
+
         $applicantIds = $request->validated('applicant_ids') ?? [];
         $pivots = DB::table('exam_session_applicant')
             ->where('exam_session_id', $session->id)

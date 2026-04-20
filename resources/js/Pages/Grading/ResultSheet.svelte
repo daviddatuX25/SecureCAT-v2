@@ -7,7 +7,7 @@
   let { sessionId = '1', applicantId = '1001', applicant = {}, scores = [], printed = false, templateHtml = null, templateError = null, paperSize = 'a4', orientation = 'portrait', logicalUnit = 'full' } = $props();
 
   const _page = usePage();
-  const printDisabled = $derived((_page.props.release_mode ?? 'online') === 'online');
+  const printDisabled = $derived(($_page?.props?.release_mode ?? 'online') === 'online');
   const sid = $derived(String(sessionId));
 
   const overallPct = $derived(scores.length ? Math.round(scores.reduce((a, s) => a + s.pct, 0) / scores.length) : 0);
