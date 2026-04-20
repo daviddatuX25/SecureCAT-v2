@@ -240,6 +240,7 @@ Route::middleware(['auth'])->group(function () {
             Route::get('/', [ReleaseController::class, 'index'])->name('index');
             Route::post('/summaries/{summary}/release', [ReleaseController::class, 'release'])->name('summaries.release');
             Route::post('/summaries/bulk-release', [ReleaseController::class, 'releaseBulk'])->name('summaries.bulk-release');
+            Route::post('/summaries/release-all', [ReleaseController::class, 'releaseAll'])->name('summaries.release-all');
             Route::put('/summaries/by-applicant/{applicantId}', [ReleaseController::class, 'storeOrUpdateByApplicant'])->name('summaries.storeOrUpdate');
             // Result Sheet Templates
             Route::post('result-templates/preview', [ResultSheetTemplateController::class, 'preview'])->name('result-templates.preview');

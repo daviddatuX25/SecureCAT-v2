@@ -6,6 +6,7 @@ use App\Models\ConsultationSummary;
 use App\Models\Course;
 use App\Models\SystemSetting;
 use App\Notifications\ResultReleased;
+use App\Notifications\ResultReleasedF2F;
 use App\Services\ConsultationSummaryService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -16,7 +17,10 @@ class ReleaseController extends Controller
 {
     public function index(): Response
     {
-        $summaries = ConsultationSummary::with([
+        $mode = SystemSetting::releaseMode();
+        $courses = Course::where('is_active', true)->orderBy('name')->get(['id', 'name', 'code']);
+
+        $query = fn () => ConsultationSummary::with([
             'applicant.application.coursePreference1:id,name,code',
             'applicant.application.coursePreference2:id,name,code',
             'applicant.application.coursePreference3:id,name,code',
@@ -26,11 +30,18 @@ class ReleaseController extends Controller
             ->orderBy('updated_at', 'desc')
             ->paginate(50);
 
-        $courses = Course::where('is_active', true)->orderBy('name')->get(['id', 'name', 'code']);
+        if ($mode === 'both') {
+            return Inertia::render('Release/Index', [
+                'online_summaries' => $query(),
+                'f2f_summaries' => $query(),
+                'release_mode' => $mode,
+                'courses' => $courses,
+            ]);
+        }
 
         return Inertia::render('Release/Index', [
-            'summaries' => $summaries,
-            'release_mode' => SystemSetting::releaseMode(),
+            'summaries' => $query(),
+            'release_mode' => $mode,
             'courses' => $courses,
         ]);
     }
@@ -61,7 +72,7 @@ class ReleaseController extends Controller
         return back()->with('success', 'Summary updated.');
     }
 
-    public function release(ConsultationSummary $summary): RedirectResponse
+    public function release(Request $request, ConsultationSummary $summary): RedirectResponse
     {
         if ($summary->status === ConsultationSummary::STATUS_RELEASED) {
             return back()->with('error', 'Already released.');
@@ -73,7 +84,12 @@ class ReleaseController extends Controller
             'released_by' => auth()->id(),
         ]);
 
-        if (SystemSetting::releaseMode() !== 'f2f') {
+        $mode = SystemSetting::releaseMode();
+        $context = $request->input('release_context', $mode === 'both' ? 'online' : $mode);
+
+        if ($context === 'f2f') {
+            $summary->applicant->notify(new ResultReleasedF2F($summary));
+        } else {
             $summary->applicant->notify(new ResultReleased($summary));
         }
 
@@ -87,6 +103,9 @@ class ReleaseController extends Controller
             'ids.*' => 'integer|exists:consultation_summaries,id',
         ])['ids'];
 
+        $mode = SystemSetting::releaseMode();
+        $context = $request->input('release_context', $mode === 'both' ? 'online' : $mode);
+
         $summaries = ConsultationSummary::whereIn('id', $ids)
             ->where('status', '!=', ConsultationSummary::STATUS_RELEASED)
             ->get();
@@ -98,11 +117,45 @@ class ReleaseController extends Controller
                 'released_by' => auth()->id(),
             ]);
 
-            if (SystemSetting::releaseMode() !== 'f2f') {
+            if ($context === 'f2f') {
+                $summary->applicant->notify(new ResultReleasedF2F($summary));
+            } else {
                 $summary->applicant->notify(new ResultReleased($summary));
             }
         }
 
         return back()->with('success', count($summaries).' result(s) released.');
+    }
+
+    public function releaseAll(Request $request): RedirectResponse
+    {
+        $mode = SystemSetting::releaseMode();
+
+        if ($mode === 'f2f') {
+            return back()->with('error', 'Release All is not available in F2F mode.');
+        }
+
+        $summaries = ConsultationSummary::with('applicant')
+            ->where('status', '!=', ConsultationSummary::STATUS_RELEASED)
+            ->get();
+
+        $releasedCount = 0;
+
+        foreach ($summaries as $summary) {
+            $summary->update([
+                'status' => ConsultationSummary::STATUS_RELEASED,
+                'released_at' => now(),
+                'released_by' => auth()->id(),
+            ]);
+
+            $summary->applicant->notify(new ResultReleased($summary));
+            $releasedCount++;
+        }
+
+        if ($releasedCount === 0) {
+            return back()->with('info', 'All results have already been released.');
+        }
+
+        return back()->with('success', "{$releasedCount} result(s) released.");
     }
 }
