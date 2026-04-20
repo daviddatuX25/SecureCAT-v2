@@ -350,9 +350,11 @@ class DefenseDemoSeeder extends Seeder
         $gs = GradingSession::query()->updateOrCreate(
             ['exam_session_id' => $es->id],
             [
-                'status' => GradingSession::STATUS_IN_PROGRESS,
+                'status' => GradingSession::STATUS_FINALIZED,
                 'opened_at' => $date->addDays(1)->setTimeFromTimeString('08:00:00'),
                 'opened_by' => $users['test_admin']->id,
+                'finalized_at' => $date->addDays(2)->setTimeFromTimeString('15:30:00'),
+                'finalized_by' => $users['test_admin']->id,
             ]
         );
 
@@ -360,14 +362,14 @@ class DefenseDemoSeeder extends Seeder
             $gs->applicants()->syncWithoutDetaching([$applicant->id]);
         }
 
-        $partialScores = [
-            0 => ['SA' => 18, 'NA' => 16, 'VR' => 17], // Rowena
-            1 => ['SA' => 20, 'NA' => 19, 'VR' => 18], // Danilo
+        $scoreMap = [
+            0 => ['SA' => 18, 'NA' => 16, 'VR' => 17, 'AR' => 15, 'LR' => 16, 'PSA' => 14], // Rowena — good scores
+            1 => ['SA' => 20, 'NA' => 19, 'VR' => 18, 'AR' => 18, 'LR' => 19, 'PSA' => 17], // Danilo — high scores
         ];
 
         foreach ($sessionApplicants as $i => $applicant) {
-            foreach ($domains->take(3) as $domain) {
-                $raw = $partialScores[$i][$domain->code] ?? (int) round($domain->max_items * 0.6);
+            foreach ($domains as $domain) {
+                $raw = $scoreMap[$i][$domain->code] ?? (int) round($domain->max_items * 0.6);
                 ApplicantScore::query()->updateOrCreate(
                     ['grading_session_id' => $gs->id, 'applicant_id' => $applicant->id, 'aptitude_area_id' => $domain->id],
                     [
@@ -381,13 +383,19 @@ class DefenseDemoSeeder extends Seeder
             }
         }
 
-        foreach ($sessionApplicants as $applicant) {
+        $consultationData = [
+            0 => ['course' => 'BSIT', 'comments' => 'Good aptitude across all areas. Recommended for BSIT with strong prospects.'],
+            1 => ['course' => 'BSCS', 'comments' => 'Excellent scores. Highly recommended for BSCS.'],
+        ];
+
+        foreach ($sessionApplicants as $i => $applicant) {
+            $courseId = Course::query()->where('code', $consultationData[$i]['course'])->value('id');
             ConsultationSummary::query()->updateOrCreate(
                 ['applicant_id' => $applicant->id],
                 [
-                    'status' => ConsultationSummary::STATUS_PENDING,
-                    'recommended_course_id' => null,
-                    'counselor_comments' => null,
+                    'status' => ConsultationSummary::STATUS_DRAFT,
+                    'recommended_course_id' => $courseId,
+                    'counselor_comments' => $consultationData[$i]['comments'],
                     'system_notes' => ['seed' => 'defense-demo'],
                     'counselor_id' => $users['test_admin']->id,
                     'released_at' => null,
@@ -507,14 +515,14 @@ class DefenseDemoSeeder extends Seeder
 
     private function attachApplicant(ExamSession $es, Applicant $applicant, array $pivot = []): void
     {
-        DB::table('exam_session_applicant')->updateOrInsert(
-            ['exam_session_id' => $es->id, 'applicant_id' => $applicant->id],
-            array_merge([
-                'attendance_status' => 'pending',
-                'submission_status' => 'pending',
-                'created_at' => now(),
-                'updated_at' => now(),
-            ], $pivot)
-        );
+        DB::table('exam_session_applicant')->where('applicant_id', $applicant->id)->delete();
+        DB::table('exam_session_applicant')->insert(array_merge([
+            'exam_session_id' => $es->id,
+            'applicant_id' => $applicant->id,
+            'attendance_status' => 'pending',
+            'submission_status' => 'pending',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ], $pivot));
     }
 }
