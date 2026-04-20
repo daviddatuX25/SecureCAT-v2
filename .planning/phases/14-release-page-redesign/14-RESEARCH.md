@@ -598,24 +598,24 @@ Source: Existing toast pattern [VERIFIED: resources/js/lib/toast.js]
 
 **If this table is empty:** All claims in this research were verified or cited — no user confirmation needed.
 
-## Open Questions
+## Open Questions (RESOLVED)
 
-1. **Should AlertDialog be created as a new shadcn-svelte component?**
+1. **Should AlertDialog be created as a new shadcn-svelte component?** — RESOLVED: Use existing Dialog component per Claude's Discretion (confirmation modal styling details). Plan 02 uses Dialog.Root with custom footer buttons, which is sufficient for the confirmation flow.
    - What we know: Project has Dialog component but no AlertDialog. bits-ui supports AlertDialog natively.
    - What's unclear: Whether the team prefers to create a proper AlertDialog component for better a11y or reuse Dialog with custom buttons.
    - Recommendation: Create a minimal AlertDialog wrapper for the destructive Release All action. It's a one-time setup that improves accessibility for confirmation flows.
 
-2. **How should 'both' mode pagination work?**
+2. **How should 'both' mode pagination work?** — RESOLVED: Independent pagination per tab. Backend provides separate `online_summaries` and `f2f_summaries` paginated datasets. Plan 01 Task 2 returns separate datasets; Plan 02 Task 1 renders them independently per tab.
    - What we know: D-04 says "Each tab operates independently with its own dataset from the backend."
    - What's unclear: Whether both tabs should share pagination state or have independent page tracking.
    - Recommendation: Independent pagination per tab. Each tab's data comes from a separate paginated query, and clicking between tabs preserves each tab's current page.
 
-3. **Should Release All endpoint be restricted to 'online' mode only?**
+3. **Should Release All endpoint be restricted to 'online' mode only?** — RESOLVED: Return back with flash error for 'f2f' mode. Plan 01 Task 2 releaseAll() returns `back()->with('error', ...)` for f2f mode. Matches existing releaseBulk() pattern.
    - What we know: D-02 says Release All is for online mode. D-05 describes the confirmation dialog.
    - What's unclear: Whether the endpoint should return 403 for 'f2f' mode or just redirect back with a flash message.
    - Recommendation: Return back with flash error for 'f2f' mode. Matches existing pattern in `releaseBulk()`.
 
-4. **What happens to summaries with status 'pending' in Release All?**
+4. **What happens to summaries with status 'pending' in Release All?** — RESOLVED: Release all non-released summaries (both 'pending' and 'draft'). Plan 01 Task 2 releaseAll() queries `where('status', '!=', ConsultationSummary::STATUS_RELEASED)` which includes both pending and draft. D-09 confirms "The admin decides what's complete enough."
    - What we know: ConsultationSummary has statuses 'pending', 'draft', 'released'. The current index query uses `whereIn('status', ['draft', 'released'])`.
    - What's unclear: Should Release All also release 'pending' summaries, or only 'draft'?
    - Recommendation: Release All should release all non-released summaries (both 'pending' and 'draft'). The admin explicitly confirms via the dialog, and D-09 says "The admin decides what's complete enough."
