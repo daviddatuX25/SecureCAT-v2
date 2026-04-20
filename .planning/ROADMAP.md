@@ -138,11 +138,11 @@ Plans:
 **Goal:** Redesign release page with mode-aware layout (online/F2F/both tabs), add ReleaseAll endpoint for online mode, create ResultReleasedF2F notification, and support bulk release with F2F notifications
 **Requirements:** REQ-REL-01, REQ-REL-02, REQ-REL-03, REQ-REL-04, REQ-REL-05
 **Depends on:** Phase 13
-**Plans:** 2 plans in 2 waves
+**Plans:** 2/2 plans complete
 
 Plans:
-- [ ] 14-01-PLAN.md — Backend: ResultReleasedF2F notification, releaseAll endpoint, context-aware dispatch, mode-aware index payload
-- [ ] 14-02-PLAN.md — Frontend: Mode-aware release page with tabs, Release All dialog, F2F side panel release button
+- [x] 14-01-PLAN.md — Backend: ResultReleasedF2F notification, releaseAll endpoint, context-aware dispatch, mode-aware index payload
+- [x] 14-02-PLAN.md — Frontend: Mode-aware release page with tabs, Release All dialog, F2F side panel release button
 
 ---
 ## Future Milestones
