@@ -133,6 +133,17 @@ Plans:
 - [ ] 13-03-PLAN.md — My Sessions pages: Proctor and test_admin with date grouping, status badges, quick actions
 - [ ] 13-04-PLAN.md — Integration: Notification dispatch wiring, sound tiers in UI, proctor redirect, workflow tests
 
+### Phase 14: Release Page Redesign
+
+**Goal:** Redesign release page with mode-aware layout (online/F2F/both tabs), add ReleaseAll endpoint for online mode, create ResultReleasedF2F notification, and support bulk release with F2F notifications
+**Requirements:** REQ-REL-01, REQ-REL-02, REQ-REL-03, REQ-REL-04, REQ-REL-05
+**Depends on:** Phase 13
+**Plans:** 2 plans in 2 waves
+
+Plans:
+- [ ] 14-01-PLAN.md — Backend: ResultReleasedF2F notification, releaseAll endpoint, context-aware dispatch, mode-aware index payload
+- [ ] 14-02-PLAN.md — Frontend: Mode-aware release page with tabs, Release All dialog, F2F side panel release button
+
 ---
 ## Future Milestones
 
