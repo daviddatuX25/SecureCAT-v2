@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>SecureCAT: Information Assurance and Security</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&amp;family=Manrope:wght@400;500;600;700&amp;family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface": "#0a0e14",
+                        "outline-variant": "#44484f",
+                        "on-primary-fixed-variant": "#006638",
+                        "error": "#ff716c",
+                        "surface-container-lowest": "#000000",
+                        "primary-fixed-dim": "#00ed89",
+                        "on-tertiary-container": "#004755",
+                        "on-primary-fixed": "#004624",
+                        "on-surface-variant": "#a8abb3",
+                        "tertiary": "#7be2ff",
+                        "secondary-dim": "#52e4ac",
+                        "primary-container": "#00fd93",
+                        "on-tertiary-fixed-variant": "#005160",
+                        "surface-variant": "#20262f",
+                        "secondary-container": "#006c4c",
+                        "surface-dim": "#0a0e14",
+                        "on-error-container": "#ffa8a3",
+                        "on-secondary-container": "#e0ffed",
+                        "on-secondary-fixed-variant": "#006345",
+                        "primary": "#a2ffbf",
+                        "secondary": "#63f3ba",
+                        "secondary-fixed-dim": "#52e4ac",
+                        "on-secondary": "#00583d",
+                        "background": "#0a0e14",
+                        "on-secondary-fixed": "#00432e",
+                        "primary-fixed": "#00fd93",
+                        "surface-container": "#151a21",
+                        "on-tertiary": "#005160",
+                        "outline": "#72757d",
+                        "on-surface": "#f1f3fc",
+                        "inverse-primary": "#006e3c",
+                        "error-container": "#9f0519",
+                        "inverse-surface": "#f8f9ff",
+                        "on-primary": "#006437",
+                        "surface-container-highest": "#20262f",
+                        "surface-tint": "#a2ffbf",
+                        "primary-dim": "#00ed89",
+                        "on-tertiary-fixed": "#00313c",
+                        "surface-container-low": "#0f141a",
+                        "tertiary-dim": "#00caee",
+                        "on-background": "#f1f3fc",
+                        "on-primary-container": "#005b31",
+                        "surface-bright": "#262c36",
+                        "surface-container-high": "#1b2028",
+                        "on-error": "#490006",
+                        "tertiary-fixed-dim": "#00caee",
+                        "secondary-fixed": "#63f3ba",
+                        "tertiary-fixed": "#11d8ff",
+                        "inverse-on-surface": "#51555d",
+                        "error-dim": "#d7383b",
+                        "tertiary-container": "#11d8ff"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "fontFamily": {
+                        "headline": ["Space Grotesk", "sans-serif"],
+                        "body": ["Manrope", "sans-serif"],
+                        "label": ["Inter", "sans-serif"]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .glass-panel {
+            background: rgba(15, 20, 26, 0.6);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+        }
+        .glow-text {
+            text-shadow: 0 0 20px rgba(162, 255, 191, 0.4);
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background font-body min-h-screen overflow-hidden flex flex-col items-center justify-center relative">
+<!-- Decorative Node Background Overlay -->
+<div class="absolute inset-0 pointer-events-none z-0 opacity-10" style="background-image: radial-gradient(circle at 50% 50%, rgba(162, 255, 191, 0.15) 0%, transparent 60%);">
+</div>
+<div class="absolute inset-0 pointer-events-none z-0 opacity-5" style="background-image: linear-gradient(rgba(68, 72, 79, 0.2) 1px, transparent 1px), linear-gradient(90deg, rgba(68, 72, 79, 0.2) 1px, transparent 1px); background-size: 40px 40px;">
+</div>
+<!-- Main Presentation Slide Container -->
+<main class="relative z-10 w-full max-w-7xl mx-auto px-8 py-12 flex flex-col items-center justify-center min-h-screen">
+<!-- Cinematic Wrapper -->
+<div class="glass-panel w-full aspect-video max-h-[819px] rounded-xl flex flex-col relative overflow-hidden shadow-[0_0_60px_rgba(162,255,191,0.06)] ring-1 ring-outline-variant/15">
+<!-- Top Status Bar (Terminal Aesthetic) -->
+<div class="absolute top-0 left-0 right-0 p-6 flex justify-between items-start opacity-70">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-primary text-xl">terminal</span>
+<span class="font-label text-xs uppercase tracking-[0.1em] text-on-surface-variant">System Initialization</span>
+</div>
+<div class="flex items-center gap-4">
+<span class="font-label text-[10px] uppercase tracking-widest text-secondary opacity-60">Connection: Secure</span>
+<div class="flex gap-1">
+<div class="w-1.5 h-1.5 rounded-full bg-primary animate-pulse"></div>
+<div class="w-1.5 h-1.5 rounded-full bg-primary opacity-40"></div>
+<div class="w-1.5 h-1.5 rounded-full bg-primary opacity-40"></div>
+</div>
+</div>
+</div>
+<!-- Central Content -->
+<div class="flex-1 flex flex-col items-center justify-center text-center px-12 z-10">
+<!-- Shield Logo Symbol -->
+<div class="mb-8 relative">
+<div class="absolute inset-0 bg-primary/20 blur-[40px] rounded-full"></div>
+<span class="material-symbols-outlined text-primary text-[80px] md:text-[120px] drop-shadow-[0_0_15px_rgba(162,255,191,0.5)] relative z-10">
+                        security
+                    </span>
+</div>
+<!-- Title Block -->
+<div class="space-y-4 max-w-4xl">
+<h2 class="font-headline text-2xl md:text-3xl text-secondary-dim tracking-widest uppercase font-medium">
+                        SecureCAT
+                    </h2>
+<h1 class="font-headline text-5xl md:text-7xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-br from-primary via-primary-container to-secondary glow-text">
+                        Information Assurance<br/>&amp; Security
+                    </h1>
+</div>
+<!-- Divider / Pulse line -->
+<div class="w-full max-w-md h-[1px] bg-gradient-to-r from-transparent via-primary/50 to-transparent my-12"></div>
+<!-- Developer Credits -->
+<div class="flex flex-col md:flex-row gap-8 md:gap-16 items-center justify-center bg-surface-container-low/50 px-12 py-6 rounded-lg ring-1 ring-outline-variant/10">
+<div class="text-center">
+<span class="font-label text-[11px] text-tertiary uppercase tracking-[0.1em] block mb-2 opacity-80">Lead Developer</span>
+<p class="font-body text-lg font-medium text-on-surface">David Datu Sarmiento</p>
+</div>
+<div class="hidden md:block w-[1px] h-10 bg-outline-variant/30"></div>
+<div class="text-center">
+<span class="font-label text-[11px] text-tertiary uppercase tracking-[0.1em] block mb-2 opacity-80">Security Architect</span>
+<p class="font-body text-lg font-medium text-on-surface">Christine Lopez</p>
+</div>
+</div>
+</div>
+<!-- Bottom Data Readout -->
+<div class="absolute bottom-0 left-0 right-0 p-6 flex justify-between items-end opacity-50">
+<div class="font-label text-[10px] uppercase tracking-[0.15em] text-on-surface-variant flex flex-col gap-1">
+<span>Protocol: Alpha-7</span>
+<span>Encryption: AES-256</span>
+</div>
+<div class="font-label text-[10px] uppercase tracking-[0.15em] text-on-surface-variant text-right">
+<span>Terminal V.2.4</span>
+</div>
+</div>
+</div>
+</main>
+</body></html>

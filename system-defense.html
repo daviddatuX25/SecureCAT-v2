@@ -1,0 +1,1232 @@
+<!DOCTYPE html>
+<html class="dark" lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SecureCAT — System Defense</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Manrope:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
+  <style>
+    /* ============================================
+       MANDATORY VIEWPORT FIT — NO SCROLLING
+       ============================================ */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html {
+      scroll-snap-type: y mandatory;
+      scroll-behavior: smooth;
+      height: 100%;
+      overflow-x: hidden;
+    }
+
+    body {
+      font-family: 'Manrope', sans-serif;
+      background: #0a0e14;
+      color: #f1f3fc;
+      height: 100%;
+      overflow: hidden;
+    }
+
+    /* ============================================
+       SLIDE SYSTEM
+       ============================================ */
+    .slide {
+      width: 100vw;
+      height: 100vh;
+      height: 100dvh;
+      overflow: hidden;
+      scroll-snap-align: start;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+    }
+
+    .slide-content {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      padding: clamp(1.5rem, 4vw, 4rem);
+      max-height: 100%;
+      overflow: hidden;
+      gap: clamp(0.5rem, 2vw, 1.5rem);
+    }
+
+    /* ============================================
+       THEME TOKENS — matched to stitch-ppt-theme
+       ============================================ */
+    :root {
+      --primary:       #a2ffbf;
+      --primary-dim:   #00ed89;
+      --primary-glow: rgba(162, 255, 191, 0.35);
+      --secondary:     #63f3ba;
+      --secondary-dim: #52e4ac;
+      --tertiary:      #7be2ff;
+      --accent-red:    #e63946;
+      --bg:            #0a0e14;
+      --surface:        #151a21;
+      --surface-low:    #0f141a;
+      --surface-high:   #1b2028;
+      --border:         #20262f;
+      --outline:         #72757d;
+      --on-surface:     #f1f3fc;
+      --on-surface-var: #a8abb3;
+      --muted:         #72757d;
+
+      --slide-padding: clamp(1.5rem, 5vw, 4rem);
+      --content-gap:   clamp(0.5rem, 2vw, 2rem);
+      --element-gap:   clamp(0.25rem, 1vw, 0.75rem);
+
+      --title-size: clamp(1.8rem, 5vw, 4.5rem);
+      --h2-size:    clamp(1.2rem, 3vw, 2.5rem);
+      --h3-size:    clamp(0.9rem, 2vw, 1.4rem);
+      --body-size:  clamp(0.7rem, 1.5vw, 1.05rem);
+      --small-size: clamp(0.6rem, 1.1vw, 0.85rem);
+    }
+
+    h1 {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: var(--title-size);
+      font-weight: 700;
+      line-height: 1.05;
+      letter-spacing: -0.02em;
+      color: #ffffff;
+    }
+
+    h2 {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: var(--h2-size);
+      font-weight: 700;
+      letter-spacing: -0.01em;
+      line-height: 1.2;
+      color: #ffffff;
+    }
+
+    h3 {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: var(--h3-size);
+      font-weight: 600;
+      color: #ffffff;
+    }
+
+    p, li {
+      font-size: var(--body-size);
+      line-height: 1.5;
+      color: #d0d0d0;
+    }
+
+    .label {
+      font-family: 'Inter', sans-serif;
+      font-size: clamp(0.55rem, 0.9vw, 0.7rem);
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+    }
+
+    /* ============================================
+       GLASS PANEL — from stitch-ppt-theme
+       ============================================ */
+    .glass-panel {
+      background: rgba(15, 20, 26, 0.65);
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+      border: 1px solid rgba(68, 72, 79, 0.3);
+      border-radius: 0.75rem;
+    }
+
+    .glass-panel-deep {
+      background: rgba(10, 14, 20, 0.8);
+      backdrop-filter: blur(32px);
+      -webkit-backdrop-filter: blur(32px);
+      border: 1px solid rgba(68, 72, 79, 0.2);
+      border-radius: 1rem;
+    }
+
+    /* ============================================
+       BACKGROUND DECORATION
+       ============================================ */
+    .bg-radial {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      z-index: 0;
+      background: radial-gradient(ellipse at 50% 50%, rgba(162, 255, 191, 0.08) 0%, transparent 65%);
+    }
+
+    .bg-grid {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      z-index: 0;
+      opacity: 0.06;
+      background-image:
+        linear-gradient(rgba(68, 72, 79, 0.5) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(68, 72, 79, 0.5) 1px, transparent 1px);
+      background-size: 48px 48px;
+    }
+
+    /* ============================================
+       STATUS BAR — terminal aesthetic
+       ============================================ */
+    .status-bar {
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      padding: clamp(0.75rem, 2vw, 1.5rem) clamp(1rem, 3vw, 2.5rem);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      opacity: 0.6;
+      z-index: 10;
+    }
+
+    .status-bar-bottom {
+      position: absolute;
+      bottom: 0; left: 0; right: 0;
+      padding: clamp(0.5rem, 1.5vw, 1rem) clamp(1rem, 3vw, 2.5rem);
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      opacity: 0.45;
+      z-index: 10;
+    }
+
+    .status-item {
+      display: flex;
+      align-items: center;
+      gap: clamp(0.3rem, 0.8vw, 0.6rem);
+    }
+
+    .pulse-dot {
+      width: clamp(6px, 0.8vw, 10px);
+      height: clamp(6px, 0.8vw, 10px);
+      border-radius: 50%;
+      background: var(--primary);
+      animation: pulse-glow 2s ease-in-out infinite;
+    }
+
+    @keyframes pulse-glow {
+      0%, 100% { opacity: 1; box-shadow: 0 0 6px var(--primary-glow); }
+      50% { opacity: 0.5; box-shadow: 0 0 2px var(--primary-glow); }
+    }
+
+    /* ============================================
+       SHIELD LOGO
+       ============================================ */
+    .shield-icon {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .shield-icon::before {
+      content: '';
+      position: absolute;
+      inset: -20%;
+      background: var(--primary-glow);
+      border-radius: 50%;
+      filter: blur(30px);
+      opacity: 0.5;
+    }
+
+    .shield-icon .material-symbols-outlined {
+      font-size: clamp(3rem, 7vw, 6rem);
+      color: var(--primary);
+      filter: drop-shadow(0 0 12px rgba(162, 255, 191, 0.5));
+      position: relative;
+      z-index: 1;
+    }
+
+    /* ============================================
+       GLOW TEXT
+       ============================================ */
+    .glow-text {
+      color: var(--primary);
+      text-shadow: 0 0 30px rgba(162, 255, 191, 0.4);
+    }
+
+    .glow-text-gradient {
+      background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 50%, var(--tertiary) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      filter: drop-shadow(0 0 20px rgba(162, 255, 191, 0.3));
+    }
+
+    /* ============================================
+       DIVIDER LINE
+       ============================================ */
+    .divider {
+      width: 100%;
+      max-width: 500px;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(162, 255, 191, 0.4), transparent);
+    }
+
+    /* ============================================
+       CARDS
+       ============================================ */
+    .card {
+      background: rgba(21, 26, 33, 0.7);
+      backdrop-filter: blur(16px);
+      border: 1px solid rgba(68, 72, 79, 0.25);
+      border-radius: 0.5rem;
+      padding: clamp(0.75rem, 2vw, 1.5rem);
+    }
+
+    .card-problem {
+      border-left: 3px solid var(--accent-red);
+    }
+
+    .card-solution {
+      border-left: 3px solid var(--primary-dim);
+    }
+
+    .card-scope-covers {
+      border-top: 2px solid var(--primary-dim);
+    }
+
+    .card-scope-excludes {
+      border-top: 2px solid var(--muted);
+    }
+
+    /* ============================================
+       TECH GRID
+       ============================================ */
+    .tech-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: clamp(0.5rem, 1.5vw, 1.25rem);
+      width: 100%;
+      max-width: 1000px;
+    }
+
+    .tech-card {
+      background: rgba(21, 26, 33, 0.75);
+      border: 1px solid rgba(68, 72, 79, 0.2);
+      border-radius: 0.5rem;
+      padding: clamp(0.5rem, 1.5vw, 1.25rem);
+      display: flex;
+      flex-direction: column;
+      gap: var(--element-gap);
+      transition: border-color 0.3s, box-shadow 0.3s;
+    }
+
+    .tech-card:hover {
+      border-color: rgba(162, 255, 191, 0.3);
+      box-shadow: 0 0 20px rgba(162, 255, 191, 0.08);
+    }
+
+    .tech-icon-box {
+      width: clamp(36px, 4vw, 52px);
+      height: clamp(36px, 4vw, 52px);
+      background: rgba(162, 255, 191, 0.1);
+      border: 1px solid rgba(162, 255, 191, 0.25);
+      border-radius: 0.4rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* ============================================
+       DEMO TIMELINE
+       ============================================ */
+    .timeline {
+      display: flex;
+      flex-direction: column;
+      gap: clamp(0.4rem, 1.5vw, 1rem);
+      width: 100%;
+      max-width: 900px;
+    }
+
+    .timeline-item {
+      display: grid;
+      grid-template-columns: clamp(2rem, 4vw, 3.5rem) 1fr;
+      gap: clamp(0.75rem, 2vw, 1.5rem);
+      align-items: start;
+    }
+
+    .timeline-badge {
+      width: clamp(2rem, 4vw, 3.5rem);
+      height: clamp(2rem, 4vw, 3.5rem);
+      border-radius: 50%;
+      background: rgba(162, 255, 191, 0.12);
+      border: 1px solid rgba(162, 255, 191, 0.3);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: clamp(0.75rem, 1.5vw, 1.1rem);
+      font-weight: 700;
+      color: var(--primary);
+      flex-shrink: 0;
+    }
+
+    .timeline-badge.act-1 { background: rgba(162, 255, 191, 0.12); border-color: rgba(162, 255, 191, 0.35); color: var(--primary); }
+    .timeline-badge.act-2 { background: rgba(99, 243, 186, 0.12); border-color: rgba(99, 243, 186, 0.35); color: var(--secondary); }
+    .timeline-badge.act-3 { background: rgba(123, 226, 255, 0.12); border-color: rgba(123, 226, 255, 0.35); color: var(--tertiary); }
+    .timeline-badge.act-4 { background: rgba(230, 57, 70, 0.12); border-color: rgba(230, 57, 70, 0.35); color: var(--accent-red); }
+
+    /* ============================================
+       OBJECTIVES LIST
+       ============================================ */
+    .obj-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: var(--element-gap);
+      max-width: 800px;
+      width: 100%;
+    }
+
+    .obj-list li {
+      display: flex;
+      align-items: flex-start;
+      gap: clamp(0.5rem, 1.5vw, 1rem);
+      font-size: var(--body-size);
+    }
+
+    .obj-list .bullet {
+      width: clamp(6px, 1vw, 10px);
+      height: clamp(6px, 1vw, 10px);
+      border-radius: 50%;
+      background: var(--primary);
+      margin-top: 0.45em;
+      flex-shrink: 0;
+      box-shadow: 0 0 6px var(--primary-glow);
+    }
+
+    .obj-list.general .bullet {
+      background: var(--secondary);
+      box-shadow: 0 0 6px rgba(99, 243, 186, 0.4);
+    }
+
+    /* ============================================
+       PROGRESS DOTS
+       ============================================ */
+    .progress {
+      position: fixed;
+      right: clamp(0.75rem, 2vw, 2rem);
+      top: 50%;
+      transform: translateY(-50%);
+      display: flex;
+      flex-direction: column;
+      gap: clamp(0.35rem, 0.8vw, 0.6rem);
+      z-index: 100;
+    }
+
+    .dot {
+      width: clamp(8px, 0.8vw, 12px);
+      height: clamp(8px, 0.8vw, 12px);
+      border-radius: 50%;
+      background: rgba(68, 72, 79, 0.6);
+      cursor: pointer;
+      transition: background 0.25s, transform 0.25s, box-shadow 0.25s;
+    }
+
+    .dot.active {
+      background: var(--primary);
+      transform: scale(1.35);
+      box-shadow: 0 0 8px var(--primary-glow);
+    }
+
+    /* ============================================
+       SLIDE COUNTER
+       ============================================ */
+    .elapsed-clock {
+      position: fixed;
+      bottom: clamp(0.75rem, 2vw, 2rem);
+      right: clamp(0.75rem, 2vw, 2rem);
+      font-family: 'Space Grotesk', monospace;
+      font-size: clamp(0.7rem, 1.1vw, 0.9rem);
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      color: var(--primary);
+      z-index: 100;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 2px;
+      opacity: 0.75;
+      transition: opacity 0.3s ease;
+    }
+
+    .elapsed-clock:hover { opacity: 1; }
+
+    .elapsed-clock .elapsed-label {
+      font-family: 'Inter', sans-serif;
+      font-size: 0.7em;
+      text-transform: uppercase;
+      letter-spacing: 0.15em;
+      opacity: 0.6;
+    }
+
+    /* ============================================
+       SECTION LABEL
+       ============================================ */
+    .section-label {
+      font-family: 'Inter', sans-serif;
+      font-size: clamp(0.55rem, 0.9vw, 0.7rem);
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.2em;
+      color: var(--primary-dim);
+      margin-bottom: var(--element-gap);
+    }
+
+    /* ============================================
+       TWO-COL LAYOUT
+       ============================================ */
+    .two-cols {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: clamp(0.75rem, 2vw, 1.75rem);
+      width: 100%;
+      max-width: 1000px;
+    }
+
+    .col-header {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: clamp(0.7rem, 1.3vw, 1rem);
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      padding-bottom: var(--element-gap);
+      border-bottom: 2px solid;
+      margin-bottom: var(--element-gap);
+    }
+
+    .col-header.problem { border-color: var(--accent-red); color: var(--accent-red); }
+    .col-header.solution { border-color: var(--primary-dim); color: var(--primary); }
+
+    /* ============================================
+       SCOPE TABLE
+       ============================================ */
+    .scope-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: clamp(0.75rem, 2vw, 1.5rem);
+      width: 100%;
+      max-width: 1000px;
+    }
+
+    /* ============================================
+       ANIMATIONS
+       ============================================ */
+    @keyframes fade-up {
+      from { opacity: 0; transform: translateY(20px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes fade-in {
+      from { opacity: 0; }
+      to   { opacity: 1; }
+    }
+
+    .slide-content > * {
+      animation: fade-up 0.6s ease-out both;
+    }
+
+    .slide-content > *:nth-child(1) { animation-delay: 0.05s; }
+    .slide-content > *:nth-child(2) { animation-delay: 0.12s; }
+    .slide-content > *:nth-child(3) { animation-delay: 0.19s; }
+    .slide-content > *:nth-child(4) { animation-delay: 0.26s; }
+    .slide-content > *:nth-child(5) { animation-delay: 0.33s; }
+    .slide-content > *:nth-child(6) { animation-delay: 0.40s; }
+    .slide-content > *:nth-child(7) { animation-delay: 0.47s; }
+
+    /* ============================================
+       REDUCED MOTION
+       ============================================ */
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        transition-duration: 0.2s !important;
+      }
+      html { scroll-behavior: auto; }
+    }
+
+    /* ============================================
+       RESPONSIVE
+       ============================================ */
+    @media (max-width: 768px) {
+      .two-cols, .scope-grid, .tech-grid { grid-template-columns: 1fr; }
+      .progress, .elapsed-clock { display: none; }
+    }
+
+    @media (max-height: 700px) {
+      :root {
+        --slide-padding: clamp(1rem, 3vw, 2rem);
+        --content-gap: clamp(0.4rem, 1.5vw, 1rem);
+      }
+    }
+
+    @media (max-height: 600px) {
+      :root {
+        --slide-padding: clamp(0.75rem, 2.5vw, 1.5rem);
+        --content-gap: clamp(0.3rem, 1vw, 0.75rem);
+        --title-size: clamp(1.5rem, 4vw, 3rem);
+        --h2-size: clamp(1rem, 2.5vw, 1.75rem);
+      }
+      .progress, .elapsed-clock { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- =============================================
+     SLIDE 1 — TITLE
+     ============================================= -->
+<section class="slide" id="slide-1">
+  <div class="bg-radial"></div>
+  <div class="bg-grid"></div>
+
+  <!-- Status bar -->
+  <div class="status-bar">
+    <div class="status-item">
+      <span class="material-symbols-outlined" style="font-size:1.1rem;color:var(--primary)">terminal</span>
+      <span class="label" style="color:var(--on-surface-var)">SecureCAT</span>
+    </div>
+    <div class="status-item">
+      <span class="label" style="color:var(--secondary-dim);opacity:0.7">Connection: Encrypted</span>
+      <div class="pulse-dot"></div>
+    </div>
+  </div>
+
+  <div class="slide-content" style="align-items:center;text-align:center;gap:clamp(0.75rem,2vw,1.5rem)">
+    <!-- Shield icon -->
+    <div class="shield-icon">
+      <span class="material-symbols-outlined">shield</span>
+    </div>
+
+    <!-- Project name -->
+    <h1 class="glow-text-gradient">SecureCAT</h1>
+
+    <!-- Tagline -->
+    <p style="font-size:var(--h3-size);color:var(--on-surface-var);font-weight:500;letter-spacing:0.05em">
+      A Role-Based College Admission Testing System<br><span style="font-size:0.6em;opacity:0.6;font-weight:400">for Guidance and Counseling Services at ISPSC</span>
+    </p>
+
+    <div class="divider"></div>
+
+    <!-- Credits -->
+    <div class="glass-panel" style="display:flex;flex-direction:column;gap:clamp(0.4rem,1vw,0.75rem);padding:clamp(0.75rem,2vw,1.5rem) clamp(1.5rem,4vw,3rem);text-align:center">
+      <div>
+        <p class="label" style="color:var(--tertiary);opacity:0.8;margin-bottom:0.25rem">ISPSC · 2026</p>
+        <p class="label" style="color:var(--on-surface-var)">ISPSC Tagudin</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bottom bar -->
+  <div class="status-bar-bottom">
+    <div class="status-item">
+      <span class="material-symbols-outlined" style="font-size:0.9rem;color:var(--outline)">group</span>
+      <span class="label" style="color:var(--outline)">David Datu Sarmiento · Christine Lopez</span>
+    </div>
+    <div class="status-item">
+      <span class="label" style="color:var(--outline)">System Defense</span>
+    </div>
+  </div>
+</section>
+
+<!-- =============================================
+     SLIDE 2 — BACKGROUND
+     ============================================= -->
+<section class="slide" id="slide-2">
+  <div class="bg-radial"></div>
+  <div class="bg-grid"></div>
+
+  <div class="status-bar">
+    <div class="status-item">
+      <span class="material-symbols-outlined" style="font-size:1.1rem;color:var(--primary)">terminal</span>
+      <span class="label" style="color:var(--on-surface-var)">Introduction</span>
+    </div>
+    <div class="status-item">
+      <span class="label" style="color:var(--secondary-dim);opacity:0.7">Slide 2 / 8</span>
+    </div>
+  </div>
+
+  <div class="slide-content" style="gap:clamp(0.75rem,2vw,1.5rem)">
+    <p class="section-label">Background</p>
+    <h2 style="text-align:center;max-width:900px">
+      The College Admission Test process at ISPSC Tagudin
+    </h2>
+
+    <div class="glass-panel-deep" style="padding:clamp(1rem,3vw,2.5rem);max-width:900px;width:100%;text-align:left">
+      <div style="display:flex;flex-direction:column;gap:clamp(0.6rem,1.5vw,1.25rem)">
+        <div style="display:flex;align-items:flex-start;gap:clamp(0.5rem,1.5vw,1rem)">
+          <span class="material-symbols-outlined" style="font-size:clamp(1rem,2vw,1.4rem);color:var(--primary);flex-shrink:0;margin-top:2px">school</span>
+          <p style="font-size:var(--body-size)">The College Admission Test (CAT) is a critical gateway for prospective students seeking enrollment at ISPSC Tagudin. Managing this process efficiently is essential for a seamless applicant experience.</p>
+        </div>
+        <div style="display:flex;align-items:flex-start;gap:clamp(0.5rem,1.5vw,1rem)">
+          <span class="material-symbols-outlined" style="font-size:clamp(1rem,2vw,1.4rem);color:var(--accent-red);flex-shrink:0;margin-top:2px">warning</span>
+          <p style="font-size:var(--body-size)">Traditionally, this process involves <strong style="color:var(--on-surface)">paper forms, manual scheduling, scattered spreadsheets, and fragmented communication</strong> between applicants, proctors, and administrators.</p>
+        </div>
+        <div style="display:flex;align-items:flex-start;gap:clamp(0.5rem,1.5vw,1rem)">
+          <span class="material-symbols-outlined" style="font-size:clamp(1rem,2vw,1.4rem);color:var(--secondary);flex-shrink:0;margin-top:2px">lightbulb</span>
+          <p style="font-size:var(--body-size)">SecureCAT digitizes the entire CAT pipeline — from <strong style="color:var(--on-surface)">online application</strong> to <strong style="color:var(--on-surface)">automated scheduling</strong>, <strong style="color:var(--on-surface)">real-time proctoring</strong>, and <strong style="color:var(--on-surface)">AI-powered applicant support</strong>.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="status-bar-bottom">
+    <span class="label" style="color:var(--outline)">ISPSC Tagudin · Academic Year 2025–2026</span>
+    <span class="label" style="color:var(--outline)">SecureCAT</span>
+  </div>
+</section>
+
+<!-- =============================================
+     SLIDE 3 — PROBLEM & SOLUTION
+     ============================================= -->
+<section class="slide" id="slide-3">
+  <div class="bg-radial"></div>
+  <div class="bg-grid"></div>
+
+  <div class="status-bar">
+    <div class="status-item">
+      <span class="material-symbols-outlined" style="font-size:1.1rem;color:var(--primary)">terminal</span>
+      <span class="label" style="color:var(--on-surface-var)">Problem &amp; Solution</span>
+    </div>
+    <div class="status-item">
+      <span class="label" style="color:var(--secondary-dim);opacity:0.7">Slide 3 / 8</span>
+    </div>
+  </div>
+
+  <div class="slide-content" style="gap:clamp(0.75rem,2vw,1.5rem)">
+    <p class="section-label">Core Challenges</p>
+    <h2 style="text-align:center">Problem &amp; Solution</h2>
+
+    <div class="two-cols">
+      <!-- PROBLEM -->
+      <div>
+        <div class="col-header problem">Problem</div>
+        <div style="display:flex;flex-direction:column;gap:var(--element-gap)">
+          <div class="card card-problem" style="display:flex;align-items:flex-start;gap:clamp(0.4rem,1vw,0.75rem)">
+            <span class="material-symbols-outlined" style="font-size:clamp(0.9rem,1.5vw,1.2rem);color:var(--accent-red);flex-shrink:0;margin-top:1px">close</span>
+            <p style="font-size:var(--body-size)">Manual exam proctoring is <strong style="color:var(--on-surface)">error-prone and resource-intensive</strong></p>
+          </div>
+          <div class="card card-problem" style="display:flex;align-items:flex-start;gap:clamp(0.4rem,1vw,0.75rem)">
+            <span class="material-symbols-outlined" style="font-size:clamp(0.9rem,1.5vw,1.2rem);color:var(--accent-red);flex-shrink:0;margin-top:1px">close</span>
+            <p style="font-size:var(--body-size)">Staff manage applicant data across <strong style="color:var(--on-surface)">disconnected systems</strong></p>
+          </div>
+          <div class="card card-problem" style="display:flex;align-items:flex-start;gap:clamp(0.4rem,1vw,0.75rem)">
+            <span class="material-symbols-outlined" style="font-size:clamp(0.9rem,1.5vw,1.2rem);color:var(--accent-red);flex-shrink:0;margin-top:1px">close</span>
+            <p style="font-size:var(--body-size)">No <strong style="color:var(--on-surface)">intelligent support</strong> for applicant queries</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- SOLUTION -->
+      <div>
+        <div class="col-header solution">Solution</div>
+        <div style="display:flex;flex-direction:column;gap:var(--element-gap)">
+          <div class="card card-solution" style="display:flex;align-items:flex-start;gap:clamp(0.4rem,1vw,0.75rem)">
+            <span class="material-symbols-outlined" style="font-size:clamp(0.9rem,1.5vw,1.2rem);color:var(--primary-dim);flex-shrink:0;margin-top:1px">check_circle</span>
+            <p style="font-size:var(--body-size)">SecureCAT automates <strong style="color:var(--on-surface)">scheduling, proctoring, and grading</strong></p>
+          </div>
+          <div class="card card-solution" style="display:flex;align-items:flex-start;gap:clamp(0.4rem,1vw,0.75rem)">
+            <span class="material-symbols-outlined" style="font-size:clamp(0.9rem,1.5vw,1.2rem);color:var(--primary-dim);flex-shrink:0;margin-top:1px">check_circle</span>
+            <p style="font-size:var(--body-size)">Unified portal with <strong style="color:var(--on-surface)">role-based access</strong> for registrar, proctor, applicant</p>
+          </div>
+          <div class="card card-solution" style="display:flex;align-items:flex-start;gap:clamp(0.4rem,1vw,0.75rem)">
+            <span class="material-symbols-outlined" style="font-size:clamp(0.9rem,1.5vw,1.2rem);color:var(--primary-dim);flex-shrink:0;margin-top:1px">check_circle</span>
+            <p style="font-size:var(--body-size)"><strong style="color:var(--on-surface)">AI Companion</strong> chat widget for 24/7 applicant assistance</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="status-bar-bottom">
+    <span class="label" style="color:var(--outline)">SecureCAT · Problem &amp; Solution</span>
+    <span class="label" style="color:var(--outline)">ISPSC Tagudin</span>
+  </div>
+</section>
+
+<!-- =============================================
+     SLIDE 4 — OBJECTIVES
+     ============================================= -->
+<section class="slide" id="slide-4">
+  <div class="bg-radial"></div>
+  <div class="bg-grid"></div>
+
+  <div class="status-bar">
+    <div class="status-item">
+      <span class="material-symbols-outlined" style="font-size:1.1rem;color:var(--primary)">terminal</span>
+      <span class="label" style="color:var(--on-surface-var)">Objectives</span>
+    </div>
+    <div class="status-item">
+      <span class="label" style="color:var(--secondary-dim);opacity:0.7">Slide 4 / 8</span>
+    </div>
+  </div>
+
+  <div class="slide-content" style="gap:clamp(0.75rem,2vw,1.5rem)">
+    <p class="section-label">Project Goals</p>
+    <h2 style="text-align:center">Objectives</h2>
+
+    <!-- General Objective -->
+    <div class="glass-panel" style="max-width:900px;width:100%;padding:clamp(0.75rem,2vw,1.5rem)">
+      <p class="label" style="color:var(--secondary);margin-bottom:clamp(0.4rem,1vw,0.75rem)">General Objective</p>
+      <p style="font-size:var(--body-size);color:var(--on-surface);font-weight:500;text-align:center">
+        To develop SecureCAT — a role-based web application that streamlines the College Admission Test process at ISPSC Tagudin from applicant registration through exam scheduling, proctoring, scoring, and result release, grounded in Information Assurance and Security principles.
+      </p>
+    </div>
+
+    <!-- Specific Objectives -->
+    <div style="max-width:900px;width:100%">
+      <p class="label" style="color:var(--primary-dim);margin-bottom:clamp(0.4rem,1vw,0.75rem)">Specific Objectives</p>
+      <ul class="obj-list" style="display:grid;grid-template-columns:1fr 1fr;gap:clamp(0.4rem,1.5vw,1rem)">
+        <li><div class="bullet"></div><span>Digitize applicant registration and application management</span></li>
+        <li><div class="bullet"></div><span>Implement automated exam scheduling with room assignment</span></li>
+        <li><div class="bullet"></div><span>Enable real-time proctor attendance tracking</span></li>
+        <li><div class="bullet"></div><span>Automate score computation and result sheet generation</span></li>
+        <li><div class="bullet"></div><span>Provide role-based access control for all user types</span></li>
+        <li><div class="bullet"></div><span>Deliver AI-powered applicant query support via AI Companion</span></li>
+        <li><div class="bullet"></div><span>Send real-time notifications for exam events and status updates</span></li>
+        <li><div class="bullet"></div><span>Generate printable result sheets with counselor recommendations</span></li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="status-bar-bottom">
+    <span class="label" style="color:var(--outline)">SecureCAT · Objectives</span>
+    <span class="label" style="color:var(--outline)">ISPSC Tagudin</span>
+  </div>
+</section>
+
+<!-- =============================================
+     SLIDE 5 — SCOPE & TARGET USERS
+     ============================================= -->
+<section class="slide" id="slide-5">
+  <div class="bg-radial"></div>
+  <div class="bg-grid"></div>
+
+  <div class="status-bar">
+    <div class="status-item">
+      <span class="material-symbols-outlined" style="font-size:1.1rem;color:var(--primary)">terminal</span>
+      <span class="label" style="color:var(--on-surface-var)">Scope &amp; Target Users</span>
+    </div>
+    <div class="status-item">
+      <span class="label" style="color:var(--secondary-dim);opacity:0.7">Slide 5 / 8</span>
+    </div>
+  </div>
+
+  <div class="slide-content" style="gap:clamp(0.75rem,2vw,1.5rem)">
+    <p class="section-label">Boundaries</p>
+    <h2 style="text-align:center">Scope &amp; Target Users</h2>
+
+    <div class="scope-grid">
+      <!-- Covers -->
+      <div class="card card-scope-covers">
+        <p class="label" style="color:var(--primary-dim);margin-bottom:clamp(0.4rem,1vw,0.75rem)">Covers</p>
+        <ul style="list-style:none;display:flex;flex-direction:column;gap:clamp(0.3rem,0.8vw,0.6rem)">
+          <li style="display:flex;align-items:flex-start;gap:0.5rem;font-size:var(--body-size)">
+            <span style="color:var(--primary-dim);margin-top:2px">→</span>
+            <span>Exam scheduling &amp; room assignment</span>
+          </li>
+          <li style="display:flex;align-items:flex-start;gap:0.5rem;font-size:var(--body-size)">
+            <span style="color:var(--primary-dim);margin-top:2px">→</span>
+            <span>Proctor attendance tracking</span>
+          </li>
+          <li style="display:flex;align-items:flex-start;gap:0.5rem;font-size:var(--body-size)">
+            <span style="color:var(--primary-dim);margin-top:2px">→</span>
+            <span>Score grading &amp; result sheet generation</span>
+          </li>
+          <li style="display:flex;align-items:flex-start;gap:0.5rem;font-size:var(--body-size)">
+            <span style="color:var(--primary-dim);margin-top:2px">→</span>
+            <span>AI Companion for applicant queries</span>
+          </li>
+          <li style="display:flex;align-items:flex-start;gap:0.5rem;font-size:var(--body-size)">
+            <span style="color:var(--primary-dim);margin-top:2px">→</span>
+            <span>Role-based access control</span>
+          </li>
+          <li style="display:flex;align-items:flex-start;gap:0.5rem;font-size:var(--body-size)">
+            <span style="color:var(--primary-dim);margin-top:2px">→</span>
+            <span>Real-time notifications</span>
+          </li>
+        </ul>
+      </div>
+
+      <!-- Does NOT Cover -->
+      <div class="card card-scope-excludes">
+        <p class="label" style="color:var(--muted);margin-bottom:clamp(0.4rem,1vw,0.75rem)">Does NOT Cover</p>
+        <ul style="list-style:none;display:flex;flex-direction:column;gap:clamp(0.3rem,0.8vw,0.6rem)">
+          <li style="display:flex;align-items:flex-start;gap:0.5rem;font-size:var(--body-size)">
+            <span style="color:var(--muted);margin-top:2px">✗</span>
+            <span>Physical exam materials handling</span>
+          </li>
+          <li style="display:flex;align-items:flex-start;gap:0.5rem;font-size:var(--body-size)">
+            <span style="color:var(--muted);margin-top:2px">✗</span>
+            <span>Face-to-face interview coordination</span>
+          </li>
+          <li style="display:flex;align-items:flex-start;gap:0.5rem;font-size:var(--body-size)">
+            <span style="color:var(--muted);margin-top:2px">✗</span>
+            <span>Learning management (LMS)</span>
+          </li>
+          <li style="display:flex;align-items:flex-start;gap:0.5rem;font-size:var(--body-size)">
+            <span style="color:var(--muted);margin-top:2px">✗</span>
+            <span>External API integrations</span>
+          </li>
+          <li style="display:flex;align-items:flex-start;gap:0.5rem;font-size:var(--body-size)">
+            <span style="color:var(--muted);margin-top:2px">✗</span>
+            <span>Payment processing</span>
+          </li>
+          <li style="display:flex;align-items:flex-start;gap:0.5rem;font-size:var(--body-size)">
+            <span style="color:var(--muted);margin-top:2px">✗</span>
+            <span>Physical exam center infrastructure</span>
+          </li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Target Users -->
+    <div class="glass-panel" style="padding:clamp(0.5rem,1.5vw,1rem) clamp(1rem,3vw,2rem);text-align:center;max-width:900px;width:100%;border-top:2px solid var(--tertiary)">
+      <p class="label" style="color:var(--tertiary);margin-bottom:clamp(0.3rem,0.8vw,0.5rem)">Target Users</p>
+      <p style="font-size:var(--h3-size);color:var(--on-surface);font-weight:700">
+        Registrar Administrator · Test Administrator · Proctor · Applicant
+      </p>
+    </div>
+  </div>
+
+  <div class="status-bar-bottom">
+    <span class="label" style="color:var(--outline)">SecureCAT · Scope</span>
+    <span class="label" style="color:var(--outline)">ISPSC Tagudin</span>
+  </div>
+</section>
+
+<!-- =============================================
+     SLIDE 6 — TECH STACK
+     ============================================= -->
+<section class="slide" id="slide-6">
+  <div class="bg-radial"></div>
+  <div class="bg-grid"></div>
+
+  <div class="status-bar">
+    <div class="status-item">
+      <span class="material-symbols-outlined" style="font-size:1.1rem;color:var(--primary)">terminal</span>
+      <span class="label" style="color:var(--on-surface-var)">Tech Stack</span>
+    </div>
+    <div class="status-item">
+      <span class="label" style="color:var(--secondary-dim);opacity:0.7">Slide 6 / 8</span>
+    </div>
+  </div>
+
+  <div class="slide-content" style="gap:clamp(0.75rem,2vw,1.5rem)">
+    <p class="section-label">Built With</p>
+    <h2 style="text-align:center">Technology Stack</h2>
+
+    <div class="tech-grid">
+      <!-- Laravel 12 -->
+      <div class="tech-card">
+        <div class="tech-icon-box">
+          <span style="font-family:'Space Grotesk',sans-serif;font-size:clamp(0.7rem,1.2vw,1rem);font-weight:700;color:var(--primary)">L</span>
+        </div>
+        <div>
+          <h3 style="font-size:clamp(0.8rem,1.4vw,1.1rem);margin-bottom:0.2rem">Laravel 12</h3>
+          <p style="font-size:var(--small-size);color:var(--on-surface-var)">PHP backend — Eloquent ORM, policy-based auth, scheduled commands</p>
+        </div>
+      </div>
+
+      <!-- Svelte + Inertia -->
+      <div class="tech-card">
+        <div class="tech-icon-box">
+          <span style="font-family:'Space Grotesk',sans-serif;font-size:clamp(0.7rem,1.2vw,1rem);font-weight:700;color:var(--secondary)">S</span>
+        </div>
+        <div>
+          <h3 style="font-size:clamp(0.8rem,1.4vw,1.1rem);margin-bottom:0.2rem">Svelte + Inertia</h3>
+          <p style="font-size:var(--small-size);color:var(--on-surface-var)">Frontend SPA — reactive components, server-side routing</p>
+        </div>
+      </div>
+
+      <!-- RBAC -->
+      <div class="tech-card">
+        <div class="tech-icon-box">
+          <span class="material-symbols-outlined" style="font-size:clamp(1rem,1.8vw,1.4rem);color:var(--primary)">admin_panel_settings</span>
+        </div>
+        <div>
+          <h3 style="font-size:clamp(0.8rem,1.4vw,1.1rem);margin-bottom:0.2rem">RBAC</h3>
+          <p style="font-size:var(--small-size);color:var(--on-surface-var)">Role-based access control — registrar, test_admin, proctor, applicant</p>
+        </div>
+      </div>
+
+      <!-- Mixedbread + OpenRouter -->
+      <div class="tech-card">
+        <div class="tech-icon-box">
+          <span class="material-symbols-outlined" style="font-size:clamp(1rem,1.8vw,1.4rem);color:var(--tertiary)">psychology</span>
+        </div>
+        <div>
+          <h3 style="font-size:clamp(0.8rem,1.4vw,1.1rem);margin-bottom:0.2rem">Mixedbread + OpenRouter</h3>
+          <p style="font-size:var(--small-size);color:var(--on-surface-var)">RAG embeddings via Mixedbread · multi-model LLM routing via OpenRouter</p>
+        </div>
+      </div>
+
+      <!-- Agentic Dev Tools -->
+      <div class="tech-card">
+        <div class="tech-icon-box">
+          <span class="material-symbols-outlined" style="font-size:clamp(1rem,1.8vw,1.4rem);color:var(--primary)">smart_toy</span>
+        </div>
+        <div>
+          <h3 style="font-size:clamp(0.8rem,1.4vw,1.1rem);margin-bottom:0.2rem">Agentic Dev Tools</h3>
+          <p style="font-size:var(--small-size);color:var(--on-surface-var)">Claude Code · Anthropic, Minimax &amp; GLM models · GSD workflow</p>
+        </div>
+      </div>
+
+      <!-- PostgreSQL -->
+      <div class="tech-card">
+        <div class="tech-icon-box">
+          <span style="font-family:'Space Grotesk',sans-serif;font-size:clamp(0.7rem,1.2vw,1rem);font-weight:700;color:var(--secondary)">MY</span>
+        </div>
+        <div>
+          <h3 style="font-size:clamp(0.8rem,1.4vw,1.1rem);margin-bottom:0.2rem">MySQL</h3>
+          <p style="font-size:var(--small-size);color:var(--on-surface-var)">Database — structured schema, migrations, seeded demo data</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="status-bar-bottom">
+    <span class="label" style="color:var(--outline)">SecureCAT · Tech Stack</span>
+    <span class="label" style="color:var(--outline)">ISPSC Tagudin</span>
+  </div>
+</section>
+
+<!-- =============================================
+     SLIDE 7 — DEMO ROADMAP
+     ============================================= -->
+<section class="slide" id="slide-7">
+  <div class="bg-radial"></div>
+  <div class="bg-grid"></div>
+
+  <div class="status-bar">
+    <div class="status-item">
+      <span class="material-symbols-outlined" style="font-size:1.1rem;color:var(--primary)">terminal</span>
+      <span class="label" style="color:var(--on-surface-var)">Live Demo</span>
+    </div>
+    <div class="status-item">
+      <span class="label" style="color:var(--secondary-dim);opacity:0.7">Slide 7 / 8</span>
+    </div>
+  </div>
+
+  <div class="slide-content" style="gap:clamp(0.75rem,2vw,1.5rem)">
+    <p class="section-label">Walkthrough</p>
+    <h2 style="text-align:center">Demo Roadmap</h2>
+
+    <div class="timeline">
+      <!-- Act 1 -->
+      <div class="timeline-item">
+        <div class="timeline-badge act-1">01</div>
+        <div class="card" style="flex:1">
+          <div style="display:flex;align-items:center;gap:0.5rem;margin-bottom:0.3rem">
+            <span class="material-symbols-outlined" style="font-size:clamp(0.9rem,1.5vw,1.2rem);color:var(--primary)">how_to_reg</span>
+            <h3 style="font-size:var(--body-size);color:var(--primary)">Application Lifecycle</h3>
+          </div>
+          <p style="font-size:var(--small-size)">Live form submission → Staff review &amp; accept → Automated portal account creation → Setup email notification</p>
+        </div>
+      </div>
+
+      <!-- Act 2 -->
+      <div class="timeline-item">
+        <div class="timeline-badge act-2">02</div>
+        <div class="card" style="flex:1">
+          <div style="display:flex;align-items:center;gap:0.5rem;margin-bottom:0.3rem">
+            <span class="material-symbols-outlined" style="font-size:clamp(0.9rem,1.5vw,1.2rem);color:var(--secondary)">calendar_month</span>
+            <h3 style="font-size:var(--body-size);color:var(--secondary)">Exam Administration</h3>
+          </div>
+          <p style="font-size:var(--small-size)">Test admin creates session → assigns proctor &amp; room → sets schedule → publishes → proctor notified instantly</p>
+        </div>
+      </div>
+
+      <!-- Act 3 -->
+      <div class="timeline-item">
+        <div class="timeline-badge act-3">03</div>
+        <div class="card" style="flex:1">
+          <div style="display:flex;align-items:center;gap:0.5rem;margin-bottom:0.3rem">
+            <span class="material-symbols-outlined" style="font-size:clamp(0.9rem,1.5vw,1.2rem);color:var(--tertiary)">assignment_turned_in</span>
+            <h3 style="font-size:var(--body-size);color:var(--tertiary)">Live Proctoring</h3>
+          </div>
+          <p style="font-size:var(--small-size)">Proctor marks examinee attendance in real-time → Present/Absent status updates live → Notification triggers</p>
+        </div>
+      </div>
+
+      <!-- Act 4 -->
+      <div class="timeline-item">
+        <div class="timeline-badge act-4">04</div>
+        <div class="card" style="flex:1">
+          <div style="display:flex;align-items:center;gap:0.5rem;margin-bottom:0.3rem">
+            <span class="material-symbols-outlined" style="font-size:clamp(0.9rem,1.5vw,1.2rem);color:var(--accent-red)">grade</span>
+            <h3 style="font-size:var(--body-size);color:var(--accent-red)">Grading &amp; Release</h3>
+          </div>
+          <p style="font-size:var(--small-size)">Registrar enters scores per aptitude area → Finalize grading → Counselor reviews → Release consultation summaries → Applicant sees result instantly</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="status-bar-bottom">
+    <span class="label" style="color:var(--outline)">SecureCAT · Demo</span>
+    <span class="label" style="color:var(--outline)">ISPSC Tagudin</span>
+  </div>
+</section>
+
+<!-- =============================================
+     SLIDE 8 — CLOSING
+     ============================================= -->
+<section class="slide" id="slide-8">
+  <div class="bg-radial"></div>
+  <div class="bg-grid"></div>
+
+  <div class="status-bar">
+    <div class="status-item">
+      <span class="material-symbols-outlined" style="font-size:1.1rem;color:var(--primary)">terminal</span>
+      <span class="label" style="color:var(--on-surface-var)">Closing</span>
+    </div>
+    <div class="status-item">
+      <span class="label" style="color:var(--secondary-dim);opacity:0.7">Slide 8 / 8</span>
+    </div>
+  </div>
+
+  <div class="slide-content" style="align-items:center;text-align:center;gap:clamp(0.75rem,2vw,1.5rem)">
+    <div class="shield-icon">
+      <span class="material-symbols-outlined">shield</span>
+    </div>
+
+    <h1 class="glow-text-gradient" style="font-size:clamp(1.5rem,4vw,3.5rem)">SecureCAT</h1>
+
+    <p style="font-size:var(--h3-size);color:var(--on-surface-var);font-weight:500">
+      A Role-Based College Admission Testing System<br><span style="font-size:0.6em;opacity:0.6;font-weight:400">for Guidance and Counseling Services at ISPSC</span>
+    </p>
+
+    <div class="divider"></div>
+
+    <div class="glass-panel" style="padding:clamp(1rem,2.5vw,2rem) clamp(1.5rem,4vw,3.5rem);text-align:center">
+      <p style="font-size:var(--h3-size);color:var(--on-surface);font-weight:700;margin-bottom:clamp(0.5rem,1vw,0.75rem)">
+        Thank you, Panel Members.
+      </p>
+      <p style="font-size:var(--body-size);color:var(--on-surface-var)">
+        We welcome your questions.
+      </p>
+    </div>
+
+    <div style="display:flex;gap:clamp(1rem,3vw,2.5rem);align-items:center">
+      <div style="text-align:center">
+        <p class="label" style="color:var(--tertiary);opacity:0.8;margin-bottom:0.25rem">Developers</p>
+        <p style="font-size:var(--small-size);color:var(--on-surface)">David Datu Sarmiento<br/>Christine Lopez</p>
+      </div>
+      <div style="width:1px;height:clamp(2rem,4vw,3.5rem);background:rgba(68,72,79,0.4)"></div>
+      <div style="text-align:center">
+        <p class="label" style="color:var(--tertiary);opacity:0.8;margin-bottom:0.25rem">Institution</p>
+        <p style="font-size:var(--small-size);color:var(--on-surface)">ISPSC Tagudin<br/><span style="color:var(--on-surface-var)">Academic Year 2025-2026</span></p>
+      </div>
+    </div>
+
+    <div id="live-demo-block" style="display:none;align-items:center;gap:0.5rem;flex-direction:column">
+      <div class="divider" style="width:100%;margin:0.25rem 0"></div>
+      <p class="label" style="color:var(--primary);letter-spacing:0.08em">Try it live</p>
+      <div style="display:flex;gap:1.5rem;align-items:center">
+        <img id="qr-code-img" src="" alt="QR" style="width:clamp(80px,8vw,120px);height:auto;border-radius:8px;background:#fff;padding:5px"/>
+        <a id="demo-url-link" href="#" target="_blank" rel="noopener"
+           style="font-size:var(--small-size);color:var(--primary);word-break:break-all;text-decoration:underline;text-underline-offset:3px;max-width:220px"></a>
+      </div>
+    </div>
+  </div>
+
+  <div class="status-bar-bottom">
+    <div class="status-item">
+      <div class="pulse-dot"></div>
+      <span class="label" style="color:var(--primary-dim)">System Ready</span>
+    </div>
+    <span class="label" style="color:var(--outline)">SecureCAT · System Defense 2026</span>
+  </div>
+</section>
+
+<!-- =============================================
+     NAVIGATION
+     ============================================= -->
+<div class="progress">
+  <div class="dot active" data-target="1"></div>
+  <div class="dot" data-target="2"></div>
+  <div class="dot" data-target="3"></div>
+  <div class="dot" data-target="4"></div>
+  <div class="dot" data-target="5"></div>
+  <div class="dot" data-target="6"></div>
+  <div class="dot" data-target="7"></div>
+  <div class="dot" data-target="8"></div>
+</div>
+
+
+<div class="elapsed-clock">
+  <span class="elapsed-label">elapsed</span>
+  <span id="elapsed-time">00:00</span>
+</div>
+
+<script>
+  const slides = document.querySelectorAll('.slide');
+  const dots   = document.querySelectorAll('.dot');
+  let current = 0;
+
+  function goTo(idx) {
+    if (idx < 0 || idx >= slides.length) return;
+    slides[idx].scrollIntoView({ behavior: 'smooth' });
+    current = idx;
+    update();
+  }
+
+  function update() {
+    dots.forEach((d, i) => d.classList.toggle('active', i === current));
+  }
+
+  document.addEventListener('keydown', e => {
+    if (e.key === 'ArrowDown' || e.key === ' ' || e.key === 'ArrowRight') {
+      e.preventDefault();
+      goTo(current + 1);
+    } else if (e.key === 'ArrowUp' || e.key === 'ArrowLeft') {
+      e.preventDefault();
+      goTo(current - 1);
+    }
+  });
+
+  dots.forEach(d => {
+    d.addEventListener('click', () => goTo(parseInt(d.dataset.target) - 1));
+  });
+
+  const obs = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        current = Array.from(slides).indexOf(e.target);
+        update();
+      }
+    });
+  }, { threshold: 0.5 });
+
+  slides.forEach(s => obs.observe(s));
+
+  // QR + live demo link (populated from ?url= query param)
+  (function () {
+    const demoUrl = new URLSearchParams(window.location.search).get('url');
+    if (!demoUrl) return;
+    const block = document.getElementById('live-demo-block');
+    const img   = document.getElementById('qr-code-img');
+    const link  = document.getElementById('demo-url-link');
+    img.src          = 'https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=' + encodeURIComponent(demoUrl);
+    link.href        = demoUrl;
+    link.textContent = demoUrl;
+    block.style.display = 'flex';
+  })();
+
+  // Elapsed clock
+  const elapsedEl = document.getElementById('elapsed-time');
+  const startTime = Date.now();
+  setInterval(() => {
+    const s = Math.floor((Date.now() - startTime) / 1000);
+    const m = Math.floor(s / 60);
+    const sec = s % 60;
+    elapsedEl.textContent = String(m).padStart(2, '0') + ':' + String(sec).padStart(2, '0');
+  }, 1000);
+</script>
+</body>
+</html>
