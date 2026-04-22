@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Proctor;
 
 use App\Http\Controllers\Controller;
 use App\Models\ExamSession;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -38,11 +39,12 @@ class ProctorSessionController extends Controller
                 'applicants_count' => $s->applicants_count,
                 'is_within_start_window' => $s->isWithinStartWindow(),
                 'is_past_end' => $s->isPastEndTime(),
+                'can_override_schedule' => true,
             ]);
 
-        $today = $sessions->filter(fn ($s) => \Carbon\Carbon::parse($s['date'])->isToday())->values();
-        $upcoming = $sessions->filter(fn ($s) => \Carbon\Carbon::parse($s['date'])->isFuture() && !\Carbon\Carbon::parse($s['date'])->isToday())->values();
-        $past = $sessions->filter(fn ($s) => \Carbon\Carbon::parse($s['date'])->isPast() && !\Carbon\Carbon::parse($s['date'])->isToday())->values();
+        $today = $sessions->filter(fn ($s) => Carbon::parse($s['date'])->isToday())->values();
+        $upcoming = $sessions->filter(fn ($s) => Carbon::parse($s['date'])->isFuture() && ! Carbon::parse($s['date'])->isToday())->values();
+        $past = $sessions->filter(fn ($s) => Carbon::parse($s['date'])->isPast() && ! Carbon::parse($s['date'])->isToday())->values();
 
         return Inertia::render('Proctor/MySessions', [
             'today' => $today,

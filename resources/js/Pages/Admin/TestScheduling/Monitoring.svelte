@@ -83,7 +83,7 @@
                       <Link href="/proctor/sessions/{session.id}">
                         <Button variant="ghost" size="sm" class="h-8 px-2 text-xs">
                           <ClipboardList class="mr-1.5 h-3.5 w-3.5" />
-                          Roster
+                          View Session
                         </Button>
                       </Link>
                     </div>

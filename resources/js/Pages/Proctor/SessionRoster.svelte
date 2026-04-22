@@ -5,7 +5,8 @@
   import { Badge } from '@/Components/ui/badge';
   import { Input } from '@/Components/ui/input';
   import * as Table from '@/Components/ui/table';
-  import { ArrowLeft, UserCheck, UserX, FileCheck, Play, Square } from 'lucide-svelte';
+  import * as Dialog from '@/Components/ui/dialog';
+  import { ArrowLeft, UserCheck, UserX, FileCheck, Play, Square, AlertTriangle } from 'lucide-svelte';
   import { success as showSuccess, error as showError } from '@/lib/toast';
   import { onMount } from 'svelte';
 
@@ -13,23 +14,59 @@
 
   const page = usePage();
 
-  // Show toasts on mount for flash messages
+  // ── Client-side time tracking for dynamic window checks ──
+  // Server-provided flags (is_within_start_window, is_within_window, is_past_end) are
+  // snapshots at render time. We recompute every 30s so the UI reacts to the clock.
+  let liveNow = $state(Date.now());
+
   onMount(() => {
     const flash = $page.props.flash;
     if (flash?.success) showSuccess(flash.success);
     if (flash?.error) showError(flash.error);
+
+    const timer = setInterval(() => { liveNow = Date.now(); }, 30_000);
+    return () => clearInterval(timer);
   });
 
-  // Show toast when exam window has ended (once on initial load)
+  function parseSessionTime(dateStr, timeStr) {
+    if (!dateStr || !timeStr) return null;
+    const [y, m, d] = String(dateStr).split('-').map(Number);
+    const parts = String(timeStr).split(':');
+    const h = parseInt(parts[0], 10) || 0;
+    const min = parseInt(parts[1], 10) || 0;
+    return new Date(y, m - 1, d, h, min, 0).getTime();
+  }
+
+  const GRACE_BEFORE_MS = 15 * 60_000;
+  const GRACE_AFTER_MS = 30 * 60_000;
+
+  const clientWithinStartWindow = $derived.by(() => {
+    const start = parseSessionTime(session.date, session.start_time);
+    const end = session.end_time
+      ? parseSessionTime(session.date, session.end_time)
+      : (start ? start + 24 * 60 * 60_000 : null);
+    if (start == null || end == null) return session.is_within_start_window;
+    return liveNow >= (start - GRACE_BEFORE_MS) && liveNow <= (end + GRACE_AFTER_MS);
+  });
+
+  const clientPastEndTime = $derived.by(() => {
+    const end = parseSessionTime(session.date, session.end_time);
+    if (end == null) return false;
+    return liveNow > end;
+  });
+
+  // Show toast when exam window ends (fires once on transition)
+  let hasShownEndToast = $state(false);
   $effect(() => {
-    if (session?.is_past_end && !window._examWindowEndedToast) {
-      window._examWindowEndedToast = true;
+    if (clientPastEndTime && !hasShownEndToast) {
+      hasShownEndToast = true;
       showError('Exam window ended. Actions locked.');
     }
   });
 
   let searchQuery = $state('');
   let actionError = $state('');
+  let showCloseDialog = $state(false);
 
   const filteredApplicants = $derived(
     searchQuery.trim()
@@ -112,27 +149,34 @@
     router.post(`/proctor/sessions/${session.id}/start`, {}, { onError: handleRosterError, onSuccess: () => router.reload() });
   }
 
-  function closeSession() {
+  function confirmCloseSession() {
     actionError = '';
-    router.post(`/proctor/sessions/${session.id}/close`, {}, { onError: handleRosterError, onSuccess: () => router.reload() });
+    router.post(`/proctor/sessions/${session.id}/close`, {}, {
+      onError: handleRosterError,
+      onSuccess: () => { showCloseDialog = false; router.reload(); },
+    });
   }
 
+  // ── Derived permissions (use client-side time flags) ──
   const canStart = $derived(
     session.status === 'published' &&
-    (session.is_within_start_window !== false || session.can_override_schedule === true)
+    (clientWithinStartWindow !== false || session.can_override_schedule === true)
   );
   const canClose = $derived(session.status === 'in_progress');
-  const outsideStartWindow = $derived(session.status === 'published' && session.is_within_start_window === false);
+  const outsideStartWindow = $derived(session.status === 'published' && clientWithinStartWindow === false);
   const showAdminOverrideHint = $derived(outsideStartWindow && session.can_override_schedule === true);
   const canMarkAttendance = $derived(
-    (session.status === 'published' || session.status === 'in_progress')
-    && !session.is_past_end
+    session.status === 'in_progress' && !clientPastEndTime
   );
   const canLogSubmission = $derived(
-    session.status === 'in_progress' && !session.is_past_end
+    session.status === 'in_progress' && !clientPastEndTime
   );
   const canBulkSubmit = $derived(
-    session.status === 'in_progress' && !session.is_past_end && (stats.present_pending_submission ?? 0) > 0
+    session.status === 'in_progress' && !clientPastEndTime && (stats.present_pending_submission ?? 0) > 0
+  );
+  // Attendance/submission columns only relevant once session has started or completed
+  const showAttendanceColumns = $derived(
+    session.status === 'in_progress' || session.status === 'completed'
   );
 
   function formatDate(value) {
@@ -170,7 +214,7 @@
   }
 
   const breadcrumbs = $derived([
-    { label: 'My Sessions', href: '/admin/exam-scheduling?view=proctor' },
+    { label: 'My Sessions', href: '/proctor/my-sessions' },
     { label: session?.id ? 'Session #' + session.id : 'Session' }
   ]);
 </script>
@@ -199,15 +243,28 @@
             </Button>
           {/if}
           {#if canClose}
-            <Button size="sm" variant="outline" onclick={closeSession}>
+            <Button size="sm" variant="destructive" onclick={() => showCloseDialog = true}>
+              <span class="relative mr-2 flex h-3 w-3">
+                <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-white/75"></span>
+                <span class="relative inline-flex h-3 w-3 rounded-full bg-white"></span>
+              </span>
               <Square class="h-4 w-4 mr-1" />
-              Close
+              Close Session
             </Button>
           {/if}
         </div>
       </div>
       {#if outsideStartWindow && !session.can_override_schedule}
-        <p class="mt-2 text-sm text-muted-foreground">Outside scheduled time window</p>
+        <p class="mt-2 text-sm text-amber-600 flex items-center gap-1.5">
+          <AlertTriangle class="h-4 w-4" />
+          Outside scheduled time window — Start will become available at {formatTime(session.start_time)}
+        </p>
+      {/if}
+      {#if showAdminOverrideHint}
+        <p class="mt-2 text-sm text-amber-600 flex items-center gap-1.5">
+          <AlertTriangle class="h-4 w-4" />
+          Outside scheduled time window — you may override as admin
+        </p>
       {/if}
     </div>
 
@@ -215,10 +272,12 @@
     <div class="rounded-lg border border-border bg-card p-4">
       <div class="flex flex-wrap gap-4 text-sm">
         <div><span class="text-muted-foreground">Total:</span> <strong>{stats.total ?? 0}</strong></div>
-        <div><span class="text-muted-foreground">Present:</span> <strong>{stats.present ?? 0}</strong></div>
-        <div><span class="text-muted-foreground">Absent:</span> <strong>{stats.absent ?? 0}</strong></div>
-        <div><span class="text-muted-foreground">Pending:</span> <strong>{stats.pending ?? 0}</strong></div>
-        <div><span class="text-muted-foreground">Submitted:</span> <strong>{stats.submitted ?? 0}</strong></div>
+        {#if showAttendanceColumns}
+          <div><span class="text-muted-foreground">Present:</span> <strong>{stats.present ?? 0}</strong></div>
+          <div><span class="text-muted-foreground">Absent:</span> <strong>{stats.absent ?? 0}</strong></div>
+          <div><span class="text-muted-foreground">Pending:</span> <strong>{stats.pending ?? 0}</strong></div>
+          <div><span class="text-muted-foreground">Submitted:</span> <strong>{stats.submitted ?? 0}</strong></div>
+        {/if}
       </div>
     </div>
 
@@ -240,7 +299,7 @@
           </Button>
         {/if}
       </div>
-      {#if session.is_past_end}
+      {#if clientPastEndTime && (session.status === 'in_progress' || session.status === 'published')}
         <p class="mt-3 text-sm text-destructive">Exam window ended. Actions locked.</p>
       {/if}
       {#if filteredApplicants.length > 0}
@@ -250,10 +309,12 @@
               <Table.Row>
                 <Table.Head class="px-4 py-3">Reference</Table.Head>
                 <Table.Head class="px-4 py-3">Name</Table.Head>
-                <Table.Head class="px-4 py-3">Attendance</Table.Head>
-                <Table.Head class="px-4 py-3">Time in</Table.Head>
-                <Table.Head class="px-4 py-3">Submission</Table.Head>
-                <Table.Head class="px-4 py-3">Submitted at</Table.Head>
+                {#if showAttendanceColumns}
+                  <Table.Head class="px-4 py-3">Attendance</Table.Head>
+                  <Table.Head class="px-4 py-3">Time in</Table.Head>
+                  <Table.Head class="px-4 py-3">Submission</Table.Head>
+                  <Table.Head class="px-4 py-3">Submitted at</Table.Head>
+                {/if}
                 <Table.Head class="text-center px-4 py-3">Action</Table.Head>
               </Table.Row>
             </Table.Header>
@@ -262,14 +323,16 @@
                 <Table.Row>
                   <Table.Cell class="px-4 py-3">{row.reference_number ?? '-'}</Table.Cell>
                   <Table.Cell class="px-4 py-3">{row.name ?? '-'}</Table.Cell>
-                  <Table.Cell class="px-4 py-3">
-                    <Badge variant={attendanceStatusVariant(row.attendance_status)}>{row.attendance_status}</Badge>
-                  </Table.Cell>
-                  <Table.Cell class="px-4 py-3">{formatDateTime(row.attendance_marked_at)}</Table.Cell>
-                  <Table.Cell class="px-4 py-3">
-                    <Badge variant={attendanceStatusVariant(row.submission_status)}>{row.submission_status}</Badge>
-                  </Table.Cell>
-                  <Table.Cell class="px-4 py-3">{formatDateTime(row.submitted_at)}</Table.Cell>
+                  {#if showAttendanceColumns}
+                    <Table.Cell class="px-4 py-3">
+                      <Badge variant={attendanceStatusVariant(row.attendance_status)}>{row.attendance_status}</Badge>
+                    </Table.Cell>
+                    <Table.Cell class="px-4 py-3">{formatDateTime(row.attendance_marked_at)}</Table.Cell>
+                    <Table.Cell class="px-4 py-3">
+                      <Badge variant={attendanceStatusVariant(row.submission_status)}>{row.submission_status}</Badge>
+                    </Table.Cell>
+                    <Table.Cell class="px-4 py-3">{formatDateTime(row.submitted_at)}</Table.Cell>
+                  {/if}
                   <Table.Cell class="px-4 py-3 text-center">
                     {#if row.attendance_status === 'pending' && canMarkAttendance}
                       <div class="flex justify-center gap-1">
@@ -294,4 +357,28 @@
       {/if}
     </div>
   </div>
+
+  <!-- Close Session Confirmation Dialog -->
+  <Dialog.Root bind:open={showCloseDialog}>
+    <Dialog.Content>
+      <Dialog.Header>
+        <Dialog.Title>Close Session</Dialog.Title>
+        <Dialog.Description>
+          Are you sure you want to close this session? This will mark it as completed and lock all further actions.
+        </Dialog.Description>
+      </Dialog.Header>
+      <div class="py-4">
+        <p class="text-sm text-muted-foreground">
+          Session #{session.id} · {formatDate(session.date)} · {formatTime(session.start_time)}{#if session.end_time} - {formatTime(session.end_time)}{/if}
+        </p>
+      </div>
+      <Dialog.Footer>
+        <Button variant="outline" onclick={() => showCloseDialog = false}>Cancel</Button>
+        <Button variant="destructive" onclick={confirmCloseSession}>
+          <Square class="h-4 w-4 mr-1" />
+          Close Session
+        </Button>
+      </Dialog.Footer>
+    </Dialog.Content>
+  </Dialog.Root>
 </AuthenticatedLayout>

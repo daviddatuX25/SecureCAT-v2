@@ -65,7 +65,8 @@ class SessionRosterController extends Controller
 
         $user = request()->user();
         $isWithinStartWindow = $exam_session->isWithinStartWindow();
-        $canOverrideSchedule = $user->hasAnyRole(['super_admin', 'test_administrator']);
+        $isAssignedProctor = $exam_session->proctors()->where('users.id', $user->id)->exists();
+        $canOverrideSchedule = $user->hasAnyRole(['super_admin', 'test_administrator']) || $isAssignedProctor;
 
         return Inertia::render('Proctor/SessionRoster', [
             'session' => array_merge($exam_session->toArray(), [
@@ -81,13 +82,15 @@ class SessionRosterController extends Controller
 
     public function storeAttendance(MarkAttendanceRequest $request, ExamSession $exam_session): RedirectResponse|JsonResponse
     {
+        $this->authorize('manageRoster', $exam_session);
+
         $session = $exam_session;
-        if (! in_array($session->status, [ExamSession::STATUS_PUBLISHED, ExamSession::STATUS_IN_PROGRESS], true)) {
+        if ($session->status !== ExamSession::STATUS_IN_PROGRESS) {
             if ($request->wantsJson()) {
-                return response()->json(['message' => 'Session must be published or in progress.'], 409);
+                return response()->json(['message' => 'Session must be in progress to mark attendance.'], 409);
             }
 
-            return back()->with('error', 'Session must be published or in progress.');
+            return back()->with('error', 'Session must be in progress to mark attendance.');
         }
 
         if ($session->isPastEndTime()) {
@@ -253,7 +256,8 @@ class SessionRosterController extends Controller
 
         $withinWindow = $exam_session->isWithinStartWindow();
         $user = request()->user();
-        $canOverride = $user->hasAnyRole(['super_admin', 'test_administrator']);
+        $isAssignedProctor = $exam_session->proctors()->where('users.id', $user->id)->exists();
+        $canOverride = $user->hasAnyRole(['super_admin', 'test_administrator']) || $isAssignedProctor;
 
         if (! $withinWindow && ! $canOverride) {
             $message = 'Outside scheduled window. Only an admin can start the session outside the schedule.';

@@ -154,7 +154,10 @@
               <div class="mt-3 space-y-4">
                 <div>
                   <label for="phone" class="block text-sm font-medium">Phone number</label>
-                  <Input id="phone" name="phone" type="tel" bind:value={$form.phone} class="mt-1 min-h-[44px]" />
+                  <Input id="phone" name="phone" type="tel" bind:value={$form.phone} class="mt-1 min-h-[44px]" maxlength="12" oninput={(e) => { if (e.target.value.length > 12) { e.target.value = e.target.value.slice(0, 12); $form.phone = e.target.value; } }} />
+                  {#if $form.phone && $form.phone.length >= 12}
+                    <p class="text-xs text-amber-500 mt-0.5">Maximum 12 characters reached</p>
+                  {/if}
                   {#if $form.errors?.phone}
                     <p class="mt-1 text-sm text-destructive">{$form.errors.phone}</p>
                   {/if}

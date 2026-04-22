@@ -195,7 +195,7 @@ Route::middleware(['auth'])->group(function () {
         Route::post('grading/import/preview', [ScoreImportController::class, 'preview'])->name('import.preview');
         Route::post('grading/import/confirm', [ScoreImportController::class, 'confirm'])->name('import.confirm');
     });
-    Route::get('/proctor', fn () => redirect()->route('proctor.my-sessions'))->middleware('role:super_admin,proctor');
+    Route::get('/proctor', fn () => redirect()->route('dashboard'))->middleware('role:super_admin,proctor');
     Route::middleware('role:super_admin,registrar_administrator,proctor,test_administrator')->prefix('proctor')->name('proctor.')->group(function () {
         Route::get('my-sessions', [ProctorSessionController::class, 'mySessions'])->name('my-sessions');
         Route::get('sessions/{exam_session}', [SessionRosterController::class, 'show'])->name('sessions.show');

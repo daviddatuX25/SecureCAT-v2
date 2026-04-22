@@ -3,7 +3,7 @@
   import { router, usePage } from '@inertiajs/svelte';
   import { Badge } from '@/Components/ui/badge';
   import { Button } from '@/Components/ui/button';
-  import { Play, Square, ClipboardList, Calendar, Clock, Users } from 'lucide-svelte';
+  import { Play, Square, ClipboardList, Calendar, Clock, Users, AlertTriangle } from 'lucide-svelte';
   import { success as showSuccess, error as showError } from '@/lib/toast';
   import { onMount } from 'svelte';
 
@@ -97,11 +97,15 @@
   }
 
   function canStart(session) {
-    return session.status === 'published' && session.is_within_start_window;
+    return session.status === 'published' && (session.is_within_start_window || session.can_override_schedule);
   }
 
   function outsideStartWindow(session) {
-    return session.status === 'published' && !session.is_within_start_window;
+    return session.status === 'published' && !session.is_within_start_window && !session.can_override_schedule;
+  }
+
+  function outsideWindowButCanOverride(session) {
+    return session.status === 'published' && !session.is_within_start_window && session.can_override_schedule;
   }
 
   function hasGroups() {
@@ -122,7 +126,7 @@
     <div>
       <h1 class="text-2xl font-semibold">My Sessions</h1>
       <p class="mt-1 text-sm text-muted-foreground">
-        Exam sessions assigned to you. Click "Open roster" to manage attendance and submissions.
+        Exam sessions assigned to you. Click "View Session" to manage attendance and submissions.
       </p>
     </div>
 
@@ -188,6 +192,8 @@
                       </Button>
                     {:else if outsideStartWindow(session)}
                       <span class="text-sm text-muted-foreground">Outside scheduled time</span>
+                    {:else if outsideWindowButCanOverride(session)}
+                      <span class="text-sm text-amber-600 flex items-center gap-1"><AlertTriangle class="h-4 w-4" />Outside window — you may override</span>
                     {/if}
 
                     {#if isInProgress(session)}
@@ -199,7 +205,7 @@
 
                     <a href={sessionHref(session)} class="inline-flex items-center gap-1 text-sm text-primary hover:underline">
                       <ClipboardList class="h-4 w-4" />
-                      Open roster
+                      View Session
                     </a>
                   </div>
                 </div>
@@ -259,6 +265,8 @@
                       </Button>
                     {:else if outsideStartWindow(session)}
                       <span class="text-sm text-muted-foreground">Outside scheduled time</span>
+                    {:else if outsideWindowButCanOverride(session)}
+                      <span class="text-sm text-amber-600 flex items-center gap-1"><AlertTriangle class="h-4 w-4" />Outside window — you may override</span>
                     {/if}
 
                     {#if isInProgress(session)}
@@ -270,7 +278,7 @@
 
                     <a href={sessionHref(session)} class="inline-flex items-center gap-1 text-sm text-primary hover:underline">
                       <ClipboardList class="h-4 w-4" />
-                      Open roster
+                      View Session
                     </a>
                   </div>
                 </div>
@@ -330,6 +338,8 @@
                       </Button>
                     {:else if outsideStartWindow(session)}
                       <span class="text-sm text-muted-foreground">Outside scheduled time</span>
+                    {:else if outsideWindowButCanOverride(session)}
+                      <span class="text-sm text-amber-600 flex items-center gap-1"><AlertTriangle class="h-4 w-4" />Outside window — you may override</span>
                     {/if}
 
                     {#if isInProgress(session)}
@@ -341,7 +351,7 @@
 
                     <a href={sessionHref(session)} class="inline-flex items-center gap-1 text-sm text-primary hover:underline">
                       <ClipboardList class="h-4 w-4" />
-                      Open roster
+                      View Session
                     </a>
                   </div>
                 </div>

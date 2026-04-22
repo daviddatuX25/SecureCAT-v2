@@ -1,68 +1,28 @@
-// Notification sound utility using Web Audio API
-// Two-tier context-aware chime: 'background' for poll, 'action' for direct user actions
+// Notification sound utility — delegates to notifStore (file-based Audio)
+// Two tiers: 'background' (soft poll alert) and 'action' (direct user action)
 
-// Singleton AudioContext instance
-let audioContext = null;
-
-function getAudioContext() {
-    if (typeof window === 'undefined') return null;
-    if (!audioContext) {
-        audioContext = new (window.AudioContext || window.webkitAudioContext)();
-    }
-    // Browsers suspend AudioContext until user gesture — must resume
-    if (audioContext.state === 'suspended') {
-        audioContext.resume();
-    }
-    return audioContext;
-}
+import { playNotif } from '@/lib/notifStore.js';
 
 /**
- * Play a context-aware notification chime.
+ * Play a context-aware notification sound.
  * @param {'background' | 'action'} tier
- *   - 'background': soft, short chime for poll-based notifications (0.15s, 600->400Hz, gain 0.08)
- *   - 'action': louder, longer chime for direct user actions (0.3s, 800->400Hz, gain 0.2)
+ *   - 'background': softer volume for poll-based notifications
+ *   - 'action': full volume for direct user actions
  */
 export function playChime(tier = 'background') {
-    if (typeof window === 'undefined') return;
-
-    const ctx = getAudioContext();
-    if (!ctx) return;
-
-    const oscillator = ctx.createOscillator();
-    const gainNode = ctx.createGain();
-
-    oscillator.connect(gainNode);
-    gainNode.connect(ctx.destination);
-
-    if (tier === 'background') {
-        // Soft, short chime — unobtrusive ambient alert for poll notifications
-        oscillator.frequency.setValueAtTime(600, ctx.currentTime);
-        oscillator.frequency.exponentialRampToValueAtTime(400, ctx.currentTime + 0.15);
-        gainNode.gain.setValueAtTime(0.08, ctx.currentTime);
-        gainNode.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.15);
-        oscillator.start(ctx.currentTime);
-        oscillator.stop(ctx.currentTime + 0.15);
-    } else {
-        // Louder, longer chime — confirms direct user action
-        oscillator.frequency.setValueAtTime(800, ctx.currentTime);
-        oscillator.frequency.exponentialRampToValueAtTime(400, ctx.currentTime + 0.3);
-        gainNode.gain.setValueAtTime(0.2, ctx.currentTime);
-        gainNode.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.3);
-        oscillator.start(ctx.currentTime);
-        oscillator.stop(ctx.currentTime + 0.3);
-    }
+  if (tier === 'background') {
+    playNotif('background', 0.35);
+  } else {
+    playNotif('action', 0.85);
+  }
 }
 
-/**
- * @deprecated Use playChime('action') instead. Kept for backward compatibility.
- */
+/** @deprecated Use playChime('action') instead. */
 export function playNotificationSound() {
-    playChime('action');
+  playChime('action');
 }
 
-/**
- * @deprecated Use playChime('action') or playChime('background') instead.
- */
-export function playSound(type = 'info') {
-    playChime('action');
+/** @deprecated Use playChime('action') or playChime('background') instead. */
+export function playSound() {
+  playChime('action');
 }

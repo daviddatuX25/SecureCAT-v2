@@ -449,7 +449,7 @@ class DefenseDemoSeeder extends Seeder
             'submission_status' => 'pending',
         ]);
 
-        GradingSession::query()->updateOrCreate(
+        $gs = GradingSession::query()->updateOrCreate(
             ['exam_session_id' => $es->id],
             [
                 'status' => GradingSession::STATUS_OPEN,
@@ -457,6 +457,10 @@ class DefenseDemoSeeder extends Seeder
                 'opened_by' => $users['test_admin']->id,
             ]
         );
+
+        foreach ([$appMap[6]['applicant'], $appMap[7]['applicant'], $appMap[8]['applicant'], $appMap[9]['applicant']] as $applicant) {
+            $gs->applicants()->syncWithoutDetaching([$applicant->id]);
+        }
     }
 
     private function seedSessionD(CarbonImmutable $today, AcademicYear $academicYear, $rooms): void

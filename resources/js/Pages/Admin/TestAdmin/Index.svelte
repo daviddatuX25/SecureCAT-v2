@@ -126,7 +126,7 @@
     <div>
       <h1 class="text-2xl font-semibold">My Sessions</h1>
       <p class="mt-1 text-sm text-muted-foreground">
-        Exam sessions assigned to you. Click "Open roster" to manage attendance and submissions.
+        Exam sessions assigned to you. Click "View Session" to manage attendance and submissions.
       </p>
     </div>
 
@@ -203,7 +203,7 @@
 
                     <a href={sessionRosterHref(session)} class="inline-flex items-center gap-1 text-sm text-primary hover:underline">
                       <ClipboardList class="h-4 w-4" />
-                      Open roster
+                      View Session
                     </a>
                   </div>
                 </div>
@@ -274,7 +274,7 @@
 
                     <a href={sessionRosterHref(session)} class="inline-flex items-center gap-1 text-sm text-primary hover:underline">
                       <ClipboardList class="h-4 w-4" />
-                      Open roster
+                      View Session
                     </a>
                   </div>
                 </div>
@@ -345,7 +345,7 @@
 
                     <a href={sessionRosterHref(session)} class="inline-flex items-center gap-1 text-sm text-primary hover:underline">
                       <ClipboardList class="h-4 w-4" />
-                      Open roster
+                      View Session
                     </a>
                   </div>
                 </div>

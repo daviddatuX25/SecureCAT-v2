@@ -91,6 +91,36 @@ class SessionRosterTimeEnforcementTest extends TestCase
         );
     }
 
+    public function test_attendance_blocked_when_session_published(): void
+    {
+        $this->seed(RoleSeeder::class);
+
+        $proctor = User::factory()->create();
+        $proctor->roles()->attach(Role::where('name', 'proctor')->first());
+
+        Carbon::setTestNow('2026-05-01 10:00:00'); // within window
+
+        $session = $this->makeSession('2026-05-01', '09:00:00', '12:00:00');
+        // status is already PUBLISHED from makeSession
+        $session->proctors()->attach($proctor->id);
+
+        $applicant = Applicant::factory()->create();
+        $session->applicants()->attach($applicant->id, [
+            'attendance_status' => 'pending',
+            'submission_status' => 'pending',
+        ]);
+
+        $response = $this->actingAs($proctor)->postJson("/proctor/sessions/{$session->id}/attendance", [
+            'applicant_id' => $applicant->id,
+            'status' => 'present',
+        ]);
+
+        $response->assertStatus(409);
+        $this->assertDatabaseMissing('exam_session_applicant', [
+            'attendance_status' => 'present',
+        ]);
+    }
+
     public function test_attendance_blocked_after_end_time(): void
     {
         $this->seed(RoleSeeder::class);

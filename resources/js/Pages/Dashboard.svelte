@@ -44,7 +44,8 @@
   // Quick actions per role
   const quickActions = $derived([
     (hasRole('admin') || hasRole('super_admin')) && { href: '/admin/applications', label: 'View Applications', icon: FileText },
-    (hasRole('proctor') || hasRole('registrar_administrator') || hasRole('super_admin')) && { href: '/admin/exam-scheduling', label: 'My Sessions', icon: Calendar },
+    (hasRole('proctor')) && { href: '/proctor/my-sessions', label: 'My Sessions', icon: Calendar },
+    (hasRole('registrar_administrator') || hasRole('super_admin')) && { href: '/admin/exam-scheduling', label: 'Exam Scheduling', icon: Calendar },
     (hasRole('registrar_administrator') || hasRole('super_admin')) && { href: '/grading', label: 'Grading', icon: GraduationCap },
     (hasRole('registrar_administrator') || hasRole('super_admin')) && { href: '/release', label: 'Release Results', icon: SendHorizonal },
     (hasRole('admin') || hasRole('super_admin')) && { href: '/admin/users', label: 'Manage Users', icon: Users },

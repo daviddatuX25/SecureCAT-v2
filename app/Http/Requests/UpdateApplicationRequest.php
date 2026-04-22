@@ -23,7 +23,7 @@ class UpdateApplicationRequest extends FormRequest
             'birthdate' => ['nullable', 'date', 'before:-15 years', 'after:-50 years'],
             'sex' => ['nullable', 'string', 'in:male,female'],
             'email' => ['nullable', 'email'],
-            'phone' => ['nullable', 'string', 'max:20'],
+            'phone' => ['nullable', 'string', 'max:12'],
             'address_line' => ['nullable', 'string', 'max:255'],
             'city' => ['nullable', 'string', 'max:100'],
             'province' => ['nullable', 'string', 'max:100'],

@@ -12,7 +12,7 @@
   const breadcrumbs = $derived(
     view === 'proctor'
       ? [
-          { label: 'My Sessions', href: '/admin/exam-scheduling?view=proctor' },
+          { label: 'My Sessions', href: '/proctor/my-sessions' },
           { label: session?.id ? 'Session #' + session.id : 'Session' }
         ]
       : [
@@ -145,7 +145,7 @@
             class="inline-flex items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 min-h-[44px]"
           >
             <ClipboardList class="h-4 w-4" />
-            Open roster
+            View Session
           </Link>
         </div>
       {/if}

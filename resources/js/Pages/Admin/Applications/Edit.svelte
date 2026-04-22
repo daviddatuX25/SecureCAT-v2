@@ -161,7 +161,10 @@
         </div>
         <div class="space-y-2">
           <label for="phone" class="text-sm font-medium">Phone</label>
-          <Input id="phone" type="tel" bind:value={$form.phone} placeholder="e.g., 09123456789" />
+          <Input id="phone" type="tel" bind:value={$form.phone} placeholder="e.g., 09123456789" maxlength="12" oninput={(e) => { if (e.target.value.length > 12) { e.target.value = e.target.value.slice(0, 12); $form.phone = e.target.value; } }} />
+          {#if $form.phone && $form.phone.length >= 12}
+            <p class="text-xs text-amber-500 mt-0.5">Maximum 12 characters reached</p>
+          {/if}
         </div>
       </div>
 

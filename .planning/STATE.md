@@ -63,5 +63,6 @@ progress:
 | 260415-ftz | Fix exam scheduling edit button to only show in draft mode | 2026-04-15 | 410e0f2 | [260415-ftz-fix-exam-scheduling-edit-button-to-link-](./quick/260415-ftz-fix-exam-scheduling-edit-button-to-link-/) |
 
 | 260415-rhz | convert 18 inline flash banners to toast notifications | 2026-04-15 | e6ed533 | [260415-rhz-convert-18-inline-flash-banners-to-toast](./quick/260415-rhz-convert-18-inline-flash-banners-to-toast/) |
+| 260421-fix | fix phone 12-char lock, Inertia notification error, mailpit ngrok | 2026-04-21 | | [260421-fix-three-ui-demo-issues](./quick/260421-fix-three-ui-demo-issues/) |
 
-Last activity: 2026-04-15 - Completed quick task 260415-rhz: convert 18 inline flash banners to toast notifications
+Last activity: 2026-04-21 - Completed quick task 260421-fix: fix phone 12-char lock, Inertia notification error, mailpit ngrok

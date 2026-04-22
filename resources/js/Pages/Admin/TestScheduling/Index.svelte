@@ -362,7 +362,7 @@
                     <Link href={`/proctor/sessions/${session.id}`}>
                       <Button variant="outline" size="sm" class="min-h-[44px]">
                         <ClipboardList class="h-4 w-4 mr-1.5" />
-                        Roster
+                        View Session
                       </Button>
                     </Link>
                   {/if}

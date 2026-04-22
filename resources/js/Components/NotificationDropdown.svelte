@@ -1,10 +1,11 @@
 <script>
-  import { Bell, Check, CheckCheck, X, ExternalLink } from 'lucide-svelte';
+  import { Bell, Check, CheckCheck, X } from 'lucide-svelte';
   import { usePoll } from '@inertiajs/svelte';
-  import { router } from '@inertiajs/svelte';
+  import { usePage } from '@inertiajs/svelte';
   import { message } from '@/lib/toast.js';
 
   let { initialNotifications = [] } = $props();
+  const page = usePage();
 
   let notifications = $state(initialNotifications);
   let dropdownOpen = $state(false);
@@ -64,8 +65,11 @@
 
   async function markAsRead(notificationId) {
     try {
-      await router.post(`/notifications/${notificationId}/read`);
-      // Update local state
+      const csrf = page.props.csrf_token || document.querySelector('meta[name="csrf-token"]')?.content || '';
+      await fetch(`/notifications/${notificationId}/read`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': csrf, 'Accept': 'application/json' },
+      });
       const idx = notifications.findIndex(n => n.id === notificationId);
       if (idx !== -1) {
         notifications[idx] = { ...notifications[idx], read: true };
@@ -77,7 +81,11 @@
 
   async function markAllAsRead() {
     try {
-      await router.post('/notifications/read-all');
+      const csrf = page.props.csrf_token || document.querySelector('meta[name="csrf-token"]')?.content || '';
+      await fetch('/notifications/read-all', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': csrf, 'Accept': 'application/json' },
+      });
       notifications = notifications.map(n => ({ ...n, read: true }));
     } catch (e) {
       console.error('Failed to mark all as read', e);
