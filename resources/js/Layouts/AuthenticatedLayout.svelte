@@ -5,8 +5,15 @@
   import NotificationDropdown from '@/Components/NotificationDropdown.svelte';
   import ToastManager from '@/Components/ToastManager.svelte';
   import { Button } from '@/Components/ui/button';
+  import { registerSounds } from '@/lib/notifStore.js';
 
   let { children, breadcrumbs = [] } = $props();
+
+  // Preload notification sounds so they play instantly
+  registerSounds({
+    action: '/sounds/action.wav',
+    background: '/sounds/background.mp3',
+  });
 
   const page = usePage();
   const user = $derived($page.props.auth?.user ?? null);
@@ -63,8 +70,8 @@
       { href: '/admin/exam-scheduling', label: 'Exam Scheduling', icon: Calendar, roles: ['super_admin', 'registrar_administrator'] },
     ]},
     { label: 'Guidance Office', items: [
-      { href: '/admin/exam-scheduling', label: 'My Sessions', icon: Calendar, roles: ['proctor'] },
-      { href: '/admin/exam-monitoring', label: 'Exam Monitoring', icon: Activity, roles: ['super_admin', 'test_administrator', 'proctor'] },
+      { href: '/proctor/my-sessions', label: 'My Sessions', icon: Calendar, roles: ['proctor'] },
+      { href: '/admin/exam-monitoring', label: 'Exam Monitoring', icon: Activity, roles: ['super_admin', 'test_administrator'] },
       { href: '/admin/grading', label: 'Grading', icon: GraduationCap, roles: ['super_admin', 'test_administrator'] },
       { href: '/admin/release', label: 'Release', icon: SendHorizonal, roles: ['super_admin', 'test_administrator'], items: [
         { href: '/admin/release', label: 'Release Management', icon: SendHorizonal },
@@ -92,10 +99,9 @@
     if (url === href || url === href + '/') return true;
     if (url.startsWith(href + '/')) return true;
 
-    // Special handling for proctor sessions to highlight "My Sessions" in sidebar
-    // /proctor/sessions/{id} should highlight /admin/exam-scheduling (not /admin/exam-monitoring)
+    // /proctor/sessions/{id} should highlight "My Sessions" in sidebar
     if (url === '/proctor/sessions' || url.startsWith('/proctor/sessions/')) {
-      if (href === '/admin/exam-scheduling') {
+      if (href === '/proctor/my-sessions') {
         return true;
       }
     }

@@ -4,6 +4,7 @@
   import { Bell, LogOut, Sun, Moon } from 'lucide-svelte';
   import ToastManager from '@/Components/ToastManager.svelte';
   import AiCompanionChatWidget from '@/Components/AiCompanionChatWidget.svelte';
+  import { registerSounds } from '@/lib/notifStore.js';
 
   function toggleTheme() {
     document.documentElement.classList.toggle('dark');
@@ -11,6 +12,12 @@
   }
 
   let { children } = $props();
+
+  registerSounds({
+    action: '/sounds/action.wav',
+    background: '/sounds/background.mp3',
+  });
+
   const page = usePage();
   const applicant = $derived($page.props.auth?.applicant ?? null);
   const notificationsUnreadCount = $derived($page.props.auth?.notifications_unread_count ?? 0);
@@ -22,8 +29,17 @@
     router.post('/portal/logout');
   }
 
-  function markRead(id) {
-    router.post(`/portal/notifications/${id}/read`, {}, { preserveScroll: true, onSuccess: () => router.reload() });
+  async function markRead(id) {
+    try {
+      const csrf = $page.props.csrf_token || document.querySelector('meta[name="csrf-token"]')?.content || '';
+      await fetch(`/portal/notifications/${id}/read`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': csrf, 'Accept': 'application/json' },
+      });
+      router.reload({ preserveScroll: true });
+    } catch (e) {
+      console.error('Failed to mark notification as read', e);
+    }
   }
 
   function formatNotifDate(iso) {
