@@ -1,7 +1,7 @@
 <script>
   import { Link, router } from '@inertiajs/svelte';
   import { usePage } from '@inertiajs/svelte';
-  import { ChevronDown, ChevronRight, Menu, LayoutDashboard, Users, FileText, Calendar, GraduationCap, Bot, Settings, ScrollText, Activity, CalendarRange, Layers, ShieldCheck, Sun, Moon, SendHorizonal } from 'lucide-svelte';
+  import { ChevronDown, ChevronRight, Menu, LayoutDashboard, Users, FileText, Calendar, GraduationCap, Bot, Settings, ScrollText, Activity, CalendarRange, Layers, Sun, Moon, SendHorizonal } from 'lucide-svelte';
   import NotificationDropdown from '@/Components/NotificationDropdown.svelte';
   import ToastManager from '@/Components/ToastManager.svelte';
   import { Button } from '@/Components/ui/button';
@@ -132,9 +132,7 @@
     <div class="flex flex-col h-full overflow-hidden">
       <div class="h-20 flex items-center px-6 border-b border-border/50 shrink-0">
         <Link href="/dashboard" class="flex items-center gap-3" onclick={closeDropdowns}>
-          <div class="w-10 h-10 rounded-xl bg-primary flex items-center justify-center text-primary-foreground shadow-lg shadow-primary/30">
-            <ShieldCheck class="w-6 h-6" />
-          </div>
+          <img src="/img/securecat-logo.png" alt="SecureCAT" class="w-10 h-10 rounded-xl shadow-lg shadow-primary/30" />
           <span class="font-bold text-xl tracking-tight text-foreground">SecureCAT</span>
         </Link>
         <Button variant="ghost" size="icon" class="md:hidden ml-auto" onclick={() => (sidebarOpen = !sidebarOpen)} aria-label="Close menu">

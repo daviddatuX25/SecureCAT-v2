@@ -22,6 +22,7 @@
   </Button>
   <!-- Logo / Brand -->
   <Link href="/" class="mb-8 flex items-center gap-2 text-2xl font-bold tracking-tight text-foreground no-underline hover:text-primary transition-colors">
+    <img src="/img/securecat-logo.png" alt="SecureCAT" class="w-10 h-10 rounded-lg" />
     <span class="text-primary">SecureCAT</span>
   </Link>
 

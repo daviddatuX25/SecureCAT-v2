@@ -67,7 +67,8 @@
 <div class="min-h-screen flex flex-col">
   <header class="sticky top-0 z-50 glass-panel border-b">
     <div class="container flex h-14 items-center justify-between px-4">
-      <Link href="/portal" class="font-semibold text-foreground no-underline hover:text-primary">
+      <Link href="/portal" class="flex items-center gap-2 font-semibold text-foreground no-underline hover:text-primary">
+        <img src="/img/securecat-logo.png" alt="SecureCAT" class="w-7 h-7 rounded-lg" />
         SecureCAT <span class="text-muted-foreground font-normal">Portal</span>
       </Link>
       <div class="flex items-center gap-2">

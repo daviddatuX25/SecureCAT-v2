@@ -16,10 +16,7 @@
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <div class="flex justify-between items-center h-16">
         <div class="flex items-center gap-2">
-          <!-- Logo could be an svg or img -->
-          <div class="flex items-center justify-center w-8 h-8 rounded-lg bg-primary text-primary-foreground font-bold shadow-sm">
-            SC
-          </div>
+          <img src="/img/securecat-logo.png" alt="SecureCAT" class="w-8 h-8 rounded-lg shadow-sm" />
           <span class="font-bold text-lg tracking-tight text-foreground hidden sm:block">SecureCAT</span>
         </div>
         
