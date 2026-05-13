@@ -133,4 +133,41 @@ class DirectAssessmentTest extends TestCase
 
         $this->assertTrue($validator->fails());
     }
+
+    public function test_store_direct_assessment_redirects_to_grading_session(): void
+    {
+        $admin = User::factory()->create();
+        $admin->assignRole('super_admin');
+        $this->actingAs($admin);
+        SystemSetting::set('allow_direct_assessment', true);
+
+        $academicYear = AcademicYear::factory()->create(['is_active' => true]);
+        $application = Application::factory()->create(['status' => 'accepted', 'academic_year_id' => $academicYear->id]);
+        $applicant = Applicant::factory()->create(['application_id' => $application->id]);
+
+        $response = $this->post('/admin/direct-assessments', [
+            'academic_year_id' => $academicYear->id,
+            'applicant_ids' => [$applicant->id],
+            'label' => 'Walk-in Batch 3',
+        ]);
+
+        $gradingSession = GradingSession::latest()->first();
+        $response->assertRedirect(route('admin.grading.sessions.show', $gradingSession->id));
+    }
+
+    public function test_store_direct_assessment_returns_403_when_disabled(): void
+    {
+        $admin = User::factory()->create();
+        $admin->assignRole('super_admin');
+        $this->actingAs($admin);
+        SystemSetting::set('allow_direct_assessment', false);
+        $academicYear = AcademicYear::factory()->create(['is_active' => true]);
+
+        $response = $this->post('/admin/direct-assessments', [
+            'academic_year_id' => $academicYear->id,
+            'applicant_ids' => [1],
+        ]);
+
+        $response->assertForbidden();
+    }
 }
