@@ -189,4 +189,22 @@ class DirectAssessmentTest extends TestCase
 
         $response->assertForbidden();
     }
+
+    public function test_scheduled_exam_session_still_requires_room(): void
+    {
+        $admin = User::factory()->create();
+        $admin->assignRole('super_admin');
+        $this->actingAs($admin);
+        AcademicYear::factory()->create(['is_active' => true]);
+
+        $response = $this->post(route('admin.exam-scheduling.store'), [
+            'academic_year_id' => AcademicYear::first()->id,
+            'room_id' => null,
+            'date' => now()->addDay()->format('Y-m-d'),
+            'start_time' => '09:00',
+            'end_time' => '12:00',
+        ]);
+
+        $response->assertSessionHasErrors('room_id');
+    }
 }
