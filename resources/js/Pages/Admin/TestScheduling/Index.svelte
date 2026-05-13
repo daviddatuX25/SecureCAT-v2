@@ -149,6 +149,12 @@
               <span class="hidden sm:inline">Create Session</span>
             </Button>
           </Link>
+          <Link href="/admin/direct-assessments/create">
+            <Button variant="secondary" class="min-h-[44px] gap-2">
+              <ClipboardList class="h-4 w-4" />
+              <span class="hidden sm:inline">Direct Assessment</span>
+            </Button>
+          </Link>
           <Link href="/admin/rooms">
             <Button variant="outline" class="min-h-[44px] gap-2">
               <DoorOpen class="h-4 w-4" />
