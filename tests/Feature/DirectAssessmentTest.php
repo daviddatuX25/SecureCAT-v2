@@ -223,4 +223,97 @@ class DirectAssessmentTest extends TestCase
         SystemSetting::set('allow_direct_assessment', true);
         $this->assertTrue(SystemSetting::allowDirectAssessment());
     }
+
+    public function test_direct_session_has_auto_present_attendance(): void
+    {
+        $admin = User::factory()->create();
+        $admin->assignRole('super_admin');
+        $this->actingAs($admin);
+        SystemSetting::set('allow_direct_assessment', true);
+        $academicYear = AcademicYear::factory()->create(['is_active' => true]);
+        $application = Application::factory()->create(['status' => 'accepted', 'academic_year_id' => $academicYear->id]);
+        $applicant = Applicant::factory()->create(['application_id' => $application->id]);
+
+        $service = app(DirectAssessmentService::class);
+        $gradingSession = $service->create($academicYear, [$applicant->id], $admin);
+
+        $examSession = $gradingSession->examSession;
+        $pivot = $examSession->applicants()->where('applicant_id', $applicant->id)->first()->pivot;
+
+        $this->assertSame('present', $pivot->attendance_status);
+        $this->assertNotNull($pivot->attendance_marked_at);
+        $this->assertEquals($admin->id, $pivot->attendance_marked_by);
+    }
+
+    public function test_direct_session_has_no_room(): void
+    {
+        $admin = User::factory()->create();
+        $admin->assignRole('super_admin');
+        $this->actingAs($admin);
+        SystemSetting::set('allow_direct_assessment', true);
+        $academicYear = AcademicYear::factory()->create(['is_active' => true]);
+        $application = Application::factory()->create(['status' => 'accepted', 'academic_year_id' => $academicYear->id]);
+        $applicant = Applicant::factory()->create(['application_id' => $application->id]);
+
+        $service = app(DirectAssessmentService::class);
+        $gradingSession = $service->create($academicYear, [$applicant->id], $admin);
+
+        $this->assertNull($gradingSession->examSession->room_id);
+    }
+
+    public function test_direct_session_sets_date_to_today(): void
+    {
+        $admin = User::factory()->create();
+        $admin->assignRole('super_admin');
+        $this->actingAs($admin);
+        SystemSetting::set('allow_direct_assessment', true);
+        $academicYear = AcademicYear::factory()->create(['is_active' => true]);
+        $application = Application::factory()->create(['status' => 'accepted', 'academic_year_id' => $academicYear->id]);
+        $applicant = Applicant::factory()->create(['application_id' => $application->id]);
+
+        $service = app(DirectAssessmentService::class);
+        $gradingSession = $service->create($academicYear, [$applicant->id], $admin);
+
+        $this->assertSame(now()->format('Y-m-d'), $gradingSession->examSession->date->format('Y-m-d'));
+    }
+
+    public function test_direct_session_status_is_in_progress(): void
+    {
+        $admin = User::factory()->create();
+        $admin->assignRole('super_admin');
+        $this->actingAs($admin);
+        SystemSetting::set('allow_direct_assessment', true);
+        $academicYear = AcademicYear::factory()->create(['is_active' => true]);
+        $application = Application::factory()->create(['status' => 'accepted', 'academic_year_id' => $academicYear->id]);
+        $applicant = Applicant::factory()->create(['application_id' => $application->id]);
+
+        $service = app(DirectAssessmentService::class);
+        $gradingSession = $service->create($academicYear, [$applicant->id], $admin);
+
+        $this->assertSame('in_progress', $gradingSession->examSession->status);
+    }
+
+    public function test_existing_scheduled_flows_unchanged(): void
+    {
+        $admin = User::factory()->create();
+        $admin->assignRole('super_admin');
+        $this->actingAs($admin);
+        $academicYear = AcademicYear::factory()->create(['is_active' => true]);
+        $room = \App\Models\Room::factory()->create(['is_active' => true]);
+
+        $response = $this->post(route('admin.exam-scheduling.store'), [
+            'academic_year_id' => $academicYear->id,
+            'room_id' => $room->id,
+            'date' => now()->addDay()->format('Y-m-d'),
+            'start_time' => '09:00',
+            'end_time' => '12:00',
+        ]);
+
+        $response->assertRedirect();
+        $this->assertDatabaseHas('exam_sessions', [
+            'room_id' => $room->id,
+            'type' => 'scheduled',
+            'status' => 'draft',
+        ]);
+    }
 }
