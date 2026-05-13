@@ -10,7 +10,7 @@ class StoreDirectAssessmentRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        if (! SystemSetting::allowDirectAssessment()) {
+        if (! (bool) \App\Models\SystemSetting::get('allow_direct_assessment', true)) {
             return false;
         }
 
