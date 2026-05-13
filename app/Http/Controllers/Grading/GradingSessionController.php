@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Grading;
 
 use App\Http\Controllers\Controller;
+use App\Models\AptitudeArea;
 use App\Models\GradingSession;
 use App\Services\AuditService;
 use App\Services\GradingSessionService;
@@ -21,10 +22,16 @@ class GradingSessionController extends Controller
     {
         $session = $grading_session->load(['examSession.room', 'applicants.application']);
 
-        $domainsTotal = \App\Models\AptitudeArea::where('is_active', true)->count();
-        $applicants = $session->applicants->map(function ($a) use ($session, $domainsTotal) {
-            $scoresCount = $session->applicantScores()->where('applicant_id', $a->id)->distinct()->count('aptitude_area_id');
+        $domainsTotal = AptitudeArea::where('is_active', true)->count();
+        $scoresByApplicant = $session->applicantScores()
+            ->select('applicant_id')
+            ->selectRaw('COUNT(DISTINCT aptitude_area_id) as domains_complete')
+            ->groupBy('applicant_id')
+            ->pluck('domains_complete', 'applicant_id');
+        $applicants = $session->applicants->map(function ($a) use ($domainsTotal, $scoresByApplicant) {
+            $scoresCount = $scoresByApplicant[$a->id] ?? 0;
             $scored = $domainsTotal > 0 && $scoresCount >= $domainsTotal;
+
             return [
                 'id' => $a->id,
                 'applicant_id' => $a->id,

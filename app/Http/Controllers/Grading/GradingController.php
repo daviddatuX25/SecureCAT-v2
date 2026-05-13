@@ -27,14 +27,15 @@ class GradingController extends Controller
         $gradingQuery = GradingSession::query()
             ->with(['examSession.room', 'examSession.academicYear'])
             ->withCount('applicants')
+            ->withCount(['applicantScores as applicants_scored' => function ($q) {
+                $q->selectRaw('COUNT(DISTINCT applicant_id)');
+            }])
             ->orderByDesc('opened_at');
         if ($activeAcademicYear !== null) {
             $gradingQuery->whereHas('examSession', fn ($q) => $q->forAcademicYear($activeAcademicYear));
         }
         $gradingSessions = $gradingQuery->get()
             ->map(function (GradingSession $gs) {
-                $scored = $gs->applicantScores()->distinct()->count('applicant_id');
-
                 return [
                     'id' => $gs->id,
                     'exam_session_id' => $gs->exam_session_id,
@@ -46,7 +47,7 @@ class GradingController extends Controller
                     'opened_at' => $gs->opened_at?->toIso8601String(),
                     'finalized_at' => $gs->finalized_at?->toIso8601String(),
                     'applicants_total' => $gs->applicants_count ?? 0,
-                    'applicants_scored' => $scored,
+                    'applicants_scored' => $gs->applicants_scored ?? 0,
                 ];
             });
 

@@ -15,13 +15,13 @@
 
   const form = useForm({
     academic_year_id: activeAcademicYearId || '',
-    applicant_ids: [] as number[],
+    applicant_ids: [],
     label: '',
   });
 
-  let selectedApplicantIds = $state<number[]>([]);
+  let selectedApplicantIds = $state([]);
 
-  function toggleApplicant(id: number) {
+  function toggleApplicant(id) {
     const idx = selectedApplicantIds.indexOf(id);
     if (idx >= 0) {
       selectedApplicantIds = selectedApplicantIds.filter((i) => i !== id);
