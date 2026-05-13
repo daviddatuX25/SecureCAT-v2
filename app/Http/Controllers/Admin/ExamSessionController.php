@@ -212,6 +212,7 @@ class ExamSessionController extends Controller
             'date' => $validated['date'],
             'start_time' => $validated['start_time'],
             'end_time' => $validated['end_time'] ?? null,
+            'type' => $type,
             'status' => ExamSession::STATUS_DRAFT,
             'created_by' => $request->user()->id,
         ]);
@@ -285,7 +286,8 @@ class ExamSessionController extends Controller
         $this->authorize('update', $exam_session);
 
         $validated = $request->validated();
-        $sessionData = collect($validated)->only(['academic_year_id', 'room_id', 'date', 'start_time', 'end_time'])->filter()->all();
+        $allowedKeys = ['academic_year_id', 'room_id', 'date', 'start_time', 'end_time', 'type'];
+        $sessionData = array_intersect_key($validated, array_flip($allowedKeys));
         if (! empty($sessionData)) {
             $exam_session->update($sessionData);
         }

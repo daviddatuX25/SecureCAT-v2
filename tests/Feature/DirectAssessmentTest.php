@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Tests\Feature;
 
-use App\Http\Requests\StoreDirectAssessmentRequest;
 use App\Models\AcademicYear;
 use App\Models\Applicant;
 use App\Models\Application;
@@ -111,16 +110,12 @@ class DirectAssessmentTest extends TestCase
         $application = Application::factory()->create(['status' => 'pending', 'academic_year_id' => $academicYear->id]);
         $applicant = Applicant::factory()->create(['application_id' => $application->id]);
 
-        $request = new StoreDirectAssessmentRequest;
-        $request->merge([
+        $response = $this->post(route('admin.direct-assessments.store'), [
             'academic_year_id' => $academicYear->id,
             'applicant_ids' => [$applicant->id],
         ]);
 
-        $validator = app('validator')->make($request->all(), $request->rules());
-        \Closure::bind(fn () => $request->withValidator($validator), $request, StoreDirectAssessmentRequest::class)();
-
-        $this->assertTrue($validator->fails());
+        $response->assertSessionHasErrors('applicant_ids.0');
     }
 
     public function test_direct_assessment_rejects_applicant_already_in_active_grading(): void
@@ -134,23 +129,19 @@ class DirectAssessmentTest extends TestCase
         $application = Application::factory()->create(['status' => 'accepted', 'academic_year_id' => $academicYear->id]);
         $applicant = Applicant::factory()->create(['application_id' => $application->id]);
 
-        $service = app(DirectAssessmentService::class);
-        $service->create(
-            academicYear: $academicYear,
-            applicantIds: [$applicant->id],
-            openedBy: $admin,
-        );
-
-        $request = new StoreDirectAssessmentRequest;
-        $request->merge([
+        // Create first direct assessment
+        $this->post(route('admin.direct-assessments.store'), [
             'academic_year_id' => $academicYear->id,
             'applicant_ids' => [$applicant->id],
         ]);
 
-        $validator = app('validator')->make($request->all(), $request->rules());
-        \Closure::bind(fn () => $request->withValidator($validator), $request, StoreDirectAssessmentRequest::class)();
+        // Attempt second — should fail
+        $response = $this->post(route('admin.direct-assessments.store'), [
+            'academic_year_id' => $academicYear->id,
+            'applicant_ids' => [$applicant->id],
+        ]);
 
-        $this->assertTrue($validator->fails());
+        $response->assertSessionHasErrors('applicant_ids.0');
     }
 
     public function test_store_direct_assessment_redirects_to_grading_session(): void
