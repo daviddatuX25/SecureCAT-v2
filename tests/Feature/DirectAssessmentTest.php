@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Tests\Feature;
 
 use App\Http\Requests\StoreDirectAssessmentRequest;
@@ -39,10 +41,10 @@ class DirectAssessmentTest extends TestCase
     public function test_direct_factory_state_sets_correct_attributes(): void
     {
         $session = ExamSession::factory()->direct()->make();
-        $this->assertEquals(ExamSession::TYPE_DIRECT, $session->type);
+        $this->assertSame(ExamSession::TYPE_DIRECT, $session->type);
         $this->assertNull($session->room_id);
         $this->assertNull($session->end_time);
-        $this->assertEquals('in_progress', $session->status);
+        $this->assertSame('in_progress', $session->status);
         $this->assertNotNull($session->label);
     }
 
@@ -66,17 +68,17 @@ class DirectAssessmentTest extends TestCase
         );
 
         $this->assertInstanceOf(GradingSession::class, $gradingSession);
-        $this->assertEquals('open', $gradingSession->status);
+        $this->assertSame('open', $gradingSession->status);
 
         $examSession = $gradingSession->examSession;
-        $this->assertEquals('direct', $examSession->type);
-        $this->assertEquals('Walk-in Batch 1', $examSession->label);
-        $this->assertEquals('in_progress', $examSession->status);
+        $this->assertSame('direct', $examSession->type);
+        $this->assertSame('Walk-in Batch 1', $examSession->label);
+        $this->assertSame('in_progress', $examSession->status);
         $this->assertNull($examSession->room_id);
         $this->assertEquals($academicYear->id, $examSession->academic_year_id);
 
         $this->assertTrue($examSession->applicants()->where('applicant_id', $applicant->id)->exists());
-        $this->assertEquals('present', $examSession->applicants()->first()->pivot->attendance_status);
+        $this->assertSame('present', $examSession->applicants()->first()->pivot->attendance_status);
     }
 
     public function test_direct_assessment_rejects_non_accepted_applicant(): void
@@ -90,10 +92,14 @@ class DirectAssessmentTest extends TestCase
         $application = Application::factory()->create(['status' => 'pending', 'academic_year_id' => $academicYear->id]);
         $applicant = Applicant::factory()->create(['application_id' => $application->id]);
 
-        $validator = app('validator')->make(
-            ['academic_year_id' => $academicYear->id, 'applicant_ids' => [$applicant->id]],
-            (new StoreDirectAssessmentRequest)->rules()
-        );
+        $request = new StoreDirectAssessmentRequest;
+        $request->merge([
+            'academic_year_id' => $academicYear->id,
+            'applicant_ids' => [$applicant->id],
+        ]);
+
+        $validator = app('validator')->make($request->all(), $request->rules());
+        \Closure::bind(fn () => $request->withValidator($validator), $request, StoreDirectAssessmentRequest::class)();
 
         $this->assertTrue($validator->fails());
     }
@@ -116,10 +122,14 @@ class DirectAssessmentTest extends TestCase
             openedBy: $admin,
         );
 
-        $validator = app('validator')->make(
-            ['academic_year_id' => $academicYear->id, 'applicant_ids' => [$applicant->id]],
-            (new StoreDirectAssessmentRequest)->rules()
-        );
+        $request = new StoreDirectAssessmentRequest;
+        $request->merge([
+            'academic_year_id' => $academicYear->id,
+            'applicant_ids' => [$applicant->id],
+        ]);
+
+        $validator = app('validator')->make($request->all(), $request->rules());
+        \Closure::bind(fn () => $request->withValidator($validator), $request, StoreDirectAssessmentRequest::class)();
 
         $this->assertTrue($validator->fails());
     }

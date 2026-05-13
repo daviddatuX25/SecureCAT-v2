@@ -1,16 +1,19 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Requests;
 
 use App\Models\Applicant;
 use App\Models\SystemSetting;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Validator;
 
 class StoreDirectAssessmentRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        if (! (bool) \App\Models\SystemSetting::get('allow_direct_assessment', true)) {
+        if (! (bool) SystemSetting::get('allow_direct_assessment', true)) {
             return false;
         }
 
@@ -21,30 +24,46 @@ class StoreDirectAssessmentRequest extends FormRequest
     {
         return [
             'academic_year_id' => ['required', 'integer', 'exists:academic_years,id'],
-            'applicant_ids' => ['required', 'array', 'min:1'],
-            'applicant_ids.*' => [
-                'integer',
-                'exists:applicants,id',
-                function (string $attribute, mixed $value, \Closure $fail) {
-                    $applicant = Applicant::find($value);
-                    if (! $applicant) {
-                        return;
-                    }
-
-                    if (! $applicant->application || $applicant->application->status !== 'accepted') {
-                        $fail("Applicant ID {$value} does not have an accepted application.");
-                    }
-
-                    $inActiveSession = $applicant->examSessions()
-                        ->whereHas('gradingSession', fn ($q) => $q->whereNotIn('status', ['finalized']))
-                        ->exists();
-
-                    if ($inActiveSession) {
-                        $fail("Applicant ID {$value} is already in an active grading session.");
-                    }
-                },
-            ],
+            'applicant_ids' => ['required', 'array', 'min:1', 'distinct'],
+            'applicant_ids.*' => ['integer', 'exists:applicants,id'],
             'label' => ['nullable', 'string', 'max:100'],
         ];
+    }
+
+    protected function withValidator(Validator $validator): void
+    {
+        $validator->after(function (Validator $validator) {
+            $applicantIds = $this->input('applicant_ids', []);
+            if (empty($applicantIds) || ! is_array($applicantIds)) {
+                return;
+            }
+
+            $applicants = Applicant::with(['application', 'examSessions.gradingSession'])
+                ->whereIn('id', $applicantIds)
+                ->get()
+                ->keyBy('id');
+
+            foreach ($applicantIds as $index => $id) {
+                $attribute = "applicant_ids.{$index}";
+                $applicant = $applicants->get($id);
+
+                if (! $applicant) {
+                    $validator->errors()->add($attribute, "Applicant ID {$id} does not exist.");
+
+                    continue;
+                }
+
+                if (! $applicant->application || $applicant->application->status !== 'accepted') {
+                    $validator->errors()->add($attribute, "Applicant ID {$id} does not have an accepted application.");
+                }
+
+                $inActiveSession = $applicant->examSessions
+                    ->some(fn ($es) => $es->gradingSession && ! in_array($es->gradingSession->status, ['finalized'], true));
+
+                if ($inActiveSession) {
+                    $validator->errors()->add($attribute, "Applicant ID {$id} is already in an active grading session.");
+                }
+            }
+        });
     }
 }
