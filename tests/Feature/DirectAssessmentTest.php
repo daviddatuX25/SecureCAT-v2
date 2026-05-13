@@ -2,7 +2,15 @@
 
 namespace Tests\Feature;
 
+use App\Http\Requests\StoreDirectAssessmentRequest;
+use App\Models\AcademicYear;
+use App\Models\Applicant;
+use App\Models\Application;
 use App\Models\ExamSession;
+use App\Models\GradingSession;
+use App\Models\SystemSetting;
+use App\Models\User;
+use App\Services\DirectAssessmentService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -36,5 +44,83 @@ class DirectAssessmentTest extends TestCase
         $this->assertNull($session->end_time);
         $this->assertEquals('in_progress', $session->status);
         $this->assertNotNull($session->label);
+    }
+
+    public function test_direct_assessment_creates_exam_session_and_grading_session(): void
+    {
+        $admin = User::factory()->create();
+        $admin->assignRole('super_admin');
+        $this->actingAs($admin);
+        SystemSetting::set('allow_direct_assessment', true);
+
+        $academicYear = AcademicYear::factory()->create(['is_active' => true]);
+        $application = Application::factory()->create(['status' => 'accepted', 'academic_year_id' => $academicYear->id]);
+        $applicant = Applicant::factory()->create(['application_id' => $application->id]);
+
+        $service = app(DirectAssessmentService::class);
+        $gradingSession = $service->create(
+            academicYear: $academicYear,
+            applicantIds: [$applicant->id],
+            openedBy: $admin,
+            label: 'Walk-in Batch 1'
+        );
+
+        $this->assertInstanceOf(GradingSession::class, $gradingSession);
+        $this->assertEquals('open', $gradingSession->status);
+
+        $examSession = $gradingSession->examSession;
+        $this->assertEquals('direct', $examSession->type);
+        $this->assertEquals('Walk-in Batch 1', $examSession->label);
+        $this->assertEquals('in_progress', $examSession->status);
+        $this->assertNull($examSession->room_id);
+        $this->assertEquals($academicYear->id, $examSession->academic_year_id);
+
+        $this->assertTrue($examSession->applicants()->where('applicant_id', $applicant->id)->exists());
+        $this->assertEquals('present', $examSession->applicants()->first()->pivot->attendance_status);
+    }
+
+    public function test_direct_assessment_rejects_non_accepted_applicant(): void
+    {
+        $admin = User::factory()->create();
+        $admin->assignRole('super_admin');
+        $this->actingAs($admin);
+        SystemSetting::set('allow_direct_assessment', true);
+
+        $academicYear = AcademicYear::factory()->create(['is_active' => true]);
+        $application = Application::factory()->create(['status' => 'pending', 'academic_year_id' => $academicYear->id]);
+        $applicant = Applicant::factory()->create(['application_id' => $application->id]);
+
+        $validator = app('validator')->make(
+            ['academic_year_id' => $academicYear->id, 'applicant_ids' => [$applicant->id]],
+            (new StoreDirectAssessmentRequest)->rules()
+        );
+
+        $this->assertTrue($validator->fails());
+    }
+
+    public function test_direct_assessment_rejects_applicant_already_in_active_grading(): void
+    {
+        $admin = User::factory()->create();
+        $admin->assignRole('super_admin');
+        $this->actingAs($admin);
+        SystemSetting::set('allow_direct_assessment', true);
+
+        $academicYear = AcademicYear::factory()->create(['is_active' => true]);
+        $application = Application::factory()->create(['status' => 'accepted', 'academic_year_id' => $academicYear->id]);
+        $applicant = Applicant::factory()->create(['application_id' => $application->id]);
+
+        $service = app(DirectAssessmentService::class);
+        $service->create(
+            academicYear: $academicYear,
+            applicantIds: [$applicant->id],
+            openedBy: $admin,
+        );
+
+        $validator = app('validator')->make(
+            ['academic_year_id' => $academicYear->id, 'applicant_ids' => [$applicant->id]],
+            (new StoreDirectAssessmentRequest)->rules()
+        );
+
+        $this->assertTrue($validator->fails());
     }
 }
