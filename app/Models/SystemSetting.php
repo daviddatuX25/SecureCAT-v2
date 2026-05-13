@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
@@ -96,6 +98,6 @@ class SystemSetting extends Model
      */
     public static function allowDirectAssessment(): bool
     {
-        return (bool) self::get('allow_direct_assessment', true);
+        return self::get('allow_direct_assessment', true);
     }
 }

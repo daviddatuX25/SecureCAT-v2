@@ -38,6 +38,17 @@ class DirectAssessmentTest extends TestCase
         );
     }
 
+    public function test_create_direct_assessment_page_returns_403_when_disabled(): void
+    {
+        $admin = User::factory()->create();
+        $admin->assignRole('super_admin');
+        $this->actingAs($admin);
+        SystemSetting::set('allow_direct_assessment', false);
+
+        $response = $this->get(route('admin.direct-assessments.create'));
+        $response->assertForbidden();
+    }
+
     public function test_exam_session_has_type_constants(): void
     {
         $this->assertSame('scheduled', ExamSession::TYPE_SCHEDULED);

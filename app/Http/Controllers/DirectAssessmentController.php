@@ -7,6 +7,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\StoreDirectAssessmentRequest;
 use App\Models\AcademicYear;
 use App\Models\Applicant;
+use App\Models\SystemSetting;
 use App\Services\DirectAssessmentService;
 use Illuminate\Http\RedirectResponse;
 use Inertia\Inertia;
@@ -20,6 +21,10 @@ class DirectAssessmentController extends Controller
 
     public function create(): Response
     {
+        if (! SystemSetting::allowDirectAssessment()) {
+            abort(403);
+        }
+
         $academicYears = AcademicYear::query()
             ->orderByDesc('academic_year')
             ->orderBy('semester')
