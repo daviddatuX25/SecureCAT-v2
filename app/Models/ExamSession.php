@@ -24,6 +24,10 @@ class ExamSession extends Model
 
     public const STATUS_CANCELLED = 'cancelled';
 
+    public const TYPE_SCHEDULED = 'scheduled';
+
+    public const TYPE_DIRECT = 'direct';
+
     protected $fillable = [
         'academic_year_id',
         'room_id',
@@ -35,6 +39,8 @@ class ExamSession extends Model
         'started_at',
         'closed_at',
         'created_by',
+        'type',
+        'label',
     ];
 
     protected function casts(): array
@@ -44,6 +50,7 @@ class ExamSession extends Model
             'published_at' => 'datetime',
             'started_at' => 'datetime',
             'closed_at' => 'datetime',
+            'type' => 'string',
         ];
     }
 
@@ -191,5 +198,10 @@ class ExamSession extends Model
         $end = $sessionDate->copy()->setTimeFromTimeString($this->end_time);
 
         return $now->gt($end);
+    }
+
+    public function isDirect(): bool
+    {
+        return $this->type === self::TYPE_DIRECT;
     }
 }
