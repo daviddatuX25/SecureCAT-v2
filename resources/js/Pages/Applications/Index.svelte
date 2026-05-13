@@ -8,9 +8,10 @@
   import { Filter, ChevronDown, CheckCircle, XCircle, UploadCloud, Plus, Pencil } from 'lucide-svelte';
   import ViewModeToggle from '@/Components/ViewModeToggle.svelte';
   import { success as showSuccess, error as showError } from '@/lib/toast';
+  import { pipelineBadgeVariant, pipelineStatusLabel, pipelineStatusOptions } from '@/lib/pipeline-helpers';
   import { onMount } from 'svelte';
 
-  let { applications, filters = {}, seasons = [], active_season_id = null, statuses = [] } = $props();
+  let { applications, filters = {}, seasons = [], active_season_id = null, statuses = [], pipeline_statuses = [] } = $props();
 
   const page = usePage();
   const authUser = $derived($page.props.auth?.user ?? null);
@@ -29,15 +30,21 @@
 
   let filterSearch = $state('');
   let filterStatus = $state('');
+  let filterPipelineStatus = $state('');
   let filterAcademicYearId = $state('');
   let filterDateFrom = $state('');
   let filterDateTo = $state('');
   let filtersOpen = $state(false);
+  let sortField = $state('');
+  let sortDirection = $state('asc');
 
   // Initialize filters - runs when props change
   function initFilters() {
     filterSearch = filters.search ?? '';
     filterStatus = filters.status ?? '';
+    filterPipelineStatus = filters.pipeline_status ?? '';
+    sortField = filters.sort ?? '';
+    sortDirection = filters.direction ?? 'asc';
 
     // Auto-select active season if no filter provided
     const seasonFromFilter = filters.academic_year_id;
@@ -59,11 +66,14 @@
     // Track dependencies
     const _ = filters.search;
     const __ = filters.status;
-    const ___ = filters.academic_year_id;
-    const ____ = filters.date_from;
-    const _____ = filters.date_to;
-    const ______ = active_season_id;
-    const _______ = seasons.length;
+    const ___ = filters.pipeline_status;
+    const ____ = filters.academic_year_id;
+    const _____ = filters.date_from;
+    const ______ = filters.date_to;
+    const _______ = filters.sort;
+    const ________ = filters.direction;
+    const _________ = active_season_id;
+    const __________ = seasons.length;
 
     initFilters();
   });
@@ -72,9 +82,12 @@
     router.get('/admin/applications', {
       search: filterSearch || undefined,
       status: filterStatus || undefined,
+      pipeline_status: filterPipelineStatus || undefined,
       academic_year_id: filterAcademicYearId || undefined,
       date_from: filterDateFrom || undefined,
       date_to: filterDateTo || undefined,
+      sort: sortField || undefined,
+      direction: sortDirection || undefined,
       page: 1,
     }, { preserveState: true });
     filtersOpen = false;
@@ -168,6 +181,13 @@
                   <option value={s.value}>{s.label}</option>
                 {/each}
               </select>
+              <label for="filter-pipeline-mobile" class="block text-sm font-medium">Pipeline</label>
+              <select id="filter-pipeline-mobile" bind:value={filterPipelineStatus} class="w-full rounded-md border border-input bg-background px-3 py-2 text-sm min-h-[44px]">
+                <option value="">All</option>
+                {#each pipeline_statuses as p}
+                  <option value={p.value}>{p.label}</option>
+                {/each}
+              </select>
               <label for="filter-season-mobile" class="block text-sm font-medium">Season</label>
               <select id="filter-season-mobile" bind:value={filterAcademicYearId} class="w-full rounded-md border border-input bg-background px-3 py-2 text-sm min-h-[44px]">
                 <option value="">Active</option>
@@ -193,6 +213,12 @@
             <option value="">All statuses</option>
             {#each statuses as s}
               <option value={s.value}>{s.label}</option>
+            {/each}
+          </select>
+          <select bind:value={filterPipelineStatus} class="rounded-md border border-input bg-background px-3 py-2 text-sm min-h-[40px]">
+            <option value="">All pipelines</option>
+            {#each pipeline_statuses as p}
+              <option value={p.value}>{p.label}</option>
             {/each}
           </select>
           <select bind:value={filterAcademicYearId} class="rounded-md border border-input bg-background px-3 py-2 text-sm min-h-[40px]">
@@ -225,7 +251,12 @@
                 <Table.Head class="px-4 py-3">Reference</Table.Head>
                 <Table.Head class="px-4 py-3">Name</Table.Head>
                 <Table.Head class="px-4 py-3">Email</Table.Head>
-                <Table.Head class="px-4 py-3">Status</Table.Head>
+                <Table.Head class="px-4 py-3 cursor-pointer select-none" onclick={() => { sortField = 'pipeline_status'; sortDirection = sortDirection === 'asc' ? 'desc' : 'asc'; applyFilters(); }}>
+                  Pipeline
+                  {#if sortField === 'pipeline_status'}
+                    <span class="ml-1 text-xs">{sortDirection === 'asc' ? '↑' : '↓'}</span>
+                  {/if}
+                </Table.Head>
                 <Table.Head class="px-4 py-3">Submitted</Table.Head>
                 <Table.Head class="text-center">Actions</Table.Head>
               </Table.Row>
@@ -237,7 +268,7 @@
                   <Table.Cell class="px-4 py-3 cursor-pointer" onclick={() => router.visit(`/admin/applications/${app.id}`)}>{app.full_name ?? '—'}</Table.Cell>
                   <Table.Cell class="px-4 py-3 text-muted-foreground cursor-pointer" onclick={() => router.visit(`/admin/applications/${app.id}`)}>{app.email ?? '—'}</Table.Cell>
                   <Table.Cell class="px-4 py-3 cursor-pointer" onclick={() => router.visit(`/admin/applications/${app.id}`)}>
-                    <Badge variant={statusVariant(app.status)}>{statusLabel(app.status)}</Badge>
+                    <Badge variant={pipelineBadgeVariant(app.pipeline_status)}>{pipelineStatusLabel(app.pipeline_status)}</Badge>
                   </Table.Cell>
                   <Table.Cell class="px-4 py-3 text-muted-foreground cursor-pointer" onclick={() => router.visit(`/admin/applications/${app.id}`)}>
                     {app.submitted_at ? new Date(app.submitted_at).toLocaleDateString() : '—'}
@@ -313,7 +344,7 @@
             <p class="mt-1 font-medium" onclick={() => router.visit(`/admin/applications/${app.id}`)}>{app.full_name ?? '—'}</p>
             <p class="text-sm text-muted-foreground" onclick={() => router.visit(`/admin/applications/${app.id}`)}>{app.email ?? '—'}</p>
             <p class="mt-2" onclick={() => router.visit(`/admin/applications/${app.id}`)}>
-              <Badge variant={statusVariant(app.status)}>{statusLabel(app.status)}</Badge>
+              <Badge variant={pipelineBadgeVariant(app.pipeline_status)}>{pipelineStatusLabel(app.pipeline_status)}</Badge>
             </p>
             <p class="mt-1 text-xs text-muted-foreground" onclick={() => router.visit(`/admin/applications/${app.id}`)}>
               {app.submitted_at ? new Date(app.submitted_at).toLocaleDateString() : '—'}
