@@ -37,6 +37,7 @@ class Application extends Model
         'rejection_reason',
         'appointment_id',
         'submitted_at',
+        'gwa',
     ];
 
     protected $casts = [
@@ -118,6 +119,93 @@ class Application extends Model
      * - Application status must be 'accepted'
      * - No exam session assigned OR assigned session is 'draft'
      */
+    /**
+     * Get the applicant's pipeline status for display in admin lists.
+     * Returns the most advanced milestone reached.
+     */
+    public function pipelineStatus(): string
+    {
+        // Dismissed overrides everything
+        if ($this->status === 'dismissed') {
+            return 'dismissed';
+        }
+
+        if ($this->status === 'pending') {
+            return 'pending';
+        }
+
+        // status === 'accepted'
+        $applicant = $this->applicant;
+        if (! $applicant) {
+            return 'accepted';
+        }
+
+        $examSessions = $applicant->relationLoaded('examSessions')
+            ? $applicant->examSessions
+            : $applicant->examSessions()->get();
+
+        if ($examSessions->isEmpty()) {
+            return 'accepted';
+        }
+
+        // Filter out cancelled sessions — they don't block progression
+        $activeSessions = $examSessions->reject(
+            fn (ExamSession $s) => $s->status === ExamSession::STATUS_CANCELLED
+        );
+
+        if ($activeSessions->isEmpty()) {
+            return 'accepted';
+        }
+
+        // Sort by status priority (most advanced first)
+        $statusPriority = [
+            ExamSession::STATUS_COMPLETED => 4,
+            ExamSession::STATUS_IN_PROGRESS => 3,
+            ExamSession::STATUS_PUBLISHED => 2,
+            ExamSession::STATUS_DRAFT => 1,
+        ];
+
+        $sortedSessions = $activeSessions->sortByDesc(
+            fn (ExamSession $s) => $statusPriority[$s->status] ?? 0
+        );
+
+        // Examine each session to find the most advanced pipeline state
+        $bestStatus = 'accepted';
+        foreach ($sortedSessions as $session) {
+            $pivot = $session->pivot;
+
+            if ($session->status === ExamSession::STATUS_DRAFT) {
+                return 'draft_scheduled';
+            }
+
+            if (in_array($session->status, [ExamSession::STATUS_PUBLISHED, ExamSession::STATUS_IN_PROGRESS, ExamSession::STATUS_COMPLETED], true)) {
+                if ($pivot && $pivot->attendance_status === 'present') {
+                    if ($pivot->submission_status === 'submitted') {
+                        $hasScores = $applicant->relationLoaded('applicantScores')
+                            ? $applicant->applicantScores->isNotEmpty()
+                            : $applicant->applicantScores()->exists();
+
+                        if ($hasScores) {
+                            return 'graded';
+                        }
+
+                        $bestStatus = 'submitted';
+                        continue;
+                    }
+
+                    $bestStatus = 'attended';
+                    continue;
+                }
+
+                if ($bestStatus === 'accepted') {
+                    $bestStatus = 'scheduled';
+                }
+            }
+        }
+
+        return $bestStatus;
+    }
+
     public function isEditableByApplicant(): bool
     {
         // Must be accepted first
