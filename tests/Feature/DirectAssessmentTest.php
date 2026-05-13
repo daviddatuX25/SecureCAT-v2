@@ -9,6 +9,7 @@ use App\Models\Applicant;
 use App\Models\Application;
 use App\Models\ExamSession;
 use App\Models\GradingSession;
+use App\Models\Room;
 use App\Models\SystemSetting;
 use App\Models\User;
 use App\Services\DirectAssessmentService;
@@ -141,10 +142,11 @@ class DirectAssessmentTest extends TestCase
         $applicant = Applicant::factory()->create(['application_id' => $application->id]);
 
         // Create first direct assessment
-        $this->post(route('admin.direct-assessments.store'), [
+        $firstResponse = $this->post(route('admin.direct-assessments.store'), [
             'academic_year_id' => $academicYear->id,
             'applicant_ids' => [$applicant->id],
         ]);
+        $firstResponse->assertRedirect();
 
         // Attempt second — should fail
         $response = $this->post(route('admin.direct-assessments.store'), [
@@ -299,7 +301,7 @@ class DirectAssessmentTest extends TestCase
         $admin->assignRole('super_admin');
         $this->actingAs($admin);
         $academicYear = AcademicYear::factory()->create(['is_active' => true]);
-        $room = \App\Models\Room::factory()->create(['is_active' => true]);
+        $room = Room::factory()->create(['is_active' => true]);
 
         $response = $this->post(route('admin.exam-scheduling.store'), [
             'academic_year_id' => $academicYear->id,
