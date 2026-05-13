@@ -6,7 +6,7 @@
   import Label from '@/Components/ui/label/Label.svelte';
   import Input from '@/Components/ui/input/Input.svelte';
 
-  let { academicYears, applicants, activeAcademicYearId } = $props();
+  let { academicYears, applicants, activeAcademicYearId, storeRoute } = $props();
 
   const breadcrumbs = [
     { label: 'Exam Scheduling', href: '/admin/exam-scheduling' },
@@ -19,21 +19,18 @@
     label: '',
   });
 
-  let selectedApplicantIds = $state([]);
-
   function toggleApplicant(id) {
-    const idx = selectedApplicantIds.indexOf(id);
-    if (idx >= 0) {
-      selectedApplicantIds = selectedApplicantIds.filter((i) => i !== id);
-    } else {
-      selectedApplicantIds = [...selectedApplicantIds, id];
-    }
-    form.update((f) => ({ ...f, applicant_ids: selectedApplicantIds }));
+    const ids = $form.applicant_ids;
+    const idx = ids.indexOf(id);
+    form.update((f) => ({
+      ...f,
+      applicant_ids: idx >= 0 ? ids.filter((i) => i !== id) : [...ids, id],
+    }));
   }
 
   function submit(e: Event) {
     e.preventDefault();
-    form.post('/admin/direct-assessments');
+    form.post(storeRoute);
   }
 </script>
 
@@ -93,7 +90,7 @@
                 <label class="flex items-center gap-3 p-2 rounded-md hover:bg-muted/50 cursor-pointer">
                   <input
                     type="checkbox"
-                    checked={selectedApplicantIds.includes(applicant.id)}
+                    checked={$form.applicant_ids.includes(applicant.id)}
                     onchange={() => toggleApplicant(applicant.id)}
                     class="h-4 w-4 rounded border-input"
                   />
@@ -113,7 +110,7 @@
 
       <div class="flex items-center justify-end gap-3">
         <Button type="button" variant="outline" onclick={() => window.history.back()}>Cancel</Button>
-        <Button type="submit" disabled={$form.processing || selectedApplicantIds.length === 0}>
+        <Button type="submit" disabled={$form.processing || $form.applicant_ids.length === 0}>
           {$form.processing ? 'Creating...' : 'Create Session'}
         </Button>
       </div>

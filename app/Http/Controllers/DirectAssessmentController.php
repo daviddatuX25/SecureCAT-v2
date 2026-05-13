@@ -36,6 +36,8 @@ class DirectAssessmentController extends Controller
             ->whereHas('application', fn ($q) => $q->where('status', 'accepted'))
             ->whereDoesntHave('examSessions', fn ($q) => $q->whereHas('gradingSession', fn ($gs) => $gs->whereNotIn('status', ['finalized'])))
             ->with('application:id,applicant_id,first_name,middle_name,last_name,suffix,reference_number')
+            ->orderBy('id')
+            ->limit(200)
             ->get()
             ->map(fn ($a) => [
                 'id' => $a->id,
@@ -49,6 +51,7 @@ class DirectAssessmentController extends Controller
             'academicYears' => $academicYears,
             'applicants' => $applicants,
             'activeAcademicYearId' => $activeAcademicYear?->id,
+            'storeRoute' => route('admin.direct-assessments.store'),
         ]);
     }
 

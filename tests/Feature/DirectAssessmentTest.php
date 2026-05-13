@@ -36,6 +36,7 @@ class DirectAssessmentTest extends TestCase
             ->has('academicYears')
             ->has('applicants')
             ->has('activeAcademicYearId')
+            ->has('storeRoute')
         );
     }
 
@@ -147,6 +148,7 @@ class DirectAssessmentTest extends TestCase
             'applicant_ids' => [$applicant->id],
         ]);
         $firstResponse->assertRedirect();
+        $firstResponse->assertSessionHasNoErrors();
 
         // Attempt second — should fail
         $response = $this->post(route('admin.direct-assessments.store'), [

@@ -147,8 +147,7 @@ Route::middleware(['auth'])->group(function () {
         // Wildcard show: placed LAST so all specific routes (edit, publish, etc.) are matched first.
         // Accessible by test_administrator and proctor too (matching original group).
         Route::middleware('role:super_admin,registrar_administrator,test_administrator,proctor')->get('exam-scheduling/{exam_session}', [ExamSessionController::class, 'show'])->name('exam-scheduling.show');
-        Route::get('direct-assessments/create', [DirectAssessmentController::class, 'create'])->name('direct-assessments.create');
-        Route::post('direct-assessments', [DirectAssessmentController::class, 'store'])->name('direct-assessments.store');
+
         Route::resource('academic-years', AcademicYearController::class)->except('show', 'destroy')->parameters(['academic_years' => 'academic_year']);
         Route::post('academic-years/{academic_year}/activate', [AcademicYearController::class, 'activate'])->name('academic-years.activate');
         Route::post('academic-years/{academic_year}/deactivate', [AcademicYearController::class, 'deactivate'])->name('academic-years.deactivate');
@@ -160,6 +159,11 @@ Route::middleware(['auth'])->group(function () {
         Route::post('rooms/{room}/activate', [RoomController::class, 'activate'])->name('rooms.activate');
         Route::post('rooms/{room}/deactivate', [RoomController::class, 'deactivate'])->name('rooms.deactivate');
         Route::post('rooms/{room}/restore', [RoomController::class, 'restore'])->name('rooms.restore');
+    });
+
+    Route::middleware('role:super_admin,registrar_administrator,test_administrator')->prefix('admin')->name('admin.')->group(function () {
+        Route::get('direct-assessments/create', [DirectAssessmentController::class, 'create'])->name('direct-assessments.create');
+        Route::post('direct-assessments', [DirectAssessmentController::class, 'store'])->name('direct-assessments.store');
     });
 
     Route::middleware('role:super_admin,test_administrator')->prefix('admin')->name('admin.')->group(function () {

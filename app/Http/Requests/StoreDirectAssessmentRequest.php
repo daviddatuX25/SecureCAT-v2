@@ -25,7 +25,7 @@ class StoreDirectAssessmentRequest extends FormRequest
         return [
             'academic_year_id' => ['required', 'integer', 'exists:academic_years,id'],
             'applicant_ids' => ['required', 'array', 'min:1', 'distinct'],
-            'applicant_ids.*' => ['integer', 'exists:applicants,id'],
+            'applicant_ids.*' => ['integer'],
             'label' => ['nullable', 'string', 'max:100'],
         ];
     }
