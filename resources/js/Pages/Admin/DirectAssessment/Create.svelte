@@ -1,0 +1,122 @@
+<script>
+  import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.svelte';
+  import { useForm } from '@inertiajs/svelte';
+  import { Button } from '@/Components/ui/button';
+  import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/Components/ui/card';
+  import Label from '@/Components/ui/label/Label.svelte';
+  import Input from '@/Components/ui/input/Input.svelte';
+
+  let { academicYears, applicants, activeAcademicYearId } = $props();
+
+  const breadcrumbs = [
+    { label: 'Exam Scheduling', href: '/admin/exam-scheduling' },
+    { label: 'Direct Assessment' },
+  ];
+
+  const form = useForm({
+    academic_year_id: activeAcademicYearId || '',
+    applicant_ids: [] as number[],
+    label: '',
+  });
+
+  let selectedApplicantIds = $state<number[]>([]);
+
+  function toggleApplicant(id: number) {
+    const idx = selectedApplicantIds.indexOf(id);
+    if (idx >= 0) {
+      selectedApplicantIds = selectedApplicantIds.filter((i) => i !== id);
+    } else {
+      selectedApplicantIds = [...selectedApplicantIds, id];
+    }
+    form.update((f) => ({ ...f, applicant_ids: selectedApplicantIds }));
+  }
+
+  function submit(e: Event) {
+    e.preventDefault();
+    form.post('/admin/direct-assessments');
+  }
+</script>
+
+<AuthenticatedLayout {breadcrumbs}>
+  <div class="space-y-6 min-w-0">
+    <div>
+      <h1 class="text-2xl font-semibold">Create Direct Assessment Session</h1>
+      <p class="mt-1 text-sm text-muted-foreground">
+        Create a grading session for walk-in or offline score entry. No room or time scheduling required.
+      </p>
+    </div>
+
+    <form onsubmit={submit} class="space-y-6">
+      <Card>
+        <CardHeader>
+          <CardTitle>Session Details</CardTitle>
+          <CardDescription>Select the academic year and an optional label for this session.</CardDescription>
+        </CardHeader>
+        <CardContent class="space-y-4">
+          <div class="space-y-2">
+            <Label for="academic_year_id">Academic Year</Label>
+            <select
+              id="academic_year_id"
+              bind:value={$form.academic_year_id}
+              class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+            >
+              {#each academicYears as ay}
+                <option value={ay.id}>{ay.academic_year} — Semester {ay.semester}</option>
+              {/each}
+            </select>
+            {#if $form.errors.academic_year_id}
+              <p class="text-sm text-destructive">{$form.errors.academic_year_id}</p>
+            {/if}
+          </div>
+
+          <div class="space-y-2">
+            <Label for="label">Label (optional)</Label>
+            <Input id="label" bind:value={$form.label} placeholder="e.g. Walk-in Batch 3" />
+            {#if $form.errors.label}
+              <p class="text-sm text-destructive">{$form.errors.label}</p>
+            {/if}
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Select Applicants</CardTitle>
+          <CardDescription>Choose accepted applicants who are not already in an active grading session.</CardDescription>
+        </CardHeader>
+        <CardContent>
+          {#if applicants.length === 0}
+            <p class="text-sm text-muted-foreground">No eligible applicants found.</p>
+          {:else}
+            <div class="space-y-2 max-h-64 overflow-y-auto">
+              {#each applicants as applicant (applicant.id)}
+                <label class="flex items-center gap-3 p-2 rounded-md hover:bg-muted/50 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={selectedApplicantIds.includes(applicant.id)}
+                    onchange={() => toggleApplicant(applicant.id)}
+                    class="h-4 w-4 rounded border-input"
+                  />
+                  <div class="flex-1">
+                    <span class="text-sm font-medium">{applicant.name}</span>
+                    <span class="text-xs text-muted-foreground ml-2">{applicant.reference}</span>
+                  </div>
+                </label>
+              {/each}
+            </div>
+          {/if}
+          {#if $form.errors.applicant_ids}
+            <p class="text-sm text-destructive mt-2">{$form.errors.applicant_ids}</p>
+          {/if}
+        </CardContent>
+      </Card>
+
+      <div class="flex items-center justify-end gap-3">
+        <Button type="button" variant="outline" onclick={() => window.history.back()}>Cancel</Button>
+        <Button type="submit" disabled={$form.processing || selectedApplicantIds.length === 0}>
+          {$form.processing ? 'Creating...' : 'Create Session'}
+        </Button>
+      </div>
+    </form>
+  </div>
+</AuthenticatedLayout>

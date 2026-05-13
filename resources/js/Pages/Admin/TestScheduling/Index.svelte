@@ -282,6 +282,9 @@
                 </Table.Cell>
                 <Table.Cell class="px-4 py-3">{session.room?.name ?? '—'}</Table.Cell>
                 <Table.Cell class="px-4 py-3">
+                  {#if session.type === 'direct'}
+                    <span class="inline-flex items-center rounded-full bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-800 mr-2">Direct</span>
+                  {/if}
                   <Badge variant={statusVariant(session.status)}>{statusLabel(session.status)}</Badge>
                 </Table.Cell>
                 <Table.Cell>
@@ -339,7 +342,12 @@
               <li class="flex flex-col gap-3 rounded-lg border border-border bg-card p-4">
                 <div class="flex items-start justify-between gap-2">
                   <h3 class="font-semibold">{formatDate(session.date)} {formatTime(session.start_time)}</h3>
-                  <Badge variant={statusVariant(session.status)}>{statusLabel(session.status)}</Badge>
+                  <div class="flex items-center gap-1">
+                    {#if session.type === 'direct'}
+                      <span class="inline-flex items-center rounded-full bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-800">Direct</span>
+                    {/if}
+                    <Badge variant={statusVariant(session.status)}>{statusLabel(session.status)}</Badge>
+                  </div>
                 </div>
                 <dl class="grid grid-cols-2 gap-x-4 gap-y-1 text-sm">
                   <dt class="text-muted-foreground">Room</dt>

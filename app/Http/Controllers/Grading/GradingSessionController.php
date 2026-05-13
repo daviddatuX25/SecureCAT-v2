@@ -43,6 +43,7 @@ class GradingSessionController extends Controller
                 'exam_date' => $session->examSession?->date?->format('Y-m-d'),
                 'exam_time' => $session->examSession?->start_time,
                 'room_name' => $session->examSession?->room?->name ?? '—',
+                'exam_session_type' => $session->examSession?->type ?? 'scheduled',
                 'opened_at' => $session->opened_at?->toIso8601String(),
             ],
             'applicants' => $applicants->values()->all(),

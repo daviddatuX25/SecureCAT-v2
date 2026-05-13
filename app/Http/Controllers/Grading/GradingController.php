@@ -41,6 +41,7 @@ class GradingController extends Controller
                     'exam_date' => $gs->examSession?->date?->format('Y-m-d'),
                     'exam_time' => $gs->examSession?->start_time,
                     'room_name' => $gs->examSession?->room?->name ?? '—',
+                    'exam_session_type' => $gs->examSession?->type ?? 'scheduled',
                     'status' => $gs->status,
                     'opened_at' => $gs->opened_at?->toIso8601String(),
                     'finalized_at' => $gs->finalized_at?->toIso8601String(),

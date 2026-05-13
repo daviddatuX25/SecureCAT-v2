@@ -4,14 +4,15 @@
   import { Button } from '@/Components/ui/button';
   import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/Components/ui/card';
   import Switch from '@/Components/ui/switch/switch.svelte';
-  import { Bot, Bell, Share2 } from 'lucide-svelte';
+  import { Bot, Bell, Share2, FileCheck } from 'lucide-svelte';
 
-  let { ai_exam_companion_enabled = false, notify_on_publish = false, release_mode = 'online' } = $props();
+  let { ai_exam_companion_enabled = false, notify_on_publish = false, release_mode = 'online', allow_direct_assessment = true } = $props();
 
   const form = useForm({
     ai_exam_companion_enabled,
     notify_on_publish,
     release_mode,
+    allow_direct_assessment,
   });
 
   const breadcrumbs = [{ label: 'Settings' }];
@@ -28,6 +29,7 @@
       ai_exam_companion_enabled,
       notify_on_publish,
       release_mode,
+      allow_direct_assessment,
     }));
   });
 
@@ -38,6 +40,7 @@
       ai_exam_companion_enabled: !!data.ai_exam_companion_enabled,
       notify_on_publish: !!data.notify_on_publish,
       release_mode: data.release_mode,
+      allow_direct_assessment: !!data.allow_direct_assessment,
     }));
     $form.put('/admin/settings', {
       preserveScroll: true,
@@ -139,6 +142,28 @@
               Results handed in person — portal view disabled for applicants
             {/if}
           </p>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle class="flex items-center gap-2">
+            <FileCheck class="h-5 w-5" />
+            Direct Assessment
+          </CardTitle>
+          <CardDescription>
+            When enabled, staff can create direct assessment sessions to encode scores immediately without scheduling a physical exam session. Useful for walk-in applicants or offline score entry.
+          </CardDescription>
+        </CardHeader>
+        <CardContent class="flex items-center gap-4">
+          <Switch
+            checked={$form.allow_direct_assessment}
+            onCheckedChange={(checked) => form.update((f) => ({ ...f, allow_direct_assessment: checked }))}
+            aria-label="Enable direct assessment"
+          />
+          <span class="text-sm font-medium">
+            {$form.allow_direct_assessment ? 'Enabled' : 'Disabled'}
+          </span>
         </CardContent>
       </Card>
 

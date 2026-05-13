@@ -54,7 +54,12 @@
     <!-- Session header -->
     <Card>
       <CardHeader>
-        <CardTitle>Session #{session.exam_session_id} — {session.room_name}</CardTitle>
+        <div class="flex items-center gap-2">
+          <CardTitle>Session #{session.exam_session_id} — {session.room_name}</CardTitle>
+          {#if session.exam_session_type === 'direct'}
+            <span class="inline-flex items-center rounded-full bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-800">Direct</span>
+          {/if}
+        </div>
         <CardDescription>
           {formatDate(session.exam_date)} at {formatTime(session.exam_time)} · Opened {formatDate(session.opened_at)}
         </CardDescription>

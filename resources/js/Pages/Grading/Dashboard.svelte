@@ -107,6 +107,9 @@
                     <Table.Row>
                       <Table.Cell class="px-4 py-3 font-medium">
                         #{gs.exam_session_id} — {gs.room_name ?? '—'}
+                        {#if gs.exam_session_type === 'direct'}
+                          <span class="inline-flex items-center rounded-full bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-800 ml-1">Direct</span>
+                        {/if}
                       </Table.Cell>
                       <Table.Cell class="px-4 py-3 text-muted-foreground">
                         {formatDate(gs.exam_date)} {formatTime(gs.exam_time)}
