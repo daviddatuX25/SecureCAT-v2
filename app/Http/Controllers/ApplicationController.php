@@ -40,7 +40,15 @@ class ApplicationController extends Controller
         }
 
         $query = Application::query()
-            ->with(['coursePreference1:id,name,code', 'coursePreference2:id,name,code', 'coursePreference3:id,name,code', 'academicYear:id,academic_year,semester']);
+            ->with([
+                'coursePreference1:id,name,code',
+                'coursePreference2:id,name,code',
+                'coursePreference3:id,name,code',
+                'academicYear:id,academic_year,semester',
+                'applicant.examSessions:id,status',
+                'applicant.applicantScores:id,applicant_id',
+                'applicant.consultationSummary:id,applicant_id,status',
+            ]);
 
         if ($queryAcademicYearId !== null) {
             $query->forAcademicYear($queryAcademicYearId);
@@ -69,9 +77,11 @@ class ApplicationController extends Controller
             $query->whereDate('submitted_at', '<=', $dateTo);
         }
 
-        $applications = $query->orderByDesc('submitted_at')->paginate(15)->withQueryString();
+        $pipelineStatus = $request->input('pipeline_status');
+        $sortField = $request->input('sort', 'submitted_at');
+        $sortDirection = $request->input('direction', 'desc');
 
-        $applications->getCollection()->transform(function (Application $app) {
+        $transformApp = function (Application $app) {
             $parts = array_filter([$app->first_name, $app->middle_name, $app->last_name, $app->suffix]);
             $fullName = implode(' ', $parts);
             $courses = [
@@ -86,10 +96,44 @@ class ApplicationController extends Controller
                 'full_name' => $fullName,
                 'email' => $app->email,
                 'status' => $app->status,
+                'pipeline_status' => $app->pipelineStatus(),
                 'submitted_at' => $app->submitted_at?->toIso8601String(),
                 'course_preferences' => $courses,
             ];
-        });
+        };
+
+        // When filtering or sorting by computed pipeline_status, fetch all and paginate manually
+        if ($pipelineStatus || $sortField === 'pipeline_status') {
+            $all = $query->orderByDesc('submitted_at')->get();
+            $transformed = $all->map($transformApp);
+
+            if ($pipelineStatus) {
+                $transformed = $transformed->filter(fn ($item) => $item['pipeline_status'] === $pipelineStatus)->values();
+            }
+
+            if ($sortField === 'pipeline_status') {
+                $order = ['pending' => 0, 'accepted' => 1, 'draft_scheduled' => 2, 'scheduled' => 3, 'attended' => 4, 'submitted' => 5, 'graded' => 6, 'dismissed' => 7];
+                $transformed = $sortDirection === 'asc'
+                    ? $transformed->sortBy(fn ($item) => $order[$item['pipeline_status']] ?? 99)->values()
+                    : $transformed->sortByDesc(fn ($item) => $order[$item['pipeline_status']] ?? 99)->values();
+            }
+
+            $page = (int) $request->input('page', 1);
+            $perPage = 15;
+            $offset = ($page - 1) * $perPage;
+            $items = $transformed->slice($offset, $perPage)->values();
+
+            $applications = new \Illuminate\Pagination\LengthAwarePaginator(
+                $items,
+                $transformed->count(),
+                $perPage,
+                $page,
+                ['path' => $request->url(), 'query' => $request->query()]
+            );
+        } else {
+            $applications = $query->orderByDesc('submitted_at')->paginate(15)->withQueryString();
+            $applications->getCollection()->transform($transformApp);
+        }
 
         $academicYears = AcademicYear::query()
             ->orderByDesc('academic_year')
@@ -98,12 +142,22 @@ class ApplicationController extends Controller
 
         return Inertia::render('Applications/Index', [
             'applications' => $applications,
-            'filters' => $request->only(['search', 'status', 'date_from', 'date_to', 'academic_year_id']),
+            'filters' => $request->only(['search', 'status', 'pipeline_status', 'date_from', 'date_to', 'academic_year_id']),
             'seasons' => $academicYears,
             'active_season_id' => $activeAcademicYear?->id,
             'statuses' => [
                 ['value' => 'pending', 'label' => 'Pending'],
                 ['value' => 'accepted', 'label' => 'Accepted'],
+                ['value' => 'dismissed', 'label' => 'Dismissed'],
+            ],
+            'pipeline_statuses' => [
+                ['value' => 'pending', 'label' => 'Pending'],
+                ['value' => 'accepted', 'label' => 'Accepted'],
+                ['value' => 'draft_scheduled', 'label' => 'Draft Scheduled'],
+                ['value' => 'scheduled', 'label' => 'Scheduled'],
+                ['value' => 'attended', 'label' => 'Attended'],
+                ['value' => 'submitted', 'label' => 'Submitted'],
+                ['value' => 'graded', 'label' => 'Graded'],
                 ['value' => 'dismissed', 'label' => 'Dismissed'],
             ],
         ]);
@@ -116,7 +170,16 @@ class ApplicationController extends Controller
     {
         $this->authorize('view', $application);
 
-        $application->load(['coursePreference1:id,name,code', 'coursePreference2:id,name,code', 'coursePreference3:id,name,code', 'appointment', 'academicYear:id,application_start_date,application_end_date']);
+        $application->load([
+            'coursePreference1:id,name,code',
+            'coursePreference2:id,name,code',
+            'coursePreference3:id,name,code',
+            'appointment',
+            'academicYear:id,application_start_date,application_end_date',
+            'applicant.examSessions',
+            'applicant.applicantScores',
+            'applicant.consultationSummary',
+        ]);
 
         $courses = $this->getCourses();
 
@@ -146,6 +209,7 @@ class ApplicationController extends Controller
             'city' => $application->city,
             'province' => $application->province,
             'zip_code' => $application->zip_code,
+            'gwa' => $application->gwa,
             'course_preference_1' => $application->course_preference_1,
             'course_preference_2' => $application->course_preference_2,
             'course_preference_3' => $application->course_preference_3,
@@ -159,6 +223,8 @@ class ApplicationController extends Controller
             'appointment_label' => $appointmentLabel,
             'submitted_at' => $application->submitted_at?->toIso8601String(),
             'created_at' => $application->created_at?->toIso8601String(),
+            'pipeline_status' => $application->pipelineStatus(),
+            'pipeline_details' => $application->pipelineDetails(),
         ];
 
         return Inertia::render('Applications/Show', [
@@ -228,6 +294,7 @@ class ApplicationController extends Controller
             'city' => $validated['city'] ?? null,
             'province' => $validated['province'] ?? null,
             'zip_code' => $validated['zip_code'] ?? null,
+            'gwa' => $validated['gwa'] ?? null,
             'course_preference_1' => $validated['course_preference_1'],
             'course_preference_2' => ! empty($validated['course_preference_2']) ? (int) $validated['course_preference_2'] : null,
             'course_preference_3' => ! empty($validated['course_preference_3']) ? (int) $validated['course_preference_3'] : null,
@@ -296,6 +363,7 @@ class ApplicationController extends Controller
                 'city' => $application->city,
                 'province' => $application->province,
                 'zip_code' => $application->zip_code,
+                'gwa' => $application->gwa,
                 'course_preference_1' => $application->course_preference_1,
                 'course_preference_2' => $application->course_preference_2,
                 'course_preference_3' => $application->course_preference_3,
@@ -338,6 +406,7 @@ class ApplicationController extends Controller
         $fillable = [
             'first_name', 'middle_name', 'last_name', 'suffix', 'birthdate',
             'sex', 'email', 'phone', 'address_line', 'city', 'province', 'zip_code',
+            'gwa',
             'course_preference_1', 'course_preference_2', 'course_preference_3',
             'appointment_id', 'status', 'rejection_reason',
         ];
@@ -400,6 +469,7 @@ class ApplicationController extends Controller
             'city' => $validated['city'] ?? null,
             'province' => $validated['province'] ?? null,
             'zip_code' => $validated['zip_code'] ?? null,
+            'gwa' => $validated['gwa'] ?? null,
             'course_preference_1' => $validated['course_preference_1'],
             'course_preference_2' => ! empty($validated['course_preference_2']) ? (int) $validated['course_preference_2'] : null,
             'course_preference_3' => ! empty($validated['course_preference_3']) ? (int) $validated['course_preference_3'] : null,
@@ -741,6 +811,7 @@ class ApplicationController extends Controller
             'city' => $application->city,
             'province' => $application->province,
             'zip_code' => $application->zip_code,
+            'gwa' => $application->gwa,
             'course_preference_1' => $application->course_preference_1,
             'course_preference_2' => $application->course_preference_2,
             'course_preference_3' => $application->course_preference_3,
@@ -793,6 +864,7 @@ class ApplicationController extends Controller
             'city' => $application->city,
             'province' => $application->province,
             'zip_code' => $application->zip_code,
+            'gwa' => $application->gwa,
             'course_preference_1' => $application->course_preference_1,
             'course_preference_2' => $application->course_preference_2,
             'course_preference_3' => $application->course_preference_3,
@@ -828,6 +900,7 @@ class ApplicationController extends Controller
         $fillable = [
             'first_name', 'middle_name', 'last_name', 'suffix', 'birthdate',
             'sex', 'email', 'phone', 'address_line', 'city', 'province', 'zip_code',
+            'gwa',
             'course_preference_1', 'course_preference_2', 'course_preference_3',
         ];
 
