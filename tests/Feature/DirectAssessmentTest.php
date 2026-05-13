@@ -198,4 +198,18 @@ class DirectAssessmentTest extends TestCase
 
         $response->assertSessionHasErrors('room_id');
     }
+
+    public function test_allow_direct_assessment_defaults_to_true(): void
+    {
+        $this->assertTrue(SystemSetting::allowDirectAssessment());
+    }
+
+    public function test_allow_direct_assessment_can_be_toggled(): void
+    {
+        SystemSetting::set('allow_direct_assessment', false);
+        $this->assertFalse(SystemSetting::allowDirectAssessment());
+
+        SystemSetting::set('allow_direct_assessment', true);
+        $this->assertTrue(SystemSetting::allowDirectAssessment());
+    }
 }

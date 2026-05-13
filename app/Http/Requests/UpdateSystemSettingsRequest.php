@@ -18,6 +18,7 @@ class UpdateSystemSettingsRequest extends FormRequest
             'notify_on_publish' => ['sometimes', 'boolean'],
             'release_mode' => ['sometimes', 'in:online,f2f'],
             'ai_companion_persona' => ['sometimes', 'nullable', 'string', 'max:5000'],
+            'allow_direct_assessment' => ['sometimes', 'boolean'],
         ];
     }
 }

@@ -28,7 +28,7 @@ class SystemSetting extends Model
         }
 
         $v = $row->value;
-        if (in_array($key, ['ai_exam_companion_enabled', 'online_release_enabled', 'notify_on_publish'], true)) {
+        if (in_array($key, ['ai_exam_companion_enabled', 'online_release_enabled', 'notify_on_publish', 'allow_direct_assessment'], true)) {
             return filter_var($v, FILTER_VALIDATE_BOOLEAN);
         }
 
@@ -89,5 +89,13 @@ class SystemSetting extends Model
         }
 
         return trim((string) $value);
+    }
+
+    /**
+     * Whether direct assessment (walk-in scoring without scheduling) is enabled. Default: true.
+     */
+    public static function allowDirectAssessment(): bool
+    {
+        return (bool) self::get('allow_direct_assessment', true);
     }
 }

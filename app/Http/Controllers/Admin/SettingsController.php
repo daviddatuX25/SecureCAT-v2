@@ -23,6 +23,7 @@ class SettingsController extends Controller
             'ai_exam_companion_enabled' => SystemSetting::aiCompanionEnabled(),
             'notify_on_publish' => SystemSetting::notifyOnPublish(),
             'release_mode' => SystemSetting::releaseMode(),
+            'allow_direct_assessment' => SystemSetting::allowDirectAssessment(),
         ]);
     }
 
@@ -51,6 +52,10 @@ class SettingsController extends Controller
 
         if (array_key_exists('release_mode', $validated)) {
             SystemSetting::set('release_mode', $validated['release_mode']);
+        }
+
+        if (array_key_exists('allow_direct_assessment', $validated)) {
+            SystemSetting::set('allow_direct_assessment', (bool) $validated['allow_direct_assessment']);
         }
 
         return redirect()->route('admin.settings.index')->with('success', 'Settings saved.');
