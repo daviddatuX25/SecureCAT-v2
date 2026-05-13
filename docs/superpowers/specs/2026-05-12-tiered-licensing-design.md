@@ -1,7 +1,7 @@
 # SecureCAT Tiered Licensing — Design Spec
 
 **Date:** 2026-05-12  
-**Status:** Revised (P0+P1 review findings incorporated)  
+**Status:** Plan-ready (all blockers and gaps resolved)  
 **Project:** SecureCAT-v2  
 
 ## 1. Overview
@@ -26,13 +26,15 @@ SecureCAT-v2 is a Laravel 12 + Inertia Svelte 5 exam management application dist
 
 ### 2.1 Trial Lifecycle
 
-**Activation:** Trial clock starts on first successful `LicenseService::resolve()` call (stored as `trial_activated_at` in `license_cache` table).
+**Activation:** When `SECURECAT_LICENSE_KEY` is empty/absent in `.env`, `LicenseService::resolve()` auto-starts Trial — no onboarding screen, no HTTP call. It seeds `license_cache` with `tier=trial` and `trial_activated_at=now()`. Staff discover they're on Trial via the admin dashboard banner. When a valid key is provided later, the upgrade path (below) applies immediately.
 
 **Usage tracking:** Local-only for trial (no license key to auth against server). `license_usage` table tracks per-feature counts.
 
 **Limits are independent:** Exhausting AI Companion chats does NOT affect AI Scheduling uses or portal access. Each feature has its own counter.
 
 **Anti-reset:** `installation_id` is hardware-fingerprinted (MAC address + hostname hash), not a user-editable UUID. Reinstalling the application on the same hardware does not reset trial counters. Trial state is stored in the database, not in config files.
+
+**installation_id seeding:** Generated in `AppServiceProvider::boot()` on first boot — if `license_cache` has no row, compute the fingerprint (`md5(php_uname('n') . implode('', array_column(net_get_interfaces() ?? [], 'address')))`) and insert the initial row. This is idempotent and requires no artisan command.
 
 **Upgrade path:** Entering a valid Standard/Premium key during trial:
 - Immediately applies new tier
@@ -80,11 +82,13 @@ SecureCAT-v2 is a Laravel 12 + Inertia Svelte 5 exam management application dist
 - OpenRouter: for clients with reliable internet who want better models
 - `AiCompanionService` and `ExamSchedulingAssistantService` use a common `LlmService` that abstracts the driver
 
+**This phase's scope:** `LlmService` is a rename-only abstraction — it wraps OpenRouter exactly as it works now via the `LaravelOpenRouter` facade. No Ollama driver implementation in this phase. The abstraction layer exists so the future Ollama phase just adds a second driver without touching call sites. Ollama driver: explicitly out of scope, planned for a future phase.
+
 ### Mixedbread (future phase)
 
 - Mixedbread cloud integration remains as optional embedding provider
 - `EmbeddingService` abstracts the driver (Ollama/Mixedbread) similar to LLM
-- Not in scope for initial licensing implementation
+- **Explicitly deferred:** `MixedbreadService` stays untouched in this phase. `KnowledgeRetrievalService` continues using it directly. The refactor into `EmbeddingService` (Ollama/Mixedbread driver) is a future phase.
 
 ## 4. Public-Facing Portal Segregation
 
@@ -160,6 +164,7 @@ ingress:
 - Tied to the portal feature — no portal, no applicant email
 - Gated by `applicant_email` feature flag in `LicenseService`
 - `SendApplicantSetupEmail` job checks `LicenseService::hasFeature('applicant_email')` before sending
+- **Silent failure fallback:** When `applicant_email` is unavailable (Trial expired, Standard tier), the job MUST NOT silently drop the email. Instead it must: (1) log a `warning` on the `license` channel, and (2) dispatch an in-app notification to all users with `registrar_administrator` role: *"Applicant #{id} setup email could not be sent — applicant_email feature unavailable. Please inform the applicant of their portal credentials manually."*
 
 ### Licensing Server as SMTP Relay
 
@@ -181,9 +186,9 @@ ingress:
 The licensing server signs all responses with HMAC-SHA256 using a per-installation shared secret. This prevents replay attacks, response forgery, and cache tampering.
 
 - Shared secret is provisioned during initial license activation (one-time handshake)
-- `LicenseService::resolve()` verifies HMAC before accepting any response
+- `LicenseService::resolve()` verifies HMAC before accepting any response — **stub in this phase:** verification is a no-op that logs a warning instead of throwing. The code structure (signature field, verification method) is in place, but enforcement is deferred until the licensing server exists and can provision shared secrets. A `TODO` comment marks where enforcement will be enabled.
 - Cached responses store the signature; re-verification on cache load
-- `installation_id` is hardware-fingerprinted (MAC address + hostname hash), not a user-editable UUID
+- `installation_id` is hardware-fingerprinted using `md5(php_uname('n') . php_uname('m') . storage_path())` — hostname + machine type + install path. This works on all platforms including Windows/Laragon with zero PHP extensions required. It is NOT a user-editable UUID. Two Laragon installs on the same machine produce different IDs.
 
 ### 6.2 Anti-Sharing
 
@@ -199,12 +204,16 @@ App Boot
     ▼
 LicenseService::resolve()
     │
-    ├─ Cache hit? ──YES──▶ Verify HMAC → Return cached tier+features
+    ├─ No key configured (SECURECAT_LICENSE_KEY empty/absent)
+    │   └──▶ Auto-start Trial: seed license_cache (installation_id, tier=trial, trial_activated_at=now())
+    │        → warm config with trial features+limits → return
+    │
+    ├─ Cache hit? ──YES──▶ Verify HMAC (stub: log warning, don't throw) → Return cached tier+features
     │
     ├─ Cache miss ──▶ Call licensing server
     │   │
     │   ├─ Server reachable ──▶ Validate key
-    │   │   ├─ Valid ──▶ Verify HMAC, cache result (24h), warm config
+    │   │   ├─ Valid ──▶ Verify HMAC (stub), cache result (24h), warm config
     │   │   ├─ Invalid ──▶ Degrade to Standard, cache denial (1h)
     │   │   └─ Trial expired ──▶ Degrade to Standard, clear trial features
     │   │
@@ -220,6 +229,27 @@ Config warmed with features
 RequireFeature middleware gates routes
 HandleInertiaRequests shares $page.props.license
 ```
+
+### 6.6 Development & Test Strategy (No Licensing Server)
+
+The licensing server (`api.securecat.ph`) does not exist yet. During development and testing:
+
+**Local dev (empty key = Trial):** When `SECURECAT_LICENSE_KEY` is empty or absent from `.env`, `LicenseService::resolve()` skips the HTTP call entirely and auto-starts Trial. This is the natural default for fresh installs — no bypass flag needed.
+
+**Unit/feature tests:** Use Laravel's `Http::fake()` to mock the licensing server endpoint. Tests assert against specific response shapes (valid key, invalid key, expired, server unreachable).
+
+```php
+// Test example: valid Premium key
+Http::fake(['api.securecat.ph/*' => Http::response([
+    'valid' => true, 'tier' => 'premium', 'features' => [...], 'signature' => '...'
+])]);
+
+// Test example: server unreachable
+Http::fake(['api.securecat.ph/*' => Http::response(null, 500)]);
+// Or: resolve() catches ConnectionException and falls back to DB cache
+```
+
+**No bypass flag:** `SECURECAT_LICENSE_BYPASS` is intentionally excluded. An empty key is the honest, natural signal for "no license configured."
 
 ### 6.4 Degradation Policy
 
@@ -346,7 +376,7 @@ Headers:
 |------|---------|
 | `config/securecat.php` | Feature flag defaults, license config, public domain |
 | `app/Services/LicenseService.php` | Validates license, caches, resolves features, HMAC verification |
-| `app/Services/LlmService.php` | Abstracts LLM driver (Ollama/OpenRouter) |
+| `app/Services/LlmService.php` | Abstracts LLM driver (OpenRouter only this phase; Ollama driver future) |
 | `app/Http/Middleware/RequireFeature.php` | Route-level feature gating |
 | `app/Http/Middleware/RestrictPublicDomain.php` | Allowlist-based portal route restriction |
 | `database/migrations/*_create_license_cache_table.php` | Cache table for license validation results |
@@ -388,10 +418,9 @@ Headers:
 | `bootstrap/app.php` | Register RequireFeature + RestrictPublicDomain middleware |
 | `routes/web.php` | Domain-based route groups, feature middleware on AI/portal routes |
 | `app/Http/Middleware/HandleInertiaRequests.php` | Share `$page.props.license` (tier, features, limits) to Svelte |
-| `app/Providers/AppServiceProvider.php` | Register LicenseService as singleton |
+| `app/Providers/AppServiceProvider.php` | Register LicenseService as singleton; seed `installation_id` on first boot |
 | `app/Services/AiCompanionService.php` | Use LlmService instead of direct OpenRouter calls |
 | `app/Services/ExamSchedulingAssistantService.php` | Use LlmService instead of direct OpenRouter calls |
-| `app/Services/MixedbreadService.php` | Refactor into EmbeddingService (Ollama/Mixedbread driver) |
 | `app/Jobs/SendApplicantSetupEmail.php` | Check `applicant_email` feature flag before sending |
 | `.env.example` | Add `SECURECAT_LICENSE_KEY`, `LLM_DRIVER` (installation_id is auto-generated at first boot, not user-editable) |
 
@@ -446,7 +475,10 @@ Headers:
 
 - Ollama + pgvector migration (replacing Mixedbread cloud embeddings)
 - Mixedbread as optional embedding driver
+- **MixedbreadService refactor into EmbeddingService** — Mixedbread remains the sole embedding driver in this phase; `KnowledgeRetrievalService` continues using it directly
+- **LlmService Ollama driver** — this phase wraps OpenRouter only; Ollama driver added in a future phase
 - Licensing server application (separate Laravel app)
+- **HMAC verification enforcement** — code structure is in place but verification is a no-op stub; enforcement enabled once licensing server can provision shared secrets
 - Cloudflare tunnel provisioning automation
 - SMTP relay server setup (Mailu/Postal)
 - SMTP credential rotation + relay outage handling
