@@ -14,11 +14,30 @@ use App\Models\SystemSetting;
 use App\Models\User;
 use App\Services\DirectAssessmentService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Inertia\Testing\AssertableInertia;
 use Tests\TestCase;
 
 class DirectAssessmentTest extends TestCase
 {
     use RefreshDatabase;
+
+    public function test_create_direct_assessment_page_renders_inertia_component(): void
+    {
+        $admin = User::factory()->create();
+        $admin->assignRole('super_admin');
+        $this->actingAs($admin);
+        SystemSetting::set('allow_direct_assessment', true);
+
+        config(['inertia.testing.ensure_pages_exist' => false]);
+
+        $response = $this->get(route('admin.direct-assessments.create'));
+        $response->assertInertia(fn (AssertableInertia $page) => $page
+            ->component('Admin/DirectAssessment/Create')
+            ->has('academicYears')
+            ->has('applicants')
+            ->has('activeAcademicYearId')
+        );
+    }
 
     public function test_exam_session_has_type_constants(): void
     {
@@ -145,7 +164,7 @@ class DirectAssessmentTest extends TestCase
         $application = Application::factory()->create(['status' => 'accepted', 'academic_year_id' => $academicYear->id]);
         $applicant = Applicant::factory()->create(['application_id' => $application->id]);
 
-        $response = $this->post('/admin/direct-assessments', [
+        $response = $this->post(route('admin.direct-assessments.store'), [
             'academic_year_id' => $academicYear->id,
             'applicant_ids' => [$applicant->id],
             'label' => 'Walk-in Batch 3',
@@ -163,7 +182,7 @@ class DirectAssessmentTest extends TestCase
         SystemSetting::set('allow_direct_assessment', false);
         $academicYear = AcademicYear::factory()->create(['is_active' => true]);
 
-        $response = $this->post('/admin/direct-assessments', [
+        $response = $this->post(route('admin.direct-assessments.store'), [
             'academic_year_id' => $academicYear->id,
             'applicant_ids' => [1],
         ]);

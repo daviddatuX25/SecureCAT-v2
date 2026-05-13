@@ -8,6 +8,7 @@ use App\Http\Requests\StoreDirectAssessmentRequest;
 use App\Models\AcademicYear;
 use App\Models\Applicant;
 use App\Services\DirectAssessmentService;
+use Illuminate\Http\RedirectResponse;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -46,7 +47,7 @@ class DirectAssessmentController extends Controller
         ]);
     }
 
-    public function store(StoreDirectAssessmentRequest $request)
+    public function store(StoreDirectAssessmentRequest $request): RedirectResponse
     {
         $validated = $request->validated();
 
