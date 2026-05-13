@@ -11,6 +11,7 @@ return new class extends Migration
         Schema::table('exam_sessions', function (Blueprint $table) {
             $table->string('type')->default('scheduled')->after('status');
             $table->string('label')->nullable()->after('type');
+            $table->index('type');
         });
     }
 
