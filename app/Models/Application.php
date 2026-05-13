@@ -206,6 +206,82 @@ class Application extends Model
         return $bestStatus;
     }
 
+    /**
+     * Get structured pipeline details with milestone timestamps.
+     */
+    public function pipelineDetails(): array
+    {
+        $status = $this->pipelineStatus();
+
+        $milestones = [];
+
+        // Accepted milestone
+        if ($this->status !== 'pending') {
+            $milestones['accepted'] = ['at' => $this->processed_at?->toIso8601String()];
+        }
+
+        // Session-related milestones
+        $applicant = $this->applicant;
+        if ($applicant) {
+            $examSessions = $applicant->relationLoaded('examSessions')
+                ? $applicant->examSessions
+                : $applicant->examSessions()->get();
+
+            $activeSessions = $examSessions->reject(
+                fn (ExamSession $s) => $s->status === ExamSession::STATUS_CANCELLED
+            );
+
+            $statusPriority = [
+                ExamSession::STATUS_COMPLETED => 4,
+                ExamSession::STATUS_IN_PROGRESS => 3,
+                ExamSession::STATUS_PUBLISHED => 2,
+                ExamSession::STATUS_DRAFT => 1,
+            ];
+
+            $sortedSessions = $activeSessions->sortByDesc(
+                fn (ExamSession $s) => $statusPriority[$s->status] ?? 0
+            );
+
+            foreach ($sortedSessions as $session) {
+                $milestones['scheduled'] = [
+                    'at' => $session->created_at?->toIso8601String(),
+                    'session_date' => $session->date,
+                    'session_label' => 'Session #'.$session->id,
+                ];
+
+                $pivot = $session->pivot;
+                if ($pivot && $pivot->attendance_status === 'present') {
+                    $attendedAt = $pivot->attendance_marked_at
+                        ? (is_string($pivot->attendance_marked_at) ? \Carbon\Carbon::parse($pivot->attendance_marked_at) : $pivot->attendance_marked_at)
+                        : null;
+                    $milestones['attended'] = ['at' => $attendedAt?->toIso8601String()];
+
+                    if ($pivot->submission_status === 'submitted') {
+                        $submittedAt = $pivot->submitted_at
+                            ? (is_string($pivot->submitted_at) ? \Carbon\Carbon::parse($pivot->submitted_at) : $pivot->submitted_at)
+                            : null;
+                        $milestones['submitted'] = ['at' => $submittedAt?->toIso8601String()];
+
+                        $hasScores = $applicant->relationLoaded('applicantScores')
+                            ? $applicant->applicantScores->isNotEmpty()
+                            : $applicant->applicantScores()->exists();
+
+                        if ($hasScores) {
+                            $milestones['graded'] = ['at' => null];
+                        }
+                    }
+                }
+
+                break; // Only record milestones from the most advanced session
+            }
+        }
+
+        return [
+            'status' => $status,
+            'milestones' => $milestones,
+        ];
+    }
+
     public function isEditableByApplicant(): bool
     {
         // Must be accepted first

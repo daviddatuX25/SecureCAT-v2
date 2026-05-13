@@ -287,4 +287,51 @@ class ApplicationPipelineStatusTest extends TestCase
         $app->load('applicant.examSessions');
         $this->assertSame('dismissed', $app->pipelineStatus());
     }
+
+    public function test_pipeline_details_returns_status_and_milestones(): void
+    {
+        $app = $this->createApp('accepted');
+        $applicant = Applicant::create([
+            'application_id' => $app->id,
+            'email' => $app->email,
+            'setup_token' => 'tok',
+            'setup_token_expires_at' => now()->addDays(3),
+        ]);
+
+        $session = ExamSession::create([
+            'academic_year_id' => $app->academic_year_id,
+            'room_id' => null,
+            'date' => now()->addDays(7)->toDateString(),
+            'start_time' => '08:00',
+            'end_time' => '12:00',
+            'max_capacity' => 50,
+            'status' => ExamSession::STATUS_PUBLISHED,
+            'created_by' => $this->user()->id,
+        ]);
+        $session->applicants()->attach($applicant, [
+            'attendance_status' => 'present',
+            'attendance_marked_at' => now(),
+            'submission_status' => 'submitted',
+            'submitted_at' => now(),
+        ]);
+
+        $app->load('applicant.examSessions');
+        $details = $app->pipelineDetails();
+
+        $this->assertSame('submitted', $details['status']);
+        $this->assertArrayHasKey('milestones', $details);
+        $this->assertArrayHasKey('accepted', $details['milestones']);
+        $this->assertArrayHasKey('scheduled', $details['milestones']);
+        $this->assertArrayHasKey('attended', $details['milestones']);
+        $this->assertArrayHasKey('submitted', $details['milestones']);
+    }
+
+    public function test_pipeline_details_for_pending_application(): void
+    {
+        $app = $this->createApp('pending');
+        $details = $app->pipelineDetails();
+
+        $this->assertSame('pending', $details['status']);
+        $this->assertArrayHasKey('milestones', $details);
+    }
 }
