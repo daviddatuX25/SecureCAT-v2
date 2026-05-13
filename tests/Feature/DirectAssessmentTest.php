@@ -3,21 +3,12 @@
 namespace Tests\Feature;
 
 use App\Models\ExamSession;
-use App\Models\AcademicYear;
-use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
 class DirectAssessmentTest extends TestCase
 {
     use RefreshDatabase;
-
-    private function actingAsAdmin(): User
-    {
-        $user = User::factory()->create();
-        $user->assignRole('super_admin');
-        return $user;
-    }
 
     public function test_exam_session_has_type_constants(): void
     {
@@ -35,5 +26,15 @@ class DirectAssessmentTest extends TestCase
     {
         $session = ExamSession::factory()->make(['type' => 'scheduled']);
         $this->assertFalse($session->isDirect());
+    }
+
+    public function test_direct_factory_state_sets_correct_attributes(): void
+    {
+        $session = ExamSession::factory()->direct()->make();
+        $this->assertEquals(ExamSession::TYPE_DIRECT, $session->type);
+        $this->assertNull($session->room_id);
+        $this->assertNull($session->end_time);
+        $this->assertEquals('in_progress', $session->status);
+        $this->assertNotNull($session->label);
     }
 }

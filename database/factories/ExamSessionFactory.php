@@ -20,8 +20,8 @@ class ExamSessionFactory extends Factory
             'date' => $this->faker->dateTimeBetween('+1 days', '+30 days')->format('Y-m-d'),
             'start_time' => '09:00',
             'end_time' => '12:00',
-            'status' => 'draft',
-            'type' => 'scheduled',
+            'status' => ExamSession::STATUS_DRAFT,
+            'type' => ExamSession::TYPE_SCHEDULED,
             'created_by' => User::factory(),
         ];
     }
@@ -29,13 +29,13 @@ class ExamSessionFactory extends Factory
     public function direct(): static
     {
         return $this->state(fn (array $attributes) => [
-            'type' => 'direct',
+            'type' => ExamSession::TYPE_DIRECT,
             'room_id' => null,
             'date' => now()->format('Y-m-d'),
             'start_time' => now()->format('H:i:s'),
             'end_time' => null,
-            'status' => 'in_progress',
-            'label' => 'Walk-in ' . $this->faker->numberBetween(1, 99),
+            'status' => ExamSession::STATUS_IN_PROGRESS,
+            'label' => 'Walk-in '.$this->faker->numberBetween(1, 99),
         ]);
     }
 }
