@@ -74,7 +74,7 @@
           Mark as {workflowStatus === 'in_progress' ? 'Completed' : 'In progress'}
         </Button>
         {#if showPrint}
-          <Link href={`/admin/grading/sessions/${sid}/print`}>
+          <Link href={`/admin/release/print/${sid}`}>
             <Button class="min-h-[44px]">
               <Printer class="h-4 w-4 mr-2" />
               Print results
@@ -115,19 +115,32 @@
                   <Table.Cell class="px-4 py-3">{app.reference}</Table.Cell>
                   <Table.Cell class="px-4 py-3">{app.name}</Table.Cell>
                   <Table.Cell class="px-4 py-3">
-                    {#if app.scored}
-                      <Badge variant="success" class="gap-1">
-                        <CheckCircle2 class="h-3 w-3" />
-                        Complete
-                      </Badge>
-                    {:else if app.domains_complete > 0}
-                      <Badge variant="warning">{app.domains_complete} / 6 aptitude areas</Badge>
-                    {:else}
-                      <Badge variant="muted" class="gap-1">
-                        <Circle class="h-3 w-3" />
-                        Not started
-                      </Badge>
-                    {/if}
+                    <div class="flex flex-wrap items-center gap-1.5">
+                      {#if app.scored}
+                        <Badge variant="success" class="gap-1">
+                          <CheckCircle2 class="h-3 w-3" />
+                          Complete
+                        </Badge>
+                      {:else if app.domains_complete > 0}
+                        <Badge variant="warning">{app.domains_complete} / 6 aptitude areas</Badge>
+                      {:else}
+                        <Badge variant="muted" class="gap-1">
+                          <Circle class="h-3 w-3" />
+                          Not started
+                        </Badge>
+                      {/if}
+                      {#if app.scored && app.printed}
+                        <Badge variant="success" class="gap-1 text-xs">
+                          <Printer class="h-3 w-3" />
+                          Printed
+                        </Badge>
+                      {:else if app.scored && !app.printed && releaseMode !== 'online'}
+                        <Badge variant="outline" class="gap-1 text-xs text-muted-foreground">
+                          <Printer class="h-3 w-3" />
+                          Not printed
+                        </Badge>
+                      {/if}
+                    </div>
                   </Table.Cell>
                   <Table.Cell class="text-center">
                     <Link href={`/admin/grading/sessions/${sid}/applicants/${app.applicant_id}`}>
