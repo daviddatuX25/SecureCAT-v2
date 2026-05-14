@@ -20,7 +20,6 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DirectAssessmentController;
 use App\Http\Controllers\Grading\GradingController;
-use App\Http\Controllers\Grading\GradingPrintController;
 use App\Http\Controllers\Grading\GradingScoreController;
 use App\Http\Controllers\Grading\GradingSessionController;
 use App\Http\Controllers\Grading\ScoreImportController;
@@ -222,10 +221,6 @@ Route::middleware(['auth'])->group(function () {
         Route::put('grading/sessions/{grading_session}/workflow', [GradingSessionController::class, 'updateWorkflowStatus'])->name('sessions.workflow');
         Route::get('grading/sessions/{grading_session}/applicants/{applicant}', [GradingScoreController::class, 'show'])->name('sessions.applicants.scores');
         Route::put('grading/sessions/{grading_session}/applicants/{applicant}/scores', [GradingScoreController::class, 'update'])->name('sessions.applicants.scores.update');
-        Route::get('grading/sessions/{grading_session}/print', [GradingPrintController::class, 'index'])->name('sessions.print');
-        Route::post('grading/sessions/{grading_session}/mark-printed', [GradingPrintController::class, 'markPrinted'])->name('sessions.mark-printed');
-        Route::get('grading/sessions/{grading_session}/print-bulk', [GradingPrintController::class, 'printBulk'])->name('sessions.print-bulk');
-        Route::get('grading/sessions/{grading_session}/applicants/{applicant}/result-sheet', [GradingPrintController::class, 'resultSheet'])->name('sessions.result-sheet');
         // Bulk score import
         Route::get('grading/import', [ScoreImportController::class, 'importForm'])->name('import');
         Route::post('grading/import', [ScoreImportController::class, 'import'])->name('import.store');
