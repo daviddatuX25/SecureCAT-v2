@@ -188,4 +188,42 @@ class ReleasePrintControllerTest extends TestCase
         $response = $this->get(route('admin.release.print.index', $session));
         $response->assertRedirect(route('login'));
     }
+
+    public function test_full_print_workflow_from_release(): void
+    {
+        $session = GradingSession::factory()->create(['status' => GradingSession::STATUS_FINALIZED]);
+        $applicant = Applicant::factory()->create();
+        $session->applicants()->attach($applicant->id, ['result_printed_at' => null]);
+        ResultSheetTemplate::factory()->create(['is_active' => true, 'mode' => 'html', 'content' => '<div>{{applicant_name}}</div>']);
+        $admin = User::factory()->create();
+        $admin->assignRole('super_admin');
+
+        // 1. View print batch
+        $response = $this->actingAs($admin)
+            ->get(route('admin.release.print.index', $session));
+        $response->assertOk();
+
+        // 2. Mark as printed
+        $response = $this->actingAs($admin)
+            ->post(route('admin.release.print.mark-printed', $session), [
+                'applicant_ids' => [$applicant->id],
+                'printed' => true,
+            ]);
+        $response->assertRedirect();
+        $this->assertNotNull(
+            $session->fresh()->applicants()->where('applicants.id', $applicant->id)->first()->pivot->result_printed_at
+        );
+
+        // 3. View result sheet
+        $response = $this->actingAs($admin)
+            ->get(route('admin.release.print.result-sheet', [$session, $applicant]));
+        $response->assertOk();
+
+        // 4. Verify printed flag shows in session page
+        $response = $this->actingAs($admin)
+            ->get(route('admin.grading.sessions.show', $session));
+        $response->assertInertia(fn ($page) => $page
+            ->where('applicants.0.printed', true)
+        );
+    }
 }
