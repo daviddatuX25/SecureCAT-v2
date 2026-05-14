@@ -23,18 +23,20 @@ class ReleasePrintController extends Controller
     public function index(GradingSession $grading_session): Response
     {
         $session = $grading_session->load(['examSession.room']);
+        $scoredApplicantIds = $grading_session->applicantScores()
+            ->pluck('applicant_id')
+            ->flip()
+            ->all();
         $applicants = $grading_session->applicants()
             ->with('application')
             ->get()
-            ->map(function ($a) use ($grading_session) {
-                $hasScores = $grading_session->applicantScores()->where('applicant_id', $a->id)->exists();
-
+            ->map(function ($a) use ($scoredApplicantIds) {
                 return [
                     'id' => $a->id,
                     'applicant_id' => $a->id,
                     'name' => $a->application ? trim(implode(' ', array_filter([$a->application->first_name, $a->application->middle_name, $a->application->last_name, $a->application->suffix]))) : '—',
                     'reference' => $a->application?->reference_number ?? '—',
-                    'scored' => $hasScores,
+                    'scored' => isset($scoredApplicantIds[$a->id]),
                     'printed' => (bool) $a->pivot->result_printed_at,
                 ];
             });
@@ -64,7 +66,9 @@ class ReleasePrintController extends Controller
 
     public function resultSheet(GradingSession $grading_session, Applicant $applicant): Response
     {
-        if (! $grading_session->applicants()->where('applicants.id', $applicant->id)->exists()) {
+        $pivot = $grading_session->applicants()->where('applicants.id', $applicant->id)->first()?->pivot;
+
+        if (! $pivot) {
             abort(404, 'Applicant is not part of this grading session.');
         }
 
@@ -108,12 +112,10 @@ class ReleasePrintController extends Controller
 
         $templateHtml = $this->templateService->render($template, [$applicantData], false);
 
-        $pivot = $grading_session->applicants()->where('applicants.id', $applicant->id)->first()?->pivot;
-
         return Inertia::render('Release/ResultSheet', [
             'sessionId' => (string) $grading_session->id,
             'applicantId' => (string) $applicant->id,
-            'printed' => (bool) ($pivot?->result_printed_at ?? false),
+            'printed' => (bool) ($pivot->result_printed_at ?? false),
             'applicant' => [
                 'id' => $applicantData['id'],
                 'name' => $applicantData['name'],
@@ -147,7 +149,7 @@ class ReleasePrintController extends Controller
             ]);
         }
 
-        $grading_session->load('examSession');
+        $grading_session->load('examSession.room');
         $ids = array_filter(array_map('intval', explode(',', request()->query('ids', ''))));
         $applicants = $grading_session->applicants()
             ->whereIn('applicants.id', $ids)

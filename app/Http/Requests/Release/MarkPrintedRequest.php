@@ -14,7 +14,13 @@ class MarkPrintedRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'applicant_ids' => ['required', 'array', 'min:1'],
+            'applicant_ids' => ['required', 'array', 'min:1', function ($attribute, $value, $fail) {
+                $session = $this->route('grading_session');
+                $validCount = $session->applicants()->whereIn('applicants.id', $value)->count();
+                if ($validCount !== count($value)) {
+                    $fail('One or more applicants are not part of this grading session.');
+                }
+            }],
             'applicant_ids.*' => ['required', 'integer', 'exists:applicants,id'],
             'printed' => ['required', 'boolean'],
         ];

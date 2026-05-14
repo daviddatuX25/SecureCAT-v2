@@ -117,6 +117,70 @@ class ReleasePrintControllerTest extends TestCase
         $response->assertOk();
     }
 
+    public function test_result_sheet_returns_404_for_applicant_not_in_session(): void
+    {
+        [$session] = $this->createSessionWithApplicant();
+        $otherApplicant = Applicant::factory()->create();
+
+        $admin = User::factory()->create();
+        $admin->assignRole('super_admin');
+
+        $response = $this->actingAs($admin)
+            ->get(route('admin.release.print.result-sheet', [$session, $otherApplicant]));
+
+        $response->assertNotFound();
+    }
+
+    public function test_result_sheet_shows_error_when_no_active_template(): void
+    {
+        [$session, $applicant] = $this->createSessionWithApplicant();
+
+        $admin = User::factory()->create();
+        $admin->assignRole('super_admin');
+
+        $response = $this->actingAs($admin)
+            ->get(route('admin.release.print.result-sheet', [$session, $applicant]));
+
+        $response->assertOk();
+        $response->assertInertia(fn ($page) => $page
+            ->where('templateError', 'No active result sheet template. Please create one in Admin > Result templates.')
+        );
+    }
+
+    public function test_mark_printed_validation_fails_with_empty_applicant_ids(): void
+    {
+        [$session] = $this->createSessionWithApplicant();
+
+        $admin = User::factory()->create();
+        $admin->assignRole('super_admin');
+
+        $response = $this->actingAs($admin)
+            ->post(route('admin.release.print.mark-printed', $session), [
+                'applicant_ids' => [],
+                'printed' => true,
+            ]);
+
+        $response->assertRedirect();
+        $response->assertSessionHasErrors(['applicant_ids']);
+    }
+
+    public function test_mark_printed_validation_fails_with_invalid_applicant_id(): void
+    {
+        [$session] = $this->createSessionWithApplicant();
+
+        $admin = User::factory()->create();
+        $admin->assignRole('super_admin');
+
+        $response = $this->actingAs($admin)
+            ->post(route('admin.release.print.mark-printed', $session), [
+                'applicant_ids' => [999999],
+                'printed' => true,
+            ]);
+
+        $response->assertRedirect();
+        $response->assertSessionHasErrors(['applicant_ids']);
+    }
+
     public function test_non_authorized_user_cannot_access(): void
     {
         [$session] = $this->createSessionWithApplicant();
