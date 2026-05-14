@@ -39,6 +39,7 @@ class GradingSessionController extends Controller
                 'reference' => $a->application?->reference_number ?? '—',
                 'scored' => $scored,
                 'domains_complete' => $scoresCount,
+                'printed' => (bool) $a->pivot->result_printed_at,
             ];
         });
 
