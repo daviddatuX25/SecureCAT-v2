@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\ConsultationSummary;
 use App\Models\Course;
+use App\Models\GradingSession;
 use App\Models\SystemSetting;
 use App\Notifications\ResultReleased;
 use App\Notifications\ResultReleasedF2F;
@@ -24,6 +25,7 @@ class ReleaseController extends Controller
             'applicant.application.coursePreference1:id,name,code',
             'applicant.application.coursePreference2:id,name,code',
             'applicant.application.coursePreference3:id,name,code',
+            'applicant.gradingSessions' => fn ($query) => $query->withPivot('result_printed_at'),
             'recommendedCourse:id,name,code',
         ])
             ->whereIn('status', ['draft', 'released'])
@@ -41,6 +43,12 @@ class ReleaseController extends Controller
                     $summary->applicant->setAttribute('reference_number', $app->reference_number ?? null);
                 }
 
+                $printed = $summary->applicant?->gradingSessions
+                    ?->some(fn ($gs) => (bool) $gs->pivot->result_printed_at) ?? false;
+
+                $summary->setAttribute('printed', $printed);
+                $summary->setAttribute('grading_session_id', $summary->applicant?->gradingSessions->first()?->id);
+
                 return $summary;
             });
 
@@ -48,6 +56,11 @@ class ReleaseController extends Controller
             'summaries' => $summaries,
             'release_mode' => $mode,
             'courses' => $courses,
+            'gradingSessions' => GradingSession::where('status', GradingSession::STATUS_FINALIZED)
+                ->get()
+                ->map(fn ($s) => ['id' => $s->id, 'label' => 'Session #'.$s->id])
+                ->values()
+                ->all(),
         ]);
     }
 

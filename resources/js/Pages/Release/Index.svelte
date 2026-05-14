@@ -7,9 +7,15 @@
   import * as Dialog from '@/Components/ui/dialog';
   import * as Select from '@/Components/ui/select';
   import { error as toastError } from '@/lib/toast';
-  import { FileText } from 'lucide-svelte';
+  import { FileText, Printer } from 'lucide-svelte';
 
-  let { summaries, release_mode = 'online', courses = [] } = $props();
+  import SwitchableListView from '@/Components/SwitchableListView.svelte';
+  import { Card, CardContent } from '@/Components/ui/card';
+
+  let viewMode = $state('responsive');
+
+  let { summaries, release_mode = 'online', courses = [], gradingSessions = [] } = $props();
+
 
   const page = usePage();
   const flash = $derived($page.props.flash ?? {});
@@ -147,6 +153,16 @@
             Release Selected ({selectedIds.length})
           </Button>
         {/if}
+        {#if isF2F && gradingSessions.length > 0}
+          {#each gradingSessions as gs}
+            <Link href={`/admin/release/print/${gs.id}`}>
+              <Button variant="outline" class="min-h-[44px] gap-2">
+                <Printer class="h-4 w-4" />
+                Print batch {gs.label}
+              </Button>
+            </Link>
+          {/each}
+        {/if}
         <Link href="/admin/release/result-templates">
           <Button variant="outline" class="min-h-[44px] gap-2">
             <FileText class="h-4 w-4" />
@@ -167,11 +183,143 @@
     {/if}
 
     <div class="min-w-0">
-      <div class="w-full overflow-x-auto scrollbar-hide">
-        <Table.Root class="w-full min-w-[640px] text-sm">
-          <Table.Header class="bg-muted/50">
-            <Table.Row>
-              <Table.Head class="w-10 px-4 py-3">
+      <SwitchableListView bind:viewMode>
+        {#snippet table()}
+          <Table.Root class="w-full min-w-[640px] text-sm">
+            <Table.Header class="bg-muted/50">
+              <Table.Row>
+                <Table.Head class="w-10 px-4 py-3">
+                  <input
+                    type="checkbox"
+                    checked={allSelected}
+                    onchange={toggleAll}
+                    aria-label="Select all unreleased"
+                    class="h-4 w-4 cursor-pointer"
+                  />
+                </Table.Head>
+                <Table.Head class="px-4 py-3">Applicant</Table.Head>
+                <Table.Head class="px-4 py-3">Course Preferences</Table.Head>
+                <Table.Head class="px-4 py-3">Recommended Course</Table.Head>
+                <Table.Head class="px-4 py-3">Status</Table.Head>
+                <Table.Head class="px-4 py-3">Printed</Table.Head>
+                <Table.Head class="px-4 py-3 text-right">Action</Table.Head>
+              </Table.Row>
+            </Table.Header>
+            <Table.Body>
+              {#each summaries.data as summary (summary.id)}
+                {@const prefs = getCoursePreferences(summary)}
+                <Table.Row class={summary.status === 'released' ? 'opacity-60' : ''}>
+                  <Table.Cell class="px-4 py-3">
+                    {#if summary.status !== 'released'}
+                      <input
+                        type="checkbox"
+                        checked={selectedIds.includes(summary.id)}
+                        onchange={() => toggleOne(summary.id)}
+                        aria-label="Select {summary.applicant?.full_name ?? summary.id}"
+                        class="h-4 w-4 cursor-pointer"
+                      />
+                    {/if}
+                  </Table.Cell>
+                  <Table.Cell class="px-4 py-3">
+                    <p class="font-medium leading-snug">{summary.applicant?.full_name || '—'}</p>
+                    {#if summary.applicant?.reference_number}
+                      <p class="text-xs text-muted-foreground font-mono">{summary.applicant.reference_number}</p>
+                    {/if}
+                    {#if summary.applicant?.email}
+                      <p class="text-xs text-muted-foreground">{summary.applicant.email}</p>
+                    {/if}
+                  </Table.Cell>
+                  <Table.Cell class="px-4 py-3">
+                    {#if prefs.length}
+                      <div class="space-y-0.5">
+                        {#each prefs as pref, i}
+                          <p class="text-xs">
+                            <span class="font-medium text-muted-foreground">{i + 1}.</span>
+                            {pref.name}{pref.code ? ` (${pref.code})` : ''}
+                          </p>
+                        {/each}
+                      </div>
+                    {:else}
+                      <span class="text-xs text-muted-foreground italic">No preferences</span>
+                    {/if}
+                  </Table.Cell>
+                  <Table.Cell class="px-4 py-3">
+                    {#if summary.recommended_course}
+                      <p class="text-sm font-medium leading-snug">{summary.recommended_course.name}</p>
+                      {#if summary.recommended_course.code}
+                        <p class="text-xs text-muted-foreground">{summary.recommended_course.code}</p>
+                      {/if}
+                    {:else}
+                      <span class="text-xs text-muted-foreground italic">Not set</span>
+                    {/if}
+                  </Table.Cell>
+                  <Table.Cell class="px-4 py-3">
+                    <Badge variant={statusVariant(summary.status)} class="capitalize">
+                      {summary.status}
+                    </Badge>
+                  </Table.Cell>
+                  <Table.Cell class="px-4 py-3">
+                    {#if summary.printed}
+                      <Badge variant="success" class="gap-1 text-xs">
+                        <Printer class="h-3 w-3" />
+                        Printed
+                      </Badge>
+                    {:else}
+                      <Badge variant="muted" class="gap-1 text-xs">
+                        <Printer class="h-3 w-3" />
+                        Not printed
+                      </Badge>
+                    {/if}
+                  </Table.Cell>
+                  <Table.Cell class="px-4 py-3 text-right">
+                    {#if summary.status !== 'released'}
+                      <div class="flex items-center justify-end gap-2">
+                        {#if isF2F && summary.grading_session_id}
+                          <Link href={`/admin/release/print/${summary.grading_session_id}/applicants/${summary.applicant.id}`} target="_blank">
+                            <Button variant="outline" size="sm" class="h-8 px-2 text-xs">
+                              <Printer class="mr-1 h-3 w-3" />
+                              Result sheet
+                            </Button>
+                          </Link>
+                        {/if}
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onclick={() => openPanel(summary)}
+                          class="min-h-[36px]"
+                        >
+                          Edit
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="default"
+                          onclick={() => releaseOne(summary.id)}
+                          class="min-h-[36px]"
+                        >
+                          Release
+                        </Button>
+                      </div>
+                    {:else}
+                      <Badge variant="success" class="capitalize">Released</Badge>
+                    {/if}
+                  </Table.Cell>
+                </Table.Row>
+              {:else}
+                <Table.Row>
+                  <Table.Cell colspan={7} class="px-4 py-16 text-center text-muted-foreground">
+                    <p class="font-medium">No results ready for release yet.</p>
+                    <p class="text-xs mt-1">Applicants appear here once all aptitude area scores are saved.</p>
+                  </Table.Cell>
+                </Table.Row>
+              {/each}
+            </Table.Body>
+          </Table.Root>
+        {/snippet}
+
+        {#snippet cards()}
+          <div class="space-y-4">
+            {#if summaries.data.length > 0}
+              <div class="flex items-center gap-3 px-1 mb-4">
                 <input
                   type="checkbox"
                   checked={allSelected}
@@ -179,103 +327,112 @@
                   aria-label="Select all unreleased"
                   class="h-4 w-4 cursor-pointer"
                 />
-              </Table.Head>
-              <Table.Head class="px-4 py-3">Applicant</Table.Head>
-              <Table.Head class="px-4 py-3">Course Preferences</Table.Head>
-              <Table.Head class="px-4 py-3">Recommended Course</Table.Head>
-              <Table.Head class="px-4 py-3">Status</Table.Head>
-              <Table.Head class="px-4 py-3 text-right">Action</Table.Head>
-            </Table.Row>
-          </Table.Header>
-          <Table.Body>
+                <span class="text-sm font-medium text-muted-foreground">Select all unreleased</span>
+              </div>
+            {/if}
+            
             {#each summaries.data as summary (summary.id)}
-              <Table.Row class={summary.status === 'released' ? 'opacity-60' : ''}>
-                <Table.Cell class="px-4 py-3">
-                  {#if summary.status !== 'released'}
-                    <input
-                      type="checkbox"
-                      checked={selectedIds.includes(summary.id)}
-                      onchange={() => toggleOne(summary.id)}
-                      aria-label="Select {summary.applicant?.full_name ?? summary.id}"
-                      class="h-4 w-4 cursor-pointer"
-                    />
-                  {/if}
-                </Table.Cell>
-                <Table.Cell class="px-4 py-3">
-                  <p class="font-medium leading-snug">{summary.applicant?.full_name || '—'}</p>
-                  {#if summary.applicant?.reference_number}
-                    <p class="text-xs text-muted-foreground font-mono">{summary.applicant.reference_number}</p>
-                  {/if}
-                  {#if summary.applicant?.email}
-                    <p class="text-xs text-muted-foreground">{summary.applicant.email}</p>
-                  {/if}
-                </Table.Cell>
-                <Table.Cell class="px-4 py-3">
-                  {@const prefs = getCoursePreferences(summary)}
-                  {#if prefs.length}
-                    <div class="space-y-0.5">
-                      {#each prefs as pref, i}
-                        <p class="text-xs">
-                          <span class="font-medium text-muted-foreground">{i + 1}.</span>
-                          {pref.name}{pref.code ? ` (${pref.code})` : ''}
-                        </p>
-                      {/each}
+              {@const prefs = getCoursePreferences(summary)}
+              <Card class={summary.status === 'released' ? 'opacity-60' : ''}>
+                <CardContent class="p-4 space-y-4">
+                  <div class="flex justify-between items-start">
+                    <div class="flex gap-3">
+                      {#if summary.status !== 'released'}
+                        <div class="pt-1">
+                          <input
+                            type="checkbox"
+                            checked={selectedIds.includes(summary.id)}
+                            onchange={() => toggleOne(summary.id)}
+                            aria-label="Select {summary.applicant?.full_name ?? summary.id}"
+                            class="h-4 w-4 cursor-pointer"
+                          />
+                        </div>
+                      {/if}
+                      <div>
+                        <p class="font-medium leading-tight">{summary.applicant?.full_name || '—'}</p>
+                        {#if summary.applicant?.reference_number}
+                          <p class="text-xs text-muted-foreground font-mono mt-0.5">{summary.applicant.reference_number}</p>
+                        {/if}
+                      </div>
                     </div>
-                  {:else}
-                    <span class="text-xs text-muted-foreground italic">No preferences</span>
-                  {/if}
-                </Table.Cell>
-                <Table.Cell class="px-4 py-3">
-                  {#if summary.recommended_course}
-                    <p class="text-sm font-medium leading-snug">{summary.recommended_course.name}</p>
-                    {#if summary.recommended_course.code}
-                      <p class="text-xs text-muted-foreground">{summary.recommended_course.code}</p>
+                    <Badge variant={statusVariant(summary.status)} class="capitalize">
+                      {summary.status}
+                    </Badge>
+                  </div>
+                  
+                  <div class="flex items-center gap-2 text-xs">
+                    <span class="text-muted-foreground">Print status:</span>
+                    {#if summary.printed}
+                      <Badge variant="success" class="gap-1 text-xs">
+                        <Printer class="h-3 w-3" />
+                        Printed
+                      </Badge>
+                    {:else}
+                      <Badge variant="muted" class="gap-1 text-xs">
+                        <Printer class="h-3 w-3" />
+                        Not printed
+                      </Badge>
                     {/if}
-                  {:else}
-                    <span class="text-xs text-muted-foreground italic">Not set</span>
-                  {/if}
-                </Table.Cell>
-                <Table.Cell class="px-4 py-3">
-                  <Badge variant={statusVariant(summary.status)} class="capitalize">
-                    {summary.status}
-                  </Badge>
-                </Table.Cell>
-                <Table.Cell class="px-4 py-3 text-right">
-                  {#if summary.status !== 'released'}
-                    <div class="flex items-center justify-end gap-2">
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onclick={() => openPanel(summary)}
-                        class="min-h-[36px]"
-                      >
+                  </div>
+                  <div class="grid grid-cols-1 gap-3 sm:grid-cols-2 text-sm bg-muted/30 p-3 rounded-md">
+                    <div>
+                      <p class="text-xs text-muted-foreground font-medium mb-1">Preferences</p>
+                      {#if prefs.length}
+                        <div class="space-y-0.5">
+                          {#each prefs as pref, i}
+                            <p class="text-xs line-clamp-1" title={pref.name}>
+                              <span class="text-muted-foreground">{i + 1}.</span> {pref.code || pref.name}
+                            </p>
+                          {/each}
+                        </div>
+                      {:else}
+                        <span class="text-xs text-muted-foreground italic">None</span>
+                      {/if}
+                    </div>
+                    <div>
+                      <p class="text-xs text-muted-foreground font-medium mb-1">Recommended</p>
+                      {#if summary.recommended_course}
+                        <p class="text-sm font-medium">{summary.recommended_course.name}</p>
+                        {#if summary.recommended_course.code}
+                          <p class="text-xs text-muted-foreground">{summary.recommended_course.code}</p>
+                        {/if}
+                      {:else}
+                        <span class="text-xs text-muted-foreground italic">Not set</span>
+                      {/if}
+                    </div>
+                  </div>
+
+                  <div class="flex items-center justify-end gap-2 pt-2 border-t border-border/50">
+                    {#if summary.status !== 'released'}
+                      {#if isF2F && summary.grading_session_id}
+                        <Link href={`/admin/release/print/${summary.grading_session_id}/applicants/${summary.applicant.id}`} target="_blank">
+                          <Button variant="outline" size="sm" class="h-8 px-2 text-xs">
+                            <Printer class="mr-1 h-3 w-3" />
+                            Result sheet
+                          </Button>
+                        </Link>
+                      {/if}
+                      <Button size="sm" variant="outline" onclick={() => openPanel(summary)} class="h-9">
                         Edit
                       </Button>
-                      <Button
-                        size="sm"
-                        variant="default"
-                        onclick={() => releaseOne(summary.id)}
-                        class="min-h-[36px]"
-                      >
+                      <Button size="sm" variant="default" onclick={() => releaseOne(summary.id)} class="h-9">
                         Release
                       </Button>
-                    </div>
-                  {:else}
-                    <Badge variant="success" class="capitalize">Released</Badge>
-                  {/if}
-                </Table.Cell>
-              </Table.Row>
+                    {:else}
+                      <Badge variant="success" class="capitalize">Released</Badge>
+                    {/if}
+                  </div>
+                </CardContent>
+              </Card>
             {:else}
-              <Table.Row>
-                <Table.Cell colspan={6} class="px-4 py-16 text-center text-muted-foreground">
-                  <p class="font-medium">No results ready for release yet.</p>
-                  <p class="text-xs mt-1">Applicants appear here once all aptitude area scores are saved.</p>
-                </Table.Cell>
-              </Table.Row>
+              <div class="py-12 text-center text-muted-foreground bg-card rounded-lg border border-border">
+                <p class="font-medium">No results ready for release yet.</p>
+                <p class="text-xs mt-1">Applicants appear here once all aptitude area scores are saved.</p>
+              </div>
             {/each}
-          </Table.Body>
-        </Table.Root>
-      </div>
+          </div>
+        {/snippet}
+      </SwitchableListView>
 
       {#if summaries?.last_page > 1}
         <div class="flex items-center justify-between border-t border-border px-4 py-2">
