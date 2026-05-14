@@ -119,7 +119,7 @@
   {#if sidebarOpen}
   <button
     type="button"
-    class="fixed inset-0 z-40 bg-black/50 lg:hidden"
+    class="fixed inset-0 z-40 bg-black/50 lg:hidden print:hidden"
     aria-label="Close sidebar"
     onclick={closeDropdowns}
   ></button>
@@ -127,7 +127,7 @@
 
   <!-- Sidebar -->
   <aside
-    class="fixed inset-y-0 left-0 z-50 w-64 flex-shrink-0 glass-panel border-r flex flex-col transform transition-transform duration-200 ease-in-out -translate-x-full md:translate-x-0 {sidebarOpen ? 'translate-x-0' : ''}"
+    class="fixed inset-y-0 left-0 z-50 w-64 flex-shrink-0 glass-panel border-r flex flex-col transform transition-transform duration-200 ease-in-out -translate-x-full md:translate-x-0 {sidebarOpen ? 'translate-x-0' : ''} print:hidden"
   >
     <div class="flex flex-col h-full overflow-hidden">
       <div class="h-20 flex items-center px-6 border-b border-border/50 shrink-0">
@@ -239,9 +239,9 @@
     </div>
   </aside>
 
-  <div class="flex min-w-0 flex-1 flex-col md:pl-64 overflow-x-hidden relative">
+  <div class="flex min-w-0 flex-1 flex-col md:pl-64 overflow-x-hidden relative print:pl-0">
     <!-- Header -->
-    <header class="sticky top-0 z-20 h-20 glass-panel border-b border-l-0 flex items-center justify-between px-4 lg:px-8 relative">
+    <header class="sticky top-0 z-20 h-20 glass-panel border-b border-l-0 flex items-center justify-between px-4 lg:px-8 relative print:hidden">
       <div class="flex items-center gap-4">
         <Button variant="ghost" size="icon" class="md:hidden" onclick={() => (sidebarOpen = true)} aria-label="Open menu">
           <Menu class="h-5 w-5" />

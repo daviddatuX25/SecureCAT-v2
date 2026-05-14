@@ -1,5 +1,6 @@
 <script>
   import { onMount } from 'svelte';
+  import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.svelte';
   import { usePage } from '@inertiajs/svelte';
   import { Link, router } from '@inertiajs/svelte';
   import { Button } from '@/Components/ui/button';
@@ -20,6 +21,19 @@
 
   const _page = usePage();
   const printDisabled = $derived(($_page?.props?.release_mode ?? 'online') === 'online');
+
+  const breadcrumbs = $derived(
+    sessionId
+      ? [
+          { label: 'Release', href: '/admin/release' },
+          { label: 'Session #' + sid, href: `/admin/release/print/${sid}` },
+          { label: 'Print' }
+        ]
+      : [
+          { label: 'Release', href: '/admin/release' },
+          { label: 'Print' }
+        ]
+  );
 
   let markedAllPrinted = $state(false);
   let paperSize = $state(initialPaperSize);
@@ -95,81 +109,92 @@
   <title>Print bulk - {applicants.length} result sheets - SecureCAT</title>
 </svelte:head>
 
-<div class="print:hidden p-4 space-y-4">
-  <Link href={"/admin/release/print/" + sid} class="text-sm text-muted-foreground hover:text-foreground inline-flex items-center gap-1">
-    <ArrowLeft class="h-4 w-4" />
-    Back to print batch
-  </Link>
-  <div class="flex flex-wrap gap-3 items-center">
-    {#if sheetsHtml.length > 0 && !templateError}
-      <div class="flex items-center gap-2">
-        <label for="paper-size" class="text-sm font-medium">Paper</label>
-        <select
-          id="paper-size"
-          bind:value={paperSize}
-          class="flex h-9 rounded-md border border-input bg-transparent px-3 py-1 text-sm"
-        >
-          {#each Object.entries(paperOptions) as [k, v]}
-            <option value={k}>{v}</option>
-          {/each}
-        </select>
+<AuthenticatedLayout breadcrumbs={breadcrumbs}>
+  <div class="print:hidden p-4 space-y-4">
+    {#if sessionId}
+      <Link href={"/admin/release/print/" + sid} class="text-sm text-muted-foreground hover:text-foreground inline-flex items-center gap-1">
+        <ArrowLeft class="h-4 w-4" />
+        Back to print batch
+      </Link>
+    {:else}
+      <Link href="/admin/release" class="text-sm text-muted-foreground hover:text-foreground inline-flex items-center gap-1">
+        <ArrowLeft class="h-4 w-4" />
+        Back to release
+      </Link>
+    {/if}
+    <div class="flex flex-wrap gap-3 items-center">
+      {#if sheetsHtml.length > 0 && !templateError}
+        <div class="flex items-center gap-2">
+          <label for="paper-size" class="text-sm font-medium">Paper</label>
+          <select
+            id="paper-size"
+            bind:value={paperSize}
+            class="flex h-9 rounded-md border border-input bg-transparent px-3 py-1 text-sm"
+          >
+            {#each Object.entries(paperOptions) as [k, v]}
+              <option value={k}>{v}</option>
+            {/each}
+          </select>
+        </div>
+        <div class="flex items-center gap-2">
+          <label for="scale" class="text-sm font-medium">Scale</label>
+          <select
+            id="scale"
+            bind:value={scalePercent}
+            class="flex h-9 rounded-md border border-input bg-transparent px-3 py-1 text-sm"
+          >
+            {#each [100, 95, 90, 85, 80] as pct}
+              <option value={pct}>{pct}%</option>
+            {/each}
+          </select>
+        </div>
+      {/if}
+      <Button
+        variant="outline"
+        onclick={printAll}
+        class="min-h-[44px]"
+        disabled={printDisabled || sheetsHtml.length === 0 || !!templateError}
+        title={printDisabled ? 'Switch to F2F or Both release mode in Settings to enable printing.' : undefined}
+      >
+        Print all {applicants.length} sheets
+      </Button>
+      {#if sessionId}
+        <Button variant="outline" onclick={toggleMarkAllPrinted} class="min-h-[44px]">
+          {markedAllPrinted ? 'Unmark all printed' : 'Mark all as printed'}
+        </Button>
+      {/if}
+    </div>
+  </div>
+
+  <div
+    class="p-6 mx-auto space-y-8 print:p-0 print:max-w-none print:space-y-0"
+    style="max-width: {pageWidthMm}mm;"
+  >
+    {#if templateError}
+      <div class="rounded-lg border border-destructive/50 bg-destructive/10 p-6 text-destructive">
+        <p>{templateError}</p>
+        <Link href="/admin/release/result-templates" class="mt-4 inline-block text-sm underline">Go to Result templates</Link>
       </div>
-      <div class="flex items-center gap-2">
-        <label for="scale" class="text-sm font-medium">Scale</label>
-        <select
-          id="scale"
-          bind:value={scalePercent}
-          class="flex h-9 rounded-md border border-input bg-transparent px-3 py-1 text-sm"
+    {:else if sheetsHtml.length > 0}
+      {#each sheetsHtml as html}
+        <div
+          class="border border-foreground/20 rounded-lg p-6 result-sheet-content bg-white {isHalf ? 'half-layout-page' : ''} {isHalf ? '' : 'min-h-[148mm]'"
+          style={isHalf ? 'height: 297mm; display: flex; flex-direction: column; gap: 0;' : ''}
         >
-          {#each [100, 95, 90, 85, 80] as pct}
-            <option value={pct}>{pct}%</option>
-          {/each}
-        </select>
+          {#if isHalf}
+            {@html html}
+          {:else}
+            <div class="sheet-inner">{@html html}</div>
+          {/if}
+        </div>
+      {/each}
+    {:else}
+      <div class="rounded-lg border border-muted p-6 text-muted-foreground">
+        <p>No template or applicants selected.</p>
       </div>
     {/if}
-    <Button
-      variant="outline"
-      onclick={printAll}
-      class="min-h-[44px]"
-      disabled={printDisabled || sheetsHtml.length === 0 || !!templateError}
-      title={printDisabled ? 'Switch to F2F or Both release mode in Settings to enable printing.' : undefined}
-    >
-      Print all {applicants.length} sheets
-    </Button>
-    <Button variant="outline" onclick={toggleMarkAllPrinted} class="min-h-[44px]">
-      {markedAllPrinted ? 'Unmark all printed' : 'Mark all as printed'}
-    </Button>
   </div>
-</div>
-
-<div
-  class="p-6 mx-auto space-y-8 print:p-0 print:max-w-none print:space-y-0"
-  style="max-width: {pageWidthMm}mm;"
->
-  {#if templateError}
-    <div class="rounded-lg border border-destructive/50 bg-destructive/10 p-6 text-destructive">
-      <p>{templateError}</p>
-      <Link href="/admin/release/result-templates" class="mt-4 inline-block text-sm underline">Go to Result templates</Link>
-    </div>
-  {:else if sheetsHtml.length > 0}
-    {#each sheetsHtml as html}
-      <div
-        class="border border-foreground/20 rounded-lg p-6 result-sheet-content bg-white {isHalf ? 'half-layout-page' : ''} {isHalf ? '' : 'min-h-[148mm]'}"
-        style={isHalf ? 'height: 297mm; display: flex; flex-direction: column; gap: 0;' : ''}
-      >
-        {#if isHalf}
-          {@html html}
-        {:else}
-          <div class="sheet-inner">{@html html}</div>
-        {/if}
-      </div>
-    {/each}
-  {:else}
-    <div class="rounded-lg border border-muted p-6 text-muted-foreground">
-      <p>No template or applicants selected.</p>
-    </div>
-  {/if}
-</div>
+</AuthenticatedLayout>
 
 <style>
   .half-layout-page :global(> *) {

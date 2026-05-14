@@ -8,6 +8,8 @@
   import * as Select from '@/Components/ui/select';
   import { error as toastError } from '@/lib/toast';
   import { FileText, Printer } from 'lucide-svelte';
+  import * as Popover from '@/Components/ui/popover';
+  import * as Command from '@/Components/ui/command';
 
   import SwitchableListView from '@/Components/SwitchableListView.svelte';
   import { Card, CardContent } from '@/Components/ui/card';
@@ -29,6 +31,7 @@
   let recCourseId = $state('');
   let counselorComments = $state('');
   let showConfirmDialog = $state(false);
+  let printPopoverOpen = $state(false);
 
   const isF2F = $derived(release_mode === 'f2f');
 
@@ -41,6 +44,13 @@
     summaries.data
       .filter((s) => s.status !== 'released')
       .every((s) => selectedIds.includes(s.id))
+  );
+
+  const selectedApplicants = $derived(
+    (summaries?.data ?? [])
+      .filter((s) => selectedIds.includes(s.id))
+      .map((s) => ({ id: s.applicant?.id, grading_session_id: s.grading_session_id }))
+      .filter((a) => a.id && a.grading_session_id)
   );
 
   function toggleAll() {
@@ -127,10 +137,21 @@
     });
   }
 
+  function printSelected() {
+    const apps = selectedApplicants;
+    if (apps.length === 0) return;
+    if (apps.length === 1) {
+      window.open(`/admin/release/print/${apps[0].grading_session_id}/applicants/${apps[0].id}`, '_blank', 'noopener');
+    } else {
+      const ids = apps.map((a) => a.id).join(',');
+      router.visit(`/admin/release/print/bulk?ids=${ids}`);
+    }
+  }
+
   function getCoursePreferences(summary) {
     const app = summary.applicant?.application;
-    if (!app) return [];
-    return [app.coursePreference1, app.coursePreference2, app.coursePreference3].filter(Boolean);
+    if (!app?.course_preferences) return [];
+    return app.course_preferences.filter((p) => p.course !== null);
   }
 
   const panelPrefs = $derived(selectedSummary ? getCoursePreferences(selectedSummary) : []);
@@ -149,12 +170,16 @@
 {#snippet coursePreferences(summary)}
   {@const prefs = getCoursePreferences(summary)}
   {#if prefs.length}
-    <div class="space-y-0.5">
-      {#each prefs as pref, i}
-        <p class="text-xs">
-          <span class="font-medium text-muted-foreground">{i + 1}.</span>
-          {pref.name}{pref.code ? ` (${pref.code})` : ''}
-        </p>
+    <div class="flex flex-wrap items-center gap-2">
+      {#each prefs as pref}
+        <Badge variant="outline" class="group px-0 overflow-hidden border-border bg-card hover:bg-accent hover:text-accent-foreground transition-colors cursor-default" title={pref.course.name}>
+          <span class="flex h-full min-h-[22px] items-center justify-center bg-muted/80 px-1.5 text-muted-foreground border-r border-border font-mono text-[10px] leading-none group-hover:bg-muted group-hover:text-foreground transition-colors">
+            {pref.rank}
+          </span>
+          <span class="px-2 font-medium tracking-tight truncate max-w-[120px]">
+            {pref.course.code}
+          </span>
+        </Badge>
       {/each}
     </div>
   {:else}
@@ -220,15 +245,45 @@
             Release Selected ({selectedIds.length})
           </Button>
         {/if}
+        {#if isF2F && selectedApplicants.length > 0}
+          <Button onclick={printSelected} variant="outline" class="min-h-[44px] gap-2">
+            <Printer class="h-4 w-4" />
+            Print Selected ({selectedApplicants.length})
+          </Button>
+        {/if}
         {#if isF2F && gradingSessions.length > 0}
-          {#each gradingSessions as gs}
-            <Link href={`/admin/release/print/${gs.id}`}>
+          <Popover.Root bind:open={printPopoverOpen}>
+            <Popover.Trigger>
               <Button variant="outline" class="min-h-[44px] gap-2">
                 <Printer class="h-4 w-4" />
-                Print batch {gs.label}
+                Print by Exam Session
               </Button>
-            </Link>
-          {/each}
+            </Popover.Trigger>
+            <Popover.Content class="w-72 p-0" align="end">
+              <Command.Root>
+                <Command.Input placeholder="Search sessions..." />
+                <Command.List>
+                  <Command.Empty>No sessions found.</Command.Empty>
+                  <Command.Group>
+                    {#each gradingSessions as gs}
+                      <Command.Item
+                        value={`${gs.label} ${gs.exam_date} ${gs.room_name}`}
+                        onSelect={() => {
+                          printPopoverOpen = false;
+                          router.visit(`/admin/release/print/${gs.id}`);
+                        }}
+                      >
+                        <div class="flex flex-col">
+                          <span class="font-medium">{gs.label}</span>
+                          <span class="text-muted-foreground text-xs">{gs.exam_date} · {gs.room_name}</span>
+                        </div>
+                      </Command.Item>
+                    {/each}
+                  </Command.Group>
+                </Command.List>
+              </Command.Root>
+            </Popover.Content>
+          </Popover.Root>
         {/if}
         <Link href="/admin/release/result-templates">
           <Button variant="outline" class="min-h-[44px] gap-2">
@@ -294,10 +349,9 @@
                   </Table.Cell>
                   <Table.Cell class="px-4 py-3">
                     {#if summary.recommended_course}
-                      <p class="text-sm font-medium leading-snug">{summary.recommended_course.name}</p>
-                      {#if summary.recommended_course.code}
-                        <p class="text-xs text-muted-foreground">{summary.recommended_course.code}</p>
-                      {/if}
+                      <Badge variant="default" class="text-xs font-medium shadow-sm" title={summary.recommended_course.name}>
+                        {summary.recommended_course.code}
+                      </Badge>
                     {:else}
                       <span class="text-xs text-muted-foreground italic">Not set</span>
                     {/if}
@@ -376,10 +430,9 @@
                     <div>
                       <p class="text-xs text-muted-foreground font-medium mb-1">Recommended</p>
                       {#if summary.recommended_course}
-                        <p class="text-sm font-medium">{summary.recommended_course.name}</p>
-                        {#if summary.recommended_course.code}
-                          <p class="text-xs text-muted-foreground">{summary.recommended_course.code}</p>
-                        {/if}
+                        <Badge variant="default" class="text-xs font-medium shadow-sm" title={summary.recommended_course.name}>
+                          {summary.recommended_course.code}
+                        </Badge>
                       {:else}
                         <span class="text-xs text-muted-foreground italic">Not set</span>
                       {/if}
@@ -452,12 +505,16 @@
       <div class="space-y-1.5">
         <p class="text-xs font-medium text-muted-foreground uppercase tracking-wide">Applicant's Course Preferences</p>
         {#if panelPrefs.length}
-          <div class="space-y-1">
-            {#each panelPrefs as pref, i}
-              <p class="text-sm">
-                <span class="font-medium text-muted-foreground">{i + 1}.</span> {pref.name}
-                {#if pref.code}<span class="text-muted-foreground"> ({pref.code})</span>{/if}
-              </p>
+          <div class="flex flex-wrap items-center gap-2">
+            {#each panelPrefs as pref}
+              <Badge variant="outline" class="group px-0 overflow-hidden border-border bg-card hover:bg-accent hover:text-accent-foreground transition-colors cursor-default" title={pref.course.name}>
+                <span class="flex h-full min-h-[22px] items-center justify-center bg-muted/80 px-1.5 text-muted-foreground border-r border-border font-mono text-[10px] leading-none group-hover:bg-muted group-hover:text-foreground transition-colors">
+                  {pref.rank}
+                </span>
+                <span class="px-2 font-medium tracking-tight truncate max-w-[150px]">
+                  {pref.course.code}
+                </span>
+              </Badge>
             {/each}
           </div>
         {:else}

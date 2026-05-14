@@ -245,6 +245,7 @@ Route::middleware(['auth'])->group(function () {
 
             // Print batch
             Route::prefix('print')->name('print.')->group(function () {
+                Route::get('bulk', [ReleasePrintController::class, 'printBulkAgnostic'])->name('bulk');
                 Route::get('{grading_session}', [ReleasePrintController::class, 'index'])->name('index');
                 Route::post('{grading_session}/mark-printed', [ReleasePrintController::class, 'markPrinted'])->name('mark-printed');
                 Route::get('{grading_session}/applicants/{applicant}', [ReleasePrintController::class, 'resultSheet'])->name('result-sheet');

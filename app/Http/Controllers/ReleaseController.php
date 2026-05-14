@@ -41,6 +41,12 @@ class ReleaseController extends Controller
                         $app->suffix,
                     ]))));
                     $summary->applicant->setAttribute('reference_number', $app->reference_number ?? null);
+
+                    $app->setAttribute('course_preferences', [
+                        ['rank' => 1, 'course' => $app->coursePreference1 ? ['id' => $app->coursePreference1->id, 'code' => $app->coursePreference1->code, 'name' => $app->coursePreference1->name] : null],
+                        ['rank' => 2, 'course' => $app->coursePreference2 ? ['id' => $app->coursePreference2->id, 'code' => $app->coursePreference2->code, 'name' => $app->coursePreference2->name] : null],
+                        ['rank' => 3, 'course' => $app->coursePreference3 ? ['id' => $app->coursePreference3->id, 'code' => $app->coursePreference3->code, 'name' => $app->coursePreference3->name] : null],
+                    ]);
                 }
 
                 $printed = $summary->applicant?->gradingSessions
@@ -57,8 +63,14 @@ class ReleaseController extends Controller
             'release_mode' => $mode,
             'courses' => $courses,
             'gradingSessions' => GradingSession::where('status', GradingSession::STATUS_FINALIZED)
+                ->with('examSession.room')
                 ->get()
-                ->map(fn ($s) => ['id' => $s->id, 'label' => 'Session #'.$s->id])
+                ->map(fn ($s) => [
+                    'id' => $s->id,
+                    'label' => 'Session #'.$s->id,
+                    'exam_date' => $s->examSession?->date?->format('M j, Y'),
+                    'room_name' => $s->examSession?->room?->name ?? '—',
+                ])
                 ->values()
                 ->all(),
         ]);

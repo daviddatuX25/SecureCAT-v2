@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Release;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Release\MarkPrintedRequest;
 use App\Models\Applicant;
+use App\Models\ApplicantScore;
 use App\Models\GradingSession;
 use App\Models\ResultSheetTemplate;
 use App\Services\PrintBatchService;
@@ -197,6 +198,93 @@ class ReleasePrintController extends Controller
 
         return Inertia::render('Release/ResultSheetBulk', [
             'sessionId' => (string) $grading_session->id,
+            'applicantIds' => $ids,
+            'applicants' => $applicantsWithScores,
+            'sheetsHtml' => $sheetsHtml,
+            'templateError' => null,
+            'paperSize' => $template->paper_size ?? 'a4',
+            'orientation' => $template->orientation ?? 'portrait',
+            'logicalUnit' => $template->logical_unit ?? 'full',
+            'paperOptions' => ['a4' => 'A4', 'letter' => 'Letter'],
+        ]);
+    }
+
+    public function printBulkAgnostic(): Response
+    {
+        $template = ResultSheetTemplate::where('is_active', true)->first();
+        $ids = array_filter(array_map('intval', explode(',', request()->query('ids', ''))));
+
+        if (! $template) {
+            return Inertia::render('Release/ResultSheetBulk', [
+                'sessionId' => null,
+                'applicantIds' => $ids,
+                'applicants' => [],
+                'sheetsHtml' => [],
+                'templateError' => 'No active result sheet template. Please create one in Admin > Result templates.',
+                'paperSize' => 'a4',
+                'orientation' => 'portrait',
+                'logicalUnit' => 'full',
+                'paperOptions' => ['a4' => 'A4', 'letter' => 'Letter'],
+            ]);
+        }
+
+        $applicants = Applicant::whereIn('id', $ids)
+            ->with('application', 'gradingSessions.examSession.room')
+            ->get();
+
+        $applicantSessionMap = [];
+        foreach ($applicants as $applicant) {
+            $gs = $applicant->gradingSessions->first();
+            if ($gs) {
+                $applicantSessionMap[$applicant->id] = $gs->id;
+            }
+        }
+
+        $allScores = ApplicantScore::whereIn('applicant_id', array_keys($applicantSessionMap))
+            ->whereIn('grading_session_id', array_unique(array_values($applicantSessionMap)))
+            ->with('aptitudeArea')
+            ->get()
+            ->groupBy('applicant_id');
+
+        $applicantsWithScores = $applicants->map(function ($a) use ($allScores) {
+            $gs = $a->gradingSessions->first();
+            $scores = $allScores->get($a->id, collect())
+                ->filter(fn ($s) => $gs && $s->grading_session_id === $gs->id)
+                ->map(fn ($s) => [
+                    'domain' => $s->aptitudeArea?->name ?? '—',
+                    'raw' => $s->raw_score,
+                    'max' => $s->max_score,
+                    'pct' => $s->max_score > 0 ? (int) round(($s->raw_score / $s->max_score) * 100) : 0,
+                ])->values()->all();
+            $overallPct = count($scores) > 0 ? (int) round(collect($scores)->avg('pct')) : 0;
+
+            return [
+                'id' => $a->id,
+                'name' => $a->application ? trim(implode(' ', array_filter([$a->application->first_name, $a->application->middle_name, $a->application->last_name, $a->application->suffix]))) : '—',
+                'reference' => $a->application?->reference_number ?? '—',
+                'exam_date' => $gs?->examSession?->date?->format('F j, Y') ?? '—',
+                'room_name' => $gs?->examSession?->room?->name ?? '—',
+                'scores' => $scores,
+                'overall_pct' => $overallPct,
+            ];
+        })->values()->all();
+
+        $logicalUnit = $template->logical_unit ?? 'full';
+        $chunkSize = in_array($logicalUnit, ['half_a4', 'half_legal', 'half_letter'], true) ? 2 : 1;
+
+        $sheetsHtml = [];
+        foreach (array_chunk($applicantsWithScores, $chunkSize) as $chunk) {
+            if (count($chunk) === 2) {
+                $html1 = $this->templateService->render($template, [$chunk[0]], false);
+                $html2 = $this->templateService->render($template, [$chunk[1]], false);
+                $sheetsHtml[] = $html1.$html2;
+            } else {
+                $sheetsHtml[] = $this->templateService->render($template, $chunk, false);
+            }
+        }
+
+        return Inertia::render('Release/ResultSheetBulk', [
+            'sessionId' => null,
             'applicantIds' => $ids,
             'applicants' => $applicantsWithScores,
             'sheetsHtml' => $sheetsHtml,

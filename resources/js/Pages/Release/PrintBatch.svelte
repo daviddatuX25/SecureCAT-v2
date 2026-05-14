@@ -17,7 +17,7 @@
   const breadcrumbs = $derived([
     { label: 'Release', href: '/admin/release' },
     { label: 'Session #' + sid, href: `/admin/release/print/${sid}` },
-    { label: 'Print Batch' }
+    { label: 'Print' }
   ]);
 
   let selected = $state(new Set());
