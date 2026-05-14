@@ -31,6 +31,7 @@ use App\Http\Controllers\Portal\NotificationController as PortalNotificationCont
 use App\Http\Controllers\PortalAuthController;
 use App\Http\Controllers\Proctor\ProctorSessionController;
 use App\Http\Controllers\Proctor\SessionRosterController;
+use App\Http\Controllers\Release\ReleasePrintController;
 use App\Http\Controllers\ReleaseController;
 use App\Support\GoogleOAuthConfig;
 use Illuminate\Support\Facades\Route;
@@ -168,6 +169,7 @@ Route::middleware(['auth'])->group(function () {
 
     Route::middleware('role:super_admin,test_administrator')->prefix('admin')->name('admin.')->group(function () {
         Route::resource('aptitude-areas', AptitudeAreaController::class)->except('show')->parameters(['aptitude_areas' => 'aptitude_area']);
+        Route::post('aptitude-areas/test-formula', [AptitudeAreaController::class, 'testFormula'])->name('aptitude-areas.test-formula');
         Route::post('aptitude-areas/reorder', [AptitudeAreaController::class, 'reorder'])->name('aptitude-areas.reorder');
     });
 
@@ -195,13 +197,6 @@ Route::middleware(['auth'])->group(function () {
         Route::get('applications/{application}/admission-slip', [ApplicationController::class, 'admissionSlip'])->name('admission-slip');
     });
 
-    // Bulk score import (admin prefixed)
-    Route::middleware('role:super_admin,test_administrator')->prefix('admin')->name('admin.grading.')->group(function () {
-        Route::get('grading/import', [ScoreImportController::class, 'importForm'])->name('import');
-        Route::post('grading/import', [ScoreImportController::class, 'import'])->name('import.store');
-        Route::post('grading/import/preview', [ScoreImportController::class, 'preview'])->name('import.preview');
-        Route::post('grading/import/confirm', [ScoreImportController::class, 'confirm'])->name('import.confirm');
-    });
     Route::get('/proctor', fn () => redirect()->route('dashboard'))->middleware('role:super_admin,proctor');
     Route::middleware('role:super_admin,registrar_administrator,proctor,test_administrator')->prefix('proctor')->name('proctor.')->group(function () {
         Route::get('my-sessions', [ProctorSessionController::class, 'mySessions'])->name('my-sessions');
@@ -252,5 +247,13 @@ Route::middleware(['auth'])->group(function () {
             // Result Sheet Templates
             Route::post('result-templates/preview', [ResultSheetTemplateController::class, 'preview'])->name('result-templates.preview');
             Route::resource('result-templates', ResultSheetTemplateController::class)->except('show')->parameters(['result_templates' => 'result_template']);
+
+            // Print batch
+            Route::prefix('print')->name('print.')->group(function () {
+                Route::get('{grading_session}', [ReleasePrintController::class, 'index'])->name('index');
+                Route::post('{grading_session}/mark-printed', [ReleasePrintController::class, 'markPrinted'])->name('mark-printed');
+                Route::get('{grading_session}/applicants/{applicant}', [ReleasePrintController::class, 'resultSheet'])->name('result-sheet');
+                Route::get('{grading_session}/print-bulk', [ReleasePrintController::class, 'printBulk'])->name('print-bulk');
+            });
         });
 });
