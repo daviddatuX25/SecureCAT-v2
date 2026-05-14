@@ -136,6 +136,73 @@
   const panelPrefs = $derived(selectedSummary ? getCoursePreferences(selectedSummary) : []);
 </script>
 
+{#snippet applicantInfo(summary)}
+  <p class="font-medium leading-snug">{summary.applicant?.full_name || '—'}</p>
+  {#if summary.applicant?.reference_number}
+    <p class="text-xs text-muted-foreground font-mono">{summary.applicant.reference_number}</p>
+  {/if}
+  {#if summary.applicant?.email}
+    <p class="text-xs text-muted-foreground">{summary.applicant.email}</p>
+  {/if}
+{/snippet}
+
+{#snippet coursePreferences(summary)}
+  {@const prefs = getCoursePreferences(summary)}
+  {#if prefs.length}
+    <div class="space-y-0.5">
+      {#each prefs as pref, i}
+        <p class="text-xs">
+          <span class="font-medium text-muted-foreground">{i + 1}.</span>
+          {pref.name}{pref.code ? ` (${pref.code})` : ''}
+        </p>
+      {/each}
+    </div>
+  {:else}
+    <span class="text-xs text-muted-foreground italic">No preferences</span>
+  {/if}
+{/snippet}
+
+{#snippet statusBadge(summary)}
+  <Badge variant={statusVariant(summary.status)} class="capitalize">
+    {summary.status}
+  </Badge>
+{/snippet}
+
+{#snippet printedBadge(summary)}
+  {#if summary.printed}
+    <Badge variant="success" class="gap-1 text-xs">
+      <Printer class="h-3 w-3" />
+      Printed
+    </Badge>
+  {:else}
+    <Badge variant="muted" class="gap-1 text-xs">
+      <Printer class="h-3 w-3" />
+      Not printed
+    </Badge>
+  {/if}
+{/snippet}
+
+{#snippet rowActions(summary)}
+  {#if summary.status !== 'released'}
+    {#if isF2F && summary.grading_session_id}
+      <Link href={`/admin/release/print/${summary.grading_session_id}/applicants/${summary.applicant.id}`} target="_blank">
+        <Button variant="outline" size="sm" class="h-8 px-2 text-xs">
+          <Printer class="mr-1 h-3 w-3" />
+          Result sheet
+        </Button>
+      </Link>
+    {/if}
+    <Button size="sm" variant="outline" onclick={() => openPanel(summary)} class="min-h-[36px]">
+      Edit
+    </Button>
+    <Button size="sm" variant="default" onclick={() => releaseOne(summary.id)} class="min-h-[36px]">
+      Release
+    </Button>
+  {:else}
+    <Badge variant="success" class="capitalize">Released</Badge>
+  {/if}
+{/snippet}
+
 <AuthenticatedLayout {breadcrumbs}>
   <div class="space-y-6 min-w-0">
     <div class="flex items-center justify-between">
@@ -207,7 +274,6 @@
             </Table.Header>
             <Table.Body>
               {#each summaries.data as summary (summary.id)}
-                {@const prefs = getCoursePreferences(summary)}
                 <Table.Row class={summary.status === 'released' ? 'opacity-60' : ''}>
                   <Table.Cell class="px-4 py-3">
                     {#if summary.status !== 'released'}
@@ -221,27 +287,10 @@
                     {/if}
                   </Table.Cell>
                   <Table.Cell class="px-4 py-3">
-                    <p class="font-medium leading-snug">{summary.applicant?.full_name || '—'}</p>
-                    {#if summary.applicant?.reference_number}
-                      <p class="text-xs text-muted-foreground font-mono">{summary.applicant.reference_number}</p>
-                    {/if}
-                    {#if summary.applicant?.email}
-                      <p class="text-xs text-muted-foreground">{summary.applicant.email}</p>
-                    {/if}
+                    {@render applicantInfo(summary)}
                   </Table.Cell>
                   <Table.Cell class="px-4 py-3">
-                    {#if prefs.length}
-                      <div class="space-y-0.5">
-                        {#each prefs as pref, i}
-                          <p class="text-xs">
-                            <span class="font-medium text-muted-foreground">{i + 1}.</span>
-                            {pref.name}{pref.code ? ` (${pref.code})` : ''}
-                          </p>
-                        {/each}
-                      </div>
-                    {:else}
-                      <span class="text-xs text-muted-foreground italic">No preferences</span>
-                    {/if}
+                    {@render coursePreferences(summary)}
                   </Table.Cell>
                   <Table.Cell class="px-4 py-3">
                     {#if summary.recommended_course}
@@ -254,54 +303,15 @@
                     {/if}
                   </Table.Cell>
                   <Table.Cell class="px-4 py-3">
-                    <Badge variant={statusVariant(summary.status)} class="capitalize">
-                      {summary.status}
-                    </Badge>
+                    {@render statusBadge(summary)}
                   </Table.Cell>
                   <Table.Cell class="px-4 py-3">
-                    {#if summary.printed}
-                      <Badge variant="success" class="gap-1 text-xs">
-                        <Printer class="h-3 w-3" />
-                        Printed
-                      </Badge>
-                    {:else}
-                      <Badge variant="muted" class="gap-1 text-xs">
-                        <Printer class="h-3 w-3" />
-                        Not printed
-                      </Badge>
-                    {/if}
+                    {@render printedBadge(summary)}
                   </Table.Cell>
                   <Table.Cell class="px-4 py-3 text-right">
-                    {#if summary.status !== 'released'}
-                      <div class="flex items-center justify-end gap-2">
-                        {#if isF2F && summary.grading_session_id}
-                          <Link href={`/admin/release/print/${summary.grading_session_id}/applicants/${summary.applicant.id}`} target="_blank">
-                            <Button variant="outline" size="sm" class="h-8 px-2 text-xs">
-                              <Printer class="mr-1 h-3 w-3" />
-                              Result sheet
-                            </Button>
-                          </Link>
-                        {/if}
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onclick={() => openPanel(summary)}
-                          class="min-h-[36px]"
-                        >
-                          Edit
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="default"
-                          onclick={() => releaseOne(summary.id)}
-                          class="min-h-[36px]"
-                        >
-                          Release
-                        </Button>
-                      </div>
-                    {:else}
-                      <Badge variant="success" class="capitalize">Released</Badge>
-                    {/if}
+                    <div class="flex items-center justify-end gap-2">
+                      {@render rowActions(summary)}
+                    </div>
                   </Table.Cell>
                 </Table.Row>
               {:else}
@@ -332,7 +342,6 @@
             {/if}
             
             {#each summaries.data as summary (summary.id)}
-              {@const prefs = getCoursePreferences(summary)}
               <Card class={summary.status === 'released' ? 'opacity-60' : ''}>
                 <CardContent class="p-4 space-y-4">
                   <div class="flex justify-between items-start">
@@ -349,45 +358,20 @@
                         </div>
                       {/if}
                       <div>
-                        <p class="font-medium leading-tight">{summary.applicant?.full_name || '—'}</p>
-                        {#if summary.applicant?.reference_number}
-                          <p class="text-xs text-muted-foreground font-mono mt-0.5">{summary.applicant.reference_number}</p>
-                        {/if}
+                        {@render applicantInfo(summary)}
                       </div>
                     </div>
-                    <Badge variant={statusVariant(summary.status)} class="capitalize">
-                      {summary.status}
-                    </Badge>
+                    {@render statusBadge(summary)}
                   </div>
                   
                   <div class="flex items-center gap-2 text-xs">
                     <span class="text-muted-foreground">Print status:</span>
-                    {#if summary.printed}
-                      <Badge variant="success" class="gap-1 text-xs">
-                        <Printer class="h-3 w-3" />
-                        Printed
-                      </Badge>
-                    {:else}
-                      <Badge variant="muted" class="gap-1 text-xs">
-                        <Printer class="h-3 w-3" />
-                        Not printed
-                      </Badge>
-                    {/if}
+                    {@render printedBadge(summary)}
                   </div>
                   <div class="grid grid-cols-1 gap-3 sm:grid-cols-2 text-sm bg-muted/30 p-3 rounded-md">
                     <div>
                       <p class="text-xs text-muted-foreground font-medium mb-1">Preferences</p>
-                      {#if prefs.length}
-                        <div class="space-y-0.5">
-                          {#each prefs as pref, i}
-                            <p class="text-xs line-clamp-1" title={pref.name}>
-                              <span class="text-muted-foreground">{i + 1}.</span> {pref.code || pref.name}
-                            </p>
-                          {/each}
-                        </div>
-                      {:else}
-                        <span class="text-xs text-muted-foreground italic">None</span>
-                      {/if}
+                      {@render coursePreferences(summary)}
                     </div>
                     <div>
                       <p class="text-xs text-muted-foreground font-medium mb-1">Recommended</p>
@@ -403,24 +387,7 @@
                   </div>
 
                   <div class="flex items-center justify-end gap-2 pt-2 border-t border-border/50">
-                    {#if summary.status !== 'released'}
-                      {#if isF2F && summary.grading_session_id}
-                        <Link href={`/admin/release/print/${summary.grading_session_id}/applicants/${summary.applicant.id}`} target="_blank">
-                          <Button variant="outline" size="sm" class="h-8 px-2 text-xs">
-                            <Printer class="mr-1 h-3 w-3" />
-                            Result sheet
-                          </Button>
-                        </Link>
-                      {/if}
-                      <Button size="sm" variant="outline" onclick={() => openPanel(summary)} class="h-9">
-                        Edit
-                      </Button>
-                      <Button size="sm" variant="default" onclick={() => releaseOne(summary.id)} class="h-9">
-                        Release
-                      </Button>
-                    {:else}
-                      <Badge variant="success" class="capitalize">Released</Badge>
-                    {/if}
+                    {@render rowActions(summary)}
                   </div>
                 </CardContent>
               </Card>

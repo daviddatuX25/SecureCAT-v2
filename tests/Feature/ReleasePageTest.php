@@ -2,8 +2,11 @@
 
 namespace Tests\Feature;
 
+use App\Models\Applicant;
+use App\Models\Application;
 use App\Models\ConsultationSummary;
 use App\Models\Course;
+use App\Models\GradingSession;
 use App\Models\Role;
 use App\Models\SystemSetting;
 use App\Models\User;
@@ -34,7 +37,7 @@ class ReleasePageTest extends TestCase
     private function createSummary(string $status = 'draft'): ConsultationSummary
     {
         $course = Course::factory()->create(['is_active' => true]);
-        $applicant = \App\Models\Applicant::factory()->create();
+        $applicant = Applicant::factory()->create();
 
         return ConsultationSummary::factory()->create([
             'applicant_id' => $applicant->id,
@@ -160,6 +163,94 @@ class ReleasePageTest extends TestCase
         Notification::assertSentTo(
             $summary->applicant,
             ResultReleasedF2F::class
+        );
+    }
+
+    public function test_index_includes_printed_flag_in_summaries(): void
+    {
+        SystemSetting::set('release_mode', 'online');
+        $application = Application::factory()->create();
+        $applicant = Applicant::factory()->create(['application_id' => $application->id]);
+        $session = GradingSession::factory()->create(['status' => GradingSession::STATUS_FINALIZED]);
+        $session->applicants()->attach($applicant->id, ['result_printed_at' => now()]);
+
+        ConsultationSummary::factory()->create([
+            'applicant_id' => $applicant->id,
+            'status' => 'draft',
+        ]);
+
+        $admin = $this->actingAdmin();
+        $response = $this->actingAs($admin)->get('/admin/release');
+
+        $response->assertInertia(
+            fn ($assert) => $assert
+                ->has('summaries.data', 1)
+                ->where('summaries.data.0.printed', true)
+        );
+
+        $session->applicants()->updateExistingPivot($applicant->id, ['result_printed_at' => null]);
+
+        $response = $this->actingAs($admin)->get('/admin/release');
+
+        $response->assertInertia(
+            fn ($assert) => $assert
+                ->has('summaries.data', 1)
+                ->where('summaries.data.0.printed', false)
+        );
+    }
+
+    public function test_index_includes_grading_session_id_when_applicant_has_sessions(): void
+    {
+        SystemSetting::set('release_mode', 'online');
+        $application = Application::factory()->create();
+        $applicant = Applicant::factory()->create(['application_id' => $application->id]);
+        $session = GradingSession::factory()->create(['status' => GradingSession::STATUS_FINALIZED]);
+        $session->applicants()->attach($applicant->id);
+
+        ConsultationSummary::factory()->create([
+            'applicant_id' => $applicant->id,
+            'status' => 'draft',
+        ]);
+
+        $admin = $this->actingAdmin();
+        $response = $this->actingAs($admin)->get('/admin/release');
+
+        $response->assertInertia(
+            fn ($assert) => $assert
+                ->has('summaries.data', 1)
+                ->where('summaries.data.0.grading_session_id', $session->id)
+        );
+    }
+
+    public function test_index_grading_session_id_is_null_when_applicant_has_no_sessions(): void
+    {
+        SystemSetting::set('release_mode', 'online');
+        $summary = $this->createSummary('draft');
+        $admin = $this->actingAdmin();
+
+        $response = $this->actingAs($admin)->get('/admin/release');
+
+        $response->assertInertia(
+            fn ($assert) => $assert
+                ->has('summaries.data', 1)
+                ->where('summaries.data.0.grading_session_id', null)
+        );
+    }
+
+    public function test_index_includes_finalized_grading_sessions_prop(): void
+    {
+        SystemSetting::set('release_mode', 'online');
+        $session = GradingSession::factory()->create(['status' => GradingSession::STATUS_FINALIZED]);
+        $this->createSummary('draft');
+        $admin = $this->actingAdmin();
+
+        $response = $this->actingAs($admin)->get('/admin/release');
+
+        $response->assertInertia(
+            fn ($assert) => $assert
+                ->has('gradingSessions', 1)
+                ->where('gradingSessions.0.id', $session->id)
+                ->where('gradingSessions.0.label', 'Session #'.$session->id)
         );
     }
 }

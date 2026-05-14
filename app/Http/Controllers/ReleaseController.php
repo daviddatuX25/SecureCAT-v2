@@ -25,7 +25,7 @@ class ReleaseController extends Controller
             'applicant.application.coursePreference1:id,name,code',
             'applicant.application.coursePreference2:id,name,code',
             'applicant.application.coursePreference3:id,name,code',
-            'applicant.gradingSessions' => fn ($query) => $query->withPivot('result_printed_at'),
+            'applicant.gradingSessions',
             'recommendedCourse:id,name,code',
         ])
             ->whereIn('status', ['draft', 'released'])
