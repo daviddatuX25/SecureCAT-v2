@@ -93,8 +93,7 @@ class ReleasePageTest extends TestCase
 
         $response->assertInertia(
             fn ($assert) => $assert
-                ->has('online_summaries')
-                ->has('f2f_summaries')
+                ->has('summaries')
                 ->where('release_mode', 'both')
         );
     }

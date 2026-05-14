@@ -16,8 +16,9 @@ class MarkPrintedRequest extends FormRequest
         return [
             'applicant_ids' => ['required', 'array', 'min:1', function ($attribute, $value, $fail) {
                 $session = $this->route('grading_session');
-                $validCount = $session->applicants()->whereIn('applicants.id', $value)->count();
-                if ($validCount !== count($value)) {
+                $uniqueIds = array_unique($value);
+                $validCount = $session->applicants()->whereIn('applicants.id', $uniqueIds)->count();
+                if ($validCount !== count($uniqueIds)) {
                     $fail('One or more applicants are not part of this grading session.');
                 }
             }],
