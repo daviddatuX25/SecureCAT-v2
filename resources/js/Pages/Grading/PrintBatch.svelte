@@ -45,13 +45,13 @@
   }
 
   function markAsPrinted() {
-    router.post(`/admin/grading/sessions/${sid}/mark-printed`, { applicant_ids: Array.from(selected), printed: true }, {
+    router.post(`/admin/release/print/${sid}/mark-printed`, { applicant_ids: Array.from(selected), printed: true }, {
       onSuccess: () => (selected = new Set()),
     });
   }
 
   function unmarkPrinted() {
-    router.post(`/admin/grading/sessions/${sid}/mark-printed`, { applicant_ids: Array.from(selected), printed: false }, {
+    router.post(`/admin/release/print/${sid}/mark-printed`, { applicant_ids: Array.from(selected), printed: false }, {
       onSuccess: () => (selected = new Set()),
     });
   }
@@ -61,13 +61,13 @@
     if (ids.length === 1) {
       window.open(`/admin/grading/sessions/${sid}/applicants/${ids[0]}/result-sheet`, '_blank', 'noopener');
     } else {
-      router.visit(`/admin/grading/sessions/${sid}/print-bulk?ids=${ids.join(',')}`);
+      router.visit(`/admin/release/print/${sid}/print-bulk?ids=${ids.join(',')}`);
     }
   }
 
   function togglePrinted(app) {
     const printed = !app.printed;
-    router.post(`/admin/grading/sessions/${sid}/mark-printed`, {
+    router.post(`/admin/release/print/${sid}/mark-printed`, {
       applicant_ids: [app.applicant_id],
       printed,
     });

@@ -24,7 +24,7 @@
   function toggleMarkPrinted() {
     const next = !markedPrinted;
     markedPrinted = next;
-    router.post(`/admin/grading/sessions/${sid}/mark-printed`, {
+    router.post(`/admin/release/print/${sid}/mark-printed`, {
       applicant_ids: [applicant.id],
       printed: next,
     }, { preserveScroll: true });
@@ -36,7 +36,7 @@
 </svelte:head>
 
 <div class="print:hidden p-4 space-y-4">
-  <Link href={"/admin/grading/sessions/" + sid + "/print"} class="text-sm text-muted-foreground hover:text-foreground inline-flex items-center gap-1">
+  <Link href={"/admin/release/print/" + sid} class="text-sm text-muted-foreground hover:text-foreground inline-flex items-center gap-1">
     <ArrowLeft class="h-4 w-4" />
     Back to print batch
   </Link>
