@@ -10,6 +10,8 @@
   import { FileText, Printer } from 'lucide-svelte';
   import * as Popover from '@/Components/ui/popover';
   import * as Command from '@/Components/ui/command';
+  import { Textarea } from '@/Components/ui/textarea';
+  import { Checkbox } from '@/Components/ui/checkbox';
 
   import SwitchableListView from '@/Components/SwitchableListView.svelte';
   import { Card, CardContent } from '@/Components/ui/card';
@@ -311,12 +313,11 @@
             <Table.Header class="bg-muted/50">
               <Table.Row>
                 <Table.Head class="w-10 px-4 py-3">
-                  <input
-                    type="checkbox"
+                  <Checkbox
                     checked={allSelected}
-                    onchange={toggleAll}
+                    onCheckedChange={toggleAll}
                     aria-label="Select all unreleased"
-                    class="h-4 w-4 cursor-pointer"
+                    class="h-4 w-4"
                   />
                 </Table.Head>
                 <Table.Head class="px-4 py-3">Applicant</Table.Head>
@@ -332,12 +333,11 @@
                 <Table.Row class={summary.status === 'released' ? 'opacity-60' : ''}>
                   <Table.Cell class="px-4 py-3">
                     {#if summary.status !== 'released'}
-                      <input
-                        type="checkbox"
+                      <Checkbox
                         checked={selectedIds.includes(summary.id)}
-                        onchange={() => toggleOne(summary.id)}
+                        onCheckedChange={() => toggleOne(summary.id)}
                         aria-label="Select {summary.applicant?.full_name ?? summary.id}"
-                        class="h-4 w-4 cursor-pointer"
+                        class="h-4 w-4"
                       />
                     {/if}
                   </Table.Cell>
@@ -384,12 +384,11 @@
           <div class="space-y-4">
             {#if summaries.data.length > 0}
               <div class="flex items-center gap-3 px-1 mb-4">
-                <input
-                  type="checkbox"
+                <Checkbox
                   checked={allSelected}
-                  onchange={toggleAll}
+                  onCheckedChange={toggleAll}
                   aria-label="Select all unreleased"
-                  class="h-4 w-4 cursor-pointer"
+                  class="h-4 w-4"
                 />
                 <span class="text-sm font-medium text-muted-foreground">Select all unreleased</span>
               </div>
@@ -402,12 +401,11 @@
                     <div class="flex gap-3">
                       {#if summary.status !== 'released'}
                         <div class="pt-1">
-                          <input
-                            type="checkbox"
+                          <Checkbox
                             checked={selectedIds.includes(summary.id)}
-                            onchange={() => toggleOne(summary.id)}
+                            onCheckedChange={() => toggleOne(summary.id)}
                             aria-label="Select {summary.applicant?.full_name ?? summary.id}"
-                            class="h-4 w-4 cursor-pointer"
+                            class="h-4 w-4"
                           />
                         </div>
                       {/if}
@@ -559,13 +557,13 @@
             <span class="text-xs text-muted-foreground font-normal">(optional for F2F)</span>
           {/if}
         </label>
-        <textarea
+        <Textarea
           id="counselor-comments"
           bind:value={counselorComments}
           rows="5"
-          class="w-full rounded-md border border-input bg-background px-3 py-2 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-primary"
+          class="w-full resize-none"
           placeholder="Enter comments or notes for the applicant..."
-        ></textarea>
+        />
       </div>
     </div>
 

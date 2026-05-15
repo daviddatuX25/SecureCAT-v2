@@ -129,6 +129,7 @@ const breadcrumbs = [{ label: 'Academic Years', href: '/admin/academic-years' },
             {/each}
           </Table.Body>
         </Table.Root>
+        </div>
       </div>
 
       <div

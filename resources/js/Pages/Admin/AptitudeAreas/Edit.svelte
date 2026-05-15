@@ -3,6 +3,8 @@
   import { Link, useForm } from '@inertiajs/svelte';
   import { Button } from '@/Components/ui/button';
   import { Input } from '@/Components/ui/input';
+  import { Textarea } from '@/Components/ui/textarea';
+  import { Switch } from '@/Components/ui/switch';
   import { success } from '@/lib/toast';
 
   let { aptitude_area } = $props();
@@ -55,13 +57,13 @@
 
       <div class="space-y-2">
         <label for="description" class="text-sm font-medium">Description (optional)</label>
-        <textarea
+        <Textarea
           id="description"
           bind:value={$form.description}
           rows="2"
-          class="flex min-h-[60px] w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+          class="flex min-h-[60px] w-full"
           placeholder="Brief description"
-        ></textarea>
+        />
         {#if $form.errors?.description}
           <p class="text-sm text-destructive">{$form.errors.description}</p>
         {/if}
@@ -83,8 +85,12 @@
         {/if}
       </div>
 
-      <div class="flex items-center gap-2">
-        <input type="checkbox" id="is_active" bind:checked={$form.is_active} class="h-4 w-4 rounded border-input" />
+      <div class="flex items-center gap-3">
+        <Switch
+          id="is_active"
+          checked={$form.is_active}
+          onCheckedChange={(v) => ($form.is_active = v)}
+        />
         <label for="is_active" class="text-sm font-medium">Active (included in grading and templates)</label>
       </div>
       {#if $form.errors?.is_active}

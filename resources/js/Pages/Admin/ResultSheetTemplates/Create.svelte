@@ -5,6 +5,7 @@
   import { Input } from '@/Components/ui/input';
   import { FileUpload } from '@/Components/ui/file-upload';
   import Switch from '@/Components/ui/switch/switch.svelte';
+  import { Textarea } from '@/Components/ui/textarea';
   import { ToggleGroup, ToggleGroupItem } from '@/Components/ui/toggle-group';
   import { success } from '@/lib/toast';
   import { FileCode, FileText, ChevronDown, ChevronUp, HelpCircle, Copy } from 'lucide-svelte';
@@ -263,14 +264,14 @@
           <div>
             <label for="content" class="text-sm font-medium">HTML + CSS (JavaScript not allowed)</label>
             <p class="text-xs text-muted-foreground mt-0.5">Enter custom HTML and CSS. Use placeholders like &#123;&#123;applicant_name&#125;&#125;. Scripts and event handlers are stripped for security.</p>
-            <textarea
+            <Textarea
               id="content"
               bind:value={$form.content}
               required={$form.mode === 'html'}
               rows="16"
               placeholder="<div style=&quot;padding: 1rem;&quot;><p>Hello <strong>&#123;&#123;applicant_name&#125;&#125;</strong></p></div>"
-              class="mt-2 flex w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm font-mono"
-            ></textarea>
+              class="mt-2 flex w-full font-mono"
+            />
             {#if $form.errors?.content}<p class="text-sm text-destructive mt-1">{$form.errors.content}</p>{/if}
           </div>
         {:else}

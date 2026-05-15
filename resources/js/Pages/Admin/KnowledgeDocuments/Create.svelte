@@ -3,6 +3,7 @@
   import { Link, useForm } from '@inertiajs/svelte';
   import { Button } from '@/Components/ui/button';
   import { Input } from '@/Components/ui/input';
+  import { Textarea } from '@/Components/ui/textarea';
   import { success } from '@/lib/toast';
 
   const breadcrumbs = [
@@ -59,14 +60,14 @@
 
       <div class="space-y-2">
         <label for="content" class="text-sm font-medium leading-none">Content</label>
-        <textarea
+        <Textarea
           id="content"
           bind:value={$form.content}
           placeholder="Paste or type the text the AI can use. e.g. narrative sentences from data."
           rows="10"
-          class="flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm min-h-[120px]"
+          class="flex w-full min-h-[120px]"
           required
-        ></textarea>
+        />
         {#if $form.errors?.content}
           <p class="text-sm text-destructive">{$form.errors.content}</p>
         {/if}

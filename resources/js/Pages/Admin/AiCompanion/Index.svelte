@@ -6,6 +6,7 @@
   import { Badge } from '@/Components/ui/badge';
   import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/Components/ui/card';
   import * as Table from '@/Components/ui/table';
+  import { Textarea } from '@/Components/ui/textarea';
   import { Plus, Pencil, Trash2, FileText, Bot } from 'lucide-svelte';
 
   let { documents = [], ai_companion_persona = '' } = $props();
@@ -163,13 +164,13 @@
         </CardHeader>
         <CardContent>
           <form onsubmit={submitPersona} class="space-y-4">
-            <textarea
+            <Textarea
               bind:value={$form.ai_companion_persona}
               placeholder="e.g. You are an encouraging academic counselor. Be warm but factual. Base your advice only on the data provided. Never share sensitive personal information."
               rows="10"
-              class="flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm min-h-[200px]"
+              class="flex w-full min-h-[200px]"
               maxlength="5000"
-            ></textarea>
+            />
             {#if $form.errors?.ai_companion_persona}
               <p class="text-sm text-destructive">{$form.errors.ai_companion_persona}</p>
             {/if}

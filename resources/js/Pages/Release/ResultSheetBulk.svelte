@@ -178,7 +178,7 @@
     {:else if sheetsHtml.length > 0}
       {#each sheetsHtml as html}
         <div
-          class="border border-foreground/20 rounded-lg p-6 result-sheet-content bg-white {isHalf ? 'half-layout-page' : ''} {isHalf ? '' : 'min-h-[148mm]'"
+          class="border border-foreground/20 rounded-lg p-6 result-sheet-content bg-white {isHalf ? 'half-layout-page' : ''} {isHalf ? '' : 'min-h-[148mm]'}"
           style={isHalf ? 'height: 297mm; display: flex; flex-direction: column; gap: 0;' : ''}
         >
           {#if isHalf}
