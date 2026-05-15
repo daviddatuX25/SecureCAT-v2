@@ -111,7 +111,7 @@ class ReleasePrintController extends Controller
             'overall_pct' => $scores->isEmpty() ? 0 : (int) round($scores->avg(fn ($s) => $s->max_score > 0 ? ($s->raw_score / $s->max_score) * 100 : 0)),
         ];
 
-        $templateHtml = $this->templateService->render($template, [$applicantData], false);
+        $result = $this->templateService->render($template, [$applicantData], false);
 
         return Inertia::render('Release/ResultSheet', [
             'sessionId' => (string) $grading_session->id,
@@ -125,11 +125,11 @@ class ReleasePrintController extends Controller
                 'room_name' => $applicantData['room_name'],
             ],
             'scores' => $applicantData['scores'],
-            'templateHtml' => $templateHtml,
+            'templateHtml' => $result->html,
             'templateError' => null,
-            'paperSize' => $template->paper_size ?? 'a4',
-            'orientation' => $template->orientation ?? 'portrait',
-            'logicalUnit' => $template->logical_unit ?? 'full',
+            'paperSize' => $result->paperSize,
+            'orientation' => $result->orientation,
+            'logicalUnit' => $result->logicalUnit,
         ]);
     }
 
@@ -188,11 +188,11 @@ class ReleasePrintController extends Controller
         $sheetsHtml = [];
         foreach (array_chunk($applicantsWithScores, $chunkSize) as $chunk) {
             if (count($chunk) === 2) {
-                $html1 = $this->templateService->render($template, [$chunk[0]], false);
-                $html2 = $this->templateService->render($template, [$chunk[1]], false);
-                $sheetsHtml[] = $html1.$html2;
+                $result = $this->templateService->renderDual($template, $chunk[0], $chunk[1], false);
+                $sheetsHtml[] = $result->html;
             } else {
-                $sheetsHtml[] = $this->templateService->render($template, $chunk, false);
+                $result = $this->templateService->render($template, $chunk, false);
+                $sheetsHtml[] = $result->html;
             }
         }
 
@@ -275,11 +275,11 @@ class ReleasePrintController extends Controller
         $sheetsHtml = [];
         foreach (array_chunk($applicantsWithScores, $chunkSize) as $chunk) {
             if (count($chunk) === 2) {
-                $html1 = $this->templateService->render($template, [$chunk[0]], false);
-                $html2 = $this->templateService->render($template, [$chunk[1]], false);
-                $sheetsHtml[] = $html1.$html2;
+                $result = $this->templateService->renderDual($template, $chunk[0], $chunk[1], false);
+                $sheetsHtml[] = $result->html;
             } else {
-                $sheetsHtml[] = $this->templateService->render($template, $chunk, false);
+                $result = $this->templateService->render($template, $chunk, false);
+                $sheetsHtml[] = $result->html;
             }
         }
 
