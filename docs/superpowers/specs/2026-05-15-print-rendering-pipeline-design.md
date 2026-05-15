@@ -1,8 +1,8 @@
 # Print Rendering Pipeline — Design Spec
 
 **Date:** 2026-05-15
-**Status:** Draft
-**Scope:** Result sheet template rendering, PDF export, DOCX download, crosswise layout fix
+**Status:** Approved
+**Scope:** Result sheet template rendering, PDF-first output, crosswise layout fix
 
 ---
 
@@ -12,52 +12,52 @@ Two core issues in the current print pipeline:
 
 1. **Crosswise/half-page layout is broken** — In HTML mode, two applicant sheets stacked vertically don't divide the page accurately. The controller concatenates two independently-wrapped HTML blobs (`$html1 . $html2`), each with its own `<style>` and `<div class="print-template">`, creating layout conflicts inside the flex container.
 
-2. **DOCX preview quality is poor** — PHPWord's HTML writer produces basic inline styles that lose layout fidelity. There's no direct DOCX download; the DOCX is only used as a template source for an inferior HTML conversion.
+2. **No accurate print/PDF output** — The current approach relies on browser `window.print()` with `@page` hardcoded to A4. There's no server-side PDF generation, so output varies by browser and the crosswise division is unreliable.
 
 Secondary issues:
 - `@page { size }` is hardcoded to A4 regardless of template settings
 - No "copies" input for bulk printing
 - `_2` placeholder fields have unclear dual meaning (second applicant vs. copy area)
-- No PDF export option at all
+- DOCX-to-HTML preview quality is poor (kept as approximate, no DOCX download needed)
 
 ---
 
 ## Architecture
 
-### Rendering Modes
+### Single Output Pipeline: PDF-First
 
-The system supports two template modes that now produce output through distinct pipelines:
+Both HTML and DOCX template modes now produce PDF as the primary output. The browser preview page shows the PDF inline (via `<iframe>` or `<embed>`). Users print from the PDF viewer, which gives consistent output regardless of browser.
 
 ```
-┌─────────────────────────────────────────────────┐
-│                  Template Mode                    │
-├──────────────────┬──────────────────────────────┤
-│     HTML         │         DOCX                  │
-├──────────────────┼──────────────────────────────┤
-│ Server renders   │ Server renders via            │
-│ HTML with        │ PHPWord TemplateProcessor,    │
-│ scoped Tailwind  │ then:                         │
-│ CSS              │  a) Download .docx directly   │
-│                  │  b) Preview as HTML (fallback)│
-├──────────────────┼──────────────────────────────┤
-│ Output:          │ Output:                       │
-│  - PDF (Snappy)  │  - .docx download             │
-│  - Browser print │  - PDF (Snappy, from HTML)     │
-│    (fallback)    │  - Browser print (fallback)   │
-└──────────────────┴──────────────────────────────┘
+┌───────────────────────────────────────────────────┐
+│                   Template Mode                     │
+├───────────────────┬───────────────────────────────┤
+│      HTML         │          DOCX                  │
+├───────────────────┼───────────────────────────────┤
+│ Server renders    │ Server renders via             │
+│ HTML with scoped  │ PHPWord TemplateProcessor,     │
+│ Tailwind CSS      │ converts to HTML for preview   │
+│                   │                                │
+├───────────────────┼───────────────────────────────┤
+│ Output:           │ Output:                        │
+│  PDF (Snappy)     │  PDF (Snappy, from HTML)       │
+│  Browser fallback │  Browser fallback              │
+│  (for preview)    │  (for preview)                 │
+└───────────────────┴───────────────────────────────┘
 ```
 
 ### PDF Generation Pipeline
 
 ```
 Template → ResultSheetTemplateService::render()
-  → PrintTemplateCssService::wrap()
+  → PrintTemplateCssService::wrap() or wrapDual()
   → HTML string (scoped Tailwind)
+  → ResultSheetPdfService::generatePdf()
   → Snappy generates PDF with setPaper() + setOrientation()
-  → Streamed to browser
+  → Streamed to browser as inline PDF or download
 ```
 
-For DOCX mode, the preview HTML path also goes through Snappy for PDF output.
+For DOCX mode, the HTML conversion from PHPWord still feeds into Snappy for PDF generation.
 
 ---
 
@@ -65,22 +65,25 @@ For DOCX mode, the preview HTML path also goes through Snappy for PDF output.
 
 ### Current Services (Before)
 
-- `ResultSheetTemplateService` — renders both HTML and DOCX, includes placeholder logic, sample data, and CSS wrapping
+- `ResultSheetTemplateService` — renders both HTML and DOCX, includes placeholder logic, sample data, and CSS wrapping. Returns raw HTML strings.
 - `PrintTemplateCssService` — loads and scopes Tailwind CSS
 - `PrintBatchService` — marks applicants as printed (trivial)
 
 ### Refactored Services (After)
 
 ```
-PrintTemplateCssService (unchanged)
-  └── wrap(html) → scoped HTML
+PrintTemplateCssService (enhanced)
+  ├── wrap(html) → scoped HTML (single applicant)
+  ├── wrapDual(html1, html2) → scoped HTML (two applicants, CSS Grid 50/50)
+  └── getScopedCss() → scoped CSS string (cached)
 
 ResultSheetTemplateService (refactored)
   ├── render(template, applicants, useSampleData) → RenderResult
+  ├── renderDual(template, applicant1, applicant2, useSampleData) → RenderResult
   ├── renderHtmlContent(content, applicants, useSampleData) → RenderResult
   ├── renderDocxFile(path, replacements, useSampleIfEmpty) → RenderResult
   │
-  │   RenderResult = { html: string, mode: 'html'|'docx', paperSize, orientation, logicalUnit }
+  │   RenderResult carries its own metadata (paperSize, orientation, logicalUnit)
   │
   ├── buildApplicantData(session, applicantIds) → array
   ├── buildScoresRows(scores) → string (HTML rows)
@@ -92,8 +95,7 @@ ResultSheetPdfService (new)
   └── previewDimensions(paperSize, orientation, logicalUnit) → array
 
 ResultSheetDocxService (new — extracted from ResultSheetTemplateService)
-  ├── downloadDocx(template, applicants, useSampleData) → StreamedResponse
-  ├── renderDocxPreview(template, applicants, useSampleData) → string (HTML)
+  ├── renderDocxPreview(template, applicants, useSampleData) → RenderResult
   └── validateDocxTemplate(template) → array{valid, missingPlaceholders}
 
 PrintBatchService (unchanged)
@@ -168,41 +170,41 @@ And in `print-template.css`, add:
 
 For PDF output, Snappy respects CSS Grid and will split the page correctly.
 
-The `ResultSheetTemplateService::render()` method gets a new `renderDual()` method that renders two applicants in one call, returning a single `RenderResult` with the dual-wrapped HTML. No more raw concatenation.
+The `ResultSheetTemplateService::renderDual()` method renders two applicants in one call, returning a single `RenderResult` with the dual-wrapped HTML. No more raw concatenation.
 
-### Render Method Signatures
+### Controller Refactoring
+
+The `printBulk` and `printBulkAgnostic` methods currently do:
 
 ```php
-// Single applicant (full page)
-public function render(ResultSheetTemplate $template, array $applicants, bool $useSampleData = false): RenderResult
+if (count($chunk) === 2) {
+    $html1 = $this->templateService->render($template, [$chunk[0]], false);
+    $html2 = $this->templateService->render($template, [$chunk[1]], false);
+    $sheetsHtml[] = $html1 . $html2; // BUG: concatenating wrapped HTML
+}
+```
 
-// Two applicants (crosswise/half-page)
-public function renderDual(ResultSheetTemplate $template, array $applicant1, array $applicant2, bool $useSampleData = false): RenderResult
+After refactoring:
 
-// Render from raw HTML (for preview)
-public function renderHtmlContent(string $content, array $applicants = [], bool $useSampleData = true): RenderResult
+```php
+if (count($chunk) === 2) {
+    $result = $this->templateService->renderDual($template, $chunk[0], $chunk[1], false);
+    $sheetsHtml[] = $result->html; // Single wrapped container, accurate 50/50 split
+} else {
+    $result = $this->templateService->render($template, $chunk, false);
+    $sheetsHtml[] = $result->html;
+}
 ```
 
 ---
 
-## DOCX Mode Improvements
+## DOCX Mode
 
-### Direct Download
+### No DOCX Download
 
-New endpoint: `GET /admin/release/result-templates/{id}/download-docx`
+DOCX files remain as **template sources only** — they are not downloadable outputs. The user uploads a DOCX template, the system replaces placeholders, converts to HTML, and generates a PDF for preview and printing.
 
-This streams the processed DOCX file (with placeholders replaced) directly to the browser. No HTML conversion — the user gets an editable `.docx` file.
-
-For crosswise DOCX templates, `applicant_2` fields are filled with the second applicant in the pair. For full-page DOCX templates, `_2` fields are left blank unless the "copy area" feature is enabled.
-
-### Preview Quality
-
-The current PHPWord HTML writer produces low-quality output. Two options:
-
-1. **Keep PHPWord HTML preview as-is** — Accept the quality limitation and clearly label it "Preview (approximate). Download DOCX for accurate rendering."
-2. **Generate a PDF preview** — Use Snappy to render a PDF directly from the DOCX-to-HTML conversion. Still approximate, but PDF output is more controlled than raw HTML.
-
-**Decision:** Option 1 for now. The DOCX download is the authoritative output. Preview is a rough approximation with a clear disclaimer.
+The current PHPWord HTML preview produces approximate output. This is acceptable with a clear disclaimer in the UI: "Preview is approximate. The PDF output may differ slightly from the original DOCX layout."
 
 ### Template Validation
 
@@ -217,7 +219,7 @@ New `validateDocxTemplate()` method checks:
 
 ### UI
 
-Add a "Copies" input to the print batch page (`PrintBatch.svelte`):
+Add a "Copies" input to the print batch and bulk print pages:
 
 ```
 [ Paper: A4 ▼ ]  [ Scale: 100% ▼ ]  [ Copies: 1 ▼ ]
@@ -225,9 +227,9 @@ Add a "Copies" input to the print batch page (`PrintBatch.svelte`):
 
 ### Behavior
 
-- **Full-page mode:** Each copy is a separate printed page. 1 applicant × 3 copies = 3 pages.
-- **Crosswise mode:** Each copy is a separate printed page with both halves filled. 2 applicants × 3 copies = 3 pages (not 6). If odd number of applicants, the last page's bottom half is blank.
-- **DOCX mode:** Each copy duplicates the content. If "copy area" is enabled for full-page mode, `_2` fields mirror the same applicant.
+- **Full-page mode:** Each copy is a separate PDF page. 1 applicant × 3 copies = 3 pages.
+- **Crosswise mode:** Each copy is a separate PDF page with both halves filled. 2 applicants × 3 copies = 3 pages (not 6). If odd number of applicants, the last page's bottom half is blank.
+- **PDF generation:** Snappy duplicates pages in the PDF based on the copies parameter.
 
 ### Server-Side
 
@@ -242,25 +244,23 @@ The `printBulk` and `printBulkAgnostic` methods accept a `copies` query paramete
 | HTML | full | Not used | Left empty (or omitted) |
 | HTML | half_* | Second applicant in pair | Second applicant |
 | DOCX | full | Left blank by default | Empty bottom half |
-| DOCX | full + copy_area | Same applicant as top | Duplicate of applicant |
 | DOCX | half_* | Second applicant in pair | Second applicant |
 
-A new `copy_area` boolean field on `ResultSheetTemplate` (default false) controls whether `_2` fields mirror the same applicant in full-page DOCX mode. This is a per-template setting.
+No `copy_area` field — copying is handled by the "Copies" input, not by `_2` placeholder mirroring.
 
 ---
 
-## New/Modified Routes
+## Routes
 
 | Method | Route | Purpose |
 |--------|-------|---------|
 | GET | `/admin/release/print/{gs}/applicants/{applicant}/pdf` | Single applicant PDF |
 | GET | `/admin/release/print/{gs}/print-bulk-pdf` | Bulk PDF with copies |
 | GET | `/admin/release/print/bulk-pdf` | Agnostic bulk PDF |
-| GET | `/admin/release/result-templates/{id}/download-docx` | Download processed DOCX |
-| *existing* | `/admin/release/print/{gs}/applicants/{applicant}` | Result sheet (keep for browser preview) |
-| *existing* | `/admin/release/print/{gs}/print-bulk` | Bulk print (keep for browser preview) |
+| *existing* | `/admin/release/print/{gs}/applicants/{applicant}` | Result sheet HTML preview (kept) |
+| *existing* | `/admin/release/print/{gs}/print-bulk` | Bulk print HTML preview (kept) |
 
-Browser preview pages remain as-is but with fixed crosswise layout and dynamic `@page`. PDF routes are additive.
+Browser preview pages remain as fallback. PDF routes are the primary output.
 
 ---
 
@@ -299,40 +299,38 @@ $pdf = SnappyPdf::loadHTML($html)
 ### Existing (no changes)
 
 - `barryvdh/laravel-dompdf` — Kept for admission slip PDFs (already working)
-- `phpoffice/phpword` — Kept for DOCX template processing
+- `phpoffice/phpword` — Kept for DOCX template processing (no download, preview only)
 
 ---
 
 ## Implementation Phases
 
-### Phase 1: Crosswise Layout Fix + Dynamic @page
+### Phase 1: Crosswise Layout Fix + RenderResult + Dynamic @page
 - Add `wrapDual()` to `PrintTemplateCssService`
-- Add dual layout CSS to `print-template.css`
-- Fix `ResultSheetBulk.svelte` to use dynamic `@page`
+- Add dual layout CSS (`.print-template--dual`, `.print-template--half`) to `print-template.css`
 - Add `RenderResult` value object
-- Refactor `ResultSheetTemplateService` to return `RenderResult`
-- Update controllers to use `RenderResult`
-- Fix Svelte components to consume `RenderResult` metadata
+- Refactor `ResultSheetTemplateService` to return `RenderResult` (add `renderDual()`)
+- Update controllers (`ReleasePrintController`, `GradingPrintController`, `ResultSheetTemplateController`) to use `RenderResult`
+- Fix `ResultSheetBulk.svelte` and `ResultSheet.svelte` to use dynamic `@page`
+- Add `unwrap()` helper or `renderRaw()` to get inner HTML for dual wrapping without double-wrapping
 
 ### Phase 2: PDF Export (Snappy)
-- Install `barryvdh/laravel-snappy`
+- Install `barryvdh/laravel-snappy` + wkhtmltopdf binary
 - Create `ResultSheetPdfService`
 - Add PDF routes and controller methods
-- Add "Download PDF" and "Download Bulk PDF" buttons to Svelte pages
-- Configure Snappy for zero margins + template paper size
+- Add "View PDF" / "Download PDF" buttons to Svelte pages
+- Configure Snappy for zero margins + template paper size/orientation
 
-### Phase 3: DOCX Improvements
+### Phase 3: DOCX Service Extraction + Validation
 - Extract `ResultSheetDocxService` from `ResultSheetTemplateService`
-- Add `downloadDocx()` method (direct .docx download)
 - Add `validateDocxTemplate()` method
-- Add download route and button
-- Improve preview with disclaimer label
+- Add validation feedback to template editor (missing placeholders warning)
+- Add "Preview is approximate" disclaimer to DOCX preview UI
 
-### Phase 4: Copies + Copy Area
-- Add `copy_area` column to `result_sheet_templates` table
+### Phase 4: Copies Feature
 - Add "Copies" input to `PrintBatch.svelte` and `ResultSheetBulk.svelte`
 - Update controller to accept `copies` parameter
-- Implement copy duplication in `ResultSheetPdfService` and `ResultSheetDocxService`
+- Implement copy duplication in `ResultSheetPdfService`
 
 ---
 
@@ -340,9 +338,8 @@ $pdf = SnappyPdf::loadHTML($html)
 
 - Unit tests for `RenderResult` value object
 - Unit tests for `ResultSheetPdfService::generatePdf()` with different paper sizes
-- Unit tests for `ResultSheetDocxService::downloadDocx()` placeholder replacement
+- Unit tests for `ResultSheetDocxService` placeholder replacement
 - Feature test: crosswise layout renders two applicants on one PDF page
 - Feature test: full-page layout renders one applicant per page
-- Feature test: DOCX download replaces all placeholders correctly
 - Feature test: copies parameter duplicates pages correctly
 - Visual regression: compare PDF output against expected fixture PDFs
