@@ -8,6 +8,7 @@ use App\Http\Requests\UpdateResultSheetTemplateRequest;
 use App\Models\AptitudeArea;
 use App\Models\ResultSheetTemplate;
 use App\Services\ResultSheetTemplateService;
+use App\ValueObjects\RenderResult;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -189,23 +190,33 @@ class ResultSheetTemplateController extends Controller
         try {
             if ($mode === 'html') {
                 $content = Purifier::clean($request->input('content', ''), 'result_sheet');
-                $html = $this->templateService->renderHtmlContent($content, [], true);
+                $renderResult = $this->templateService->renderHtmlContent($content, [], true);
             } else {
                 if ($request->hasFile('docx')) {
                     $uploaded = $request->file('docx');
                     $path = $uploaded->getRealPath() ?: $uploaded->getPathname();
-                    $html = $this->templateService->renderDocxFile($path, [], true);
+                    $renderResult = $this->templateService->renderDocxFile($path, [], true);
                 } else {
                     $template = ResultSheetTemplate::findOrFail($request->input('template_id'));
-                    $html = $this->templateService->render($template, [], true);
+                    $renderResult = $this->templateService->render($template, [], true);
                 }
             }
 
-            $dimensions = $this->templateService->previewDimensions($paperSize, $orientation, $logicalUnit);
+            $dimsResult = new RenderResult(
+                html: $renderResult->html,
+                mode: $mode,
+                paperSize: $paperSize,
+                orientation: $orientation,
+                logicalUnit: $logicalUnit,
+            );
+            $dims = $dimsResult->pageDimensions();
 
             return response()->json([
-                'html' => $html,
-                'dimensions' => $dimensions,
+                'html' => $renderResult->html,
+                'dimensions' => [
+                    'width' => $dims['width'].'mm',
+                    'height' => $dims['height'].'mm',
+                ],
             ]);
         } catch (\Throwable $e) {
             return response()->json(['error' => $e->getMessage()], 422);
