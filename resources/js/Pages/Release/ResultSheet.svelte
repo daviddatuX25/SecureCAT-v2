@@ -7,6 +7,10 @@
 
   let { sessionId = '1', applicantId = '1001', applicant = {}, scores = [], printed = false, templateHtml = null, templateError = null, paperSize = 'a4', orientation = 'portrait', logicalUnit = 'full' } = $props();
 
+  const pageWidthMm = $derived(
+    paperSize === 'legal' ? 216 : paperSize === 'letter' ? 216 : 210
+  );
+
   const _page = usePage();
   const printDisabled = $derived(($_page?.props?.release_mode ?? 'online') === 'online');
   const sid = $derived(String(sessionId));
@@ -40,6 +44,7 @@
 
 <svelte:head>
   <title>Result sheet - {applicant.name} - SecureCAT</title>
+  {@html `<style>@media print { @page { size: ${paperSize} ${orientation}; margin: 0; } }</style>`}
 </svelte:head>
 
 <AuthenticatedLayout breadcrumbs={breadcrumbs}>
@@ -62,7 +67,7 @@
     {/if}
   </div>
 
-  <div class="p-6 max-w-[210mm] mx-auto print:p-4 print:max-w-none">
+  <div class="p-6 mx-auto print:p-4 print:max-w-none" style="max-width: {pageWidthMm}mm;">
     {#if templateError}
       <div class="rounded-lg border border-destructive/50 bg-destructive/10 p-6 text-destructive">
         <p>{templateError}</p>

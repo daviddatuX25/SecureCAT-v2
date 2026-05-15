@@ -44,7 +44,7 @@
   const SAFETY_FACTOR = 0.99;
 
   const isHalf = $derived(['half_a4', 'half_legal', 'half_letter'].includes(logicalUnit));
-  const pageWidthMm = $derived(paperSize === 'letter' ? 215.9 : 210);
+  const pageWidthMm = $derived(paperSize === 'legal' ? 216 : paperSize === 'letter' ? 215.9 : 210);
   const pageHeightMm = $derived(paperSize === 'letter' ? 279.4 : 297);
   const userScale = $derived(scalePercent / 100);
 
@@ -52,24 +52,22 @@
     const scale = Math.max(0.1, Math.min(1, userScale));
     if (isHalf) {
       const targetPx = HALF_HEIGHT_MM * MM_TO_PX * SAFETY_FACTOR;
-      document.querySelectorAll('.half-layout-page').forEach((page) => {
-        Array.from(page.children).forEach((child) => {
-          const h = child.scrollHeight;
-          if (h > targetPx && h > 0) {
-            child.style.zoom = String((targetPx / h) * scale);
-          } else {
-            child.style.zoom = scale < 1 ? String(scale) : '';
-          }
-        });
+      document.querySelectorAll('.half-layout-page .print-template--half').forEach((half) => {
+        const h = half.scrollHeight;
+        if (h > targetPx && h > 0) {
+          half.style.zoom = String((targetPx / h) * scale);
+        } else {
+          half.style.zoom = scale < 1 ? String(scale) : '';
+        }
       });
     } else {
       const targetPx = pageHeightMm * MM_TO_PX * SAFETY_FACTOR;
-      document.querySelectorAll('.result-sheet-content:not(.half-layout-page) .sheet-inner').forEach((inner) => {
-        const h = inner.scrollHeight;
+      document.querySelectorAll('.result-sheet-content:not(.half-layout-page) .print-template').forEach((tmpl) => {
+        const h = tmpl.scrollHeight;
         if (h > targetPx && h > 0) {
-          inner.style.zoom = String((targetPx / h) * scale);
+          tmpl.style.zoom = String((targetPx / h) * scale);
         } else {
-          inner.style.zoom = scale < 1 ? String(scale) : '';
+          tmpl.style.zoom = scale < 1 ? String(scale) : '';
         }
       });
     }
@@ -107,6 +105,7 @@
 
 <svelte:head>
   <title>Print bulk - {applicants.length} result sheets - SecureCAT</title>
+  {@html `<style>@media print { @page { size: ${paperSize} ${orientation}; margin: 0; } }</style>`}
 </svelte:head>
 
 <AuthenticatedLayout breadcrumbs={breadcrumbs}>
@@ -178,14 +177,9 @@
     {:else if sheetsHtml.length > 0}
       {#each sheetsHtml as html}
         <div
-          class="border border-foreground/20 rounded-lg p-6 result-sheet-content bg-white {isHalf ? 'half-layout-page' : ''} {isHalf ? '' : 'min-h-[148mm]'}"
-          style={isHalf ? 'height: 297mm; display: flex; flex-direction: column; gap: 0;' : ''}
+          class="border border-foreground/20 rounded-lg p-6 result-sheet-content bg-white {isHalf ? 'half-layout-page' : ''}"
         >
-          {#if isHalf}
-            {@html html}
-          {:else}
-            <div class="sheet-inner">{@html html}</div>
-          {/if}
+          {@html html}
         </div>
       {/each}
     {:else}
@@ -197,9 +191,11 @@
 </AuthenticatedLayout>
 
 <style>
-  .half-layout-page :global(> *) {
-    flex: 0 0 148.5mm;
-    overflow: visible;
+  .half-layout-page :global(> .print-template--dual) {
+    height: 297mm;
+  }
+  .half-layout-page :global(.print-template--half) {
+    overflow: hidden;
   }
   @media print {
     .result-sheet-content {
@@ -210,10 +206,6 @@
     }
     .result-sheet-content:last-child {
       page-break-after: auto;
-    }
-    @page {
-      size: A4 portrait;
-      margin: 0;
     }
   }
 </style>
