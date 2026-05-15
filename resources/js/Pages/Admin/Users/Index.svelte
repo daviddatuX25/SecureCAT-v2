@@ -6,7 +6,8 @@
   import { Badge } from '@/Components/ui/badge';
   import * as Table from '@/Components/ui/table';
   import { Plus, Pencil, Trash2, ChevronDown, Filter } from 'lucide-svelte';
-  import ViewModeToggle from '@/Components/ViewModeToggle.svelte';
+  import SwitchableListView from '@/Components/SwitchableListView.svelte';
+  import SimplePagination from '@/Components/SimplePagination.svelte';
 
   let { users, roles, filters = {} } = $props();
 
@@ -123,15 +124,8 @@
       </div>
     </div>
 
-    <div class="space-y-3">
-      <!-- View toggle as sibling to table container -->
-      <div class="flex justify-end">
-        <ViewModeToggle bind:value={viewMode} />
-      </div>
-
-      <div class="min-w-0">
-        <!-- Table View -->
-      <div class="w-full min-w-0 overflow-x-scroll overscroll-x-contain {viewMode === 'cards' ? 'hidden' : viewMode === 'table' ? 'block' : 'hidden md:block'}">
+    <SwitchableListView bind:viewMode overflow="scroll">
+      {#snippet table()}
         <Table.Root class="w-full min-w-[640px] text-sm">
           <Table.Header class="bg-muted/50">
             <Table.Row>
@@ -173,10 +167,9 @@
             {/each}
           </Table.Body>
         </Table.Root>
-      </div>
+      {/snippet}
 
-      <!-- Card View -->
-      <div class="{viewMode === 'table' ? 'hidden' : viewMode === 'cards' ? 'block' : 'block md:hidden'} p-4">
+      {#snippet cards()}
         {#if (users?.data ?? []).length > 0}
           <ul class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3" role="list">
             {#each (users?.data ?? []) as user}
@@ -210,28 +203,10 @@
         {:else}
           <p class="py-12 text-center text-muted-foreground">No users found.</p>
         {/if}
-      </div>
+      {/snippet}
+    </SwitchableListView>
 
-      {#if users.last_page > 1}
-        <div class="flex items-center justify-between border-t border-border px-4 py-2">
-          <p class="text-sm text-muted-foreground">
-            Page {users.current_page} of {users.last_page}
-          </p>
-          <div class="flex gap-2">
-            {#if users.prev_page_url}
-              <Link href={users.prev_page_url}>
-                <Button variant="outline" size="sm">Previous</Button>
-              </Link>
-            {/if}
-            {#if users.next_page_url}
-              <Link href={users.next_page_url}>
-                <Button variant="outline" size="sm">Next</Button>
-              </Link>
-            {/if}
-          </div>
-        </div>
-      {/if}
-    </div>
+    <SimplePagination data={users} variant="table" />
   </div>
 
   {#if deleteId}

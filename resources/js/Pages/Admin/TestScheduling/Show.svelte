@@ -268,15 +268,27 @@
       <h2 class="text-lg font-semibold">Schedule actions</h2>
       <div class="mt-4 flex flex-col gap-4 sm:flex-row sm:items-end sm:gap-6">
         <div>
-          <Button
-            class="min-h-[44px]"
-            variant={session.status === 'published' ? 'destructive' : 'default'}
-            onclick={session.status === 'published' ? unpublish : publish}
-          >
-            <Send class="h-4 w-4 mr-2" />
-            {session.status === 'published' ? 'Unpublish' : 'Publish session'}
-          </Button>
-          <p class="mt-1 text-xs text-muted-foreground">Notify assigned applicants and lock schedule.</p>
+          {#if session.status === 'published'}
+            <Button class="min-h-[44px]" variant="destructive" onclick={unpublish}>
+              <Send class="h-4 w-4 mr-2" />
+              Unpublish
+            </Button>
+          {:else}
+            <Button
+              class="min-h-[44px]"
+              disabled={session.is_publishable === false}
+              title={session.publish_block_reason || ''}
+              onclick={publish}
+            >
+              <Send class="h-4 w-4 mr-2" />
+              Publish session
+            </Button>
+          {/if}
+          {#if session.publish_block_reason}
+            <p class="mt-1 text-xs text-destructive">{session.publish_block_reason}</p>
+          {:else}
+            <p class="mt-1 text-xs text-muted-foreground">Notify assigned applicants and lock schedule.</p>
+          {/if}
         </div>
       </div>
     </div>

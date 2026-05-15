@@ -46,10 +46,11 @@ class ResultSheetTemplateController extends Controller
         ])->values()->all();
 
         return Inertia::render('Admin/ResultSheetTemplates/Create', [
-            'placeholders' => ['{{applicant_name}}', '{{applicant_reference}}', '{{exam_date}}', '{{room_name}}', '{{scores_rows}}', '{{overall_pct}}', '{{qr_code}}', '{{applicant_name_2}}', '{{applicant_reference_2}}', '{{scores_rows_2}}', '{{overall_pct_2}}'],
+            'placeholdersApplicant1' => ['{{applicant_name}}', '{{applicant_reference}}', '{{exam_date}}', '{{room_name}}', '{{scores_rows}}', '{{overall_pct}}'],
+            'placeholdersApplicant2' => ['{{applicant_name_2}}', '{{applicant_reference_2}}', '{{scores_rows_2}}', '{{overall_pct_2}}'],
             'domainPlaceholders' => $domainPlaceholders,
             'htmlScoresNote' => 'For the scores table in HTML mode, put this inside tbody: <code>&lt;tr class="scores-rows-placeholder"&gt;&lt;td colspan="3"&gt;&lt;/td&gt;&lt;/tr&gt;</code> (Do not use {{scores_rows}}; it is stripped by the sanitizer.)',
-            'htmlTemplateRules' => 'Single root div. Placeholders: {{applicant_name}}, {{applicant_reference}}, {{exam_date}}, {{room_name}}, {{overall_pct}}, {{qr_code}}. Half-crosswise: keep content under ~148mm height per sheet (use p-4, text-sm, space-y-3). Full page: ~297mm. No scripts.',
+            'htmlTemplateRules' => 'Single root div. Placeholders: {{applicant_name}}, {{applicant_reference}}, {{exam_date}}, {{room_name}}, {{overall_pct}}. Half-crosswise: keep content under ~148mm height per sheet (use p-4, text-sm, space-y-3). Full page: ~297mm. No scripts.',
             'docxPlaceholderNote' => 'DOCX supports {{applicant_name}}, {{scores_rows}} (block), and per-domain placeholders like {{spatial_awareness}} and {{spatial_awareness_raw}}. See the list below. Add _2 for applicant 2 in dual layout.',
             'layoutOptions' => [
                 'full' => 'Full page',
@@ -90,7 +91,7 @@ class ResultSheetTemplateController extends Controller
         return redirect()->route('admin.release.result-templates.index')->with('success', 'Template created.');
     }
 
-    public function edit(ResultSheetTemplate $result_sheet_template): Response
+    public function edit(ResultSheetTemplate $result_template): Response
     {
         $domains = AptitudeArea::where('is_active', true)->orderBy('display_order')->get(['id', 'name', 'code']);
         $domainPlaceholders = $domains->map(fn ($d) => [
@@ -102,11 +103,12 @@ class ResultSheetTemplateController extends Controller
         ])->values()->all();
 
         return Inertia::render('Admin/ResultSheetTemplates/Edit', [
-            'template' => $result_sheet_template,
-            'placeholders' => ['{{applicant_name}}', '{{applicant_reference}}', '{{exam_date}}', '{{room_name}}', '{{scores_rows}}', '{{overall_pct}}', '{{qr_code}}', '{{applicant_name_2}}', '{{applicant_reference_2}}', '{{scores_rows_2}}', '{{overall_pct_2}}'],
+            'template' => $result_template,
+            'placeholdersApplicant1' => ['{{applicant_name}}', '{{applicant_reference}}', '{{exam_date}}', '{{room_name}}', '{{scores_rows}}', '{{overall_pct}}'],
+            'placeholdersApplicant2' => ['{{applicant_name_2}}', '{{applicant_reference_2}}', '{{scores_rows_2}}', '{{overall_pct_2}}'],
             'domainPlaceholders' => $domainPlaceholders,
             'htmlScoresNote' => 'For the scores table in HTML mode, put this inside tbody: <code>&lt;tr class="scores-rows-placeholder"&gt;&lt;td colspan="3"&gt;&lt;/td&gt;&lt;/tr&gt;</code> (Do not use {{scores_rows}}; it is stripped by the sanitizer.)',
-            'htmlTemplateRules' => 'Single root div. Placeholders: {{applicant_name}}, {{applicant_reference}}, {{exam_date}}, {{room_name}}, {{overall_pct}}, {{qr_code}}. Half-crosswise: keep content under ~148mm height per sheet (use p-4, text-sm, space-y-3). Full page: ~297mm. No scripts.',
+            'htmlTemplateRules' => 'Single root div. Placeholders: {{applicant_name}}, {{applicant_reference}}, {{exam_date}}, {{room_name}}, {{overall_pct}}. Half-crosswise: keep content under ~148mm height per sheet (use p-4, text-sm, space-y-3). Full page: ~297mm. No scripts.',
             'docxPlaceholderNote' => 'DOCX supports {{applicant_name}}, {{scores_rows}} (block), and per-domain placeholders like {{spatial_awareness}} and {{spatial_awareness_raw}}. See the list below. Add _2 for applicant 2 in dual layout.',
             'layoutOptions' => [
                 'full' => 'Full page',
@@ -115,9 +117,9 @@ class ResultSheetTemplateController extends Controller
         ]);
     }
 
-    public function update(UpdateResultSheetTemplateRequest $request, ResultSheetTemplate $result_sheet_template): RedirectResponse
+    public function update(UpdateResultSheetTemplateRequest $request, ResultSheetTemplate $result_template): RedirectResponse
     {
-        $mode = $request->validated('mode', $result_sheet_template->mode);
+        $mode = $request->validated('mode', $result_template->mode);
         $data = array_filter([
             'name' => $request->validated('name'),
             'mode' => $mode,
@@ -131,38 +133,38 @@ class ResultSheetTemplateController extends Controller
             if ($request->has('content')) {
                 $data['content'] = Purifier::clean($request->validated('content'), 'result_sheet');
             }
-            if ($result_sheet_template->docx_path) {
-                Storage::disk('local')->delete($result_sheet_template->docx_path);
+            if ($result_template->docx_path) {
+                Storage::disk('local')->delete($result_template->docx_path);
                 $data['docx_path'] = null;
             }
         } else {
             $data['content'] = '';
             if ($request->hasFile('docx')) {
-                if ($result_sheet_template->docx_path) {
-                    Storage::disk('local')->delete($result_sheet_template->docx_path);
+                if ($result_template->docx_path) {
+                    Storage::disk('local')->delete($result_template->docx_path);
                 }
                 $path = $request->file('docx')->storeAs(
                     'result-sheet-templates',
-                    $result_sheet_template->id.'.docx',
+                    $result_template->id.'.docx',
                     'local'
                 );
                 $data['docx_path'] = $path;
-            } elseif (! $result_sheet_template->docx_path) {
+            } elseif (! $result_template->docx_path) {
                 return redirect()->back()->withErrors(['docx' => 'DOCX file is required for DOCX mode.']);
             }
         }
 
-        $result_sheet_template->update($data);
+        $result_template->update($data);
 
         return redirect()->route('admin.release.result-templates.index')->with('success', 'Template updated.');
     }
 
-    public function destroy(ResultSheetTemplate $result_sheet_template): RedirectResponse
+    public function destroy(ResultSheetTemplate $result_template): RedirectResponse
     {
-        if ($result_sheet_template->docx_path) {
-            Storage::disk('local')->delete($result_sheet_template->docx_path);
+        if ($result_template->docx_path) {
+            Storage::disk('local')->delete($result_template->docx_path);
         }
-        $result_sheet_template->delete();
+        $result_template->delete();
 
         return redirect()->route('admin.release.result-templates.index')->with('success', 'Template deleted.');
     }

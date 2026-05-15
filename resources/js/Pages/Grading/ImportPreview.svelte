@@ -9,8 +9,9 @@
     records = [],
     totalCount = 0,
     validCount = 0,
-    gradingSessionId = 0,
-    gradingSessions = [],
+    enableNormalizedScores = false,
+    aptitudeAreaCodes = [],
+    confirmUrl = '/admin/grading/import/confirm',
   } = $props();
 
   const breadcrumbs = [
@@ -21,7 +22,6 @@
 
   const form = useForm({
     selected_ids: [],
-    select_all: true,
   });
 
   let selectAll = $state(true);
@@ -59,7 +59,7 @@
       ...data,
       selected_ids: Array.from(selectedIds),
     }));
-    $form.post('/admin/grading/import/confirm', { forceFormData: true });
+    $form.post(confirmUrl, { forceFormData: true });
   }
 
   let message = $state('');
@@ -71,6 +71,7 @@
   });
 
   const invalidCount = totalCount - validCount;
+  const scoreSuffix = enableNormalizedScores ? '(raw)' : '(normalized)';
 </script>
 
 <AuthenticatedLayout {breadcrumbs}>
@@ -125,7 +126,11 @@
               </th>
               <th class="px-3 py-2 text-left w-16">Row</th>
               <th class="px-3 py-2 text-left">Reference #</th>
-              <th class="px-3 py-2 text-left">Raw Score</th>
+              <th class="px-3 py-2 text-left">Applicant</th>
+              <th class="px-3 py-2 text-left">Session</th>
+              {#each aptitudeAreaCodes as code}
+                <th class="px-3 py-2 text-left">{code} <span class="text-muted-foreground font-normal">{scoreSuffix}</span></th>
+              {/each}
               <th class="px-3 py-2 text-left">Status</th>
             </tr>
           </thead>
@@ -140,8 +145,14 @@
                   {/if}
                 </td>
                 <td class="px-3 py-2 text-muted-foreground">{record.row}</td>
-                <td class="px-3 py-2">{record.data.reference_number || '—'}</td>
-                <td class="px-3 py-2">{record.data.raw_score || '—'}</td>
+                <td class="px-3 py-2">{record.reference_number || '—'}</td>
+                <td class="px-3 py-2">{record.applicant_name || '—'}</td>
+                <td class="px-3 py-2">{record.grading_session_label || '—'}</td>
+                {#each aptitudeAreaCodes as code}
+                  <td class="px-3 py-2">
+                    {record.scores.find(s => s.area_code === code)?.score || '—'}
+                  </td>
+                {/each}
                 <td class="px-3 py-2">
                   {#if record.is_valid}
                     <span class="inline-flex items-center rounded-full bg-green-100 px-2 py-1 text-xs font-medium text-green-700">

@@ -39,6 +39,7 @@ class ProctorSessionController extends Controller
                 'applicants_count' => $s->applicants_count,
                 'is_within_start_window' => $s->isWithinStartWindow(),
                 'is_past_end' => $s->isPastEndTime(),
+                'is_past_date' => $s->isPastDate(),
                 'can_override_schedule' => true,
             ]);
 

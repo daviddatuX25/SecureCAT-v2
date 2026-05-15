@@ -174,14 +174,12 @@
   {#if prefs.length}
     <div class="flex flex-wrap items-center gap-2">
       {#each prefs as pref}
-        <Badge variant="outline" class="group px-0 overflow-hidden border-border bg-card hover:bg-accent hover:text-accent-foreground transition-colors cursor-default" title={pref.course.name}>
-          <span class="flex h-full min-h-[22px] items-center justify-center bg-muted/80 px-1.5 text-muted-foreground border-r border-border font-mono text-[10px] leading-none group-hover:bg-muted group-hover:text-foreground transition-colors">
+        <div class="inline-flex items-center rounded-full border border-border/60 bg-background px-2.5 py-0.5 text-xs font-medium shadow-sm transition-colors hover:border-border hover:bg-muted/40 cursor-default" title={pref.course.name}>
+          <span class="mr-1.5 flex h-4 w-4 items-center justify-center rounded-full bg-primary/10 text-[10px] font-bold text-primary">
             {pref.rank}
           </span>
-          <span class="px-2 font-medium tracking-tight truncate max-w-[120px]">
-            {pref.course.code}
-          </span>
-        </Badge>
+          <span class="truncate max-w-[120px] text-foreground tracking-tight">{pref.course.code}</span>
+        </div>
       {/each}
     </div>
   {:else}
@@ -349,9 +347,9 @@
                   </Table.Cell>
                   <Table.Cell class="px-4 py-3">
                     {#if summary.recommended_course}
-                      <Badge variant="default" class="text-xs font-medium shadow-sm" title={summary.recommended_course.name}>
-                        {summary.recommended_course.code}
-                      </Badge>
+                      <div class="inline-flex items-center rounded-full border border-primary/20 bg-primary/10 px-2.5 py-0.5 text-xs font-medium text-primary shadow-sm" title={summary.recommended_course.name}>
+                        <span class="truncate max-w-[150px] tracking-tight">{summary.recommended_course.code}</span>
+                      </div>
                     {:else}
                       <span class="text-xs text-muted-foreground italic">Not set</span>
                     {/if}
@@ -428,9 +426,9 @@
                     <div>
                       <p class="text-xs text-muted-foreground font-medium mb-1">Recommended</p>
                       {#if summary.recommended_course}
-                        <Badge variant="default" class="text-xs font-medium shadow-sm" title={summary.recommended_course.name}>
-                          {summary.recommended_course.code}
-                        </Badge>
+                        <div class="inline-flex items-center rounded-full border border-primary/20 bg-primary/10 px-2.5 py-0.5 text-xs font-medium text-primary shadow-sm" title={summary.recommended_course.name}>
+                          <span class="truncate max-w-[150px] tracking-tight">{summary.recommended_course.code}</span>
+                        </div>
                       {:else}
                         <span class="text-xs text-muted-foreground italic">Not set</span>
                       {/if}
@@ -505,14 +503,12 @@
         {#if panelPrefs.length}
           <div class="flex flex-wrap items-center gap-2">
             {#each panelPrefs as pref}
-              <Badge variant="outline" class="group px-0 overflow-hidden border-border bg-card hover:bg-accent hover:text-accent-foreground transition-colors cursor-default" title={pref.course.name}>
-                <span class="flex h-full min-h-[22px] items-center justify-center bg-muted/80 px-1.5 text-muted-foreground border-r border-border font-mono text-[10px] leading-none group-hover:bg-muted group-hover:text-foreground transition-colors">
+              <div class="inline-flex items-center rounded-full border border-border/60 bg-background px-2.5 py-0.5 text-xs font-medium shadow-sm transition-colors hover:border-border hover:bg-muted/40 cursor-default" title={pref.course.name}>
+                <span class="mr-1.5 flex h-4 w-4 items-center justify-center rounded-full bg-primary/10 text-[10px] font-bold text-primary">
                   {pref.rank}
                 </span>
-                <span class="px-2 font-medium tracking-tight truncate max-w-[150px]">
-                  {pref.course.code}
-                </span>
-              </Badge>
+                <span class="truncate max-w-[150px] text-foreground tracking-tight">{pref.course.code}</span>
+              </div>
             {/each}
           </div>
         {:else}

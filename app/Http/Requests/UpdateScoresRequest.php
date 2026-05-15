@@ -14,10 +14,11 @@ class UpdateScoresRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'scores'              => ['required', 'array'],
-            'scores.*.aptitude_area_id'  => ['required', 'integer', 'exists:aptitude_areas,id'],
-            'scores.*.raw_score'  => ['nullable', 'integer', 'min:0'],
-            'scores.*.max_score'  => ['nullable', 'integer', 'min:0'],
+            'scores' => ['required', 'array'],
+            'scores.*.aptitude_area_id' => ['required', 'integer', 'exists:aptitude_areas,id'],
+            'scores.*.raw_score' => ['nullable', 'integer', 'min:0'],
+            'scores.*.max_score' => ['nullable', 'integer', 'min:0'],
+            'scores.*.normalized_score' => ['nullable', 'numeric', 'min:0'],
         ];
     }
 }

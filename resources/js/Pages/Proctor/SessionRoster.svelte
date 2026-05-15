@@ -30,7 +30,11 @@
 
   function parseSessionTime(dateStr, timeStr) {
     if (!dateStr || !timeStr) return null;
-    const [y, m, d] = String(dateStr).split('-').map(Number);
+    // session.date may arrive as ISO datetime ("2026-05-14T16:00:00.000000Z")
+    // or plain date ("2026-05-15") — extract just the date part.
+    const datePart = String(dateStr).split('T')[0];
+    const [y, m, d] = datePart.split('-').map(Number);
+    if (Number.isNaN(y) || Number.isNaN(m) || Number.isNaN(d)) return null;
     const parts = String(timeStr).split(':');
     const h = parseInt(parts[0], 10) || 0;
     const min = parseInt(parts[1], 10) || 0;

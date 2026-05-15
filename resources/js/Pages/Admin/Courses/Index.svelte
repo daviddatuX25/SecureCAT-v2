@@ -4,7 +4,8 @@
   import { Button } from '@/Components/ui/button';
   import { Badge } from '@/Components/ui/badge';
   import { Plus, Pencil, Pause, Play, Trash2 } from 'lucide-svelte';
-  import ViewModeToggle from '@/Components/ViewModeToggle.svelte';
+  import SwitchableListView from '@/Components/SwitchableListView.svelte';
+  import SimplePagination from '@/Components/SimplePagination.svelte';
   import * as Table from '@/Components/ui/table';
 
   let { courses } = $props();
@@ -50,21 +51,8 @@ const breadcrumbs = [{ label: 'Academic Years', href: '/admin/academic-years' },
       </div>
     </div>
 
-
-    <div class="space-y-3">
-      <!-- View toggle as sibling to table container -->
-      <div class="flex justify-end">
-        <ViewModeToggle bind:value={viewMode} />
-      </div>
-
-      <div class="min-w-0">
-        <div
-        class="w-full min-w-0 overflow-x-scroll overscroll-x-contain {viewMode === 'cards'
-          ? 'hidden'
-          : viewMode === 'table'
-            ? 'block'
-            : 'hidden md:block'}"
-      >
+    <SwitchableListView bind:viewMode overflow="scroll">
+      {#snippet table()}
         <Table.Root>
           <Table.Header class="bg-muted/50">
             <Table.Row>
@@ -129,16 +117,10 @@ const breadcrumbs = [{ label: 'Academic Years', href: '/admin/academic-years' },
             {/each}
           </Table.Body>
         </Table.Root>
-        </div>
-      </div>
+        <SimplePagination data={courses} variant="table" />
+      {/snippet}
 
-      <div
-        class="{viewMode === 'table'
-          ? 'hidden'
-          : viewMode === 'cards'
-            ? 'block'
-            : 'block md:hidden'} p-4"
-      >
+      {#snippet cards()}
         {#if (courses?.data ?? []).length > 0}
           <ul class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3" role="list">
             {#each (courses?.data ?? []) as course}
@@ -162,8 +144,8 @@ const breadcrumbs = [{ label: 'Academic Years', href: '/admin/academic-years' },
                   <Button
                     variant="outline"
                     size="sm"
-                    class="flex-1 min-h-[40px] font-semibold {course.is_active 
-                      ? 'text-amber-600 border-amber-200 hover:bg-amber-50 hover:text-amber-700' 
+                    class="flex-1 min-h-[40px] font-semibold {course.is_active
+                      ? 'text-amber-600 border-amber-200 hover:bg-amber-50 hover:text-amber-700'
                       : 'text-primary border-primary/20 hover:bg-primary/5 hover:text-primary-700'}"
                     onclick={() => doToggle(course.id, course.is_active)}
                   >
@@ -182,27 +164,8 @@ const breadcrumbs = [{ label: 'Academic Years', href: '/admin/academic-years' },
         {:else}
           <p class="py-12 text-center text-muted-foreground">No courses yet. Create one to get started.</p>
         {/if}
-      </div>
-
-      {#if courses.last_page > 1}
-        <div class="flex items-center justify-between border-t border-border px-4 py-2">
-          <p class="text-sm text-muted-foreground">
-            Page {courses.current_page} of {courses.last_page}
-          </p>
-          <div class="flex gap-2">
-            {#if courses.prev_page_url}
-              <Link href={courses.prev_page_url}>
-                <Button variant="outline" size="sm">Previous</Button>
-              </Link>
-            {/if}
-            {#if courses.next_page_url}
-              <Link href={courses.next_page_url}>
-                <Button variant="outline" size="sm">Next</Button>
-              </Link>
-            {/if}
-          </div>
-        </div>
-      {/if}
-    </div>
+        <SimplePagination data={courses} variant="centered" />
+      {/snippet}
+    </SwitchableListView>
   </div>
 </AuthenticatedLayout>

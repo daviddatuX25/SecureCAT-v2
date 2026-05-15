@@ -4,7 +4,7 @@
   import * as Table from '@/Components/ui/table';
   import { Button } from '@/Components/ui/button';
   import { Input } from '@/Components/ui/input';
-  import ViewModeToggle from '@/Components/ViewModeToggle.svelte';
+  import SimplePagination from '@/Components/SimplePagination.svelte';
   import { ChevronDown, Filter, Download, ChevronRight, X } from 'lucide-svelte';
 
   let { logs, filters = {}, events = [], categories = [], scopeLabel = 'Activity log', showActorFilter = false } = $props();
@@ -20,7 +20,6 @@
   let detailLog = $state(null);
   let exportLoading = $state(false);
   let exportError = $state(null);
-  let viewMode = $state('responsive');
 
   $effect(() => {
     filterEvent = filters.event ?? '';
@@ -239,14 +238,8 @@
       </div>
     </div>
 
-    <div class="space-y-3">
-      <!-- View toggle as sibling to table container -->
-      <div class="flex justify-end">
-        <ViewModeToggle bind:value={viewMode} />
-      </div>
-
-      <div class="min-w-0">
-        <Table.Root class="w-full min-w-[640px] text-sm">
+    <div class="min-w-0 overflow-x-auto scrollbar-hide">
+      <Table.Root class="w-full min-w-[640px] text-sm">
         <Table.Header class="bg-muted/50">
           <Table.Row>
             <Table.Head class="px-4 py-3">Time</Table.Head>
@@ -292,25 +285,7 @@
           {/each}
         </Table.Body>
       </Table.Root>
-      {#if logs?.last_page > 1}
-        <div class="flex items-center justify-between border-t border-border px-4 py-2">
-          <p class="text-sm text-muted-foreground">
-            Page {logs.current_page} of {logs.last_page}
-          </p>
-          <div class="flex gap-2">
-            {#if logs.prev_page_url}
-              <Link href={logs.prev_page_url}>
-                <Button variant="outline" size="sm">Previous</Button>
-              </Link>
-            {/if}
-            {#if logs.next_page_url}
-              <Link href={logs.next_page_url}>
-                <Button variant="outline" size="sm">Next</Button>
-              </Link>
-            {/if}
-          </div>
-        </div>
-      {/if}
+      <SimplePagination data={logs} variant="table" />
     </div>
   </div>
 

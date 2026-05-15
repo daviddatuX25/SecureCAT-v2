@@ -8,7 +8,7 @@ use App\Models\Course;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Application>
+ * @extends Factory<Application>
  */
 class ApplicationFactory extends Factory
 {
@@ -32,6 +32,7 @@ class ApplicationFactory extends Factory
             'city' => $this->faker->city(),
             'province' => $this->faker->state(),
             'zip_code' => $this->faker->postcode(),
+            'gwa' => $this->faker->randomFloat(2, 1, 5),
             'course_preference_1' => Course::factory(),
             'course_preference_2' => Course::factory(),
             'course_preference_3' => Course::factory(),

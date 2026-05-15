@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreApplicantImportRequest;
 use App\Models\AcademicYear;
 use App\Models\Application;
+use App\Models\Course;
 use App\Services\ApplicantImportService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -29,8 +30,15 @@ class ApplicationImportController extends Controller
         $academicYears = AcademicYear::orderByDesc('application_start_date')
             ->get(['id', 'academic_year', 'semester', 'application_start_date', 'application_end_date']);
 
+        $courses = Course::where('is_active', true)
+            ->orderBy('code')
+            ->get(['code', 'name']);
+
         return Inertia::render('Admin/Applications/Import', [
             'academicYears' => $academicYears,
+            'courses' => $courses,
+            'requiredColumns' => ApplicantImportService::REQUIRED_COLUMNS,
+            'optionalColumns' => ApplicantImportService::OPTIONAL_COLUMNS,
         ]);
     }
 

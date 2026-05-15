@@ -7,6 +7,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\StoreDirectAssessmentRequest;
 use App\Models\AcademicYear;
 use App\Models\Applicant;
+use App\Models\ExamSession;
 use App\Models\SystemSetting;
 use App\Services\DirectAssessmentService;
 use Illuminate\Http\RedirectResponse;
@@ -34,8 +35,8 @@ class DirectAssessmentController extends Controller
 
         $applicants = Applicant::query()
             ->whereHas('application', fn ($q) => $q->where('status', 'accepted'))
-            ->whereDoesntHave('examSessions', fn ($q) => $q->whereHas('gradingSession', fn ($gs) => $gs->whereNotIn('status', ['finalized'])))
-            ->with('application:id,applicant_id,first_name,middle_name,last_name,suffix,reference_number')
+            ->whereDoesntHave('examSessions', fn ($q) => $q->whereNotIn('status', [ExamSession::STATUS_CANCELLED]))
+            ->with('application:id,first_name,middle_name,last_name,suffix,reference_number')
             ->orderBy('id')
             ->limit(200)
             ->get()

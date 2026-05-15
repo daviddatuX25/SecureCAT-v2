@@ -5,6 +5,7 @@
   import { Button } from '@/Components/ui/button';
   import { Play, Square, ClipboardList, Calendar, Clock, Users, AlertTriangle } from 'lucide-svelte';
   import { success as showSuccess, error as showError } from '@/lib/toast';
+  import { hasApplicants, canStartSession, timeWindowLabel, isOutsideStartWindow, canOverrideStartWindow } from '@/lib/session-helpers';
   import { onMount } from 'svelte';
 
   let { today = [], upcoming = [], past = [], flash = {} } = $props();
@@ -96,18 +97,6 @@
     return session.status === 'in_progress';
   }
 
-  function canStart(session) {
-    return session.status === 'published' && (session.is_within_start_window || session.can_override_schedule);
-  }
-
-  function outsideStartWindow(session) {
-    return session.status === 'published' && !session.is_within_start_window && !session.can_override_schedule;
-  }
-
-  function outsideWindowButCanOverride(session) {
-    return session.status === 'published' && !session.is_within_start_window && session.can_override_schedule;
-  }
-
   function hasGroups() {
     return today.length > 0 || upcoming.length > 0 || past.length > 0;
   }
@@ -185,14 +174,18 @@
                   <div class="flex items-center gap-2 shrink-0">
                     <Badge variant={statusVariant(session.status)}>{statusLabel(session.status)}</Badge>
 
-                    {#if canStart(session)}
+                    {#if canStartSession(session)}
                       <Button size="sm" onclick={() => startSession(session.id)}>
                         <Play class="h-4 w-4 mr-1" />
                         Start session
                       </Button>
-                    {:else if outsideStartWindow(session)}
+                    {:else if timeWindowLabel(session) === 'no-applicants'}
+                      <span class="text-sm text-muted-foreground">No applicants</span>
+                    {:else if timeWindowLabel(session) === 'past-date'}
+                      <span class="text-sm text-muted-foreground">Session date has passed</span>
+                    {:else if isOutsideStartWindow(session)}
                       <span class="text-sm text-muted-foreground">Outside scheduled time</span>
-                    {:else if outsideWindowButCanOverride(session)}
+                    {:else if canOverrideStartWindow(session)}
                       <span class="text-sm text-amber-600 flex items-center gap-1"><AlertTriangle class="h-4 w-4" />Outside window — you may override</span>
                     {/if}
 
@@ -258,14 +251,18 @@
                   <div class="flex items-center gap-2 shrink-0">
                     <Badge variant={statusVariant(session.status)}>{statusLabel(session.status)}</Badge>
 
-                    {#if canStart(session)}
+                    {#if canStartSession(session)}
                       <Button size="sm" onclick={() => startSession(session.id)}>
                         <Play class="h-4 w-4 mr-1" />
                         Start session
                       </Button>
-                    {:else if outsideStartWindow(session)}
+                    {:else if timeWindowLabel(session) === 'no-applicants'}
+                      <span class="text-sm text-muted-foreground">No applicants</span>
+                    {:else if timeWindowLabel(session) === 'past-date'}
+                      <span class="text-sm text-muted-foreground">Session date has passed</span>
+                    {:else if isOutsideStartWindow(session)}
                       <span class="text-sm text-muted-foreground">Outside scheduled time</span>
-                    {:else if outsideWindowButCanOverride(session)}
+                    {:else if canOverrideStartWindow(session)}
                       <span class="text-sm text-amber-600 flex items-center gap-1"><AlertTriangle class="h-4 w-4" />Outside window — you may override</span>
                     {/if}
 
@@ -331,14 +328,18 @@
                   <div class="flex items-center gap-2 shrink-0">
                     <Badge variant={statusVariant(session.status)}>{statusLabel(session.status)}</Badge>
 
-                    {#if canStart(session)}
+                    {#if canStartSession(session)}
                       <Button size="sm" onclick={() => startSession(session.id)}>
                         <Play class="h-4 w-4 mr-1" />
                         Start session
                       </Button>
-                    {:else if outsideStartWindow(session)}
+                    {:else if timeWindowLabel(session) === 'no-applicants'}
+                      <span class="text-sm text-muted-foreground">No applicants</span>
+                    {:else if timeWindowLabel(session) === 'past-date'}
+                      <span class="text-sm text-muted-foreground">Session date has passed</span>
+                    {:else if isOutsideStartWindow(session)}
                       <span class="text-sm text-muted-foreground">Outside scheduled time</span>
-                    {:else if outsideWindowButCanOverride(session)}
+                    {:else if canOverrideStartWindow(session)}
                       <span class="text-sm text-amber-600 flex items-center gap-1"><AlertTriangle class="h-4 w-4" />Outside window — you may override</span>
                     {/if}
 

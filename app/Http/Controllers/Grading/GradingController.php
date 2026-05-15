@@ -24,18 +24,27 @@ class GradingController extends Controller
     {
         $activeAcademicYear = AcademicYear::active();
 
+        $activeAreaCount = AptitudeArea::where('is_active', true)->count();
+
         $gradingQuery = GradingSession::query()
             ->with(['examSession.room', 'examSession.academicYear'])
             ->withCount('applicants')
-            ->withCount(['applicantScores as applicants_scored' => function ($q) {
-                $q->selectRaw('COUNT(DISTINCT applicant_id)');
-            }])
             ->orderByDesc('opened_at');
         if ($activeAcademicYear !== null) {
             $gradingQuery->whereHas('examSession', fn ($q) => $q->forAcademicYear($activeAcademicYear));
         }
         $gradingSessions = $gradingQuery->get()
-            ->map(function (GradingSession $gs) {
+            ->map(function (GradingSession $gs) use ($activeAreaCount) {
+                $scoresByApplicant = $gs->applicantScores()
+                    ->select('applicant_id')
+                    ->selectRaw('COUNT(DISTINCT aptitude_area_id) as domains_complete')
+                    ->groupBy('applicant_id')
+                    ->pluck('domains_complete', 'applicant_id');
+
+                $applicantsScored = $activeAreaCount > 0
+                    ? $scoresByApplicant->filter(fn ($count) => $count >= $activeAreaCount)->count()
+                    : 0;
+
                 return [
                     'id' => $gs->id,
                     'exam_session_id' => $gs->exam_session_id,
@@ -47,36 +56,15 @@ class GradingController extends Controller
                     'opened_at' => $gs->opened_at?->toIso8601String(),
                     'finalized_at' => $gs->finalized_at?->toIso8601String(),
                     'applicants_total' => $gs->applicants_count ?? 0,
-                    'applicants_scored' => $gs->applicants_scored ?? 0,
+                    'applicants_scored' => $applicantsScored,
                 ];
             });
-
-        $completedQuery = ExamSession::query()
-            ->where('status', ExamSession::STATUS_COMPLETED)
-            ->whereDoesntHave('gradingSession')
-            ->with('room')
-            ->withCount('applicants')
-            ->orderByDesc('date');
-        if ($activeAcademicYear !== null) {
-            $completedQuery->forAcademicYear($activeAcademicYear);
-        }
-        $completedWithoutGrading = $completedQuery->get()
-            ->map(fn ($es) => [
-                'id' => $es->id,
-                'exam_date' => $es->date?->format('Y-m-d'),
-                'exam_time' => $es->start_time,
-                'room_name' => $es->room?->name ?? '—',
-                'applicants_count' => $es->applicants_count ?? 0,
-            ]);
-
-        $examDomainsCount = AptitudeArea::where('is_active', true)->count();
 
         return Inertia::render('Grading/Dashboard', [
             'title' => 'Grading',
             'description' => 'Input and manage exam scores.',
             'grading_sessions' => $gradingSessions->values()->all(),
-            'completed_exams_without_grading' => $completedWithoutGrading->values()->all(),
-            'aptitude_areas_count' => $examDomainsCount,
+            'aptitude_areas_count' => $activeAreaCount,
         ]);
     }
 

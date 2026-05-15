@@ -2,15 +2,15 @@
   import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.svelte';
   import { Link, router } from '@inertiajs/svelte';
   import * as Table from '@/Components/ui/table';
-  import * as ToggleGroup from '@/Components/ui/toggle-group';
   import * as Dialog from '@/Components/ui/dialog';
   import { Button } from '@/Components/ui/button';
   import { Badge } from '@/Components/ui/badge';
   import { Input } from '@/Components/ui/input';
   import ScheduleAssistantPanel from '@/Components/ScheduleAssistantPanel.svelte';
   import InfoPopover from '@/Components/InfoPopover.svelte';
-  import ViewModeToggle from '@/Components/ViewModeToggle.svelte';
-  import { Plus, LayoutGrid, Table2, MonitorSmartphone, Eye, Pencil, ChevronDown, Filter, ClipboardList, Sparkles, DoorOpen, Send, Undo, X, Trash2 } from 'lucide-svelte';
+  import SwitchableListView from '@/Components/SwitchableListView.svelte';
+  import SimplePagination from '@/Components/SimplePagination.svelte';
+  import { Plus, Eye, Pencil, ChevronDown, Filter, ClipboardList, Sparkles, DoorOpen, Send, Undo, X, Trash2 } from 'lucide-svelte';
 
   let { sessions, filters = {}, statuses = [], view = 'admin', schedule_assistant = null } = $props();
 
@@ -118,7 +118,12 @@
   }
 
   function getStateAction(session) {
-    if (session.status === 'draft') return { label: 'Publish', icon: Send, method: 'post', href: `/admin/exam-scheduling/${session.id}/publish` };
+    if (session.status === 'draft') {
+      if (session.is_publishable === false) {
+        return { label: 'Publish', icon: Send, method: 'post', href: `/admin/exam-scheduling/${session.id}/publish`, disabled: true, title: session.publish_block_reason || 'Cannot publish this session' };
+      }
+      return { label: 'Publish', icon: Send, method: 'post', href: `/admin/exam-scheduling/${session.id}/publish` };
+    }
     if (session.status === 'published') return { label: 'Unpublish', icon: Undo, method: 'post', href: `/admin/exam-scheduling/${session.id}/unpublish` };
     if (session.status === 'in_progress') return { label: 'Cancel', icon: X, method: 'post', href: `/admin/exam-scheduling/${session.id}/cancel` };
     return null;
@@ -260,14 +265,8 @@
       </div>
     </div>
 
-    <div class="space-y-3">
-      <!-- View toggle as sibling to table container -->
-      <div class="flex justify-end">
-        <ViewModeToggle bind:value={viewMode} />
-      </div>
-
-      <div class="min-w-0 {viewMode === 'cards' ? 'hidden' : ''}">
-        <div class="w-full min-w-0 overflow-x-auto scrollbar-hide">
+    <SwitchableListView bind:viewMode overflow="auto">
+      {#snippet table()}
         <Table.Root class="w-full min-w-[640px] text-sm">
           <Table.Header class="bg-muted/50">
             <Table.Row>
@@ -333,15 +332,10 @@
             {/each}
           </Table.Body>
         </Table.Root>
-      </div>
+        <SimplePagination data={sessions} variant="table" />
+      {/snippet}
 
-      <div
-        class="{viewMode === 'table'
-          ? 'hidden'
-          : viewMode === 'cards'
-            ? 'block'
-            : 'block md:hidden'} p-4"
-      >
+      {#snippet cards()}
         {#if list.length > 0}
           <ul class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3" role="list">
             {#each list as session}
@@ -387,28 +381,9 @@
         {:else}
           <p class="py-12 text-center text-muted-foreground">{isProctorView ? 'No assigned sessions.' : 'No exam sessions yet. Create one to get started.'}</p>
         {/if}
-      </div>
-
-      {#if sessions?.last_page > 1}
-        <div class="flex items-center justify-between border-t border-border px-4 py-2">
-          <p class="text-sm text-muted-foreground">
-            Page {sessions.current_page} of {sessions.last_page}
-          </p>
-          <div class="flex gap-2">
-            {#if sessions.prev_page_url}
-              <Link href={sessions.prev_page_url}>
-                <Button variant="outline" size="sm">Previous</Button>
-              </Link>
-            {/if}
-            {#if sessions.next_page_url}
-              <Link href={sessions.next_page_url}>
-                <Button variant="outline" size="sm">Next</Button>
-              </Link>
-            {/if}
-          </div>
-        </div>
-      {/if}
-    </div>
+        <SimplePagination data={sessions} variant="centered" />
+      {/snippet}
+    </SwitchableListView>
   </div>
 
   {#if schedule_assistant}

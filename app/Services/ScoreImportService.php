@@ -4,8 +4,15 @@ namespace App\Services;
 
 use App\Models\Applicant;
 use App\Models\ApplicantScore;
+use App\Models\Application;
+use App\Models\AptitudeArea;
+use App\Models\ExamSession;
 use App\Models\GradingSession;
+use App\Models\SystemSetting;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\DB;
+use PhpOffice\PhpSpreadsheet\Exception;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 
 class ScoreImportService
@@ -28,19 +35,30 @@ class ScoreImportService
      *
      * @return array<int, array<string, mixed>>
      */
-    public function parseSpreadsheet(UploadedFile $file): array
+    public function parseSpreadsheet(UploadedFile|string $file): array
     {
-        $extension = strtolower($file->getClientOriginalExtension());
+        $extension = is_string($file)
+            ? strtolower(pathinfo($file, PATHINFO_EXTENSION))
+            : strtolower($file->getClientOriginalExtension());
+
+        $realPath = is_string($file) ? $file : $file->getRealPath();
+
+        if (is_string($file)) {
+            if (! file_exists($file)) {
+                throw new \InvalidArgumentException('Import file not found. Please upload again.');
+            }
+        } else {
+            $this->validateFile($file);
+        }
 
         $records = match ($extension) {
-            'xlsx', 'xls' => $this->parseExcel($file),
-            'csv' => $this->parseCsv($file),
+            'xlsx', 'xls' => $this->parseExcel($realPath),
+            'csv' => $this->parseCsv($realPath),
             default => throw new \InvalidArgumentException(
                 'Unsupported file format. Please upload CSV or Excel file (XLSX/XLS).'
             ),
         };
 
-        // Validate required columns after parsing
         if (! empty($records)) {
             $this->validateHeaders(array_keys($records[0]));
         }
@@ -53,12 +71,10 @@ class ScoreImportService
      *
      * @return array<int, array<string, mixed>>
      */
-    protected function parseExcel(UploadedFile $file): array
+    protected function parseExcel(string $path): array
     {
-        $this->validateFile($file);
-
         try {
-            $spreadsheet = IOFactory::load($file->getRealPath());
+            $spreadsheet = IOFactory::load($path);
             $worksheet = $spreadsheet->getActiveSheet();
             $rows = $worksheet->toArray();
 
@@ -66,17 +82,14 @@ class ScoreImportService
                 throw new \InvalidArgumentException('Excel file is empty.');
             }
 
-            // First row is headers
             $headers = array_map('strtolower', array_map('trim', array_shift($rows)));
 
             $records = [];
-            foreach ($rows as $rowIndex => $row) {
-                // Skip completely empty rows
+            foreach ($rows as $row) {
                 if (empty(array_filter($row, fn ($v) => $v !== null && $v !== ''))) {
                     continue;
                 }
 
-                // Pad row to match header count
                 $row = array_pad($row, count($headers), null);
                 $record = array_combine($headers, $row);
 
@@ -86,7 +99,7 @@ class ScoreImportService
             }
 
             return $records;
-        } catch (\PhpOffice\PhpSpreadsheet\Exception $e) {
+        } catch (Exception $e) {
             throw new \InvalidArgumentException('Unable to parse Excel file: '.$e->getMessage());
         }
     }
@@ -96,18 +109,14 @@ class ScoreImportService
      *
      * @return array<int, array<string, mixed>>
      */
-    public function parseCsv(UploadedFile $file): array
+    public function parseCsv(string $path): array
     {
-        $this->validateFile($file);
-
-        $handle = fopen($file->getRealPath(), 'r');
+        $handle = fopen($path, 'r');
         if ($handle === false) {
             throw new \RuntimeException('Unable to read uploaded file.');
         }
 
         $headers = array_map('strtolower', array_map('trim', fgetcsv($handle)));
-
-        // Validate required columns exist
         $this->validateHeaders($headers);
 
         $records = [];
@@ -141,282 +150,264 @@ class ScoreImportService
     }
 
     /**
-     * Validate parsed records and return errors.
+     * Validate parsed records and return per-row details for preview.
      *
      * @param  array<int, array<string, mixed>>  $records
-     * @return array{valid: array<int, array<string, mixed>>, errors: array<int, string>}
+     * @return array{records: array<int, array>, summary: array{total: int, valid: int, invalid: int}}
      */
-    public function validateRecords(array $records, int $gradingSessionId): array
+    public function validateRecords(array $records): array
     {
-        $valid = [];
-        $errors = [];
+        $activeAreas = AptitudeArea::where('is_active', true)->get(['id', 'code', 'max_items', 'formula']);
+        $areaCodeToId = $activeAreas->mapWithKeys(fn ($a) => [strtolower($a->code) => $a->id])->toArray();
 
-        $gradingSession = GradingSession::with('aptitudeAreas')
-            ->findOrFail($gradingSessionId);
-        $aptitudeAreaIds = $gradingSession->aptitudeAreas->pluck('id')->toArray();
+        $referenceNumbers = array_filter(array_map(fn ($r) => $r['reference_number'] ?? null, $records));
+        $applicationMap = Application::whereIn('reference_number', $referenceNumbers)
+            ->with('applicant.examSessions.gradingSession.examSession')
+            ->get()
+            ->keyBy('reference_number');
 
-        foreach ($records as $index => $record) {
-            $rowNum = $index + 2; // +2 for 1-based index and header row
-            $recordErrors = $this->validateSingleRecord(
-                $record,
-                $rowNum,
-                $aptitudeAreaIds
-            );
-
-            if (empty($recordErrors)) {
-                $valid[] = $record;
-            } else {
-                $errors[] = "Row {$rowNum}: ".implode('; ', $recordErrors);
-            }
-        }
-
-        return ['valid' => $valid, 'errors' => $errors];
-    }
-
-    /**
-     * Validate all records with per-row details for preview.
-     *
-     * @param  array<int, array<string, mixed>>  $records
-     * @return array{records: array<int, array{id: int, row: int, data: array, errors: array<int, string>, is_valid: bool>}
-     */
-    public function validateRecordsWithDetails(array $records, int $gradingSessionId): array
-    {
         $results = [];
-
-        $gradingSession = GradingSession::with('aptitudeAreas')
-            ->findOrFail($gradingSessionId);
-        $aptitudeAreaIds = $gradingSession->aptitudeAreas->pluck('id')->toArray();
+        $validCount = 0;
+        $invalidCount = 0;
 
         foreach ($records as $index => $record) {
             $rowNum = $index + 2;
-            $recordErrors = $this->validateSingleRecord(
-                $record,
-                $rowNum,
-                $aptitudeAreaIds
-            );
+            $resolution = $this->resolveRow($record, $applicationMap);
+            $recordErrors = $resolution['errors'];
+
+            $application = $resolution['application'];
+            $applicant = $resolution['applicant'];
+            $gradingSession = $resolution['gradingSession'];
+
+            $areaScores = [];
+            foreach ($record as $key => $value) {
+                $lowerKey = strtolower($key);
+                if (isset($areaCodeToId[$lowerKey])) {
+                    if ($value !== '' && $value !== null && ! is_numeric($value)) {
+                        $recordErrors[] = "{$key} must be a number";
+                    }
+                    $areaScores[] = [
+                        'area_code' => strtoupper($key),
+                        'score' => $value,
+                    ];
+                }
+            }
+
+            if (empty($recordErrors) && $applicant && $gradingSession && ! empty($areaScores)) {
+                $areaIds = array_map(fn ($s) => $areaCodeToId[strtolower($s['area_code'])], $areaScores);
+                $duplicates = $this->checkDuplicateScores(
+                    $applicant->id,
+                    $gradingSession->examSession->academic_year_id,
+                    $areaIds
+                );
+
+                if (! empty($duplicates)) {
+                    $recordErrors[] = 'Applicant already has scores for this aptitude area in the current academic year';
+                }
+            }
+
+            $isValid = empty($recordErrors);
+            if ($isValid) {
+                $validCount++;
+            } else {
+                $invalidCount++;
+            }
 
             $results[] = [
                 'id' => $index,
                 'row' => $rowNum,
-                'data' => $record,
+                'reference_number' => $record['reference_number'] ?? null,
+                'applicant_name' => $applicant ? trim("{$application->first_name} {$application->last_name}") : '—',
+                'grading_session_id' => $gradingSession?->id,
+                'grading_session_label' => $gradingSession ? "Session #{$gradingSession->id}" : '—',
+                'scores' => $areaScores,
                 'errors' => $recordErrors,
-                'is_valid' => empty($recordErrors),
+                'is_valid' => $isValid,
             ];
         }
 
-        return $results;
-    }
-
-    /**
-     * Validate a single record.
-     *
-     * @param  array<string, mixed>  $record
-     * @param  array<int, int>  $aptitudeAreaIds
-     * @return array<int, string>
-     */
-    private function validateSingleRecord(
-        array $record,
-        int $rowNum,
-        array $aptitudeAreaIds
-    ): array {
-        $errors = [];
-
-        // Required: reference_number
-        if (empty($record['reference_number'])) {
-            $errors[] = 'Reference number is required';
-        }
-
-        // Validate applicant exists
-        $applicant = Application::where('reference_number', $record['reference_number'])
-            ->first();
-        if (! $applicant) {
-            $errors[] = 'Applicant not found';
-        }
-
-        // Validate aptitude_area_id if provided
-        if (! empty($record['aptitude_area_id'])) {
-            if (! in_array((int) $record['aptitude_area_id'], $aptitudeAreaIds)) {
-                $errors[] = 'Invalid aptitude area for this session';
-            }
-        }
-
-        // Validate numeric score fields
-        foreach (['raw_score', 'max_score', 'normalized_score'] as $field) {
-            if (isset($record[$field]) && $record[$field] !== '') {
-                if (! is_numeric($record[$field])) {
-                    "{$field} must be a number";
-                }
-            }
-        }
-
-        return $errors;
-    }
-
-    /**
-     * Import validated records into database.
-     *
-     * @param  array<int, array<string, mixed>>  $records
-     * @return array{imported: int, updated: int, skipped: int, errors: array<int, string>}
-     */
-    public function importScores(
-        array $records,
-        int $gradingSessionId,
-        int $importerId
-    ): array {
-        $imported = 0;
-        $updated = 0;
-        $skipped = 0;
-        $errors = [];
-
-        foreach ($records as $index => $record) {
-            $rowNum = $index + 2;
-            $result = $this->importSingleScore(
-                $record,
-                $gradingSessionId,
-                $importerId
-            );
-
-            if ($result['success']) {
-                if ($result['created']) {
-                    $imported++;
-                } else {
-                    $updated++;
-                }
-            } else {
-                $skipped++;
-                $errors[] = "Row {$rowNum}: {$result['error']}";
-            }
-        }
-
         return [
-            'imported' => $imported,
-            'updated' => $updated,
-            'skipped' => $skipped,
-            'errors' => $errors,
+            'records' => $results,
+            'summary' => [
+                'total' => count($records),
+                'valid' => $validCount,
+                'invalid' => $invalidCount,
+            ],
         ];
     }
 
     /**
-     * Import selected records only (for selective import).
+     * @param  Collection<string, Application>  $applicationMap
+     * @return array{application: ?Application, applicant: ?Applicant, gradingSession: ?GradingSession, errors: array<int, string>}
+     */
+    private function resolveRow(array $record, Collection $applicationMap): array
+    {
+        if (empty($record['reference_number'])) {
+            return ['application' => null, 'applicant' => null, 'gradingSession' => null, 'errors' => ['Reference number is required']];
+        }
+
+        $ref = $record['reference_number'];
+        $application = $applicationMap[$ref] ?? null;
+        if (! $application) {
+            return ['application' => null, 'applicant' => null, 'gradingSession' => null, 'errors' => ['Application not found']];
+        }
+
+        $applicant = $application->applicant;
+        if (! $applicant) {
+            return ['application' => $application, 'applicant' => null, 'gradingSession' => null, 'errors' => ['Applicant record not found']];
+        }
+
+        $gradingSession = $this->resolveGradingSession($application);
+        if (! $gradingSession) {
+            return ['application' => $application, 'applicant' => $applicant, 'gradingSession' => null, 'errors' => ['No open grading session found for this applicant']];
+        }
+
+        return ['application' => $application, 'applicant' => $applicant, 'gradingSession' => $gradingSession, 'errors' => []];
+    }
+
+    private function resolveGradingSession(Application $application): ?GradingSession
+    {
+        $applicant = $application->applicant;
+        if (! $applicant) {
+            return null;
+        }
+
+        $completedSessions = $applicant->examSessions()
+            ->where('status', ExamSession::STATUS_COMPLETED)
+            ->with(['gradingSession.examSession'])
+            ->get();
+
+        $eligible = $completedSessions->filter(
+            fn ($session) => $session->gradingSession && in_array($session->gradingSession->status, [GradingSession::STATUS_OPEN, GradingSession::STATUS_IN_PROGRESS], true)
+        );
+
+        return $eligible->count() === 1 ? $eligible->first()->gradingSession : null;
+    }
+
+    private function checkDuplicateScores(int $applicantId, int $academicYearId, array $aptitudeAreaIds): array
+    {
+        if (empty($aptitudeAreaIds)) {
+            return [];
+        }
+
+        return ApplicantScore::query()
+            ->join('grading_sessions', 'applicant_scores.grading_session_id', '=', 'grading_sessions.id')
+            ->join('exam_sessions', 'grading_sessions.exam_session_id', '=', 'exam_sessions.id')
+            ->where('applicant_scores.applicant_id', $applicantId)
+            ->where('exam_sessions.academic_year_id', $academicYearId)
+            ->whereIn('applicant_scores.aptitude_area_id', $aptitudeAreaIds)
+            ->pluck('applicant_scores.aptitude_area_id')
+            ->toArray();
+    }
+
+    /**
+     * Import selected records. If $selectedIndices is empty, imports all valid rows.
      *
      * @param  array<int, array<string, mixed>>  $records
-     * @param  array<int>  $selectedIds
-     * @return array{imported: int, updated: int, skipped: int, errors: array<int, string>}
+     * @param  array<int>  $selectedIndices
+     * @return array{imported: int, skipped: int, errors: array<int, string>}
      */
-    public function importSelectedScores(
-        array $records,
-        array $selectedIds,
-        int $gradingSessionId,
-        int $importerId
-    ): array {
+    public function importSelectedScores(array $records, array $selectedIndices, int $importerId): array
+    {
         $imported = 0;
-        $updated = 0;
         $skipped = 0;
         $errors = [];
+        $enableNormalizedScores = SystemSetting::enableNormalizedScores();
 
-        $selectedSet = array_flip($selectedIds);
+        $activeAreas = AptitudeArea::where('is_active', true)->get(['id', 'code', 'max_items', 'formula']);
+        $areaCodeToId = $activeAreas->mapWithKeys(fn ($a) => [strtolower($a->code) => $a])->all();
 
+        $referenceNumbers = array_filter(array_map(fn ($r) => $r['reference_number'] ?? null, $records));
+        $applicationMap = Application::whereIn('reference_number', $referenceNumbers)
+            ->with('applicant.examSessions.gradingSession.examSession')
+            ->get()
+            ->keyBy('reference_number');
+
+        $selectedIndices = array_map('intval', $selectedIndices);
         foreach ($records as $index => $record) {
-            if (! isset($selectedSet[$index])) {
-                $skipped++;
-
+            if (! empty($selectedIndices) && ! in_array($index, $selectedIndices, true)) {
                 continue;
             }
 
             $rowNum = $index + 2;
-            $result = $this->importSingleScore(
-                $record,
-                $gradingSessionId,
-                $importerId
+            $resolution = $this->resolveRow($record, $applicationMap);
+            if (! empty($resolution['errors'])) {
+                $skipped++;
+                $errors[] = "Row {$rowNum}: {$resolution['errors'][0]}";
+
+                continue;
+            }
+
+            $applicant = $resolution['applicant'];
+            $gradingSession = $resolution['gradingSession'];
+
+            $areaScores = [];
+            foreach ($record as $key => $value) {
+                $lowerKey = strtolower($key);
+                if (isset($areaCodeToId[$lowerKey]) && $value !== '' && $value !== null) {
+                    if (! is_numeric($value)) {
+                        $skipped++;
+                        $errors[] = "Row {$rowNum}: {$key} must be a number";
+
+                        continue 2;
+                    }
+                    $areaScores[$lowerKey] = (float) $value;
+                }
+            }
+
+            if (empty($areaScores)) {
+                continue;
+            }
+
+            $aptitudeAreaIds = array_map(fn ($code) => $areaCodeToId[$code]->id, array_keys($areaScores));
+            $duplicates = $this->checkDuplicateScores(
+                $applicant->id,
+                $gradingSession->examSession->academic_year_id,
+                $aptitudeAreaIds
             );
 
-            if ($result['success']) {
-                if ($result['created']) {
-                    $imported++;
-                } else {
-                    $updated++;
-                }
-            } else {
+            if (! empty($duplicates)) {
                 $skipped++;
-                $errors[] = "Row {$rowNum}: {$result['error']}";
+                $errors[] = "Row {$rowNum}: Applicant already has scores for this aptitude area in the current academic year";
+
+                continue;
             }
+
+            DB::transaction(function () use ($areaScores, $areaCodeToId, $enableNormalizedScores, $gradingSession, $applicant, $importerId, &$imported) {
+                foreach ($areaScores as $code => $value) {
+                    $area = $areaCodeToId[$code];
+
+                    if ($enableNormalizedScores) {
+                        $rawScore = $value;
+                        $maxScore = $area->max_items;
+                        $normalizedScore = $area->computeNormalizedScore($value);
+                    } else {
+                        $rawScore = null;
+                        $maxScore = null;
+                        $normalizedScore = $value;
+                    }
+
+                    ApplicantScore::create([
+                        'grading_session_id' => $gradingSession->id,
+                        'applicant_id' => $applicant->id,
+                        'aptitude_area_id' => $area->id,
+                        'raw_score' => $rawScore,
+                        'max_score' => $maxScore,
+                        'normalized_score' => $normalizedScore,
+                        'scored_by' => $importerId,
+                        'scored_at' => now(),
+                    ]);
+
+                    $imported++;
+                }
+            });
         }
 
-        return [
-            'imported' => $imported,
-            'updated' => $updated,
-            'skipped' => $skipped,
-            'errors' => $errors,
-        ];
+        return ['imported' => $imported, 'skipped' => $skipped, 'errors' => $errors];
     }
 
-    /**
-     * Import a single score record into database.
-     *
-     * @param  array<string, mixed>  $record
-     * @return array{success: bool, created: bool, error?: string}
-     */
-    private function importSingleScore(
-        array $record,
-        int $gradingSessionId,
-        int $importerId
-    ): array {
-        try {
-            // Find application by reference number
-            $application = Application::where(
-                'reference_number',
-                $record['reference_number']
-            )->first();
-
-            if (! $application) {
-                return ['success' => false, 'created' => false, 'error' => 'Applicant not found'];
-            }
-
-            // Find or create applicant
-            $applicant = Applicant::firstOrCreate(
-                ['application_id' => $application->id],
-                ['email' => $application->email]
-            );
-
-            // Determine aptitude_area_id
-            $aptitudeAreaId = ! empty($record['aptitude_area_id'])
-                ? (int) $record['aptitude_area_id']
-                : null;
-
-            // Check if score already exists
-            $existingScore = ApplicantScore::where('grading_session_id', $gradingSessionId)
-                ->where('applicant_id', $applicant->id)
-                ->when($aptitudeAreaId, fn ($q) => $q->where('aptitude_area_id', $aptitudeAreaId))
-                ->first();
-
-            if ($existingScore) {
-                // Update existing score
-                $existingScore->update([
-                    'raw_score' => $record['raw_score'] ?? $existingScore->raw_score,
-                    'max_score' => $record['max_score'] ?? $existingScore->max_score,
-                    'normalized_score' => $record['normalized_score'] ?? $existingScore->normalized_score,
-                    'scored_by' => $importerId,
-                    'scored_at' => now(),
-                ]);
-
-                return ['success' => true, 'created' => false];
-            }
-
-            // Create new score
-            ApplicantScore::create([
-                'grading_session_id' => $gradingSessionId,
-                'applicant_id' => $applicant->id,
-                'aptitude_area_id' => $aptitudeAreaId,
-                'raw_score' => $record['raw_score'] ?? null,
-                'max_score' => $record['max_score'] ?? null,
-                'normalized_score' => $record['normalized_score'] ?? null,
-                'scored_by' => $importerId,
-                'scored_at' => now(),
-            ]);
-
-            return ['success' => true, 'created' => true];
-        } catch (\Exception $e) {
-            return ['success' => false, 'created' => false, 'error' => $e->getMessage()];
-        }
+    public function importScores(array $records, int $importerId): array
+    {
+        return $this->importSelectedScores($records, [], $importerId);
     }
 }

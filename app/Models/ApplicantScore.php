@@ -2,11 +2,14 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class ApplicantScore extends Model
 {
+    use HasFactory;
+
     protected $fillable = [
         'grading_session_id',
         'applicant_id',

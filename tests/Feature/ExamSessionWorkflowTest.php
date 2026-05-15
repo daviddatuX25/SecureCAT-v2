@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Feature;
 
 use App\Models\AcademicYear;
+use App\Models\Applicant;
 use App\Models\ExamSession;
 use App\Models\Room;
 use App\Models\User;
@@ -56,6 +57,7 @@ class ExamSessionWorkflowTest extends TestCase
         $session = $this->createSession(ExamSession::STATUS_PUBLISHED);
         $proctor = $this->actingAsProctor();
         $session->proctors()->attach($proctor);
+        $session->applicants()->attach(Applicant::factory()->create());
 
         // Set the session date/time to be within start window
         $session->update([
@@ -76,6 +78,7 @@ class ExamSessionWorkflowTest extends TestCase
         $session = $this->createSession(ExamSession::STATUS_PUBLISHED);
         $proctor = $this->actingAsProctor();
         $session->proctors()->attach($proctor);
+        $session->applicants()->attach(Applicant::factory()->create());
 
         // Set the session date/time to be outside start window (past)
         $session->update([
@@ -96,6 +99,7 @@ class ExamSessionWorkflowTest extends TestCase
         $session = $this->createSession(ExamSession::STATUS_PUBLISHED);
         $testAdmin = $this->actingAsTestAdmin();
         $session->proctors()->attach($testAdmin);
+        $session->applicants()->attach(Applicant::factory()->create());
 
         // Set the session date/time to be outside start window (past)
         $session->update([
@@ -130,6 +134,7 @@ class ExamSessionWorkflowTest extends TestCase
         $session = $this->createSession(ExamSession::STATUS_PUBLISHED);
         $proctor = $this->actingAsProctor();
         $session->proctors()->attach($proctor);
+        $session->applicants()->attach(Applicant::factory()->create());
 
         // Set within start window
         $session->update([
@@ -175,6 +180,6 @@ class ExamSessionWorkflowTest extends TestCase
         );
 
         $via = $reminder->via($user);
-        $this->assertEquals(['database'], $via);
+        $this->assertEquals(['mail', 'database'], $via);
     }
 }

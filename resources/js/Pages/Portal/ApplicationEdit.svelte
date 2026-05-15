@@ -22,6 +22,7 @@
     city: application.city || '',
     province: application.province || '',
     zip_code: application.zip_code || '',
+    gwa: application.gwa || '',
     course_preference_1: application.course_preference_1 ? String(application.course_preference_1) : '',
     course_preference_2: application.course_preference_2 ? String(application.course_preference_2) : '',
     course_preference_3: application.course_preference_3 ? String(application.course_preference_3) : '',
@@ -159,6 +160,13 @@
                   <p class="mt-1 text-sm text-destructive">{$form.errors.sex}</p>
                 {/if}
               </div>
+            </div>
+            <div>
+              <label for="gwa" class="block text-sm font-medium">GWA</label>
+              <Input id="gwa" name="gwa" type="number" step="0.01" bind:value={$form.gwa} class="mt-1 min-h-[44px]" placeholder="e.g., 1.75" />
+              {#if $form.errors?.gwa}
+                <p class="mt-1 text-sm text-destructive">{$form.errors.gwa}</p>
+              {/if}
             </div>
             <details class="rounded-md border border-border p-4">
               <summary class="cursor-pointer text-sm font-medium">Contact Information (optional)</summary>

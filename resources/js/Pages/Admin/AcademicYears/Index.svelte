@@ -5,7 +5,8 @@
   import { Badge } from '@/Components/ui/badge';
   import * as Table from '@/Components/ui/table';
   import { Plus, Pencil, Pause, Play, BookOpen, Trash2 } from 'lucide-svelte';
-  import ViewModeToggle from '@/Components/ViewModeToggle.svelte';
+  import SwitchableListView from '@/Components/SwitchableListView.svelte';
+  import SimplePagination from '@/Components/SimplePagination.svelte';
 
   let { academic_years } = $props();
   const list = $derived(academic_years?.data ?? []);
@@ -52,15 +53,8 @@
       </div>
     {/if}
 
-    <div class="space-y-3">
-      <!-- View toggle as sibling to table container -->
-      <div class="flex justify-end">
-        <ViewModeToggle bind:value={viewMode} />
-      </div>
-
-      <div class="min-w-0">
-        <!-- Table View -->
-      <div class="w-full min-w-0 overflow-x-auto scrollbar-hide {viewMode === 'cards' ? 'hidden' : viewMode === 'table' ? 'block' : 'hidden md:block'}">
+    <SwitchableListView bind:viewMode overflow="auto">
+      {#snippet table()}
         <Table.Root class="w-full min-w-[640px] text-sm">
           <Table.Header class="bg-muted/50">
             <Table.Row>
@@ -133,10 +127,10 @@
             {/each}
           </Table.Body>
         </Table.Root>
-      </div>
+        <SimplePagination data={academic_years} variant="table" />
+      {/snippet}
 
-      <!-- Card View -->
-      <div class="{viewMode === 'table' ? 'hidden' : viewMode === 'cards' ? 'block' : 'block md:hidden'} p-4">
+      {#snippet cards()}
         {#if list.length > 0}
           <ul class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3" role="list">
             {#each list as ay}
@@ -183,27 +177,8 @@
         {:else}
           <p class="py-12 text-center text-muted-foreground">No academic years yet.</p>
         {/if}
-      </div>
-
-      {#if academic_years?.last_page > 1}
-        <div class="flex items-center justify-between border-t border-border px-4 py-2">
-          <p class="text-sm text-muted-foreground">
-            Page {academic_years.current_page} of {academic_years.last_page}
-          </p>
-          <div class="flex gap-2">
-            {#if academic_years.prev_page_url}
-              <Link href={academic_years.prev_page_url}>
-                <Button variant="outline" size="sm">Previous</Button>
-              </Link>
-            {/if}
-            {#if academic_years.next_page_url}
-              <Link href={academic_years.next_page_url}>
-                <Button variant="outline" size="sm">Next</Button>
-              </Link>
-            {/if}
-          </div>
-        </div>
-      {/if}
-    </div>
+        <SimplePagination data={academic_years} variant="centered" />
+      {/snippet}
+    </SwitchableListView>
   </div>
 </AuthenticatedLayout>

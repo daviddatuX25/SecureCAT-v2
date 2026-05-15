@@ -22,6 +22,7 @@
     city: application?.city || '',
     province: application?.province || '',
     zip_code: application?.zip_code || '',
+    gwa: application?.gwa || '',
     course_preference_1: application?.course_preference_1 ? String(application.course_preference_1) : '',
     course_preference_2: application?.course_preference_2 ? String(application.course_preference_2) : '',
     course_preference_3: application?.course_preference_3 ? String(application.course_preference_3) : '',
@@ -199,6 +200,13 @@
         <div class="space-y-2">
           <label for="zip_code" class="text-sm font-medium">ZIP code</label>
           <Input id="zip_code" bind:value={$form.zip_code} maxlength="10" />
+        </div>
+        <div class="space-y-2">
+          <label for="gwa" class="text-sm font-medium">GWA</label>
+          <Input id="gwa" type="number" step="0.01" bind:value={$form.gwa} placeholder="e.g., 1.75" />
+          {#if $form.errors?.gwa}
+            <p class="text-sm text-destructive">{$form.errors.gwa}</p>
+          {/if}
         </div>
       </div>
 

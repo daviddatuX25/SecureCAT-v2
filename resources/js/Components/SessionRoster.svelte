@@ -10,7 +10,7 @@
   } from 'lucide-svelte';
   import axios from 'axios';
   import { success as showSuccess, error as showError } from '@/lib/toast';
-  import { onMount } from 'svelte';
+  import { onMount, onDestroy } from 'svelte';
 
   /**
    * Props
@@ -57,6 +57,11 @@
   let scanMode      = $state('attendance'); // 'attendance' | 'submission'
   let scanHandled   = $state(false);
   let scanError     = $state('');
+  let now           = $state(new Date());
+
+  // Tick the clock every 30s so time-dependent UI updates in real-time
+  const clockInterval = setInterval(() => { now = new Date(); }, 30_000);
+  onDestroy(() => clearInterval(clockInterval));
 
   const filteredApplicants = $derived(
     searchQuery.trim()
@@ -68,21 +73,62 @@
       : applicants
   );
 
+  // ── Client-side time window recalculation ───────────────────────────────────
+  // Server stamps is_within_start_window at page-load time, but it must update
+  // live as the current time enters or leaves the start window.
+  const clientWithinStartWindow = $derived.by(() => {
+    if (session.status !== 'published') return session.is_within_start_window;
+    const dateStr = session.date;
+    const startStr = session.start_time;
+    const endStr = session.end_time;
+    if (!dateStr || !startStr) return session.is_within_start_window;
+
+    // session.date may arrive as ISO datetime ("2026-05-14T16:00:00.000000Z")
+    // or plain date ("2026-05-15") — extract just the date part.
+    const datePart = String(dateStr).split('T')[0];
+    const [y, m, d] = datePart.split('-').map(Number);
+    if (Number.isNaN(y) || Number.isNaN(m) || Number.isNaN(d)) return session.is_within_start_window;
+    const [sh, sm] = String(startStr).split(':').map(Number);
+    const [eh, em] = endStr ? String(endStr).split(':').map(Number) : [23, 59];
+
+    const sessionDate = new Date(y, m - 1, d);
+    const windowStart = new Date(sessionDate);
+    windowStart.setHours(sh ?? 0, (sm ?? 0) - 15, 0, 0); // 15 min grace before start
+    const windowEnd = new Date(sessionDate);
+    windowEnd.setHours(eh ?? 23, (em ?? 59) + 30, 0, 0); // 30 min grace after end
+
+    return now >= windowStart && now <= windowEnd;
+  });
+
+  const clientPastEnd = $derived.by(() => {
+    if (!session.end_time || !session.date) return session.is_past_end;
+    const datePart = String(session.date).split('T')[0];
+    const [y, m, d] = datePart.split('-').map(Number);
+    if (Number.isNaN(y) || Number.isNaN(m) || Number.isNaN(d)) return session.is_past_end;
+    const [eh, em] = String(session.end_time).split(':').map(Number);
+    const endTime = new Date(y, m - 1, d, eh ?? 23, (em ?? 59) + 30, 0);
+    return now > endTime;
+  });
+
   // ── Derived session state ─────────────────────────────────────────────────
+  const hasApplicants = $derived((stats.total ?? 0) > 0);
   const canStart = $derived(
     p.canStart &&
+    hasApplicants &&
     session.status === 'published' &&
-    (session.is_within_start_window !== false || p.canOverrideSchedule)
+    (clientWithinStartWindow || p.canOverrideSchedule)
   );
   const canClose              = $derived(p.canClose && session.status === 'in_progress');
-  const outsideStartWindow    = $derived(session.status === 'published' && session.is_within_start_window === false);
+  const outsideStartWindow    = $derived(session.status === 'published' && hasApplicants && clientWithinStartWindow === false);
   const showOverrideHint      = $derived(outsideStartWindow && p.canOverrideSchedule);
+  const isPastDate            = $derived(session.is_past_date === true);
+  const noApplicants          = $derived(session.status === 'published' && !hasApplicants);
   const canMarkAttendance     = $derived(
-    p.canMarkAttendance && (session.status === 'published' || session.status === 'in_progress') && !session.is_past_end
+    p.canMarkAttendance && (session.status === 'published' || session.status === 'in_progress') && !clientPastEnd
   );
-  const canLogSubmission      = $derived(p.canLogSubmission && session.status === 'in_progress' && !session.is_past_end);
+  const canLogSubmission      = $derived(p.canLogSubmission && session.status === 'in_progress' && !clientPastEnd);
   const canBulkSubmit         = $derived(
-    p.canBulkSubmit && session.status === 'in_progress' && !session.is_past_end && (stats.present_pending_submission ?? 0) > 0
+    p.canBulkSubmit && session.status === 'in_progress' && !clientPastEnd && (stats.present_pending_submission ?? 0) > 0
   );
 
   // ── Helpers ───────────────────────────────────────────────────────────────
@@ -322,7 +368,13 @@
 
     <!-- Start / Close session controls -->
     <div class="mt-4 flex flex-wrap gap-3">
-      {#if outsideStartWindow && !p.canOverrideSchedule}
+      {#if noApplicants}
+        <p class="text-sm text-muted-foreground">No applicants assigned to this session.</p>
+      {:else if isPastDate && outsideStartWindow && !p.canOverrideSchedule}
+        <p class="text-sm text-muted-foreground">Session date has passed. Only an admin can start this session.</p>
+      {:else if isPastDate && showOverrideHint}
+        <p class="text-sm text-amber-600 dark:text-amber-500">Session date has passed; you have admin override enabled.</p>
+      {:else if outsideStartWindow && !p.canOverrideSchedule}
         <p class="text-sm text-muted-foreground">Outside scheduled time. Only an admin can start this session.</p>
       {:else if showOverrideHint}
         <p class="text-sm text-amber-600 dark:text-amber-500">Outside schedule; you have admin override enabled.</p>

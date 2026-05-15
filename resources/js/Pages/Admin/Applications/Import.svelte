@@ -4,13 +4,41 @@
   import { Button } from '@/Components/ui/button';
   import { FileUpload } from '@/Components/ui/file-upload';
   import { Upload } from 'lucide-svelte';
+  import { GuidePanel, GuideSection, CopyableGroup, GuideNote } from '@/Components/Guide';
 
-  let { academicYears = [] } = $props();
+  let {
+    academicYears = [],
+    courses = [],
+    requiredColumns = ['first_name', 'last_name', 'email'],
+    optionalColumns = [],
+  } = $props();
 
   const breadcrumbs = [
     { label: 'Applications', href: '/admin/applications' },
     { label: 'Import' },
   ];
+
+  const columnLabels = {
+    middle_name: 'middle name',
+    suffix: 'suffix',
+    birthdate: 'birthdate',
+    sex: 'sex',
+    phone: 'phone',
+    address_line: 'address line',
+    city: 'city',
+    province: 'province',
+    zip_code: 'zip code',
+    course_preference_1: 'course preference 1',
+    course_preference_2: 'course preference 2',
+    course_preference_3: 'course preference 3',
+    gwa: 'gwa',
+  };
+
+  const requiredItems = $derived(requiredColumns.map((c) => ({ value: c, label: columnLabels[c] ?? c.replace(/_/g, ' ') })));
+  const optionalItems = $derived(optionalColumns.map((c) => ({ value: c, label: columnLabels[c] ?? c.replace(/_/g, ' ') })));
+  const courseItems = $derived(
+    courses.map((c) => ({ value: c.code, label: `${c.code} — ${c.name}` })),
+  );
 
   const form = useForm({
     file: null,
@@ -62,6 +90,30 @@
       </div>
     {/if}
 
+    <GuidePanel title="Import Guide">
+      <GuideSection title="Required Columns">
+        <CopyableGroup items={requiredItems} />
+      </GuideSection>
+
+      <GuideSection title="Optional Columns">
+        <CopyableGroup items={optionalItems} />
+      </GuideSection>
+
+      {#if courseItems.length > 0}
+        <GuideSection title="Course Codes">
+          <CopyableGroup items={courseItems} subtitle="Use these codes in course_preference columns" />
+        </GuideSection>
+      {/if}
+
+      <GuideNote variant="tip" title="Tips">
+        <ul class="list-disc pl-4 space-y-1 text-xs text-muted-foreground">
+          <li>First row must contain column headers matching the names above</li>
+          <li>Email addresses must be unique across all applicants</li>
+          <li>Course preferences use course codes, not names</li>
+        </ul>
+      </GuideNote>
+    </GuidePanel>
+
     <form onsubmit={submitForm} class="space-y-4 rounded-lg border border-border bg-card p-6">
       <div class="space-y-2">
         <label for="academic_year" class="text-sm font-medium leading-none">Academic Year</label>
@@ -73,7 +125,7 @@
         >
           <option value="">Select academic year...</option>
           {#each academicYears as year}
-            <option value={year.id}>{year.name} ({year.code})</option>
+            <option value={year.id}>{year.academic_year} — Semester {year.semester}</option>
           {/each}
         </select>
         {#if $form.errors?.academic_year_id}
@@ -93,16 +145,6 @@
         {#if $form.errors?.file}
           <p class="text-sm text-destructive">{$form.errors.file}</p>
         {/if}
-      </div>
-
-      <div class="space-y-2">
-        <p class="text-sm font-medium">Required Columns</p>
-        <code class="block rounded bg-muted px-2 py-1 text-xs">first_name, last_name, email</code>
-      </div>
-
-      <div class="space-y-2">
-        <p class="text-sm font-medium">Optional Columns</p>
-        <code class="block rounded bg-muted px-2 py-1 text-xs">middle_name, suffix, birthdate, sex, phone, address_line, city, province, zip_code, course_preference_1, course_preference_2, course_preference_3</code>
       </div>
 
       <div class="flex gap-3 pt-2">

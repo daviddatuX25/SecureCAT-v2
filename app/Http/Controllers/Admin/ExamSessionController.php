@@ -112,7 +112,7 @@ class ExamSessionController extends Controller
     {
         $applicantCount = Applicant::query()
             ->whereHas('application', fn ($q) => $q->where('status', 'accepted'))
-            ->whereDoesntHave('examSessions')
+            ->whereDoesntHave('examSessions', fn ($q) => $q->whereNotIn('status', [ExamSession::STATUS_CANCELLED]))
             ->count();
 
         $rooms = Room::query()
@@ -244,7 +244,7 @@ class ExamSessionController extends Controller
 
         $available_applicants = Applicant::query()
             ->whereHas('application', fn ($q) => $q->where('status', 'accepted'))
-            ->whereDoesntHave('examSessions')
+            ->whereDoesntHave('examSessions', fn ($q) => $q->whereNotIn('status', [ExamSession::STATUS_CANCELLED]))
             ->with('application:id,reference_number,first_name,middle_name,last_name,suffix')
             ->orderBy('email')
             ->get()
@@ -320,22 +320,6 @@ class ExamSessionController extends Controller
     }
 
     /**
-     * Block schedule actions (publish, release date) when exam is in progress or cancelled.
-     * Per EDGE-CASES: publish = announce schedule; cannot announce something already in progress.
-     */
-    private function redirectIfNotPublishable(ExamSession $exam_session, string $actionMessage): ?RedirectResponse
-    {
-        if ($exam_session->status === ExamSession::STATUS_IN_PROGRESS) {
-            return redirect()->route('admin.exam-scheduling.show', $exam_session)->with('error', $actionMessage);
-        }
-        if ($exam_session->status === ExamSession::STATUS_CANCELLED) {
-            return redirect()->route('admin.exam-scheduling.show', $exam_session)->with('error', $actionMessage);
-        }
-
-        return null;
-    }
-
-    /**
      * Assign applicants to exam session. Per 08-API-SPEC-PHASE1: capacity, accepted only, no duplicate sessions.
      */
     public function assignApplicants(AssignApplicantsRequest $request, ExamSession $exam_session): RedirectResponse|JsonResponse
@@ -376,18 +360,11 @@ class ExamSessionController extends Controller
 
     public function publish(ExamSession $exam_session): RedirectResponse
     {
-        if ($redirect = $this->redirectIfCompleted($exam_session, 'You cannot change a completed exam session.')) {
-            return $redirect;
-        }
-        if ($redirect = $this->redirectIfNotPublishable($exam_session, 'You cannot publish an exam session that is in progress or cancelled.')) {
-            return $redirect;
+        if ($blockReason = $exam_session->publishBlockReason()) {
+            return redirect()->route('admin.exam-scheduling.show', $exam_session)
+                ->with('error', $blockReason);
         }
         $this->authorize('update', $exam_session);
-
-        if ($exam_session->applicants()->count() === 0) {
-            return redirect()->route('admin.exam-scheduling.show', $exam_session)
-                ->with('error', 'Assign at least one applicant before publishing.');
-        }
 
         $exam_session->update([
             'status' => ExamSession::STATUS_PUBLISHED,
@@ -460,6 +437,10 @@ class ExamSessionController extends Controller
     public function start(ExamSession $exam_session): RedirectResponse
     {
         $this->authorize('start', $exam_session);
+
+        if ($exam_session->hasNoApplicants()) {
+            return back()->with('error', 'Cannot start a session with no applicants assigned.');
+        }
 
         if (! $exam_session->isWithinStartWindow()) {
             $user = request()->user();
@@ -592,6 +573,8 @@ class ExamSessionController extends Controller
             'applicants_count' => $s->applicants_count,
             'is_within_start_window' => $s->isWithinStartWindow(),
             'is_past_end' => $s->isPastEndTime(),
+            'is_past_date' => $s->isPastDate(),
+            'can_override_schedule' => true,
             'can_start' => $user->can('start', $s),
             'can_complete' => $user->can('complete', $s),
         ]);
@@ -679,9 +662,11 @@ class ExamSessionController extends Controller
 
         return Inertia::render('Admin/TestAdmin/Roster', [
             'session' => array_merge($exam_session->toArray(), [
+                'date' => $exam_session->date?->format('Y-m-d'),
                 'is_within_start_window' => $isWithinStartWindow,
                 'can_override_schedule' => $canOverrideSchedule,
                 'is_past_end' => $exam_session->isPastEndTime(),
+                'is_past_date' => $exam_session->isPastDate(),
             ]),
             'applicants' => $applicants->values()->all(),
             'stats' => $stats,

@@ -6,6 +6,8 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreAptitudeAreaRequest;
 use App\Http\Requests\UpdateAptitudeAreaRequest;
 use App\Models\AptitudeArea;
+use App\Services\FormulaEvaluator;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -27,6 +29,7 @@ class AptitudeAreaController extends Controller
                 'code' => $a->code,
                 'description' => $a->description,
                 'max_items' => $a->max_items,
+                'formula' => $a->formula,
                 'display_order' => $a->display_order,
                 'is_active' => $a->is_active,
             ]);
@@ -52,6 +55,7 @@ class AptitudeAreaController extends Controller
             'code' => $data['code'],
             'description' => $data['description'] ?? null,
             'max_items' => (int) $data['max_items'],
+            'formula' => $data['formula'] ?? null,
             'display_order' => isset($data['display_order']) ? (int) $data['display_order'] : 0,
             'is_active' => $data['is_active'] ?? true,
         ]);
@@ -71,6 +75,7 @@ class AptitudeAreaController extends Controller
                 'code' => $aptitudeArea->code,
                 'description' => $aptitudeArea->description ?? '',
                 'max_items' => $aptitudeArea->max_items,
+                'formula' => $aptitudeArea->formula ?? '',
                 'display_order' => $aptitudeArea->display_order,
                 'is_active' => $aptitudeArea->is_active,
             ],
@@ -86,6 +91,7 @@ class AptitudeAreaController extends Controller
             'code' => $data['code'],
             'description' => $data['description'] ?? null,
             'max_items' => (int) $data['max_items'],
+            'formula' => $data['formula'] ?? null,
             'display_order' => isset($data['display_order']) ? (int) $data['display_order'] : 0,
             'is_active' => $data['is_active'] ?? true,
         ]);
@@ -109,6 +115,32 @@ class AptitudeAreaController extends Controller
         }
 
         return redirect()->back()->with('success', 'Order saved successfully');
+    }
+
+    public function testFormula(Request $request): JsonResponse
+    {
+        $request->validate([
+            'formula' => ['required', 'string'],
+            'sample_raw_score' => ['required', 'numeric'],
+            'max_items' => ['nullable', 'integer', 'min:1'],
+        ]);
+
+        $evaluator = app(FormulaEvaluator::class);
+
+        if (! $evaluator->validate($request->formula)) {
+            return response()->json(['error' => 'Invalid formula syntax'], 422);
+        }
+
+        $result = $evaluator->evaluate($request->formula, [
+            'x' => (float) $request->sample_raw_score,
+            'max_items' => (int) $request->input('max_items', 100),
+        ]);
+
+        if ($result === null) {
+            return response()->json(['error' => 'Formula evaluation failed'], 422);
+        }
+
+        return response()->json(['result' => $result]);
     }
 
     public function destroy(AptitudeArea $aptitudeArea): RedirectResponse

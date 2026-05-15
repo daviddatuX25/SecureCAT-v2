@@ -4,8 +4,13 @@
   import { Button } from '@/Components/ui/button';
   import { FileUpload } from '@/Components/ui/file-upload';
   import { Upload, ArrowLeft } from 'lucide-svelte';
+  import { GuidePanel, GuideSection, CopyableGroup, GuideNote } from '@/Components/Guide';
 
-  let { gradingSessions = [] } = $props();
+  let {
+    enableNormalizedScores = false,
+    aptitudeAreaCodes = [],
+    previewUrl = '/admin/grading/import/preview',
+  } = $props();
 
   const breadcrumbs = [
     { label: 'Grading', href: '/admin/grading' },
@@ -14,19 +19,18 @@
 
   const form = useForm({
     file: null,
-    grading_session_id: '',
   });
 
   let selectedFile = $state(null);
 
-  function submitForm(e) {
+  function submitPreview(e) {
     e.preventDefault();
     if (!selectedFile) return;
     $form.transform((data) => ({
       ...data,
       file: selectedFile,
     }));
-    $form.post('/admin/grading/import/preview', { forceFormData: true });
+    $form.post(previewUrl, { forceFormData: true });
   }
 
   let message = $state('');
@@ -36,10 +40,14 @@
     message = $page.props.flash?.message || '';
     error = $page.props.flash?.error || '';
   });
+
+  const scoreSuffix = enableNormalizedScores ? '(raw)' : '(normalized)';
+  const requiredItems = [{ value: 'reference_number', label: 'reference_number' }];
+  const aptitudeAreaItems = aptitudeAreaCodes.map((code) => ({ value: code }));
 </script>
 
 <AuthenticatedLayout {breadcrumbs}>
-  <div class="max-w-2xl space-y-6">
+  <div class="max-w-3xl space-y-6">
     <div>
       <Link href="/admin/grading" class="text-sm text-muted-foreground hover:text-foreground inline-flex items-center gap-1">
         <ArrowLeft class="size-4" />
@@ -50,7 +58,7 @@
     <div>
       <h1 class="text-2xl font-semibold">Bulk Import Scores</h1>
       <p class="text-sm text-muted-foreground mt-1">
-        Import applicant scores via CSV file upload. The first row must contain column headers.
+        Import applicant scores via spreadsheet upload. Columns use aptitude area codes.
       </p>
     </div>
 
@@ -66,28 +74,26 @@
       </div>
     {/if}
 
-    <form onsubmit={submitForm} class="space-y-4 rounded-lg border border-border bg-card p-6">
-      <div class="space-y-2">
-        <label for="grading_session" class="text-sm font-medium leading-none">Grading Session</label>
-        <select
-          id="grading_session"
-          bind:value={$form.grading_session_id}
-          class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-          required
-        >
-          <option value="">Select grading session...</option>
-          {#each gradingSessions as session}
-            <option value={session.id}>
-              Session #{session.id} - {session.exam_session?.name || session.exam_session_id}
-              ({session.status})
-            </option>
-          {/each}
-        </select>
-        {#if $form.errors?.grading_session_id}
-          <p class="text-sm text-destructive">{$form.errors.grading_session_id}</p>
-        {/if}
-      </div>
+    <GuidePanel title="Import Guide">
+      <GuideSection title="Required Column">
+        <CopyableGroup items={requiredItems} />
+      </GuideSection>
 
+      <GuideSection title="Score Columns" visible={aptitudeAreaCodes.length > 0}>
+        <CopyableGroup
+          items={aptitudeAreaItems}
+          subtitle="Use these aptitude area codes as column headers. Values are {scoreSuffix}."
+        />
+      </GuideSection>
+
+      <GuideNote variant={enableNormalizedScores ? 'warning' : 'info'} title={enableNormalizedScores ? 'Raw Score Mode' : 'Normalized Score Mode'}>
+        {enableNormalizedScores
+          ? 'Scores are stored as raw values. Enter the original scores from the exam.'
+          : 'Scores are automatically normalized after import. Enter raw scores — the system will normalize them.'}
+      </GuideNote>
+    </GuidePanel>
+
+    <form onsubmit={submitPreview} class="space-y-4 rounded-lg border border-border bg-card p-6">
       <div class="space-y-2">
         <label for="file" class="text-sm font-medium leading-none">Spreadsheet File</label>
         <FileUpload
@@ -102,22 +108,10 @@
         {/if}
       </div>
 
-      <div class="space-y-2">
-        <p class="text-sm font-medium">Required Columns</p>
-        <code class="block rounded bg-muted px-2 py-1 text-xs">reference_number</code>
-      </div>
-
-      <div class="space-y-2">
-        <p class="text-sm font-medium">Optional Columns</p>
-        <code class="block rounded bg-muted px-2 py-1 text-xs">
-          aptitude_area_id, raw_score, max_score, normalized_score
-        </code>
-      </div>
-
       <div class="flex gap-3 pt-2">
         <Button type="submit" disabled={$form.processing} class="min-h-[44px]">
           <Upload class="mr-2 size-4" />
-          {$form.processing ? 'Importing...' : 'Import CSV'}
+          {$form.processing ? 'Uploading...' : 'Preview Import'}
         </Button>
         <Link href="/admin/grading">
           <Button type="button" variant="outline" class="min-h-[44px]">Cancel</Button>

@@ -83,6 +83,12 @@
               <p class="font-medium">{application.phone}</p>
             </div>
           {/if}
+          {#if application.gwa != null}
+            <div>
+              <p class="text-sm text-muted-foreground">GWA</p>
+              <p class="font-medium">{application.gwa}</p>
+            </div>
+          {/if}
         </div>
         {#if application.address_line || application.city || application.province}
           <div>

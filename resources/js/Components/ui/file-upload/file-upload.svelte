@@ -15,10 +15,6 @@
         onerror = null,
     } = $props();
 
-    // 🔴 DIAGNOSTIC: remove this block once issue is confirmed fixed
-    let _jsRunning = $state(false);
-    $effect(() => { _jsRunning = true; });
-
     let isDragging = $state(false);
 
     let acceptTypes = $derived(
@@ -207,11 +203,6 @@
         {/if}
     </div>
 </label>
-
-<!-- 🔴 DIAGNOSTIC BANNER — remove when bug confirmed fixed -->
-<div style="padding: 4px 8px; font-size: 11px; font-family: monospace; border-radius: 4px; margin-top: 4px; background: {_jsRunning ? '#16a34a' : '#dc2626'}; color: white;">
-    {_jsRunning ? '✅ FileUpload JS: RUNNING' : '❌ FileUpload JS: NOT RUNNING'}
-</div>
 
 <style>
     .file-upload {

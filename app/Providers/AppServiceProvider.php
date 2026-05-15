@@ -7,10 +7,12 @@ use App\Models\Application;
 use App\Models\AptitudeArea;
 use App\Models\AuditLog;
 use App\Models\ExamSession;
+use App\Models\GradingSession;
 use App\Policies\ApplicationPolicy;
 use App\Policies\AptitudeAreaPolicy;
 use App\Policies\AuditLogPolicy;
 use App\Policies\ExamSessionPolicy;
+use App\Policies\GradingSessionPolicy;
 use App\Policies\NotificationPolicy;
 use Illuminate\Auth\Middleware\RedirectIfAuthenticated;
 use Illuminate\Cache\RateLimiting\Limit;
@@ -39,6 +41,7 @@ class AppServiceProvider extends ServiceProvider
         Gate::policy(AptitudeArea::class, AptitudeAreaPolicy::class);
         Gate::policy(Application::class, ApplicationPolicy::class);
         Gate::policy(ExamSession::class, ExamSessionPolicy::class);
+        Gate::policy(GradingSession::class, GradingSessionPolicy::class);
         Gate::policy(DatabaseNotification::class, NotificationPolicy::class);
 
         RedirectIfAuthenticated::redirectUsing(fn () => route('dashboard'));

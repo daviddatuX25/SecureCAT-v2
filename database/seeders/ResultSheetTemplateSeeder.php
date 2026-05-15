@@ -28,7 +28,6 @@ class ResultSheetTemplateSeeder extends Seeder
     <div><div class="border-b w-24">&nbsp;</div><p class="text-xs">Counselor</p></div>
     <div><div class="border-b w-24">&nbsp;</div><p class="text-xs">Principal</p></div>
   </div>
-  <div class="flex justify-center pt-2">{{qr_code}}</div>
 </div>
 HTML;
 

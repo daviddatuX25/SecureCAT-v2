@@ -8,6 +8,7 @@ use App\Models\Applicant;
 use App\Models\AptitudeArea;
 use App\Models\ConsultationSummary;
 use App\Models\GradingSession;
+use App\Models\SystemSetting;
 use App\Services\AuditService;
 use App\Services\ScoreInputService;
 use Illuminate\Http\RedirectResponse;
@@ -35,10 +36,13 @@ class GradingScoreController extends Controller
 
         $applicant->load('application');
 
+        $enableNormalizedScores = SystemSetting::enableNormalizedScores();
+
         return Inertia::render('Grading/ScoreInput', [
             'sessionId' => (string) $grading_session->id,
             'applicantId' => (string) $applicant->id,
             'workflowStatus' => $grading_session->workflowStatus(),
+            'enableNormalizedScores' => $enableNormalizedScores,
             'applicant' => [
                 'id' => $applicant->id,
                 'name' => $applicant->application ? trim(implode(' ', array_filter([$applicant->application->first_name, $applicant->application->middle_name, $applicant->application->last_name, $applicant->application->suffix]))) : '—',
@@ -46,8 +50,19 @@ class GradingScoreController extends Controller
                 'exam_date' => $session->examSession?->date?->format('F j, Y'),
                 'room_name' => $session->examSession?->room?->name ?? '—',
             ],
-            'domains' => $domains->map(fn ($d) => ['id' => $d->id, 'name' => $d->name, 'code' => $d->code, 'max_items' => $d->max_items])->values()->all(),
-            'existing_scores' => $existingScores->map(fn ($s) => ['aptitude_area_id' => $s->aptitude_area_id, 'raw_score' => $s->raw_score, 'max_score' => $s->max_score])->values()->all(),
+            'domains' => $domains->map(fn ($d) => [
+                'id' => $d->id,
+                'name' => $d->name,
+                'code' => $d->code,
+                'max_items' => $d->max_items,
+                'has_formula' => $d->formula !== null,
+            ])->values()->all(),
+            'existing_scores' => $existingScores->map(fn ($s) => [
+                'aptitude_area_id' => $s->aptitude_area_id,
+                'raw_score' => $s->raw_score,
+                'max_score' => $s->max_score,
+                'normalized_score' => $s->normalized_score,
+            ])->values()->all(),
         ]);
     }
 
@@ -64,7 +79,8 @@ class GradingScoreController extends Controller
             $grading_session,
             $applicant->id,
             $request->validated('scores'),
-            $request->user()
+            $request->user(),
+            SystemSetting::enableNormalizedScores()
         );
 
         app(AuditService::class)->log('score.entered', GradingSession::class, $grading_session->id, [], [

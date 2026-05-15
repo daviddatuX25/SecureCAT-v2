@@ -7,8 +7,10 @@
   import Switch from '@/Components/ui/switch/switch.svelte';
   import { Textarea } from '@/Components/ui/textarea';
   import { ToggleGroup, ToggleGroupItem } from '@/Components/ui/toggle-group';
+  import * as Select from '@/Components/ui/select';
   import { success } from '@/lib/toast';
-  import { FileCode, FileText, ChevronDown, ChevronUp, HelpCircle, Copy } from 'lucide-svelte';
+  import { FileCode, FileText } from 'lucide-svelte';
+  import { GuidePanel, GuideSection, CopyableGroup, GuideNote } from '@/Components/Guide';
 
   const breadcrumbs = [
     { label: 'Release Management', href: '/admin/release' },
@@ -17,7 +19,8 @@
   ];
 
   let {
-    placeholders = [],
+    placeholdersApplicant1 = [],
+    placeholdersApplicant2 = [],
     domainPlaceholders = [],
     htmlScoresNote = '',
     htmlTemplateRules = '',
@@ -38,11 +41,24 @@
     is_active: true,
   });
 
+  let isCrosswise = $derived($form.logical_unit !== 'full');
+
+  const applicant1Items = $derived(placeholdersApplicant1.map((ph) => ({ value: ph })));
+  const applicant2Items = $derived(placeholdersApplicant2.map((ph) => ({ value: ph })));
+  const domainItems = $derived(
+    domainPlaceholders.flatMap((dp) => {
+      const items = [{ value: dp.example, label: dp.slug }];
+      if (isCrosswise) {
+        items.push({ value: dp.example.replace('}}', '_2}}'), label: `${dp.slug}_2` });
+      }
+      return items;
+    }),
+  );
+
   // $state for reactivity tracking only — Svelte 5 wraps objects in Proxy,
   // which breaks FormData.append (internal slots require a real File).
   let docxFile = $state(null);
   let rawDocxFile = null; // plain var holds the actual File object
-  let helpOpen = $state(false);
 
   $form.onFinish = () => {
     if (!$form.errors || Object.keys($form.errors).length === 0) {
@@ -140,91 +156,35 @@
 
 <AuthenticatedLayout {breadcrumbs}>
   <div class="max-w-6xl space-y-6">
-    <!-- Consolidated Placeholder Help Section -->
-    <div class="rounded-lg border bg-card">
-      <button
-        type="button"
-        onclick={() => helpOpen = !helpOpen}
-        class="flex w-full items-center justify-between px-4 py-3 text-left hover:bg-muted/50"
-      >
-        <div class="flex items-center gap-2">
-          <HelpCircle class="size-4 text-muted-foreground" />
-          <span class="text-sm font-medium">Placeholder Reference & Templates Guide</span>
-        </div>
-        {#if helpOpen}
-          <ChevronUp class="size-4 text-muted-foreground" />
-        {:else}
-          <ChevronDown class="size-4 text-muted-foreground" />
-        {/if}
-      </button>
+    <GuidePanel title="Placeholder Reference & Templates Guide">
+      <GuideSection title="Applicant 1 Placeholders">
+        <CopyableGroup items={applicant1Items} />
+      </GuideSection>
 
-      {#if helpOpen}
-        <div class="border-t px-4 py-4 space-y-4 text-sm">
-          <!-- Common Placeholders -->
-          <div>
-            <h4 class="font-medium mb-2">Common Placeholders</h4>
-            <p class="text-xs text-muted-foreground mb-2">Click to copy</p>
-            <div class="flex flex-wrap gap-1.5">
-              {#each placeholders as ph}
-                <button
-                  type="button"
-                  title="Click to copy {ph}"
-                  onclick={() => { navigator.clipboard.writeText(ph); }}
-                  class="inline-flex items-center gap-1 rounded-full bg-secondary px-2.5 py-1 text-xs font-medium hover:bg-secondary/80 transition-colors"
-                >
-                  <span class="text-foreground">{ph.replace(/[{}]/g, '')}</span>
-                  <Copy class="size-3 text-muted-foreground" />
-                </button>
-              {/each}
-            </div>
-          </div>
+      <GuideSection title="Applicant 2 Placeholders" visible={isCrosswise}>
+        <CopyableGroup items={applicant2Items} />
+      </GuideSection>
 
-          <!-- Domain Placeholders (DOCX only) -->
-          {#if domainPlaceholders.length > 0}
-            <div>
-              <h4 class="font-medium mb-2">Domain Tags</h4>
-              <p class="text-xs text-muted-foreground mb-2">Click to copy. Add <code class="bg-muted px-1">_2</code> for applicant 2.</p>
-              <div class="flex flex-wrap gap-1.5">
-                {#each domainPlaceholders as dp}
-                  <button
-                    type="button"
-                    title="Click to copy {dp.example}"
-                    onclick={() => { navigator.clipboard.writeText(dp.example); }}
-                    class="inline-flex items-center gap-1 rounded-full bg-secondary px-2.5 py-1 text-xs font-medium hover:bg-secondary/80 transition-colors"
-                  >
-                    <span class="text-foreground">{dp.slug}</span>
-                    <Copy class="size-3 text-muted-foreground" />
-                  </button>
-                {/each}
-              </div>
-            </div>
-          {/if}
+      <GuideSection title="Domain Tags" visible={domainPlaceholders.length > 0}>
+        <CopyableGroup
+          items={domainItems}
+          subtitle={isCrosswise ? 'Click to copy. Both applicant 1 and applicant 2 variants are shown.' : 'Click to copy'}
+        />
+      </GuideSection>
 
-          <!-- Mode-specific rules -->
-          {#if $form.mode === 'html'}
-            {#if htmlTemplateRules}
-              <div>
-                <h4 class="font-medium mb-2">HTML Rules</h4>
-                <p class="text-xs text-muted-foreground">{htmlTemplateRules}</p>
-              </div>
-            {/if}
-            {#if htmlScoresNote}
-              <div>
-                <h4 class="font-medium mb-2">Scores Table</h4>
-                <p class="text-xs text-muted-foreground">{@html htmlScoresNote}</p>
-              </div>
-            {/if}
-          {:else}
-            {#if docxPlaceholderNote}
-              <div>
-                <h4 class="font-medium mb-2">DOCX Notes</h4>
-                <p class="text-xs text-muted-foreground">{docxPlaceholderNote}</p>
-              </div>
-            {/if}
-          {/if}
-        </div>
+      {#if $form.mode === 'html'}
+        <GuideSection title="HTML Rules" visible={!!htmlTemplateRules}>
+          <p class="text-xs text-muted-foreground">{htmlTemplateRules}</p>
+        </GuideSection>
+        <GuideSection title="Scores Table" visible={!!htmlScoresNote}>
+          <p class="text-xs text-muted-foreground">{@html htmlScoresNote}</p>
+        </GuideSection>
+      {:else}
+        <GuideSection title="DOCX Notes" visible={!!docxPlaceholderNote}>
+          <p class="text-xs text-muted-foreground">{docxPlaceholderNote}</p>
+        </GuideSection>
       {/if}
-    </div>
+    </GuidePanel>
 
     <div class="grid gap-6 lg:grid-cols-2">
       <form onsubmit={submitForm} class="space-y-4 rounded-lg border bg-card p-6">
@@ -251,12 +211,17 @@
 
         {#if $form.mode === 'html'}
           <div>
-            <label for="logical_unit" class="text-sm font-medium">Layout</label>
-            <select id="logical_unit" bind:value={$form.logical_unit} class="mt-1 flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm max-w-xs">
-              {#each Object.entries(layoutOptions) as [k, v]}
-                <option value={k}>{v}</option>
-              {/each}
-            </select>
+            <label class="text-sm font-medium">Layout</label>
+            <Select.Root type="single" bind:value={$form.logical_unit}>
+              <Select.Trigger class="mt-1 w-full max-w-xs">
+                {layoutOptions[$form.logical_unit] ?? 'Select layout'}
+              </Select.Trigger>
+              <Select.Content>
+                {#each Object.entries(layoutOptions) as [k, v]}
+                  <Select.Item value={k} label={v}>{v}</Select.Item>
+                {/each}
+              </Select.Content>
+            </Select.Root>
           </div>
         {/if}
 

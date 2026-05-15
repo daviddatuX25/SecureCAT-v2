@@ -241,7 +241,7 @@ Route::middleware(['auth'])->group(function () {
             Route::put('/summaries/by-applicant/{applicantId}', [ReleaseController::class, 'storeOrUpdateByApplicant'])->name('summaries.storeOrUpdate');
             // Result Sheet Templates
             Route::post('result-templates/preview', [ResultSheetTemplateController::class, 'preview'])->name('result-templates.preview');
-            Route::resource('result-templates', ResultSheetTemplateController::class)->except('show')->parameters(['result_templates' => 'result_template']);
+            Route::resource('result-templates', ResultSheetTemplateController::class)->except('show');
 
             // Print batch
             Route::prefix('print')->name('print.')->group(function () {

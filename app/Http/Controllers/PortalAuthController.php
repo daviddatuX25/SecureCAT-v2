@@ -237,7 +237,13 @@ class PortalAuthController extends Controller
             'application',
             'consultationSummary',
             'examSessions' => fn ($q) => $q
-                ->where('status', 'published')
+                ->where(function ($query) {
+                    $query->where('status', 'published')
+                        ->orWhere(function ($query) {
+                            $query->where('type', 'direct')
+                                ->where('status', 'in_progress');
+                        });
+                })
                 ->with(['room', 'gradingSession'])
                 ->orderBy('date'),
         ]);
@@ -331,26 +337,37 @@ class PortalAuthController extends Controller
             'timestamp' => $applicant->hasCompletedSetup() ? ($application?->processed_at?->format('M j, Y g:i A') ?? null) : null,
         ];
 
-        $assigned = $primarySession !== null;
-        $stages[] = [
-            'stage' => 'Scheduled for exam',
-            'completed' => $assigned,
-            'timestamp' => $assigned ? $primarySession->published_at?->format('M j, Y g:i A') ?? $primarySession->date?->format('M j, Y') : null,
-        ];
+        $isDirect = $primarySession && $primarySession->type === ExamSession::TYPE_DIRECT;
 
-        $attendanceConfirmed = $pivot && $pivot->attendance_status !== 'pending';
-        $stages[] = [
-            'stage' => 'Attendance confirmed',
-            'completed' => (bool) $attendanceConfirmed,
-            'timestamp' => $pivot?->attendance_marked_at?->format('M j, Y g:i A'),
-        ];
+        if ($isDirect) {
+            // Direct assessment: skip scheduling/attendance/submission, go straight to scored
+            $stages[] = [
+                'stage' => 'Direct assessment',
+                'completed' => $primarySession !== null,
+                'timestamp' => $primarySession?->created_at?->format('M j, Y g:i A'),
+            ];
+        } else {
+            $assigned = $primarySession !== null;
+            $stages[] = [
+                'stage' => 'Scheduled for exam',
+                'completed' => $assigned,
+                'timestamp' => $assigned ? $primarySession->published_at?->format('M j, Y g:i A') ?? $primarySession->date?->format('M j, Y') : null,
+            ];
 
-        $examSubmitted = $pivot && $pivot->submission_status === 'submitted';
-        $stages[] = [
-            'stage' => 'Exam submitted',
-            'completed' => (bool) $examSubmitted,
-            'timestamp' => $pivot?->submitted_at?->format('M j, Y g:i A'),
-        ];
+            $attendanceConfirmed = $pivot && $pivot->attendance_status !== 'pending';
+            $stages[] = [
+                'stage' => 'Attendance confirmed',
+                'completed' => (bool) $attendanceConfirmed,
+                'timestamp' => $pivot?->attendance_marked_at?->format('M j, Y g:i A'),
+            ];
+
+            $examSubmitted = $pivot && $pivot->submission_status === 'submitted';
+            $stages[] = [
+                'stage' => 'Exam submitted',
+                'completed' => (bool) $examSubmitted,
+                'timestamp' => $pivot?->submitted_at?->format('M j, Y g:i A'),
+            ];
+        }
 
         $scoresFinalized = $gradingSession && $gradingSession->status === GradingSession::STATUS_FINALIZED;
         $stages[] = [
@@ -383,6 +400,11 @@ class PortalAuthController extends Controller
     private function buildExamSchedule(?ExamSession $session): ?array
     {
         if (! $session) {
+            return null;
+        }
+
+        // Direct assessment has no room/date/time — don't show exam schedule card
+        if ($session->type === ExamSession::TYPE_DIRECT) {
             return null;
         }
 

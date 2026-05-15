@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Ok, glad you are here
  * first we get a config instance, and set the settings
@@ -17,48 +18,48 @@
  */
 
 return [
-    'encoding'           => 'UTF-8',
-    'finalize'           => true,
-    'ignoreNonStrings'   => false,
-    'cachePath'          => storage_path('app/purifier'),
-    'cacheFileMode'      => 0755,
-    'settings'      => [
+    'encoding' => 'UTF-8',
+    'finalize' => true,
+    'ignoreNonStrings' => false,
+    'cachePath' => storage_path('app/purifier'),
+    'cacheFileMode' => 0755,
+    'settings' => [
         'default' => [
-            'HTML.Doctype'             => 'HTML 4.01 Transitional',
-            'HTML.Allowed'             => 'div,b,strong,i,em,u,a[href|title],ul,ol,li,p[style],br,span[style],img[width|height|alt|src]',
-            'CSS.AllowedProperties'    => 'font,font-size,font-weight,font-style,font-family,text-decoration,padding-left,color,background-color,text-align',
+            'HTML.Doctype' => 'HTML 4.01 Transitional',
+            'HTML.Allowed' => 'div,b,strong,i,em,u,a[href|title],ul,ol,li,p[style],br,span[style],img[width|height|alt|src]',
+            'CSS.AllowedProperties' => 'font,font-size,font-weight,font-style,font-family,text-decoration,padding-left,color,background-color,text-align',
             'AutoFormat.AutoParagraph' => true,
-            'AutoFormat.RemoveEmpty'   => true,
+            'AutoFormat.RemoveEmpty' => true,
         ],
-        'test'    => [
+        'test' => [
             'Attr.EnableID' => 'true',
         ],
-        // Admission slip templates: HTML + CSS allowed, mirror result_sheet
+        // Admin-authored templates (admission slips, result sheets).
+        // Uses trusted mode: these are written by admins, not end users.
+        // HTML.Allowed still blocks <script>, event handlers, and <style> blocks — XSS-safe.
+        // CSS.Trusted bypasses CSS property whitelisting so Tailwind classes survive Purifier.
         'admission_slip' => [
             'HTML.Doctype' => 'XHTML 1.0 Transitional',
+            'HTML.Trusted' => true,
             'HTML.Allowed' => 'div[class|style],p[class|style],span[class|style],br,strong,b,i,em,u,table[class|style|border],thead,tbody,tfoot,tr[class|style],td[class|style|colspan|rowspan|align],th[class|style|colspan|rowspan|align],h1[class|style],h2[class|style],h3[class|style],h4[class|style],h5[class|style],h6[class|style],ul[class|style],ol[class|style],li[class|style],a[href|title|class],img[width|height|alt|src|class],hr',
-            'CSS.AllowTricky' => true,
-            'CSS.AllowedProperties' => 'font,font-size,font-weight,font-style,font-family,text-decoration,text-align,padding,padding-left,padding-right,padding-top,padding-bottom,margin,margin-left,margin-right,margin-top,margin-bottom,color,background-color,border,border-collapse,width,height,min-height,max-width,max-height,display,visibility,overflow,opacity',
+            'CSS.Trusted' => true,
             'AutoFormat.AutoParagraph' => false,
             'AutoFormat.RemoveEmpty' => false,
         ],
-        // Result sheet templates: HTML + CSS allowed, JavaScript strictly banned (script, event handlers, javascript: URLs)
-        // CSS.AllowTricky enables display, visibility, overflow, opacity (HTMLPurifier implements these in doSetupTricky)
-        // flex, flex-wrap, gap, justify-content, align-items are NOT implemented by HTMLPurifier and will trigger errors if listed
         'result_sheet' => [
             'HTML.Doctype' => 'XHTML 1.0 Transitional',
+            'HTML.Trusted' => true,
             'HTML.Allowed' => 'div[class|style],p[class|style],span[class|style],br,strong,b,i,em,u,table[class|style|border],thead,tbody,tfoot,tr[class|style],td[class|style|colspan|rowspan|align],th[class|style|colspan|rowspan|align],h1[class|style],h2[class|style],h3[class|style],h4[class|style],h5[class|style],h6[class|style],ul[class|style],ol[class|style],li[class|style],a[href|title|class],img[width|height|alt|src|class],hr',
-            'CSS.AllowTricky' => true,
-            'CSS.AllowedProperties' => 'font,font-size,font-weight,font-style,font-family,text-decoration,text-align,padding,padding-left,padding-right,padding-top,padding-bottom,margin,margin-left,margin-right,margin-top,margin-bottom,color,background-color,border,border-collapse,width,height,min-height,max-width,max-height,display,visibility,overflow,opacity',
+            'CSS.Trusted' => true,
             'AutoFormat.AutoParagraph' => false,
             'AutoFormat.RemoveEmpty' => false,
         ],
-        "youtube" => [
-            "HTML.SafeIframe"      => 'true',
-            "URI.SafeIframeRegexp" => "%^(http://|https://|//)(www.youtube.com/embed/|player.vimeo.com/video/)%",
+        'youtube' => [
+            'HTML.SafeIframe' => 'true',
+            'URI.SafeIframeRegexp' => '%^(http://|https://|//)(www.youtube.com/embed/|player.vimeo.com/video/)%',
         ],
         'custom_definition' => [
-            'id'  => 'html5-definitions',
+            'id' => 'html5-definitions',
             'rev' => 1,
             'debug' => false,
             'elements' => [
@@ -69,39 +70,39 @@ return [
                 ['aside',   'Block', 'Flow', 'Common'],
                 ['header',  'Block', 'Flow', 'Common'],
                 ['footer',  'Block', 'Flow', 'Common'],
-				
-				// Content model actually excludes several tags, not modelled here
+
+                // Content model actually excludes several tags, not modelled here
                 ['address', 'Block', 'Flow', 'Common'],
                 ['hgroup', 'Block', 'Required: h1 | h2 | h3 | h4 | h5 | h6', 'Common'],
-				
-				// http://developers.whatwg.org/grouping-content.html
+
+                // http://developers.whatwg.org/grouping-content.html
                 ['figure', 'Block', 'Optional: (figcaption, Flow) | (Flow, figcaption) | Flow', 'Common'],
                 ['figcaption', 'Inline', 'Flow', 'Common'],
-				
-				// http://developers.whatwg.org/the-video-element.html#the-video-element
+
+                // http://developers.whatwg.org/the-video-element.html#the-video-element
                 ['video', 'Block', 'Optional: (source, Flow) | (Flow, source) | Flow', 'Common', [
                     'src' => 'URI',
-					'type' => 'Text',
-					'width' => 'Length',
-					'height' => 'Length',
-					'poster' => 'URI',
-					'preload' => 'Enum#auto,metadata,none',
-					'controls' => 'Bool',
+                    'type' => 'Text',
+                    'width' => 'Length',
+                    'height' => 'Length',
+                    'poster' => 'URI',
+                    'preload' => 'Enum#auto,metadata,none',
+                    'controls' => 'Bool',
                 ]],
                 ['source', 'Block', 'Flow', 'Common', [
-					'src' => 'URI',
-					'type' => 'Text',
+                    'src' => 'URI',
+                    'type' => 'Text',
                 ]],
 
-				// http://developers.whatwg.org/text-level-semantics.html
+                // http://developers.whatwg.org/text-level-semantics.html
                 ['s',    'Inline', 'Inline', 'Common'],
                 ['var',  'Inline', 'Inline', 'Common'],
                 ['sub',  'Inline', 'Inline', 'Common'],
                 ['sup',  'Inline', 'Inline', 'Common'],
                 ['mark', 'Inline', 'Inline', 'Common'],
                 ['wbr',  'Inline', 'Empty', 'Core'],
-				
-				// http://developers.whatwg.org/edits.html
+
+                // http://developers.whatwg.org/edits.html
                 ['ins', 'Block', 'Flow', 'Common', ['cite' => 'URI', 'datetime' => 'CDATA']],
                 ['del', 'Block', 'Flow', 'Common', ['cite' => 'URI', 'datetime' => 'CDATA']],
             ],

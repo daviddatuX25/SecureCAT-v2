@@ -43,7 +43,7 @@ class ExamSchedulingAssistantController extends Controller
         $activeAcademicYear = AcademicYear::active();
         $applicantCount = Applicant::query()
             ->whereHas('application', fn ($q) => $q->where('status', 'accepted'))
-            ->whereDoesntHave('examSessions')
+            ->whereDoesntHave('examSessions', fn ($q) => $q->whereNotIn('status', [ExamSession::STATUS_CANCELLED]))
             ->when($activeAcademicYear, fn ($q) => $q->whereHas('application', fn ($aq) => $aq->where('academic_year_id', $activeAcademicYear->id)))
             ->count();
 
@@ -72,7 +72,7 @@ class ExamSchedulingAssistantController extends Controller
 
         $applicantSummary = Applicant::query()
             ->whereHas('application', fn ($q) => $q->where('status', 'accepted'))
-            ->whereDoesntHave('examSessions')
+            ->whereDoesntHave('examSessions', fn ($q) => $q->whereNotIn('status', [ExamSession::STATUS_CANCELLED]))
             ->when($activeAcademicYear, fn ($q) => $q->whereHas('application', fn ($aq) => $aq->where('academic_year_id', $activeAcademicYear->id)))
             ->orderBy('id')
             ->limit(100)
@@ -247,7 +247,7 @@ class ExamSchedulingAssistantController extends Controller
 
         $assignableIds = Applicant::query()
             ->whereHas('application', fn ($q) => $q->where('status', 'accepted'))
-            ->whereDoesntHave('examSessions')
+            ->whereDoesntHave('examSessions', fn ($q) => $q->whereNotIn('status', [ExamSession::STATUS_CANCELLED]))
             ->pluck('id')
             ->all();
 

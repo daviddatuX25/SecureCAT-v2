@@ -2,13 +2,14 @@
 
 namespace App\Models;
 
-use App\Models\ExamSession;
 use Illuminate\Auth\Authenticatable;
 use Illuminate\Contracts\Auth\Authenticatable as AuthenticatableContract;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Str;
 
@@ -43,17 +44,24 @@ class Applicant extends Model implements AuthenticatableContract
         return $this->belongsTo(Application::class);
     }
 
-    public function applicantScores(): \Illuminate\Database\Eloquent\Relations\HasMany
+    public function applicantScores(): HasMany
     {
         return $this->hasMany(ApplicantScore::class);
     }
 
-    public function consultationSummary(): \Illuminate\Database\Eloquent\Relations\HasOne
+    public function consultationSummary(): HasOne
     {
         return $this->hasOne(ConsultationSummary::class);
     }
 
-    public function aiCompanionMessages(): \Illuminate\Database\Eloquent\Relations\HasMany
+    public function gradingSessions(): BelongsToMany
+    {
+        return $this->belongsToMany(GradingSession::class, 'grading_session_applicant')
+            ->withPivot('result_printed_at')
+            ->withTimestamps();
+    }
+
+    public function aiCompanionMessages(): HasMany
     {
         return $this->hasMany(AiCompanionMessage::class);
     }

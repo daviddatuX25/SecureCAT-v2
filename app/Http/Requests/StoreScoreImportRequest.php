@@ -14,20 +14,17 @@ class StoreScoreImportRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'file' => ['required', 'file', 'mimes:csv,txt', 'max:10240'],
-            'grading_session_id' => ['required', 'integer', 'exists:grading_sessions,id'],
+            'file' => ['required', 'file', 'mimes:csv,xlsx,xls,txt', 'max:10240'],
         ];
     }
 
     public function messages(): array
     {
         return [
-            'file.required' => 'Please select a CSV file.',
+            'file.required' => 'Please select a spreadsheet file.',
             'file.file' => 'The uploaded file is invalid.',
-            'file.mimes' => 'File must be a CSV (.csv or .txt).',
+            'file.mimes' => 'File must be CSV, XLSX, or XLS.',
             'file.max' => 'File must not exceed 10MB.',
-            'grading_session_id.required' => 'Please select a grading session.',
-            'grading_session_id.exists' => 'The selected grading session is invalid.',
         ];
     }
 }

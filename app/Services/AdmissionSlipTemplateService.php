@@ -9,6 +9,10 @@ use PhpOffice\PhpWord\TemplateProcessor;
 
 class AdmissionSlipTemplateService
 {
+    public function __construct(
+        protected PrintTemplateCssService $cssService,
+    ) {}
+
     public const PLACEHOLDERS = [
         'reference_number', 'full_name', 'birthdate', 'sex',
         'course_1', 'course_2', 'course_3',
@@ -57,7 +61,9 @@ class AdmissionSlipTemplateService
         }
 
         if ($template->mode === AdmissionSlipTemplate::MODE_HTML) {
-            return $this->renderHtml($template->content ?: '', $replacements);
+            return $this->cssService->wrap(
+                $this->renderHtml($template->content ?: '', $replacements)
+            );
         }
 
         return $this->renderDocx($template->docx_path, $replacements);
@@ -99,7 +105,9 @@ class AdmissionSlipTemplateService
             }
         }
 
-        return $this->renderHtml($content, $replacements);
+        return $this->cssService->wrap(
+            $this->renderHtml($content, $replacements)
+        );
     }
 
     /**

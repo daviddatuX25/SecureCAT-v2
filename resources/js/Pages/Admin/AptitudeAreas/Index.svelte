@@ -68,7 +68,7 @@
                 <div class="group relative inline-flex items-center gap-1.5 cursor-help">
                   <span class="text-xs text-muted-foreground font-normal">Order</span>
                   <Info class="h-4 w-4 text-muted-foreground" />
-                  <div class="absolute top-full left-1/2 mt-1 w-48 -translate-x-1/2 rounded-md border border-border bg-background px-3 py-2 text-xs text-foreground shadow-lg opacity-0 group-hover:opacity-100 transition-opacity z-50">
+                  <div class="absolute top-full left-0 mt-1 w-64 rounded-md border border-border bg-background px-3 py-2 text-left text-xs text-foreground shadow-lg opacity-0 group-hover:opacity-100 transition-opacity z-50 whitespace-normal">
                     Reorder aptitude areas for precise grading experience — e.g., using Tab to quickly input scores.
                   </div>
                 </div>

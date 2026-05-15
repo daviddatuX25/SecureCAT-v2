@@ -1,63 +1,58 @@
 <script>
   import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.svelte';
   import { useForm } from '@inertiajs/svelte';
-  import { Button } from '@/Components/ui/button';
   import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/Components/ui/card';
   import Switch from '@/Components/ui/switch/switch.svelte';
-  import { Bot, Bell, Share2, FileCheck } from 'lucide-svelte';
+  import { Bot, Bell, Share2, FileCheck, Calculator } from 'lucide-svelte';
+  import { success as showSuccess, error as showError } from '@/lib/toast';
 
-  let { ai_exam_companion_enabled = false, notify_on_publish = false, release_mode = 'online', allow_direct_assessment = true } = $props();
+  let { ai_exam_companion_enabled = false, notify_on_publish = false, release_mode = 'online', allow_direct_assessment = true, enable_normalized_scores = false } = $props();
 
   const form = useForm({
     ai_exam_companion_enabled,
     notify_on_publish,
     release_mode,
     allow_direct_assessment,
+    enable_normalized_scores,
   });
 
   const breadcrumbs = [{ label: 'Settings' }];
-  let saving = $state(false);
 
-  function handleReleaseModeToggle() {
-    const next = form.data.release_mode === 'online' ? 'f2f' : 'online';
-    form.update((f) => ({ ...f, release_mode: next }));
+  let saveTimeout = $state(null);
+
+  function autoSave() {
+    if (saveTimeout) clearTimeout(saveTimeout);
+    saveTimeout = setTimeout(() => {
+      $form.put('/admin/settings', {
+        preserveScroll: true,
+        preserveState: true,
+        onSuccess: () => {
+          // Flash message from backend handles success toast
+        },
+        onError: (errors) => {
+          const first = Object.values(errors)[0];
+          showError(first ?? 'Failed to save settings.');
+        },
+      });
+    }, 300);
   }
 
-  $effect(() => {
-    form.update((f) => ({
-      ...f,
-      ai_exam_companion_enabled,
-      notify_on_publish,
-      release_mode,
-      allow_direct_assessment,
-    }));
-  });
-
-  function submitSettings(e) {
-    e.preventDefault();
-    saving = true;
-    $form.transform((data) => ({
-      ai_exam_companion_enabled: !!data.ai_exam_companion_enabled,
-      notify_on_publish: !!data.notify_on_publish,
-      release_mode: data.release_mode,
-      allow_direct_assessment: !!data.allow_direct_assessment,
-    }));
-    $form.put('/admin/settings', {
-      preserveScroll: true,
-      onFinish: () => {
-        saving = false;
-      },
-    });
+  function toggleField(field, value) {
+    form.update((f) => ({ ...f, [field]: value }));
+    autoSave();
   }
 </script>
 
 <AuthenticatedLayout {breadcrumbs}>
   <div class="space-y-6 min-w-0">
-    <div>
+    <div class="flex items-center justify-between">
       <p class="mt-1 text-sm text-muted-foreground">System-wide feature toggles and configuration.</p>
+      {#if $form.processing}
+        <span class="text-sm text-muted-foreground animate-pulse">Saving...</span>
+      {/if}
     </div>
 
-    <form onsubmit={submitSettings} class="space-y-6">
+    <div class="space-y-6">
       <Card>
         <CardHeader>
           <CardTitle class="flex items-center gap-2">
@@ -71,7 +66,7 @@
         <CardContent class="flex items-center gap-4">
           <Switch
             checked={$form.ai_exam_companion_enabled}
-            onCheckedChange={(checked) => form.update((f) => ({ ...f, ai_exam_companion_enabled: checked }))}
+            onCheckedChange={(checked) => toggleField('ai_exam_companion_enabled', checked)}
             aria-label="Enable AI exam companion"
           />
           <span class="text-sm font-medium">
@@ -94,7 +89,7 @@
         <CardContent class="flex items-center gap-4">
           <Switch
             checked={$form.notify_on_publish}
-            onCheckedChange={(checked) => form.update((f) => ({ ...f, notify_on_publish: checked }))}
+            onCheckedChange={(checked) => toggleField('notify_on_publish', checked)}
             aria-label="Enable exam schedule notifications"
           />
           <span class="text-sm font-medium">
@@ -118,19 +113,22 @@
             class="inline-flex rounded-lg border border-border p-1 gap-1 cursor-pointer select-none"
             role="radiogroup"
             aria-label="Release mode"
-            onclick={handleReleaseModeToggle}
           >
             <button
               type="button"
+              role="radio"
+              aria-checked={$form.release_mode === 'online'}
               class="px-4 py-2 rounded-md text-sm font-medium transition-colors {$form.release_mode === 'online' ? 'bg-primary text-primary-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'}"
-              aria-pressed={$form.release_mode === 'online'}
+              onclick={() => toggleField('release_mode', 'online')}
             >
               Online
             </button>
             <button
               type="button"
+              role="radio"
+              aria-checked={$form.release_mode === 'f2f'}
               class="px-4 py-2 rounded-md text-sm font-medium transition-colors {$form.release_mode === 'f2f' ? 'bg-primary text-primary-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'}"
-              aria-pressed={$form.release_mode === 'f2f'}
+              onclick={() => toggleField('release_mode', 'f2f')}
             >
               F2F
             </button>
@@ -158,7 +156,7 @@
         <CardContent class="flex items-center gap-4">
           <Switch
             checked={$form.allow_direct_assessment}
-            onCheckedChange={(checked) => form.update((f) => ({ ...f, allow_direct_assessment: checked }))}
+            onCheckedChange={(checked) => toggleField('allow_direct_assessment', checked)}
             aria-label="Enable direct assessment"
           />
           <span class="text-sm font-medium">
@@ -167,12 +165,27 @@
         </CardContent>
       </Card>
 
-      <div class="flex justify-end">
-        <Button type="submit" disabled={saving} class="min-h-[44px]">
-          {saving ? 'Saving...' : 'Save'}
-        </Button>
-      </div>
-
-          </form>
+      <Card>
+        <CardHeader>
+          <CardTitle class="flex items-center gap-2">
+            <Calculator class="h-5 w-5" />
+            Normalized Score Computation
+          </CardTitle>
+          <CardDescription>
+            When enabled, bulk import expects raw scores and auto-computes normalized scores using aptitude area formulas.
+          </CardDescription>
+        </CardHeader>
+        <CardContent class="flex items-center gap-4">
+          <Switch
+            checked={$form.enable_normalized_scores}
+            onCheckedChange={(checked) => toggleField('enable_normalized_scores', checked)}
+            aria-label="Enable normalized score computation"
+          />
+          <span class="text-sm font-medium">
+            {$form.enable_normalized_scores ? 'Enabled' : 'Disabled'}
+          </span>
+        </CardContent>
+      </Card>
+    </div>
   </div>
 </AuthenticatedLayout>

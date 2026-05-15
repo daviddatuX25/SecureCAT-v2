@@ -26,6 +26,7 @@ class StoreApplicationRequest extends FormRequest
             'city' => ['nullable', 'string', 'max:100'],
             'province' => ['nullable', 'string', 'max:100'],
             'zip_code' => ['nullable', 'string', 'max:10'],
+            'gwa' => ['nullable', 'numeric', 'min:0', 'max:100'],
             'course_preference_1' => ['required', 'integer', 'exists:courses,id'],
             'course_preference_2' => ['nullable', 'integer', 'exists:courses,id', 'different:course_preference_1'],
             'course_preference_3' => ['nullable', 'integer', 'exists:courses,id', 'different:course_preference_1', 'different:course_preference_2'],

@@ -236,6 +236,66 @@ class ReleasePageTest extends TestCase
         );
     }
 
+    public function test_index_includes_course_preferences_in_applicant_application(): void
+    {
+        SystemSetting::set('release_mode', 'online');
+        $course1 = Course::factory()->create(['name' => 'BSIT', 'code' => 'CS101']);
+        $course2 = Course::factory()->create(['name' => 'BSCS', 'code' => 'CS102']);
+        $course3 = Course::factory()->create(['name' => 'BSIS', 'code' => 'CS103']);
+
+        $application = Application::factory()->create([
+            'course_preference_1' => $course1->id,
+            'course_preference_2' => $course2->id,
+            'course_preference_3' => $course3->id,
+        ]);
+        $applicant = Applicant::factory()->create(['application_id' => $application->id]);
+
+        ConsultationSummary::factory()->create([
+            'applicant_id' => $applicant->id,
+            'status' => 'draft',
+        ]);
+
+        $admin = $this->actingAdmin();
+        $response = $this->actingAs($admin)->get('/admin/release');
+
+        $response->assertInertia(
+            fn ($assert) => $assert
+                ->has('summaries.data', 1)
+                ->has('summaries.data.0.applicant.application.course_preferences', 3)
+                ->where('summaries.data.0.applicant.application.course_preferences.0.rank', 1)
+                ->where('summaries.data.0.applicant.application.course_preferences.0.course.id', $course1->id)
+                ->where('summaries.data.0.applicant.application.course_preferences.0.course.name', 'BSIT')
+                ->where('summaries.data.0.applicant.application.course_preferences.0.course.code', 'CS101')
+                ->where('summaries.data.0.applicant.application.course_preferences.1.rank', 2)
+                ->where('summaries.data.0.applicant.application.course_preferences.1.course.id', $course2->id)
+                ->where('summaries.data.0.applicant.application.course_preferences.2.rank', 3)
+                ->where('summaries.data.0.applicant.application.course_preferences.2.course.id', $course3->id)
+        );
+    }
+
+    public function test_index_includes_recommended_course_code(): void
+    {
+        SystemSetting::set('release_mode', 'online');
+        $course = Course::factory()->create(['name' => 'BSEE', 'code' => 'EN101']);
+        $applicant = Applicant::factory()->create();
+        ConsultationSummary::factory()->create([
+            'applicant_id' => $applicant->id,
+            'status' => 'draft',
+            'recommended_course_id' => $course->id,
+        ]);
+
+        $admin = $this->actingAdmin();
+        $response = $this->actingAs($admin)->get('/admin/release');
+
+        $response->assertInertia(
+            fn ($assert) => $assert
+                ->has('summaries.data', 1)
+                ->where('summaries.data.0.recommended_course.id', $course->id)
+                ->where('summaries.data.0.recommended_course.name', 'BSEE')
+                ->where('summaries.data.0.recommended_course.code', 'EN101')
+        );
+    }
+
     public function test_index_includes_finalized_grading_sessions_prop(): void
     {
         SystemSetting::set('release_mode', 'online');

@@ -31,7 +31,7 @@
 
   function submit(e) {
     e.preventDefault();
-    form.post(storeRoute);
+    $form.post(storeRoute);
   }
 </script>
 
@@ -52,7 +52,7 @@
         </CardHeader>
         <CardContent class="space-y-4">
           <div class="space-y-2">
-            <Label for="academic_year_id">Academic Year</Label>
+            <label for="academic_year_id" class="text-sm font-medium leading-none">Academic Year</label>
             <select
               id="academic_year_id"
               bind:value={$form.academic_year_id}
@@ -68,7 +68,7 @@
           </div>
 
           <div class="space-y-2">
-            <Label for="label">Label (optional)</Label>
+            <label for="label" class="text-sm font-medium leading-none">Label (optional)</label>
             <Input id="label" bind:value={$form.label} placeholder="e.g. Walk-in Batch 3" />
             {#if $form.errors.label}
               <p class="text-sm text-destructive">{$form.errors.label}</p>

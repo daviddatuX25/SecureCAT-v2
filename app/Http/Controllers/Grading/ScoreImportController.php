@@ -4,11 +4,15 @@ namespace App\Http\Controllers\Grading;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreScoreImportRequest;
+use App\Models\AptitudeArea;
 use App\Models\GradingSession;
+use App\Models\SystemSetting;
 use App\Services\ScoreImportService;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Session;
+use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 use Inertia\Response as InertiaResponse;
 
@@ -25,12 +29,16 @@ class ScoreImportController extends Controller
     {
         $this->authorize('viewAny', GradingSession::class);
 
-        $gradingSessions = GradingSession::with(['examSession', 'aptitudeAreas'])
-            ->orderByDesc('opened_at')
-            ->get(['id', 'exam_session_id', 'status', 'opened_at']);
+        $stalePath = Session::get('score_import_temp_path');
+        if ($stalePath && Storage::exists($stalePath)) {
+            Storage::delete($stalePath);
+        }
+        Session::forget('score_import_temp_path');
 
         return Inertia::render('Grading/Import', [
-            'gradingSessions' => $gradingSessions,
+            'enableNormalizedScores' => SystemSetting::enableNormalizedScores(),
+            'aptitudeAreaCodes' => AptitudeArea::where('is_active', true)->pluck('code')->toArray(),
+            'previewUrl' => route('admin.grading.import.preview'),
         ]);
     }
 
@@ -42,57 +50,17 @@ class ScoreImportController extends Controller
         $this->authorize('viewAny', GradingSession::class);
 
         try {
-            // Parse and validate CSV
             $records = $this->importService->parseSpreadsheet($request->file('file'));
-            $validation = $this->importService->validateRecords(
-                $records,
-                $request->integer('grading_session_id')
-            );
+            $result = $this->importService->importScores($records, $request->user()->id);
 
-            // If there are validation errors, redirect back with error message
-            if (! empty($validation['errors'])) {
-                $errorMessage = implode("\n", $validation['errors']);
-
-                return back()->with('error', $errorMessage);
-            }
-
-            // Import valid records
-            $result = $this->importService->importScores(
-                $validation['valid'],
-                $request->integer('grading_session_id'),
-                $request->user()->id
-            );
-
-            // Build success message
             $message = "Successfully imported {$result['imported']} scores.";
-            if ($result['updated'] > 0) {
-                $message .= " {$result['updated']} updated.";
-            }
             if ($result['skipped'] > 0) {
                 $message .= " {$result['skipped']} skipped.";
             }
-            if (! empty($result['errors'])) {
-                $message .= "\nErrors:\n".implode("\n", $result['errors']);
-            }
-
-            Log::info('Bulk score import completed', [
-                'user_id' => $request->user()->id,
-                'grading_session_id' => $request->integer('grading_session_id'),
-                'imported' => $result['imported'],
-                'updated' => $result['updated'],
-                'skipped' => $result['skipped'],
-            ]);
 
             return back()->with('message', $message);
-        } catch (\InvalidArgumentException $e) {
-            return back()->with('error', $e->getMessage());
         } catch (\Exception $e) {
-            Log::error('Bulk score import failed', [
-                'user_id' => $request->user()->id,
-                'error' => $e->getMessage(),
-            ]);
-
-            return back()->with('error', 'Import failed: '.$e->getMessage());
+            return back()->with('error', $e->getMessage());
         }
     }
 
@@ -104,25 +72,20 @@ class ScoreImportController extends Controller
         $this->authorize('viewAny', GradingSession::class);
 
         try {
-            $records = $this->importService->parseSpreadsheet($request->file('file'));
-            $validated = $this->importService->validateRecordsWithDetails(
-                $records,
-                $request->integer('grading_session_id')
-            );
+            $file = $request->file('file');
+            $tempPath = $file->store('temp/score_imports');
+            Session::put('score_import_temp_path', $tempPath);
 
-            Session::put('score_import_records', $records);
-            Session::put('score_import_session_id', $request->integer('grading_session_id'));
-
-            $gradingSessions = GradingSession::with(['examSession', 'aptitudeAreas'])
-                ->orderByDesc('opened_at')
-                ->get(['id', 'exam_session_id', 'status', 'opened_at']);
+            $records = $this->importService->parseSpreadsheet(Storage::path($tempPath));
+            $validated = $this->importService->validateRecords($records);
 
             return Inertia::render('Grading/ImportPreview', [
-                'records' => $validated,
-                'totalCount' => count($records),
-                'validCount' => array_sum(array_column($validated, 'is_valid')),
-                'gradingSessionId' => $request->integer('grading_session_id'),
-                'gradingSessions' => $gradingSessions,
+                'records' => $validated['records'],
+                'totalCount' => $validated['summary']['total'],
+                'validCount' => $validated['summary']['valid'],
+                'enableNormalizedScores' => SystemSetting::enableNormalizedScores(),
+                'aptitudeAreaCodes' => AptitudeArea::where('is_active', true)->pluck('code')->toArray(),
+                'confirmUrl' => route('admin.grading.import.confirm'),
             ]);
         } catch (\InvalidArgumentException $e) {
             return back()->with('error', $e->getMessage());
@@ -140,37 +103,40 @@ class ScoreImportController extends Controller
     {
         $this->authorize('viewAny', GradingSession::class);
 
-        $records = Session::get('score_import_records', []);
-        $sessionId = Session::get('score_import_session_id');
+        $tempPath = Session::get('score_import_temp_path');
 
-        if (empty($records)) {
-            return redirect()->route('grading.import')->with('error', 'No import data found. Please upload again.');
+        if (! $tempPath || ! Storage::exists($tempPath)) {
+            return redirect()->route('admin.grading.import')->with('error', 'Import session expired. Please upload again.');
         }
 
         try {
+            $records = $this->importService->parseSpreadsheet(Storage::path($tempPath));
             $selectedIds = $request->input('selected_ids', []);
 
-            if (empty($selectedIds)) {
-                $result = $this->importService->importScores($records, $sessionId, $request->user()->id);
-            } else {
-                $result = $this->importService->importSelectedScores($records, $selectedIds, $sessionId, $request->user()->id);
-            }
+            $result = $this->importService->importSelectedScores($records, $selectedIds, $request->user()->id);
 
-            Session::forget(['score_import_records', 'score_import_session_id']);
+            Storage::delete($tempPath);
+            Session::forget('score_import_temp_path');
 
             $message = "Successfully imported {$result['imported']} scores.";
-            if ($result['updated'] > 0) {
-                $message .= " {$result['updated']} updated.";
-            }
             if ($result['skipped'] > 0) {
                 $message .= " {$result['skipped']} skipped.";
             }
+            if (! empty($result['errors'])) {
+                $message .= "\nErrors:\n".implode("\n", $result['errors']);
+            }
 
-            return redirect()->route('grading.import')->with('message', $message);
+            Log::info('Bulk score import confirmed', [
+                'user_id' => $request->user()->id,
+                'imported' => $result['imported'],
+                'skipped' => $result['skipped'],
+            ]);
+
+            return redirect()->route('admin.grading.import')->with('message', $message);
         } catch (\Exception $e) {
             Log::error('Bulk score import confirm failed', ['error' => $e->getMessage()]);
 
-            return redirect()->route('grading.import')->with('error', 'Import failed: '.$e->getMessage());
+            return redirect()->route('admin.grading.import')->with('error', 'Import failed: '.$e->getMessage());
         }
     }
 }

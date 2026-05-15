@@ -1,20 +1,56 @@
 <script>
   import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.svelte';
-  import { Link, useForm } from '@inertiajs/svelte';
+  import { Link, useForm, usePage } from '@inertiajs/svelte';
   import { Button } from '@/Components/ui/button';
   import { Input } from '@/Components/ui/input';
   import { Textarea } from '@/Components/ui/textarea';
   import { Switch } from '@/Components/ui/switch';
   import { success } from '@/lib/toast';
 
+  const page = usePage();
+
   const form = useForm({
     name: '',
     code: '',
     description: '',
     max_items: 25,
+    formula: '',
     display_order: 0,
     is_active: true,
   });
+
+  let testScore = $state(10);
+  let testResult = $state(null);
+  let testError = $state('');
+
+  async function testFormula() {
+    testResult = null;
+    testError = '';
+    if (!$form.formula) {
+      testError = 'Enter a formula first';
+      return;
+    }
+    try {
+      const res = await fetch('/admin/aptitude-areas/test-formula', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          'X-CSRF-TOKEN': $page.props.csrf_token || document.querySelector('meta[name="csrf-token"]')?.content || '',
+        },
+        body: JSON.stringify({ formula: $form.formula, sample_raw_score: testScore, max_items: Number($form.max_items) }),
+      });
+      const data = await res.json();
+      if (!res.ok || data.error) {
+        testError = data.error || `Request failed (${res.status})`;
+      } else {
+        testResult = data.result;
+      }
+    } catch (e) {
+      console.error('Test formula error:', e);
+      testError = 'Request failed';
+    }
+  }
 
   $form.onFinish = () => {
     if (!$form.errors || Object.keys($form.errors).length === 0) {
@@ -73,6 +109,44 @@
         {#if $form.errors?.max_items}
           <p class="text-sm text-destructive">{$form.errors.max_items}</p>
         {/if}
+      </div>
+
+      <div class="space-y-2">
+        <label for="formula" class="text-sm font-medium">Formula (optional)</label>
+        <textarea
+          id="formula"
+          bind:value={$form.formula}
+          rows="2"
+          class="flex min-h-[60px] w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+          placeholder="e.g., (x / max_items) * 100"
+        ></textarea>
+        <p class="text-xs text-muted-foreground">Variables: x (raw score), max_items, pi</p>
+        {#if $form.errors?.formula}
+          <p class="text-sm text-destructive">{$form.errors.formula}</p>
+        {/if}
+      </div>
+
+      <div class="space-y-2 rounded-md border border-border bg-muted/30 p-4">
+        <p class="text-sm font-medium">Test Formula</p>
+        <div class="flex items-center gap-3">
+          <div class="flex-1">
+            <label class="text-xs text-muted-foreground">Sample raw score</label>
+            <Input type="number" bind:value={testScore} min="0" />
+          </div>
+          <div class="flex-1">
+            <label class="text-xs text-muted-foreground">Result</label>
+            <div class="h-10 flex items-center text-sm">
+              {#if testResult !== null}
+                <span class="font-medium text-green-700">{testResult}</span>
+              {:else if testError}
+                <span class="text-red-600">{testError}</span>
+              {:else}
+                <span class="text-muted-foreground">—</span>
+              {/if}
+            </div>
+          </div>
+        </div>
+        <Button type="button" variant="outline" size="sm" onclick={testFormula}>Test</Button>
       </div>
 
       <div class="space-y-2">

@@ -12,9 +12,13 @@ use PhpOffice\PhpWord\TemplateProcessor;
 
 class ResultSheetTemplateService
 {
+    public function __construct(
+        protected PrintTemplateCssService $cssService,
+    ) {}
+
     public const PLACEHOLDERS = [
         'applicant_name', 'applicant_reference', 'exam_date', 'room_name',
-        'scores_rows', 'overall_pct', 'qr_code',
+        'scores_rows', 'overall_pct',
         'applicant_name_2', 'applicant_reference_2', 'scores_rows_2', 'overall_pct_2',
     ];
 
@@ -40,7 +44,6 @@ class ResultSheetTemplateService
                 $replacements["room_name{$suffix}"] = $data['room_name'] ?? '—';
                 $replacements["scores_rows{$suffix}"] = $this->buildScoresRows($data['scores'] ?? []);
                 $replacements["overall_pct{$suffix}"] = (string) ($data['overall_pct'] ?? 0);
-                $replacements["qr_code{$suffix}"] = $this->qrPlaceholder($data['reference'] ?? '');
             } else {
                 $replacements["applicant_name{$suffix}"] = '—';
                 $replacements["applicant_reference{$suffix}"] = '—';
@@ -48,7 +51,6 @@ class ResultSheetTemplateService
                 $replacements["room_name{$suffix}"] = '—';
                 $replacements["scores_rows{$suffix}"] = '';
                 $replacements["overall_pct{$suffix}"] = '—';
-                $replacements["qr_code{$suffix}"] = '';
             }
         }
 
@@ -58,7 +60,9 @@ class ResultSheetTemplateService
         $this->addPerDomainReplacements($replacements, $applicants, $sample, $useSampleData);
 
         if ($template->mode === ResultSheetTemplate::MODE_HTML) {
-            return $this->renderHtml($template->content ?: '', $replacements);
+            return $this->cssService->wrap(
+                $this->renderHtml($template->content ?: '', $replacements)
+            );
         }
 
         return $this->renderDocx($template->docx_path, $replacements);
@@ -84,7 +88,6 @@ class ResultSheetTemplateService
                 $replacements["room_name{$suffix}"] = $data['room_name'] ?? '—';
                 $replacements["scores_rows{$suffix}"] = $this->buildScoresRows($data['scores'] ?? []);
                 $replacements["overall_pct{$suffix}"] = (string) ($data['overall_pct'] ?? 0);
-                $replacements["qr_code{$suffix}"] = $this->qrPlaceholder($data['reference'] ?? '');
             } else {
                 $replacements["applicant_name{$suffix}"] = '—';
                 $replacements["applicant_reference{$suffix}"] = '—';
@@ -92,7 +95,6 @@ class ResultSheetTemplateService
                 $replacements["room_name{$suffix}"] = '—';
                 $replacements["scores_rows{$suffix}"] = '';
                 $replacements["overall_pct{$suffix}"] = '—';
-                $replacements["qr_code{$suffix}"] = '';
             }
         }
         $replacements['exam_date'] = $replacements['exam_date'] ?? '—';
@@ -100,7 +102,9 @@ class ResultSheetTemplateService
 
         $this->addPerDomainReplacements($replacements, $applicants, $sample, $useSampleData);
 
-        return $this->renderHtml($content, $replacements);
+        return $this->cssService->wrap(
+            $this->renderHtml($content, $replacements)
+        );
     }
 
     /**
@@ -119,7 +123,6 @@ class ResultSheetTemplateService
                 'room_name' => $sample['room_name'],
                 'scores_rows' => $this->buildScoresRows($sample['scores']),
                 'overall_pct' => (string) $sample['overall_pct'],
-                'qr_code' => $this->qrPlaceholder($sample['reference']),
                 // Applicant 2 (dual layout)
                 'applicant_name_2' => $sample['name_2'] ?? '—',
                 'applicant_reference_2' => $sample['reference_2'] ?? '—',
@@ -251,11 +254,6 @@ class ResultSheetTemplateService
         }
 
         return implode("\n", $rows);
-    }
-
-    protected function qrPlaceholder(string $reference): string
-    {
-        return '<div class="w-20 h-20 border-2 border-dashed border-muted-foreground/50 rounded flex items-center justify-center text-xs text-muted-foreground text-center px-1">QR Code</div>';
     }
 
     protected function sampleApplicantData(): array

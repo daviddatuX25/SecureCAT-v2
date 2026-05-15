@@ -30,7 +30,7 @@ class SystemSetting extends Model
         }
 
         $v = $row->value;
-        if (in_array($key, ['ai_exam_companion_enabled', 'online_release_enabled', 'notify_on_publish', 'allow_direct_assessment'], true)) {
+        if (in_array($key, ['ai_exam_companion_enabled', 'notify_on_publish', 'allow_direct_assessment', 'enable_normalized_scores'], true)) {
             return filter_var($v, FILTER_VALIDATE_BOOLEAN);
         }
 
@@ -99,5 +99,13 @@ class SystemSetting extends Model
     public static function allowDirectAssessment(): bool
     {
         return self::get('allow_direct_assessment', true);
+    }
+
+    /**
+     * Whether normalized score auto-computation is enabled. Default: false.
+     */
+    public static function enableNormalizedScores(): bool
+    {
+        return (bool) self::get('enable_normalized_scores', false);
     }
 }

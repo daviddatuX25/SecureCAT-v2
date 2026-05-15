@@ -66,14 +66,16 @@ class SessionRosterController extends Controller
         $user = request()->user();
         $isWithinStartWindow = $exam_session->isWithinStartWindow();
         $isAssignedProctor = $exam_session->proctors()->where('users.id', $user->id)->exists();
-        $canOverrideSchedule = $user->hasAnyRole(['super_admin', 'test_administrator']) || $isAssignedProctor;
+        $canOverrideSchedule = $user->hasAnyRole(['super_admin', 'test_administrator']);
 
         return Inertia::render('Proctor/SessionRoster', [
             'session' => array_merge($exam_session->toArray(), [
+                'date' => $exam_session->date?->format('Y-m-d'),
                 'is_within_start_window' => $isWithinStartWindow,
                 'can_override_schedule' => $canOverrideSchedule,
                 'is_within_window' => $exam_session->isWithinExamWindow(),
                 'is_past_end' => $exam_session->isPastEndTime(),
+                'is_past_date' => $exam_session->isPastDate(),
             ]),
             'applicants' => $applicants->values()->all(),
             'stats' => $stats,
@@ -254,10 +256,18 @@ class SessionRosterController extends Controller
             return response()->json(['message' => 'Session must be published to start.'], 409);
         }
 
+        if ($exam_session->hasNoApplicants()) {
+            $message = 'Cannot start a session with no applicants assigned.';
+            if (request()->wantsJson()) {
+                return response()->json(['message' => $message], 409);
+            }
+
+            return back()->with('error', $message);
+        }
+
         $withinWindow = $exam_session->isWithinStartWindow();
         $user = request()->user();
-        $isAssignedProctor = $exam_session->proctors()->where('users.id', $user->id)->exists();
-        $canOverride = $user->hasAnyRole(['super_admin', 'test_administrator']) || $isAssignedProctor;
+        $canOverride = $user->hasAnyRole(['super_admin', 'test_administrator']);
 
         if (! $withinWindow && ! $canOverride) {
             $message = 'Outside scheduled window. Only an admin can start the session outside the schedule.';

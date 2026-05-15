@@ -43,6 +43,8 @@ class ExamSession extends Model
         'label',
     ];
 
+    protected $appends = ['is_publishable', 'publish_block_reason'];
+
     protected function casts(): array
     {
         return [
@@ -145,15 +147,16 @@ class ExamSession extends Model
      */
     public function isWithinStartWindow(?Carbon $now = null): bool
     {
-        $now = ($now ?? now())->copy()->setTimezone(config('app.timezone', 'UTC'));
+        $tz = config('app.timezone', 'UTC');
+        $now ??= Carbon::now($tz);
 
         // Fixed grace minutes; will be dynamic from admin settings in the future (task deferred).
         $graceMinutesBeforeStart = 15;
         $graceMinutesAfterEnd = 30;
 
-        $dateStr = $this->date->format('Y-m-d');
-        $windowStart = Carbon::parse($dateStr.' '.$this->start_time, config('app.timezone', 'UTC'))->subMinutes($graceMinutesBeforeStart);
-        $windowEnd = Carbon::parse($dateStr.' '.($this->end_time ?? '23:59'), config('app.timezone', 'UTC'))->addMinutes($graceMinutesAfterEnd);
+        $sessionDate = Carbon::parse($this->date)->tz($tz);
+        $windowStart = $sessionDate->copy()->setTimeFromTimeString($this->start_time)->subMinutes($graceMinutesBeforeStart);
+        $windowEnd = $sessionDate->copy()->setTimeFromTimeString($this->end_time ?? '23:59')->addMinutes($graceMinutesAfterEnd);
 
         return $now->between($windowStart, $windowEnd);
     }
@@ -203,5 +206,53 @@ class ExamSession extends Model
     public function isDirect(): bool
     {
         return $this->type === self::TYPE_DIRECT;
+    }
+
+    /** Whether the session date is strictly in the past (not today). */
+    public function isPastDate(): bool
+    {
+        return $this->date?->isPast() && ! $this->date?->isToday();
+    }
+
+    /** Whether this session has no applicants assigned. */
+    public function hasNoApplicants(): bool
+    {
+        return $this->applicants()->count() === 0;
+    }
+
+    /** Returns the first reason a session cannot be published, or null if it can. */
+    public function publishBlockReason(): ?string
+    {
+        if (in_array($this->status, [self::STATUS_IN_PROGRESS, self::STATUS_COMPLETED, self::STATUS_CANCELLED], true)) {
+            return 'Cannot publish a session that is in progress, completed, or cancelled.';
+        }
+
+        if (! $this->date || ! $this->start_time || ! $this->room_id) {
+            return 'Set the date, start time, and room before publishing.';
+        }
+
+        if ($this->isPastDate()) {
+            return 'Cannot publish a session with a past date.';
+        }
+
+        if ($this->isPastEndTime()) {
+            return 'Cannot publish a session whose scheduled end time has already passed.';
+        }
+
+        if ($this->hasNoApplicants()) {
+            return 'Assign at least one applicant before publishing.';
+        }
+
+        return null;
+    }
+
+    public function getIsPublishableAttribute(): bool
+    {
+        return $this->publishBlockReason() === null;
+    }
+
+    public function getPublishBlockReasonAttribute(): ?string
+    {
+        return $this->publishBlockReason();
     }
 }

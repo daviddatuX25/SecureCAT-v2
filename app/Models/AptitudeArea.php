@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Services\FormulaEvaluator;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -15,6 +16,7 @@ class AptitudeArea extends Model
         'code',
         'description',
         'max_items',
+        'formula',
         'display_order',
         'is_active',
     ];
@@ -31,5 +33,17 @@ class AptitudeArea extends Model
     public function applicantScores(): HasMany
     {
         return $this->hasMany(ApplicantScore::class, 'aptitude_area_id');
+    }
+
+    public function computeNormalizedScore(float $rawScore): ?float
+    {
+        if (! $this->formula) {
+            return null;
+        }
+
+        return app(FormulaEvaluator::class)->evaluate($this->formula, [
+            'x' => $rawScore,
+            'max_items' => $this->max_items,
+        ]);
     }
 }

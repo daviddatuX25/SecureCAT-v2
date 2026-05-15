@@ -16,6 +16,7 @@ use App\Services\AdmissionSlipService;
 use Carbon\Carbon;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Inertia\Inertia;
@@ -45,9 +46,9 @@ class ApplicationController extends Controller
                 'coursePreference2:id,name,code',
                 'coursePreference3:id,name,code',
                 'academicYear:id,academic_year,semester',
-                'applicant.examSessions:id,status',
+                'applicant.examSessions:id,status,type',
                 'applicant.applicantScores:id,applicant_id',
-                'applicant.consultationSummary:id,applicant_id,status',
+                'applicant.consultationSummary:id,applicant_id,status,released_at',
             ]);
 
         if ($queryAcademicYearId !== null) {
@@ -112,7 +113,7 @@ class ApplicationController extends Controller
             }
 
             if ($sortField === 'pipeline_status') {
-                $order = ['pending' => 0, 'accepted' => 1, 'draft_scheduled' => 2, 'scheduled' => 3, 'attended' => 4, 'submitted' => 5, 'graded' => 6, 'dismissed' => 7];
+                $order = ['pending' => 0, 'accepted' => 1, 'draft_scheduled' => 2, 'scheduled' => 3, 'printed' => 4, 'attended' => 5, 'submitted' => 6, 'scored' => 7, 'graded' => 8, 'released' => 9, 'dismissed' => 10];
                 $transformed = $sortDirection === 'asc'
                     ? $transformed->sortBy(fn ($item) => $order[$item['pipeline_status']] ?? 99)->values()
                     : $transformed->sortByDesc(fn ($item) => $order[$item['pipeline_status']] ?? 99)->values();
@@ -123,7 +124,7 @@ class ApplicationController extends Controller
             $offset = ($page - 1) * $perPage;
             $items = $transformed->slice($offset, $perPage)->values();
 
-            $applications = new \Illuminate\Pagination\LengthAwarePaginator(
+            $applications = new LengthAwarePaginator(
                 $items,
                 $transformed->count(),
                 $perPage,
@@ -155,9 +156,12 @@ class ApplicationController extends Controller
                 ['value' => 'accepted', 'label' => 'Accepted'],
                 ['value' => 'draft_scheduled', 'label' => 'Draft Scheduled'],
                 ['value' => 'scheduled', 'label' => 'Scheduled'],
+                ['value' => 'printed', 'label' => 'Printed'],
                 ['value' => 'attended', 'label' => 'Attended'],
                 ['value' => 'submitted', 'label' => 'Submitted'],
+                ['value' => 'scored', 'label' => 'Scored'],
                 ['value' => 'graded', 'label' => 'Graded'],
+                ['value' => 'released', 'label' => 'Released'],
                 ['value' => 'dismissed', 'label' => 'Dismissed'],
             ],
         ]);
@@ -178,7 +182,7 @@ class ApplicationController extends Controller
             'academicYear:id,application_start_date,application_end_date',
             'applicant.examSessions',
             'applicant.applicantScores',
-            'applicant.consultationSummary',
+            'applicant.consultationSummary:id,applicant_id,status,released_at',
         ]);
 
         $courses = $this->getCourses();
@@ -223,15 +227,18 @@ class ApplicationController extends Controller
             'appointment_label' => $appointmentLabel,
             'submitted_at' => $application->submitted_at?->toIso8601String(),
             'created_at' => $application->created_at?->toIso8601String(),
-            'pipeline_status' => $application->pipelineStatus(),
-            'pipeline_details' => $application->pipelineDetails(),
         ];
+
+        $pipelineStatus = $application->pipelineStatus();
+        $pipelineDetails = $application->pipelineDetails();
 
         return Inertia::render('Applications/Show', [
             'application' => $applicationData,
             'courses' => $courses,
             'within_application_window' => $withinApplicationWindow,
             'application_window_label' => $applicationWindowLabel,
+            'pipeline_status' => $pipelineStatus,
+            'pipeline_details' => $pipelineDetails,
         ]);
     }
 

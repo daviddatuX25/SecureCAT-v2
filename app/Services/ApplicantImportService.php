@@ -32,7 +32,65 @@ class ApplicantImportService
         'course_preference_1',
         'course_preference_2',
         'course_preference_3',
+        'gwa',
     ];
+
+    /** Cached course code→id map for resolving preferences */
+    private ?array $courseCodeMap = null;
+
+    /**
+     * Build or return cached map of course code (lowercase) → course ID.
+     *
+     * @return array<string, int>
+     */
+    private function courseCodeMap(): array
+    {
+        if ($this->courseCodeMap !== null) {
+            return $this->courseCodeMap;
+        }
+
+        $this->courseCodeMap = Course::query()
+            ->pluck('id', 'code')
+            ->mapWithKeys(fn ($id, $code) => [strtolower($code) => $id])
+            ->toArray();
+
+        return $this->courseCodeMap;
+    }
+
+    /**
+     * Resolve a course preference value to a course ID.
+     * Accepts either a course code (e.g. "BSCS") or a numeric course ID.
+     *
+     * @return array{resolved: int|null, error: string|null}
+     */
+    private function resolveCoursePreference(?string $value, string $fieldName): array
+    {
+        if (empty($value)) {
+            return ['resolved' => null, 'error' => null];
+        }
+
+        $trimmed = trim($value);
+
+        // If numeric, treat as a course ID — validate it exists
+        if (is_numeric($trimmed)) {
+            $id = (int) $trimmed;
+            if (Course::where('id', $id)->exists()) {
+                return ['resolved' => $id, 'error' => null];
+            }
+
+            return ['resolved' => null, 'error' => "{$fieldName}: course ID {$id} does not exist"];
+        }
+
+        // Otherwise treat as a course code — resolve to ID
+        $codeLower = strtolower($trimmed);
+        $map = $this->courseCodeMap();
+
+        if (isset($map[$codeLower])) {
+            return ['resolved' => $map[$codeLower], 'error' => null];
+        }
+
+        return ['resolved' => null, 'error' => "{$fieldName}: unknown course code \"{$trimmed}\""];
+    }
 
     public function validateFile(UploadedFile $file): void
     {
@@ -236,12 +294,22 @@ class ApplicantImportService
             $errors[] = 'Invalid email format';
         }
 
-        // Optional: validate course preference IDs if provided
+        // Validate course preferences: accept course code or numeric ID
+        $resolvedPrefs = [];
         foreach ([1, 2, 3] as $prefNum) {
             $key = "course_preference_{$prefNum}";
-            if (! empty($record[$key]) && ! is_numeric($record[$key])) {
-                $errors[] = "{$key} must be a number";
+            $result = $this->resolveCoursePreference($record[$key] ?? null, $key);
+            if ($result['error'] !== null) {
+                $errors[] = $result['error'];
+            } else {
+                $resolvedPrefs[$key] = $result['resolved'];
             }
+        }
+
+        // Check mutual exclusion: preferences must differ from each other
+        $prefValues = array_filter($resolvedPrefs);
+        if (count($prefValues) !== count(array_unique($prefValues))) {
+            $errors[] = 'Course preferences must be different from each other';
         }
 
         return $errors;
@@ -338,6 +406,11 @@ class ApplicantImportService
                 return ['success' => false, 'error' => 'Duplicate email for this academic year'];
             }
 
+            // Resolve course preferences (code or ID → ID)
+            $coursePref1 = $this->resolveCoursePreference($record['course_preference_1'] ?? null, 'course_preference_1');
+            $coursePref2 = $this->resolveCoursePreference($record['course_preference_2'] ?? null, 'course_preference_2');
+            $coursePref3 = $this->resolveCoursePreference($record['course_preference_3'] ?? null, 'course_preference_3');
+
             // Generate reference number
             $referenceNumber = $this->generateReferenceNumber($academicYearId);
 
@@ -356,9 +429,10 @@ class ApplicantImportService
                 'city' => $record['city'] ?? null,
                 'province' => $record['province'] ?? null,
                 'zip_code' => $record['zip_code'] ?? null,
-                'course_preference_1' => $record['course_preference_1'] ?? null,
-                'course_preference_2' => $record['course_preference_2'] ?? null,
-                'course_preference_3' => $record['course_preference_3'] ?? null,
+                'gwa' => isset($record['gwa']) && is_numeric($record['gwa']) ? (float) $record['gwa'] : null,
+                'course_preference_1' => $coursePref1['resolved'],
+                'course_preference_2' => $coursePref2['resolved'],
+                'course_preference_3' => $coursePref3['resolved'],
                 'status' => 'pending',
                 'processed_by' => $importerId,
                 'processed_at' => now(),

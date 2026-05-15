@@ -6,7 +6,8 @@
   import { Input } from '@/Components/ui/input';
   import * as Table from '@/Components/ui/table';
   import { Plus, Pencil, Pause, Play, Trash2 } from 'lucide-svelte';
-  import ViewModeToggle from '@/Components/ViewModeToggle.svelte';
+  import SwitchableListView from '@/Components/SwitchableListView.svelte';
+  import SimplePagination from '@/Components/SimplePagination.svelte';
 
   let { rooms, filters = {} } = $props();
 
@@ -63,7 +64,6 @@
     });
   }
 
-  // 'responsive' = cards on small, table on md+; 'table' | 'cards' = explicit override
   let viewMode = $state('responsive');
 const breadcrumbs = [{ label: 'Exam Scheduling', href: '/admin/exam-scheduling' }, { label: 'Rooms' }];
 </script>
@@ -98,21 +98,8 @@ const breadcrumbs = [{ label: 'Exam Scheduling', href: '/admin/exam-scheduling' 
       </div>
     </div>
 
-    <div class="space-y-3">
-      <!-- View toggle as sibling to table container -->
-      <div class="flex justify-end">
-        <ViewModeToggle bind:value={viewMode} />
-      </div>
-
-      <div class="min-w-0">
-        <!-- Table view: single scroll container (Table.Root inner div); outer only constrains width -->
-      <div
-        class="w-full min-w-0 {viewMode === 'cards'
-          ? 'hidden'
-          : viewMode === 'table'
-            ? 'block'
-            : 'hidden md:block'}"
-      >
+    <SwitchableListView bind:viewMode overflow="auto">
+      {#snippet table()}
         <Table.Root class="w-full min-w-[640px]">
           <Table.Header class="bg-muted/50">
             <Table.Row>
@@ -181,16 +168,10 @@ const breadcrumbs = [{ label: 'Exam Scheduling', href: '/admin/exam-scheduling' 
             {/each}
           </Table.Body>
         </Table.Root>
-      </div>
+        <SimplePagination data={rooms} variant="table" />
+      {/snippet}
 
-      <!-- Card view -->
-      <div
-        class="{viewMode === 'table'
-          ? 'hidden'
-          : viewMode === 'cards'
-            ? 'block'
-            : 'block md:hidden'} p-4"
-      >
+      {#snippet cards()}
         {#if (rooms?.data ?? []).length > 0}
           <ul class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3" role="list">
             {#each (rooms?.data ?? []) as room (room.id)}
@@ -219,8 +200,8 @@ const breadcrumbs = [{ label: 'Exam Scheduling', href: '/admin/exam-scheduling' 
                   <Button
                     variant="outline"
                     size="sm"
-                    class="flex-1 min-h-[40px] font-semibold {room.is_active 
-                      ? 'text-amber-600 border-amber-200 hover:bg-amber-50 hover:text-amber-700' 
+                    class="flex-1 min-h-[40px] font-semibold {room.is_active
+                      ? 'text-amber-600 border-amber-200 hover:bg-amber-50 hover:text-amber-700'
                       : 'text-primary border-primary/20 hover:bg-primary/5 hover:text-primary-700'}"
                     onclick={() => doToggle(room.id, room.is_active)}
                   >
@@ -239,28 +220,9 @@ const breadcrumbs = [{ label: 'Exam Scheduling', href: '/admin/exam-scheduling' 
         {:else}
           <p class="py-12 text-center text-muted-foreground">No rooms yet. Create one to get started.</p>
         {/if}
-      </div>
-
-      {#if rooms.last_page > 1}
-        <div class="flex items-center justify-between border-t border-border px-4 py-2">
-          <p class="text-sm text-muted-foreground">
-            Page {rooms.current_page} of {rooms.last_page}
-          </p>
-          <div class="flex gap-2">
-            {#if rooms.prev_page_url}
-              <Link href={rooms.prev_page_url}>
-                <Button variant="outline" size="sm">Previous</Button>
-              </Link>
-            {/if}
-            {#if rooms.next_page_url}
-              <Link href={rooms.next_page_url}>
-                <Button variant="outline" size="sm">Next</Button>
-              </Link>
-            {/if}
-          </div>
-        </div>
-      {/if}
-    </div>
+        <SimplePagination data={rooms} variant="centered" />
+      {/snippet}
+    </SwitchableListView>
   </div>
 
   {#if deleteId}

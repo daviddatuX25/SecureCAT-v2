@@ -18,6 +18,7 @@ class StoreAptitudeAreaRequest extends FormRequest
             'code' => ['required', 'string', 'max:20', 'unique:aptitude_areas,code'],
             'description' => ['nullable', 'string', 'max:1000'],
             'max_items' => ['required', 'integer', 'min:1', 'max:999'],
+            'formula' => ['nullable', 'string', 'max:500'],
             'display_order' => ['nullable', 'integer', 'min:0'],
             'is_active' => ['nullable', 'boolean'],
         ];

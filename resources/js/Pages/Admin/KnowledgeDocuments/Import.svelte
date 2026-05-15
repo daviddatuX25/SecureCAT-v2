@@ -5,6 +5,7 @@
   import { Input } from '@/Components/ui/input';
   import { FileUpload } from '@/Components/ui/file-upload';
   import { Upload } from 'lucide-svelte';
+  import { GuidePanel, GuideNote } from '@/Components/Guide';
 
   const breadcrumbs = [
     { label: 'Knowledge Documents', href: '/admin/knowledge-documents' },
@@ -42,9 +43,29 @@
 
 <AuthenticatedLayout {breadcrumbs}>
   <div class="max-w-2xl space-y-6">
-    <p class="text-sm text-muted-foreground">
-      Upload a CSV file. Rows will be converted to factual narrative sentences. <strong>Metadata defines the document</strong>—set category, year, and description so retrieval can find it.
-    </p>
+    <GuidePanel title="Import Guide">
+      <GuideNote variant="info" title="How it works">
+        <p class="text-xs text-muted-foreground">
+          Upload a CSV file where each row becomes a factual narrative sentence.
+          The system converts your structured data into natural language for AI-powered retrieval.
+        </p>
+      </GuideNote>
+
+      <GuideNote variant="tip" title="Metadata matters">
+        <p class="text-xs text-muted-foreground">
+          Category, year, description, and tags define how this document is found during retrieval.
+          Fill them in so the system can match queries to your data accurately.
+        </p>
+      </GuideNote>
+
+      <GuideNote variant="warning" title="File format">
+        <ul class="list-disc pl-4 space-y-1 text-xs text-muted-foreground">
+          <li>CSV files only, UTF-8 encoded</li>
+          <li>Maximum file size: 2 MB</li>
+          <li>First row must contain column headers</li>
+        </ul>
+      </GuideNote>
+    </GuidePanel>
 
     <form onsubmit={submitForm} class="space-y-4 rounded-lg border border-border bg-card p-6">
       <div class="space-y-2">

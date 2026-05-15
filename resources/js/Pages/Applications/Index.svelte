@@ -7,7 +7,8 @@
   import * as Select from '@/Components/ui/select';
   import * as Table from '@/Components/ui/table';
   import { Filter, ChevronDown, CheckCircle, XCircle, UploadCloud, Plus, Pencil } from 'lucide-svelte';
-  import ViewModeToggle from '@/Components/ViewModeToggle.svelte';
+  import SwitchableListView from '@/Components/SwitchableListView.svelte';
+  import SimplePagination from '@/Components/SimplePagination.svelte';
   import { success as showSuccess, error as showError } from '@/lib/toast';
   import { pipelineBadgeVariant, pipelineStatusLabel, pipelineStatusOptions } from '@/lib/pipeline-helpers';
   import { onMount } from 'svelte';
@@ -295,162 +296,123 @@
       </div>
     </div>
 
-    <!-- Table and Cards wrapped together with shared view toggle -->
-    <div class="space-y-3">
-      <!-- View toggle as sibling to both table and cards -->
-      <div class="flex justify-end">
-        <ViewModeToggle bind:value={viewMode} />
-      </div>
-
-      <div class="{viewMode === 'cards' ? 'hidden' : viewMode === 'table' ? 'block' : 'hidden md:block'} min-w-0">
-        <div class="w-full min-w-0 overflow-x-auto scrollbar-hide">
+    <SwitchableListView bind:viewMode overflow="auto">
+      {#snippet table()}
         <Table.Root class="w-full min-w-[640px] text-sm">
-            <Table.Header class="bg-muted/50">
-              <Table.Row>
-                <Table.Head class="px-4 py-3">Reference</Table.Head>
-                <Table.Head class="px-4 py-3">Name</Table.Head>
-                <Table.Head class="px-4 py-3">Email</Table.Head>
-                <Table.Head class="px-4 py-3 cursor-pointer select-none" onclick={() => { sortField = 'pipeline_status'; sortDirection = sortDirection === 'asc' ? 'desc' : 'asc'; applyFilters(); }}>
-                  Pipeline
-                  {#if sortField === 'pipeline_status'}
-                    <span class="ml-1 text-xs">{sortDirection === 'asc' ? '↑' : '↓'}</span>
-                  {/if}
-                </Table.Head>
-                <Table.Head class="px-4 py-3">Submitted</Table.Head>
-                <Table.Head class="text-center">Actions</Table.Head>
-              </Table.Row>
-            </Table.Header>
-            <Table.Body>
-              {#each list as app}
-                <Table.Row class="border-t border-border hover:bg-muted/30">
-                  <Table.Cell class="px-4 py-3 font-mono text-xs cursor-pointer" onclick={() => router.visit(`/admin/applications/${app.id}`)}>{app.reference_number ?? '—'}</Table.Cell>
-                  <Table.Cell class="px-4 py-3 cursor-pointer" onclick={() => router.visit(`/admin/applications/${app.id}`)}>{app.full_name ?? '—'}</Table.Cell>
-                  <Table.Cell class="px-4 py-3 text-muted-foreground cursor-pointer" onclick={() => router.visit(`/admin/applications/${app.id}`)}>{app.email ?? '—'}</Table.Cell>
-                  <Table.Cell class="px-4 py-3 cursor-pointer" onclick={() => router.visit(`/admin/applications/${app.id}`)}>
-                    <Badge variant={pipelineBadgeVariant(app.pipeline_status)}>{pipelineStatusLabel(app.pipeline_status)}</Badge>
-                  </Table.Cell>
-                  <Table.Cell class="px-4 py-3 text-muted-foreground cursor-pointer" onclick={() => router.visit(`/admin/applications/${app.id}`)}>
-                    {app.submitted_at ? new Date(app.submitted_at).toLocaleDateString() : '—'}
-                  </Table.Cell>
-                  <Table.Cell class="text-left" onclick={(e) => e.stopPropagation()}>
-                    <div class="flex justify-start gap-3" onclick={(e) => e.stopPropagation()}>
-                      <Link href={`/admin/applications/${app.id}/edit`} class="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground">
-                        <Pencil class="h-3.5 w-3.5" />
-                        Edit
-                      </Link>
-                      {#if app.status === 'pending'}
-                        <button
-                          class="inline-flex items-center gap-1.5 text-xs text-green-600 hover:text-green-700 hover:underline"
-                          onclick={(e) => { e.stopPropagation(); doAccept(app.id); }}
-                        >
-                          <CheckCircle class="h-3.5 w-3.5" />
-                          Accept
-                        </button>
-                        <button
-                          class="inline-flex items-center gap-1.5 text-xs text-red-600 hover:text-red-700 hover:underline"
-                          onclick={(e) => { e.stopPropagation(); doDismiss(app.id); }}
-                        >
-                          <XCircle class="h-3.5 w-3.5" />
-                          Dismiss
-                        </button>
-                      {/if}
-                    </div>
-                  </Table.Cell>
-                </Table.Row>
-              {:else}
-                <Table.Row>
-                  <Table.Cell colspan="6" class="px-4 py-12 text-center text-muted-foreground">
-                    No applications match the filters. Try a different season or search.
-                  </Table.Cell>
-                </Table.Row>
-              {/each}
-            </Table.Body>
-          </Table.Root>
-          {#if applications?.last_page > 1}
-            <div class="flex items-center justify-between border-t border-border px-4 py-2">
-              <p class="text-sm text-muted-foreground">
-                Page {applications.current_page} of {applications.last_page}
-              </p>
-              <div class="flex gap-2">
-                {#if applications.prev_page_url}
-                  <Link href={applications.prev_page_url}>
-                    <Button variant="outline" size="sm">Previous</Button>
-                  </Link>
+          <Table.Header class="bg-muted/50">
+            <Table.Row>
+              <Table.Head class="px-4 py-3">Reference</Table.Head>
+              <Table.Head class="px-4 py-3">Name</Table.Head>
+              <Table.Head class="px-4 py-3">Email</Table.Head>
+              <Table.Head class="px-4 py-3 cursor-pointer select-none" onclick={() => { sortField = 'pipeline_status'; sortDirection = sortDirection === 'asc' ? 'desc' : 'asc'; applyFilters(); }}>
+                Pipeline
+                {#if sortField === 'pipeline_status'}
+                  <span class="ml-1 text-xs">{sortDirection === 'asc' ? '↑' : '↓'}</span>
                 {/if}
-                {#if applications.next_page_url}
-                  <Link href={applications.next_page_url}>
-                    <Button variant="outline" size="sm">Next</Button>
-                  </Link>
+              </Table.Head>
+              <Table.Head class="px-4 py-3">Submitted</Table.Head>
+              <Table.Head class="text-center">Actions</Table.Head>
+            </Table.Row>
+          </Table.Header>
+          <Table.Body>
+            {#each list as app}
+              <Table.Row class="border-t border-border hover:bg-muted/30">
+                <Table.Cell class="px-4 py-3 font-mono text-xs cursor-pointer" onclick={() => router.visit(`/admin/applications/${app.id}`)}>{app.reference_number ?? '—'}</Table.Cell>
+                <Table.Cell class="px-4 py-3 cursor-pointer" onclick={() => router.visit(`/admin/applications/${app.id}`)}>{app.full_name ?? '—'}</Table.Cell>
+                <Table.Cell class="px-4 py-3 text-muted-foreground cursor-pointer" onclick={() => router.visit(`/admin/applications/${app.id}`)}>{app.email ?? '—'}</Table.Cell>
+                <Table.Cell class="px-4 py-3 cursor-pointer" onclick={() => router.visit(`/admin/applications/${app.id}`)}>
+                  <Badge variant={pipelineBadgeVariant(app.pipeline_status)}>{pipelineStatusLabel(app.pipeline_status)}</Badge>
+                </Table.Cell>
+                <Table.Cell class="px-4 py-3 text-muted-foreground cursor-pointer" onclick={() => router.visit(`/admin/applications/${app.id}`)}>
+                  {app.submitted_at ? new Date(app.submitted_at).toLocaleDateString() : '—'}
+                </Table.Cell>
+                <Table.Cell class="text-left" onclick={(e) => e.stopPropagation()}>
+                  <div class="flex justify-start gap-3" onclick={(e) => e.stopPropagation()}>
+                    <Link href={`/admin/applications/${app.id}/edit`} class="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground">
+                      <Pencil class="h-3.5 w-3.5" />
+                      Edit
+                    </Link>
+                    {#if app.status === 'pending'}
+                      <button
+                        class="inline-flex items-center gap-1.5 text-xs text-green-600 hover:text-green-700 hover:underline"
+                        onclick={(e) => { e.stopPropagation(); doAccept(app.id); }}
+                      >
+                        <CheckCircle class="h-3.5 w-3.5" />
+                        Accept
+                      </button>
+                      <button
+                        class="inline-flex items-center gap-1.5 text-xs text-red-600 hover:text-red-700 hover:underline"
+                        onclick={(e) => { e.stopPropagation(); doDismiss(app.id); }}
+                      >
+                        <XCircle class="h-3.5 w-3.5" />
+                        Dismiss
+                      </button>
+                    {/if}
+                  </div>
+                </Table.Cell>
+              </Table.Row>
+            {:else}
+              <Table.Row>
+                <Table.Cell colspan="6" class="px-4 py-12 text-center text-muted-foreground">
+                  No applications match the filters. Try a different season or search.
+                </Table.Cell>
+              </Table.Row>
+            {/each}
+          </Table.Body>
+        </Table.Root>
+        <SimplePagination data={applications} variant="table" />
+      {/snippet}
+
+      {#snippet cards()}
+        <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          {#each list as app}
+            <div
+              class="rounded-xl border border-border bg-card p-4 shadow-sm cursor-pointer hover:bg-muted/30"
+              onclick={(e) => e.stopPropagation()}
+              onkeydown={(e) => e.key === 'Enter' && router.visit(`/admin/applications/${app.id}`)}
+              role="button"
+              tabindex="0"
+            >
+              <p class="font-mono text-xs text-muted-foreground" onclick={() => router.visit(`/admin/applications/${app.id}`)}>{app.reference_number ?? '—'}</p>
+              <p class="mt-1 font-medium" onclick={() => router.visit(`/admin/applications/${app.id}`)}>{app.full_name ?? '—'}</p>
+              <p class="text-sm text-muted-foreground" onclick={() => router.visit(`/admin/applications/${app.id}`)}>{app.email ?? '—'}</p>
+              <p class="mt-2" onclick={() => router.visit(`/admin/applications/${app.id}`)}>
+                <Badge variant={pipelineBadgeVariant(app.pipeline_status)}>{pipelineStatusLabel(app.pipeline_status)}</Badge>
+              </p>
+              <p class="mt-1 text-xs text-muted-foreground" onclick={() => router.visit(`/admin/applications/${app.id}`)}>
+                {app.submitted_at ? new Date(app.submitted_at).toLocaleDateString() : '—'}
+              </p>
+              <div class="mt-3 flex flex-wrap gap-3" onclick={(e) => e.stopPropagation()}>
+                <Link href={`/admin/applications/${app.id}/edit`} class="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground" onclick={(e) => e.stopPropagation()}>
+                  <Pencil class="h-4 w-4" />
+                  Edit
+                </Link>
+                {#if app.status === 'pending'}
+                  <button
+                    class="inline-flex items-center gap-1.5 text-sm text-green-600 hover:text-green-700 hover:underline"
+                    onclick={(e) => { e.stopPropagation(); doAccept(app.id); }}
+                  >
+                    <CheckCircle class="h-4 w-4" />
+                    Accept
+                  </button>
+                  <button
+                    class="inline-flex items-center gap-1.5 text-sm text-red-600 hover:text-red-700 hover:underline"
+                    onclick={(e) => { e.stopPropagation(); doDismiss(app.id); }}
+                  >
+                    <XCircle class="h-4 w-4" />
+                    Dismiss
+                  </button>
                 {/if}
               </div>
             </div>
-          {/if}
-        </div>
-      </div>
-
-    <!-- Cards -->
-    <div class="{viewMode === 'table' ? 'hidden' : viewMode === 'cards' ? 'block' : 'block md:hidden'}">
-      <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-        {#each list as app}
-          <div
-            class="rounded-xl border border-border bg-card p-4 shadow-sm cursor-pointer hover:bg-muted/30"
-            onclick={(e) => e.stopPropagation()}
-            onkeydown={(e) => e.key === 'Enter' && router.visit(`/admin/applications/${app.id}`)}
-            role="button"
-            tabindex="0"
-          >
-            <p class="font-mono text-xs text-muted-foreground" onclick={() => router.visit(`/admin/applications/${app.id}`)}>{app.reference_number ?? '—'}</p>
-            <p class="mt-1 font-medium" onclick={() => router.visit(`/admin/applications/${app.id}`)}>{app.full_name ?? '—'}</p>
-            <p class="text-sm text-muted-foreground" onclick={() => router.visit(`/admin/applications/${app.id}`)}>{app.email ?? '—'}</p>
-            <p class="mt-2" onclick={() => router.visit(`/admin/applications/${app.id}`)}>
-              <Badge variant={pipelineBadgeVariant(app.pipeline_status)}>{pipelineStatusLabel(app.pipeline_status)}</Badge>
-            </p>
-            <p class="mt-1 text-xs text-muted-foreground" onclick={() => router.visit(`/admin/applications/${app.id}`)}>
-              {app.submitted_at ? new Date(app.submitted_at).toLocaleDateString() : '—'}
-            </p>
-            <div class="mt-3 flex flex-wrap gap-3" onclick={(e) => e.stopPropagation()}>
-              <Link href={`/admin/applications/${app.id}/edit`} class="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground" onclick={(e) => e.stopPropagation()}>
-                <Pencil class="h-4 w-4" />
-                Edit
-              </Link>
-              {#if app.status === 'pending'}
-                <button
-                  class="inline-flex items-center gap-1.5 text-sm text-green-600 hover:text-green-700 hover:underline"
-                  onclick={(e) => { e.stopPropagation(); doAccept(app.id); }}
-                >
-                  <CheckCircle class="h-4 w-4" />
-                  Accept
-                </button>
-                <button
-                  class="inline-flex items-center gap-1.5 text-sm text-red-600 hover:text-red-700 hover:underline"
-                  onclick={(e) => { e.stopPropagation(); doDismiss(app.id); }}
-                >
-                  <XCircle class="h-4 w-4" />
-                  Dismiss
-                </button>
-              {/if}
+          {:else}
+            <div class="col-span-full rounded-xl border border-dashed border-border bg-muted/20 py-12 text-center text-muted-foreground">
+              No applications match the filters.
             </div>
-          </div>
-        {:else}
-          <div class="col-span-full rounded-xl border border-dashed border-border bg-muted/20 py-12 text-center text-muted-foreground">
-            No applications match the filters.
-          </div>
-        {/each}
-      </div>
-      {#if applications?.last_page > 1}
-        <div class="mt-4 flex justify-center gap-2">
-          {#if applications.prev_page_url}
-            <Link href={applications.prev_page_url}>
-              <Button variant="outline" size="sm">Previous</Button>
-            </Link>
-          {/if}
-          {#if applications.next_page_url}
-            <Link href={applications.next_page_url}>
-              <Button variant="outline" size="sm">Next</Button>
-            </Link>
-          {/if}
+          {/each}
         </div>
-      {/if}
-    </div>
+        <SimplePagination data={applications} variant="centered" />
+      {/snippet}
+    </SwitchableListView>
   </div>
 </AuthenticatedLayout>

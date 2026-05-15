@@ -26,6 +26,7 @@ class SettingsController extends Controller
             'notify_on_publish' => SystemSetting::notifyOnPublish(),
             'release_mode' => SystemSetting::releaseMode(),
             'allow_direct_assessment' => SystemSetting::allowDirectAssessment(),
+            'enable_normalized_scores' => SystemSetting::enableNormalizedScores(),
         ]);
     }
 
@@ -45,11 +46,8 @@ class SettingsController extends Controller
         }
 
         if (array_key_exists('ai_companion_persona', $validated)) {
-            SystemSetting::set('ai_companion_persona', preg_replace('/<script[^>]*>.*?<\/script>/is', '', $validated['ai_companion_persona'] ?? ''));
-        }
-
-        if (array_key_exists('consultation_enabled', $validated)) {
-            SystemSetting::set('consultation_enabled', (bool) $validated['consultation_enabled']);
+            $persona = preg_replace('/<script[^>]*>.*?<\/script>/is', '', $validated['ai_companion_persona'] ?? '');
+            SystemSetting::set('ai_companion_persona', strip_tags($persona));
         }
 
         if (array_key_exists('release_mode', $validated)) {
@@ -58,6 +56,10 @@ class SettingsController extends Controller
 
         if (array_key_exists('allow_direct_assessment', $validated)) {
             SystemSetting::set('allow_direct_assessment', (bool) $validated['allow_direct_assessment']);
+        }
+
+        if (array_key_exists('enable_normalized_scores', $validated)) {
+            SystemSetting::set('enable_normalized_scores', (bool) $validated['enable_normalized_scores']);
         }
 
         return redirect()->route('admin.settings.index')->with('success', 'Settings saved.');

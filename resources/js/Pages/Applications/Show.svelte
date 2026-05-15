@@ -89,9 +89,8 @@
     <!-- Status + action bar -->
     <div class="flex flex-wrap items-center justify-between gap-4 rounded-lg border border-border bg-card px-4 py-3">
       <div class="flex flex-wrap items-center gap-3">
-        <span class="text-sm text-muted-foreground">Status:</span>
-        <Badge variant={statusVariant(application?.status)}>{statusLabel(application?.status)}</Badge>
         {#if pipeline_status}
+          <span class="text-sm text-muted-foreground">Status:</span>
           <Badge variant={pipelineBadgeVariant(pipeline_status)}>{pipelineStatusLabel(pipeline_status)}</Badge>
         {/if}
         {#if application_window_label}
@@ -133,10 +132,11 @@
 
     <!-- Pipeline Progress -->
     {#if pipeline_details}
+      {@const visibleMilestones = pipelineMilestones({ isF2f: pipeline_details.is_f2f, isDirect: pipeline_details.is_direct })}
       <div class="rounded-lg border border-border bg-card px-4 py-3">
         <h3 class="mb-3 text-sm font-medium text-muted-foreground">Pipeline Progress</h3>
         <div class="flex items-center gap-1 overflow-x-auto pb-2">
-          {#each pipelineMilestones() as milestone, i}
+          {#each visibleMilestones as milestone, i}
             {@const isActive = pipeline_details.status === milestone.key}
             {@const isPast = pipelineOrder(pipeline_details.status) > pipelineOrder(milestone.key)}
             {@const milestoneData = pipeline_details.milestones?.[milestone.key]}
