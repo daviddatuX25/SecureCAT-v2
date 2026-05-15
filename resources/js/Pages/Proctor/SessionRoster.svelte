@@ -10,7 +10,7 @@
   import { success as showSuccess, error as showError } from '@/lib/toast';
   import { onMount } from 'svelte';
 
-  let { session, applicants = [], stats = {} } = $props();
+  let { session, applicants = [], stats = {}, breadcrumbParent = { label: 'My Sessions', href: '/proctor/my-sessions' } } = $props();
 
   const page = usePage();
 
@@ -218,7 +218,7 @@
   }
 
   const breadcrumbs = $derived([
-    { label: 'My Sessions', href: '/proctor/my-sessions' },
+    breadcrumbParent,
     { label: session?.id ? 'Session #' + session.id : 'Session' }
   ]);
 </script>

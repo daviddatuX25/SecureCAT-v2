@@ -8,9 +8,9 @@
   import { hasApplicants, timeWindowLabel, isOutsideStartWindow, canOverrideStartWindow } from '@/lib/session-helpers';
   import { onMount } from 'svelte';
 
-  let { today = [], upcoming = [], past = [], filters = {}, statuses = [], flash = {} } = $props();
+  let { today = [], upcoming = [], past = [], filters = {}, statuses = [], flash = {}, breadcrumbParent = { label: 'My Sessions', href: '/proctor/my-sessions' } } = $props();
 
-  const breadcrumbs = [{ label: 'My Sessions' }];
+  const breadcrumbs = $derived([breadcrumbParent]);
 
   // Show toasts on mount for flash messages
   onMount(() => {

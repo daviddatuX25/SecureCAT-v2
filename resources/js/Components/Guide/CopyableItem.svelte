@@ -15,7 +15,6 @@
   });
 
   let copied = $state(false);
-  let timeoutId: ReturnType<typeof setTimeout> | null = null;
 
   async function copyToClipboard() {
     try {
@@ -38,18 +37,10 @@
       }
       copied = true;
       success('Copied to clipboard');
-      if (timeoutId) clearTimeout(timeoutId);
-      timeoutId = setTimeout(() => {
-        copied = false;
-      }, 3000);
     } catch (err) {
       error('Failed to copy text');
     }
   }
-
-  onDestroy(() => {
-    if (timeoutId) clearTimeout(timeoutId);
-  });
 </script>
 
 <button

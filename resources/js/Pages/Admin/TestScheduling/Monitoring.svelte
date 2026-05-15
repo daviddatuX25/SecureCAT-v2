@@ -11,9 +11,16 @@
 
   let viewMode = $state('responsive');
 
-  let { sessions = [], isProctorView = false } = $props();
+  let { sessions = [], isProctorView = false, breadcrumbParent = { label: 'Exam Monitoring', href: '/admin/exam-monitoring' } } = $props();
 
-  const breadcrumbs = [{ label: 'Exam Monitoring' }];
+  const breadcrumbs = $derived([
+    breadcrumbParent,
+    ...(isProctorView ? [{ label: 'Monitoring' }] : [])
+  ]);
+
+  function rosterHref(sessionId) {
+    return isProctorView ? `/proctor/sessions/${sessionId}` : `/admin/test-admin/sessions/${sessionId}/roster`;
+  }
 
   $effect(() => {
     const interval = setInterval(() => {
@@ -87,7 +94,7 @@
                         </Table.Cell>
                         <Table.Cell class="text-center">
                           <div class="flex justify-center gap-2">
-                            <Link href="/proctor/sessions/{session.id}">
+                            <Link href={rosterHref(session.id)}>
                               <Button variant="ghost" size="sm" class="h-8 px-2 text-xs">
                                 <ClipboardList class="mr-1.5 h-3.5 w-3.5" />
                                 View Session
@@ -134,7 +141,7 @@
                     </div>
 
                     <div class="flex items-center justify-end">
-                      <Link href="/proctor/sessions/{session.id}" class="w-full sm:w-auto">
+                      <Link href={rosterHref(session.id)} class="w-full sm:w-auto">
                         <Button variant="outline" size="sm" class="w-full sm:w-auto">
                           <ClipboardList class="mr-1.5 h-3.5 w-3.5" />
                           View Session

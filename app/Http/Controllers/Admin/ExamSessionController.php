@@ -88,6 +88,10 @@ class ExamSessionController extends Controller
 
         $academicYears = AcademicYear::query()->orderByDesc('academic_year')->orderBy('semester')->get(['id', 'academic_year', 'semester', 'is_active']);
 
+        $breadcrumbParent = $isProctorView
+            ? ['label' => 'My Sessions', 'href' => '/proctor/my-sessions']
+            : ['label' => 'Exam Scheduling', 'href' => '/admin/exam-scheduling'];
+
         $payload = [
             'sessions' => $sessions,
             'filters' => $request->only(['search', 'status', 'date_from', 'date_to', 'academic_year_id']),
@@ -95,6 +99,7 @@ class ExamSessionController extends Controller
             'active_season_id' => $activeAcademicYear?->id,
             'statuses' => self::statusesList(),
             'view' => $isProctorView ? 'proctor' : 'admin',
+            'breadcrumbParent' => $breadcrumbParent,
         ];
 
         if (! $isProctorView) {
@@ -257,12 +262,17 @@ class ExamSessionController extends Controller
 
         $proctors = $isProctorView ? [] : User::query()->whereHas('roles', fn ($q) => $q->where('name', 'proctor'))->orderBy('name')->get(['id', 'name']);
 
+        $breadcrumbParent = $isProctorView
+            ? ['label' => 'My Sessions', 'href' => '/proctor/my-sessions']
+            : ['label' => 'Exam Scheduling', 'href' => '/admin/exam-scheduling'];
+
         return Inertia::render('Admin/TestScheduling/Show', [
             'session' => $exam_session,
             'assigned_applicants' => $assigned_applicants,
             'available_applicants' => $available_applicants,
             'proctors' => $proctors,
             'view' => $isProctorView ? 'proctor' : 'admin',
+            'breadcrumbParent' => $breadcrumbParent,
         ]);
     }
 
@@ -583,12 +593,17 @@ class ExamSessionController extends Controller
         $upcoming = $grouped->filter(fn ($s) => Carbon::parse($s['date'])->isFuture() && ! Carbon::parse($s['date'])->isToday())->values();
         $past = $grouped->filter(fn ($s) => Carbon::parse($s['date'])->isPast() && ! Carbon::parse($s['date'])->isToday())->values();
 
+        $breadcrumbParent = $isTestAdminOnly
+            ? ['label' => 'My Sessions', 'href' => '/proctor/my-sessions']
+            : ['label' => 'Exam Scheduling', 'href' => '/admin/exam-scheduling'];
+
         return Inertia::render('Admin/TestAdmin/Index', [
             'today' => $today,
             'upcoming' => $upcoming,
             'past' => $past,
             'filters' => $request->only(['status', 'academic_year_id']),
             'statuses' => self::statusesList(),
+            'breadcrumbParent' => $breadcrumbParent,
         ]);
     }
 
@@ -660,6 +675,11 @@ class ExamSessionController extends Controller
             'showAnalytics' => true,
         ];
 
+        $isProctorView = $user->hasAnyRole(['proctor']) && ! $user->hasAnyRole(['super_admin', 'registrar_administrator']);
+        $breadcrumbParent = $isProctorView
+            ? ['label' => 'My Sessions', 'href' => '/proctor/my-sessions']
+            : ['label' => 'Test Administration', 'href' => '/admin/test-admin/sessions'];
+
         return Inertia::render('Admin/TestAdmin/Roster', [
             'session' => array_merge($exam_session->toArray(), [
                 'date' => $exam_session->date?->format('Y-m-d'),
@@ -697,8 +717,14 @@ class ExamSessionController extends Controller
 
         $sessions = $query->get();
 
+        $breadcrumbParent = $isProctorView
+            ? ['label' => 'My Sessions', 'href' => '/proctor/my-sessions']
+            : ['label' => 'Exam Monitoring', 'href' => '/admin/exam-monitoring'];
+
         return Inertia::render('Admin/TestScheduling/Monitoring', [
             'sessions' => $sessions,
+            'view' => $isProctorView ? 'proctor' : 'admin',
+            'breadcrumbParent' => $breadcrumbParent,
         ]);
     }
 }

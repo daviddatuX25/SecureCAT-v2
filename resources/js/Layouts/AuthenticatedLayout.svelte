@@ -63,26 +63,26 @@
   }
 
   const navSections = $derived([
-    { label: null, items: [{ href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard, roles: ['*'] }] },
+    { label: null, items: [{ href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard, roles: ['*'], activeFor: ['/dashboard'] }] },
     { label: 'Registrar Office', items: [
-      { href: '/admin/academic-years', label: 'Academic Years', icon: CalendarRange, roles: ['super_admin', 'registrar_administrator'] },
-      { href: '/admin/applications', label: 'Applications', icon: FileText, roles: ['super_admin', 'registrar_administrator', 'staff'] },
-      { href: '/admin/exam-scheduling', label: 'Exam Scheduling', icon: Calendar, roles: ['super_admin', 'registrar_administrator'] },
+      { href: '/admin/academic-years', label: 'Academic Years', icon: CalendarRange, roles: ['super_admin', 'registrar_administrator'], activeFor: ['/admin/academic-years'] },
+      { href: '/admin/applications', label: 'Applications', icon: FileText, roles: ['super_admin', 'registrar_administrator', 'staff'], activeFor: ['/admin/applications'] },
+      { href: '/admin/exam-scheduling', label: 'Exam Scheduling', icon: Calendar, roles: ['super_admin', 'registrar_administrator'], activeFor: ['/admin/exam-scheduling', '/admin/rooms'] },
     ]},
     { label: 'Guidance Office', items: [
-      { href: '/proctor/my-sessions', label: 'My Sessions', icon: Calendar, roles: ['proctor'] },
-      { href: '/admin/exam-monitoring', label: 'Exam Monitoring', icon: Activity, roles: ['super_admin', 'test_administrator'] },
-      { href: '/admin/grading', label: 'Grading', icon: GraduationCap, roles: ['super_admin', 'test_administrator'] },
-      { href: '/admin/release', label: 'Release', icon: SendHorizonal, roles: ['super_admin', 'test_administrator'], items: [
+      { href: '/proctor/my-sessions', label: 'My Sessions', icon: Calendar, roles: ['proctor'], activeFor: ['/proctor/my-sessions', '/proctor/sessions'] },
+      { href: '/admin/exam-monitoring', label: 'Exam Monitoring', icon: Activity, roles: ['super_admin', 'test_administrator'], activeFor: ['/admin/exam-monitoring', '/admin/test-admin'] },
+      { href: '/admin/grading', label: 'Grading', icon: GraduationCap, roles: ['super_admin', 'test_administrator'], activeFor: ['/admin/grading'] },
+      { href: '/admin/release', label: 'Release', icon: SendHorizonal, roles: ['super_admin', 'test_administrator'], activeFor: ['/admin/release'], items: [
         { href: '/admin/release', label: 'Release Management', icon: SendHorizonal },
         { href: '/admin/release/result-templates', label: 'Result Templates', icon: FileText },
       ]},
     ]},
     { label: 'Administration', collapsible: true, items: [
-      { href: '/admin/users', label: 'Users', icon: Users, roles: ['super_admin'] },
-      { href: '/admin/settings', label: 'Settings', icon: Settings, roles: ['super_admin'] },
-      { href: '/admin/logs', label: 'Audit Log', icon: ScrollText, roles: ['super_admin'] },
-      { href: '/admin/ai-companion', label: 'AI Companion', icon: Bot, roles: ['super_admin'], featureFlag: 'ai_exam_companion_enabled' },
+      { href: '/admin/users', label: 'Users', icon: Users, roles: ['super_admin'], activeFor: ['/admin/users'] },
+      { href: '/admin/settings', label: 'Settings', icon: Settings, roles: ['super_admin'], activeFor: ['/admin/settings'] },
+      { href: '/admin/logs', label: 'Audit Log', icon: ScrollText, roles: ['super_admin'], activeFor: ['/admin/logs'] },
+      { href: '/admin/ai-companion', label: 'AI Companion', icon: Bot, roles: ['super_admin'], featureFlag: 'ai_exam_companion_enabled', activeFor: ['/admin/ai-companion'] },
     ]},
   ].map((section) => ({
     ...section,
@@ -94,15 +94,16 @@
     sidebarOpen = false;
   }
 
-  function isNavActive(href) {
+  function isNavActive(item) {
     const url = $page.url || '';
+    const href = item.href ?? '';
     if (url === href || url === href + '/') return true;
     if (url.startsWith(href + '/')) return true;
 
-    // /proctor/sessions/{id} should highlight "My Sessions" in sidebar
-    if (url === '/proctor/sessions' || url.startsWith('/proctor/sessions/')) {
-      if (href === '/proctor/my-sessions') {
-        return true;
+    // Check activeFor prefixes for shared pages
+    if (item.activeFor) {
+      for (const prefix of item.activeFor) {
+        if (url === prefix || url.startsWith(prefix + '/')) return true;
       }
     }
 
@@ -157,7 +158,7 @@
                   {#each section.items as item}
                     <Link
                       href={item.href}
-                      class="nav-item flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition-all duration-300 {isNavActive(item.href)
+                      class="nav-item flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition-all duration-300 {isNavActive(item)
                         ? 'bg-primary text-primary-foreground shadow-md shadow-primary/40'
                         : 'text-foreground/80 hover:text-foreground hover:bg-accent hover:translate-x-1'}"
                       onclick={closeDropdowns}
@@ -172,7 +173,7 @@
                 {#each section.items as item}
                   <Link
                     href={item.href}
-                    class="nav-item flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition-all duration-300 {isNavActive(item.href)
+                    class="nav-item flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition-all duration-300 {isNavActive(item)
                       ? 'bg-primary text-primary-foreground shadow-md shadow-primary/40'
                       : 'text-foreground/80 hover:text-foreground hover:bg-accent hover:translate-x-1'}"
                     onclick={closeDropdowns}
@@ -186,7 +187,7 @@
               {#each section.items as item}
                 <Link
                   href={item.href}
-                  class="nav-item flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition-all duration-300 {isNavActive(item.href)
+                  class="nav-item flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition-all duration-300 {isNavActive(item)
                     ? 'bg-primary text-primary-foreground shadow-md shadow-primary/40'
                     : 'text-foreground/80 hover:text-foreground hover:bg-accent hover:translate-x-1'}"
                   onclick={closeDropdowns}

@@ -6,20 +6,13 @@
   import { Badge } from '@/Components/ui/badge';
   import { UserPlus, UserMinus, Send, ClipboardList, RotateCcw, Pencil } from 'lucide-svelte';
 
-  let { session, assigned_applicants = [], available_applicants = [], proctors = [], view = 'admin' } = $props();
+  let { session, assigned_applicants = [], available_applicants = [], proctors = [], view = 'admin', breadcrumbParent = { label: 'Exam Scheduling', href: '/admin/exam-scheduling' } } = $props();
   const isProctorView = $derived(view === 'proctor');
 
-  const breadcrumbs = $derived(
-    view === 'proctor'
-      ? [
-          { label: 'My Sessions', href: '/proctor/my-sessions' },
-          { label: session?.id ? 'Session #' + session.id : 'Session' }
-        ]
-      : [
-          { label: 'Exam Scheduling', href: '/admin/exam-scheduling' },
-          { label: session?.id ? 'Session #' + session.id : 'Session' }
-        ]
-  );
+  const breadcrumbs = $derived([
+    breadcrumbParent,
+    { label: session?.id ? 'Session #' + session.id : 'Session' }
+  ]);
 
 
   let selectedAvailable = $state([]);

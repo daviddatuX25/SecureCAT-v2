@@ -68,6 +68,11 @@ class SessionRosterController extends Controller
         $isAssignedProctor = $exam_session->proctors()->where('users.id', $user->id)->exists();
         $canOverrideSchedule = $user->hasAnyRole(['super_admin', 'test_administrator']);
 
+        $isProctorView = $user->hasAnyRole(['proctor']) && ! $user->hasAnyRole(['super_admin', 'registrar_administrator']);
+        $breadcrumbParent = $isProctorView
+            ? ['label' => 'My Sessions', 'href' => '/proctor/my-sessions']
+            : ['label' => 'Exam Monitoring', 'href' => '/admin/exam-monitoring'];
+
         return Inertia::render('Proctor/SessionRoster', [
             'session' => array_merge($exam_session->toArray(), [
                 'date' => $exam_session->date?->format('Y-m-d'),
@@ -79,6 +84,7 @@ class SessionRosterController extends Controller
             ]),
             'applicants' => $applicants->values()->all(),
             'stats' => $stats,
+            'breadcrumbParent' => $breadcrumbParent,
         ]);
     }
 

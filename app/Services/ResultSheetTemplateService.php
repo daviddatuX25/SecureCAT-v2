@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\AptitudeArea;
 use App\Models\ResultSheetTemplate;
+use App\ValueObjects\RenderResult;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use PhpOffice\PhpWord\IOFactory;
@@ -27,12 +28,130 @@ class ResultSheetTemplateService
      *
      * @param  array<int, array{name: string, reference: string, exam_date: string, room_name: string, scores: array<array{domain: string, raw: int, max: int, pct: int}>, overall_pct: int}>  $applicants
      */
-    public function render(ResultSheetTemplate $template, array $applicants, bool $useSampleData = false): string
+    public function render(ResultSheetTemplate $template, array $applicants, bool $useSampleData = false): RenderResult
     {
         $applicants = array_values($applicants);
-        $sample = $this->sampleApplicantData();
+        $replacements = $this->buildReplacements($applicants, $useSampleData);
 
+        if ($template->mode === ResultSheetTemplate::MODE_HTML) {
+            $html = $this->cssService->wrap(
+                $this->renderRaw($template->content ?: '', $replacements)
+            );
+        } else {
+            $html = $this->renderDocx($template->docx_path, $replacements);
+        }
+
+        return new RenderResult(
+            html: $html,
+            mode: $template->mode,
+            paperSize: $template->paper_size ?? ResultSheetTemplate::PAPER_A4,
+            orientation: $template->orientation ?? ResultSheetTemplate::ORIENTATION_PORTRAIT,
+            logicalUnit: $template->logical_unit ?? ResultSheetTemplate::LOGICAL_FULL,
+        );
+    }
+
+    /**
+     * Render two applicants in a dual (crosswise/half-page) layout on one sheet.
+     *
+     * @param  array{name: string, reference: string, exam_date: string, room_name: string, scores: array<array{domain: string, raw: int, max: int, pct: int}>, overall_pct: int}  $applicant1
+     * @param  array{name: string, reference: string, exam_date: string, room_name: string, scores: array<array{domain: string, raw: int, max: int, pct: int}>, overall_pct: int}  $applicant2
+     */
+    public function renderDual(ResultSheetTemplate $template, array $applicant1, array $applicant2, bool $useSampleData = false): RenderResult
+    {
+        $replacements1 = $this->buildReplacements([$applicant1], $useSampleData);
+        $replacements2 = $this->buildReplacements([$applicant2], $useSampleData);
+
+        if ($template->mode === ResultSheetTemplate::MODE_HTML) {
+            $html1 = $this->renderRaw($template->content ?: '', $replacements1);
+            $html2 = $this->renderRaw($template->content ?: '', $replacements2);
+            $html = $this->cssService->wrapDual($html1, $html2);
+        } else {
+            $html1 = $this->renderDocx($template->docx_path, $replacements1);
+            $html2 = $this->renderDocx($template->docx_path, $replacements2);
+            $html = $this->cssService->wrapDual($html1, $html2);
+        }
+
+        return new RenderResult(
+            html: $html,
+            mode: $template->mode,
+            paperSize: $template->paper_size ?? ResultSheetTemplate::PAPER_A4,
+            orientation: $template->orientation ?? ResultSheetTemplate::ORIENTATION_PORTRAIT,
+            logicalUnit: $template->logical_unit ?? ResultSheetTemplate::LOGICAL_FULL,
+        );
+    }
+
+    /**
+     * Render from raw HTML content (for preview before template is saved).
+     */
+    public function renderHtmlContent(string $content, array $applicants = [], bool $useSampleData = true): RenderResult
+    {
+        $applicants = array_values($applicants);
+        $replacements = $this->buildReplacements($applicants, $useSampleData);
+
+        return new RenderResult(
+            html: $this->cssService->wrap($this->renderRaw($content, $replacements)),
+            mode: ResultSheetTemplate::MODE_HTML,
+            paperSize: ResultSheetTemplate::PAPER_A4,
+            orientation: ResultSheetTemplate::ORIENTATION_PORTRAIT,
+            logicalUnit: ResultSheetTemplate::LOGICAL_FULL,
+        );
+    }
+
+    /**
+     * Render DOCX file to HTML (for preview).
+     *
+     * @param  array<string, string>  $replacements
+     */
+    public function renderDocxFile(string $path, array $replacements = [], bool $useSampleIfEmpty = true): RenderResult
+    {
+        if (empty($replacements) && $useSampleIfEmpty) {
+            $sample = $this->sampleApplicantData();
+            $replacements = [
+                'applicant_name' => $sample['name'],
+                'applicant_reference' => $sample['reference'],
+                'exam_date' => $sample['exam_date'],
+                'room_name' => $sample['room_name'],
+                'scores_rows' => $this->buildScoresRows($sample['scores']),
+                'overall_pct' => (string) $sample['overall_pct'],
+                'applicant_name_2' => $sample['name_2'] ?? '—',
+                'applicant_reference_2' => $sample['reference_2'] ?? '—',
+                'room_name_2' => $sample['room_name_2'] ?? '—',
+                'scores_rows_2' => $this->buildScoresRows($sample['scores_2'] ?? []),
+                'overall_pct_2' => (string) ($sample['overall_pct_2'] ?? 0),
+            ];
+            $this->addPerDomainReplacements($replacements, [], $sample, true);
+        }
+
+        $html = $this->renderDocxFromFullPath($path, $replacements);
+
+        return new RenderResult(
+            html: $html,
+            mode: ResultSheetTemplate::MODE_DOCX,
+            paperSize: ResultSheetTemplate::PAPER_A4,
+            orientation: ResultSheetTemplate::ORIENTATION_PORTRAIT,
+            logicalUnit: ResultSheetTemplate::LOGICAL_FULL,
+        );
+    }
+
+    /**
+     * Slugify domain name for placeholder key (lowercase, underscores).
+     */
+    public function aptitudeAreaSlug(string $name): string
+    {
+        return str_replace('-', '_', Str::slug($name, '_'));
+    }
+
+    /**
+     * Build replacement map for applicant data (slot 1 and slot 2).
+     *
+     * @param  array<int, array{name: string, reference: string, exam_date: string, room_name: string, scores: array<array{domain: string, raw: int, max: int, pct: int}>, overall_pct: int}>  $applicants
+     * @return array<string, string>
+     */
+    protected function buildReplacements(array $applicants, bool $useSampleData): array
+    {
+        $sample = $this->sampleApplicantData();
         $replacements = [];
+
         foreach ([1 => 0, 2 => 1] as $slot => $idx) {
             $app = $applicants[$idx] ?? null;
             $data = $app ?? ($useSampleData ? $sample : null);
@@ -59,89 +178,7 @@ class ResultSheetTemplateService
 
         $this->addPerDomainReplacements($replacements, $applicants, $sample, $useSampleData);
 
-        if ($template->mode === ResultSheetTemplate::MODE_HTML) {
-            return $this->cssService->wrap(
-                $this->renderHtml($template->content ?: '', $replacements)
-            );
-        }
-
-        return $this->renderDocx($template->docx_path, $replacements);
-    }
-
-    /**
-     * Render from raw HTML content (for preview before template is saved).
-     */
-    public function renderHtmlContent(string $content, array $applicants = [], bool $useSampleData = true): string
-    {
-        $applicants = array_values($applicants);
-        $sample = $this->sampleApplicantData();
-
-        $replacements = [];
-        foreach ([1 => 0, 2 => 1] as $slot => $idx) {
-            $app = $applicants[$idx] ?? null;
-            $data = $app ?? ($useSampleData ? $sample : null);
-            $suffix = $slot === 1 ? '' : '_2';
-            if ($data) {
-                $replacements["applicant_name{$suffix}"] = $data['name'] ?? '—';
-                $replacements["applicant_reference{$suffix}"] = $data['reference'] ?? '—';
-                $replacements["exam_date{$suffix}"] = $data['exam_date'] ?? '—';
-                $replacements["room_name{$suffix}"] = $data['room_name'] ?? '—';
-                $replacements["scores_rows{$suffix}"] = $this->buildScoresRows($data['scores'] ?? []);
-                $replacements["overall_pct{$suffix}"] = (string) ($data['overall_pct'] ?? 0);
-            } else {
-                $replacements["applicant_name{$suffix}"] = '—';
-                $replacements["applicant_reference{$suffix}"] = '—';
-                $replacements["exam_date{$suffix}"] = '—';
-                $replacements["room_name{$suffix}"] = '—';
-                $replacements["scores_rows{$suffix}"] = '';
-                $replacements["overall_pct{$suffix}"] = '—';
-            }
-        }
-        $replacements['exam_date'] = $replacements['exam_date'] ?? '—';
-        $replacements['room_name'] = $replacements['room_name'] ?? '—';
-
-        $this->addPerDomainReplacements($replacements, $applicants, $sample, $useSampleData);
-
-        return $this->cssService->wrap(
-            $this->renderHtml($content, $replacements)
-        );
-    }
-
-    /**
-     * Render DOCX file to HTML (for preview).
-     *
-     * @param  array<string, string>  $replacements
-     */
-    public function renderDocxFile(string $path, array $replacements = [], bool $useSampleIfEmpty = true): string
-    {
-        if (empty($replacements) && $useSampleIfEmpty) {
-            $sample = $this->sampleApplicantData();
-            $replacements = [
-                'applicant_name' => $sample['name'],
-                'applicant_reference' => $sample['reference'],
-                'exam_date' => $sample['exam_date'],
-                'room_name' => $sample['room_name'],
-                'scores_rows' => $this->buildScoresRows($sample['scores']),
-                'overall_pct' => (string) $sample['overall_pct'],
-                // Applicant 2 (dual layout)
-                'applicant_name_2' => $sample['name_2'] ?? '—',
-                'applicant_reference_2' => $sample['reference_2'] ?? '—',
-                'room_name_2' => $sample['room_name_2'] ?? '—',
-                'scores_rows_2' => $this->buildScoresRows($sample['scores_2'] ?? []),
-                'overall_pct_2' => (string) ($sample['overall_pct_2'] ?? 0),
-            ];
-            $this->addPerDomainReplacements($replacements, [], $sample, true);
-        }
-
-        return $this->renderDocxFromFullPath($path, $replacements);
-    }
-
-    /**
-     * Slugify domain name for placeholder key (lowercase, underscores).
-     */
-    public function aptitudeAreaSlug(string $name): string
-    {
-        return str_replace('-', '_', Str::slug($name, '_'));
+        return $replacements;
     }
 
     /**
@@ -173,13 +210,15 @@ class ResultSheetTemplateService
         }
     }
 
-    protected function renderHtml(string $content, array $replacements): string
+    /**
+     * Render raw HTML content with placeholder replacements (no CSS wrapping).
+     */
+    private function renderRaw(string $content, array $replacements): string
     {
         foreach ($replacements as $key => $value) {
             $content = str_replace('{{'.$key.'}}', $value, $content);
         }
 
-        // Replace structural placeholders for scores_rows (survive HTML Purifier; raw {{scores_rows}} in tbody gets stripped)
         foreach (['scores_rows_2' => 'scores-rows-placeholder-2', 'scores_rows' => 'scores-rows-placeholder'] as $key => $class) {
             $rows = $replacements[$key] ?? '';
             $content = preg_replace_callback(
@@ -208,7 +247,6 @@ class ResultSheetTemplateService
             return '<p class="text-destructive">DOCX file not found.</p>';
         }
 
-        // Use a dedicated temp directory to avoid Windows permission issues
         $tempDir = storage_path('app/temp/phpword');
         if (! is_dir($tempDir)) {
             mkdir($tempDir, 0755, true);
@@ -272,7 +310,6 @@ class ResultSheetTemplateService
                 ['domain' => 'Perceptual Speed & Accuracy', 'raw' => 17, 'max' => 20, 'pct' => 85],
             ],
             'overall_pct' => 82,
-            // Sample for applicant 2 (dual layout)
             'name_2' => 'Maria L. Santos',
             'reference_2' => 'EXAM-2026-00043',
             'room_name_2' => 'Conference Hall A - Seat 13',
@@ -286,24 +323,5 @@ class ResultSheetTemplateService
             ],
             'overall_pct_2' => 79,
         ];
-    }
-
-    /**
-     * Get CSS dimensions for preview container.
-     */
-    public function previewDimensions(string $paperSize, string $orientation, string $logicalUnit): array
-    {
-        $sizes = [
-            'a4' => ['portrait' => [210, 297], 'landscape' => [297, 210]],
-            'legal' => ['portrait' => [216, 356], 'landscape' => [356, 216]],
-            'letter' => ['portrait' => [216, 279], 'landscape' => [279, 216]],
-        ];
-        [$w, $h] = $sizes[$paperSize][$orientation] ?? [210, 297];
-
-        if (str_starts_with($logicalUnit, 'half_')) {
-            $h = (int) ($h / 2);
-        }
-
-        return ['width' => "{$w}mm", 'height' => "{$h}mm"];
     }
 }

@@ -12,14 +12,10 @@
   import SimplePagination from '@/Components/SimplePagination.svelte';
   import { Plus, Eye, Pencil, ChevronDown, Filter, ClipboardList, Sparkles, DoorOpen, Send, Undo, X, Trash2 } from 'lucide-svelte';
 
-  let { sessions, filters = {}, statuses = [], view = 'admin', schedule_assistant = null } = $props();
+  let { sessions, filters = {}, statuses = [], view = 'admin', schedule_assistant = null, breadcrumbParent = { label: 'Exam Scheduling', href: '/admin/exam-scheduling' } } = $props();
 
   const isProctorView = $derived(view === 'proctor');
-  const breadcrumbs = $derived(
-    view === 'proctor'
-      ? [{ label: 'My Sessions' }]
-      : [{ label: 'Exam Scheduling' }]
-  );
+  const breadcrumbs = $derived([breadcrumbParent]);
 
   let assistantOpen = $state(false);
 
