@@ -3,6 +3,7 @@
   import { Link, useForm } from '@inertiajs/svelte';
   import { Button } from '@/Components/ui/button';
   import { Input } from '@/Components/ui/input';
+  import * as Select from '@/Components/ui/select';
   import { success, error } from '@/lib/toast';
 
   let { courses = [], appointments = [], active_season = null } = $props();
@@ -124,11 +125,21 @@
           </div>
           <div class="space-y-2">
             <label for="sex" class="text-sm font-medium">Sex *</label>
-            <select id="sex" bind:value={$form.sex} class="w-full rounded-md border border-input bg-background px-3 py-2 text-sm" required>
-              <option value="">Select</option>
-              <option value="male">Male</option>
-              <option value="female">Female</option>
-            </select>
+            <Select.Root type="single" bind:value={$form.sex}>
+              <Select.Trigger id="sex" class="w-full">
+                {#if $form.sex === 'male'}
+                  Male
+                {:else if $form.sex === 'female'}
+                  Female
+                {:else}
+                  <span class="text-muted-foreground">Select</span>
+                {/if}
+              </Select.Trigger>
+              <Select.Content>
+                <Select.Item value="male" label="Male">Male</Select.Item>
+                <Select.Item value="female" label="Female">Female</Select.Item>
+              </Select.Content>
+            </Select.Root>
             {#if $form.errors?.sex}
               <p class="text-sm text-destructive">{$form.errors.sex}</p>
             {/if}
@@ -180,24 +191,63 @@
         <h3 class="text-lg font-semibold">Course Preferences</h3>
         <p class="text-xs text-muted-foreground">Select one or up to three different courses in order of preference.</p>
         <div class="space-y-2">
-          <select id="course_preference_1" bind:value={$form.course_preference_1} class="w-full rounded-md border border-input bg-background px-3 py-2 text-sm" required>
-            <option value="">1st choice *</option>
-            {#each coursesUnique as c}
-              <option value={c.id}>{c.code} – {c.name}</option>
-            {/each}
-          </select>
-          <select bind:value={$form.course_preference_2} class="w-full rounded-md border border-input bg-background px-3 py-2 text-sm">
-            <option value="">2nd choice (optional)</option>
-            {#each optionsFor2 as c}
-              <option value={c.id}>{c.code} – {c.name}</option>
-            {/each}
-          </select>
-          <select bind:value={$form.course_preference_3} class="w-full rounded-md border border-input bg-background px-3 py-2 text-sm">
-            <option value="">3rd choice (optional)</option>
-            {#each optionsFor3 as c}
-              <option value={c.id}>{c.code} – {c.name}</option>
-            {/each}
-          </select>
+          <Select.Root type="single" bind:value={$form.course_preference_1}>
+            <Select.Trigger id="course_preference_1" class="w-full">
+              {#if $form.course_preference_1}
+                {@const course = coursesUnique.find(c => String(c.id) === String($form.course_preference_1))}
+                {course ? `${course.code} – ${course.name}` : '1st choice *'}
+              {:else}
+                <span class="text-muted-foreground">1st choice *</span>
+              {/if}
+            </Select.Trigger>
+            <Select.Content>
+              {#each coursesUnique as c}
+                <Select.Item value={String(c.id)} label={`${c.code} – ${c.name}`}>
+                  {c.code} – {c.name}
+                </Select.Item>
+              {/each}
+            </Select.Content>
+          </Select.Root>
+          <Select.Root type="single" bind:value={$form.course_preference_2}>
+            <Select.Trigger class="w-full">
+              {#if $form.course_preference_2}
+                {@const course = optionsFor2.find(c => String(c.id) === String($form.course_preference_2)) || coursesUnique.find(c => String(c.id) === String($form.course_preference_2))}
+                {course ? `${course.code} – ${course.name}` : '2nd choice (optional)'}
+              {:else}
+                <span class="text-muted-foreground">2nd choice (optional)</span>
+              {/if}
+            </Select.Trigger>
+            <Select.Content>
+              {#if $form.course_preference_2}
+                <Select.Item value="" label="None">— Clear selection —</Select.Item>
+              {/if}
+              {#each optionsFor2 as c}
+                <Select.Item value={String(c.id)} label={`${c.code} – ${c.name}`}>
+                  {c.code} – {c.name}
+                </Select.Item>
+              {/each}
+            </Select.Content>
+          </Select.Root>
+          <Select.Root type="single" bind:value={$form.course_preference_3}>
+            <Select.Trigger class="w-full">
+              {#if $form.course_preference_3}
+                {@const course = optionsFor3.find(c => String(c.id) === String($form.course_preference_3)) || coursesUnique.find(c => String(c.id) === String($form.course_preference_3))}
+                {course ? `${course.code} – ${course.name}` : '3rd choice (optional)'}
+              {:else}
+                <span class="text-muted-foreground">3rd choice (optional)</span>
+              {/if}
+            </Select.Trigger>
+            <Select.Content>
+              {#if $form.course_preference_3}
+                <Select.Item value="" label="None">— Clear selection —</Select.Item>
+              {/if}
+              {#each optionsFor3 as c}
+                <Select.Item value={String(c.id)} label={`${c.code} – ${c.name}`}>
+                  {c.code} – {c.name}
+                </Select.Item>
+              {/each}
+            </Select.Content>
+          </Select.Root>
           {#if $form.errors?.course_preference_1}
             <p class="text-sm text-destructive">{$form.errors.course_preference_1}</p>
           {/if}
@@ -206,11 +256,24 @@
 
       <div class="space-y-4">
         <h3 class="text-lg font-semibold">Application Status</h3>
-        <select bind:value={$form.status} class="w-full rounded-md border border-input bg-background px-3 py-2 text-sm">
-          <option value="pending">Pending</option>
-          <option value="accepted">Accepted</option>
-          <option value="dismissed">Dismissed</option>
-        </select>
+        <Select.Root type="single" bind:value={$form.status}>
+          <Select.Trigger class="w-full">
+            {#if $form.status === 'pending'}
+              Pending
+            {:else if $form.status === 'accepted'}
+              Accepted
+            {:else if $form.status === 'dismissed'}
+              Dismissed
+            {:else}
+              <span class="text-muted-foreground">Select status</span>
+            {/if}
+          </Select.Trigger>
+          <Select.Content>
+            <Select.Item value="pending" label="Pending">Pending</Select.Item>
+            <Select.Item value="accepted" label="Accepted">Accepted</Select.Item>
+            <Select.Item value="dismissed" label="Dismissed">Dismissed</Select.Item>
+          </Select.Content>
+        </Select.Root>
       </div>
 
       <input type="hidden" name="rejection_reason" value="" />

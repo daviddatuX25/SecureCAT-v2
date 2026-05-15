@@ -3,6 +3,7 @@
   import PortalLayout from '@/Layouts/PortalLayout.svelte';
   import { Button } from '@/Components/ui/button';
   import * as Card from '@/Components/ui/card';
+  import { Textarea } from '@/Components/ui/textarea';
   import { MessageSquare, Send, ArrowLeft, Trash2 } from 'lucide-svelte';
 
   let { csrf_token = '', messages: initialMessages = [] } = $props();
@@ -155,12 +156,12 @@
         </div>
 
         <div class="flex gap-2">
-          <textarea
+          <Textarea
             bind:value={input}
             onkeydown={handleKeydown}
             placeholder="Type your question..."
             rows="2"
-            class="flex-1 rounded-md border border-input bg-background px-3 py-2 text-sm min-h-[44px] resize-none"
+            class="flex-1 min-h-[44px] resize-none"
             maxlength="2000"
             disabled={loading}
           />

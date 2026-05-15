@@ -4,6 +4,7 @@
   import { Button } from '@/Components/ui/button';
   import { Input } from '@/Components/ui/input';
   import Switch from '@/Components/ui/switch/switch.svelte';
+  import { Textarea } from '@/Components/ui/textarea';
   import { success } from '@/lib/toast';
 
   let { document: doc } = $props();
@@ -67,12 +68,12 @@
 
       <div class="space-y-2">
         <label for="content">Content</label>
-        <textarea
+        <Textarea
           id="content"
           bind:value={$form.content}
           placeholder="Paste or type the text the AI can use."
           rows="10"
-          class="flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm min-h-[120px]"
+          class="flex w-full min-h-[120px]"
           required
         />
         {#if $form.errors?.content}

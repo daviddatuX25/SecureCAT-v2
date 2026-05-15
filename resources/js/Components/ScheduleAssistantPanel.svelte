@@ -4,6 +4,7 @@
   import * as Card from '@/Components/ui/card';
   import * as Table from '@/Components/ui/table';
   import { MessageSquare, Send, Sparkles, Calendar, CheckCircle2, Trash2 } from 'lucide-svelte';
+  import { Textarea } from '@/Components/ui/textarea';
 
   let {
     applicant_count = 0,
@@ -330,7 +331,7 @@
 
       <div class="flex flex-col gap-2 md:flex-row md:flex-wrap">
         <div class="flex gap-2 flex-1 min-w-0 w-full">
-          <textarea
+          <Textarea
             bind:value={input}
             onkeydown={handleKeydown}
             placeholder="Type your message..."
@@ -338,7 +339,7 @@
             class="flex-1 min-w-0 rounded-md border border-input bg-background px-3 py-2 text-sm min-h-[44px] resize-none"
             maxlength="4000"
             disabled={loading}
-          ></textarea>
+          />
           <Button type="button" onclick={() => send(false)} disabled={loading || generating || !input.trim()} class="min-h-[44px] shrink-0" title="Send message">
             {#if loading}
               <svg class="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">

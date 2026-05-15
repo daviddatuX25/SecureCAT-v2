@@ -1,5 +1,6 @@
 <script>
   import { MessageSquare, Send, X, Trash2 } from 'lucide-svelte';
+  import { Textarea } from '@/Components/ui/textarea';
 
   let {
     ai_companion_enabled = false,
@@ -165,7 +166,7 @@
 
       <!-- Input Area -->
       <div class="flex items-center gap-2 px-4 py-3 border-t bg-card">
-        <textarea
+        <Textarea
           bind:value={input}
           onkeydown={handleKeydown}
           placeholder="Type your question..."
@@ -173,7 +174,7 @@
           class="flex-1 rounded-md border border-input bg-background px-3 py-2 text-sm min-h-[44px] resize-none"
           maxlength="2000"
           disabled={loading}
-        ></textarea>
+        />
         <button
           type="button"
           onclick={send}

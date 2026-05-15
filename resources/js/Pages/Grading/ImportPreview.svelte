@@ -2,6 +2,7 @@
   import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.svelte';
   import { Link, useForm, page } from '@inertiajs/svelte';
   import { Button } from '@/Components/ui/button';
+  import { Checkbox } from '@/Components/ui/checkbox';
   import { FileSpreadsheet, Check, X, AlertTriangle, ArrowLeft, Save } from 'lucide-svelte';
 
   let {
@@ -42,8 +43,8 @@
     selectedIds = newSet;
   }
 
-  function toggleAll() {
-    if (selectAll) {
+  function toggleAll(v) {
+    if (!v) {
       selectedIds = new Set();
       selectAll = false;
     } else {
@@ -120,7 +121,7 @@
           <thead class="bg-muted">
             <tr>
               <th class="px-3 py-2 text-left w-10">
-                <input type="checkbox" checked={selectAll} onchange={toggleAll} class="rounded" />
+                <Checkbox checked={selectAll} onCheckedChange={toggleAll} />
               </th>
               <th class="px-3 py-2 text-left w-16">Row</th>
               <th class="px-3 py-2 text-left">Reference #</th>
@@ -133,7 +134,7 @@
               <tr class:bg-red-50={!record.is_valid} class:bg-white={record.is_valid}>
                 <td class="px-3 py-2">
                   {#if record.is_valid}
-                    <input type="checkbox" checked={selectedIds.has(record.id)} onchange={() => toggleRow(record.id)} class="rounded" />
+                    <Checkbox checked={selectedIds.has(record.id)} onCheckedChange={() => toggleRow(record.id)} />
                   {:else}
                     <X class="size-4 text-red-500" />
                   {/if}

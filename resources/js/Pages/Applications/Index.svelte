@@ -4,6 +4,7 @@
   import { Button } from '@/Components/ui/button';
   import { Badge } from '@/Components/ui/badge';
   import { Input } from '@/Components/ui/input';
+  import * as Select from '@/Components/ui/select';
   import * as Table from '@/Components/ui/table';
   import { Filter, ChevronDown, CheckCircle, XCircle, UploadCloud, Plus, Pencil } from 'lucide-svelte';
   import ViewModeToggle from '@/Components/ViewModeToggle.svelte';
@@ -175,60 +176,118 @@
           <div class="absolute right-0 top-full z-10 mt-1 w-[min(320px,calc(100vw-2rem))] rounded-lg border border-border bg-card p-4 shadow-lg">
             <div class="space-y-3">
               <label for="filter-status-mobile" class="block text-sm font-medium">Status</label>
-              <select id="filter-status-mobile" bind:value={filterStatus} class="w-full rounded-md border border-input bg-background px-3 py-2 text-sm min-h-[44px]">
-                <option value="">All</option>
-                {#each statuses as s}
-                  <option value={s.value}>{s.label}</option>
-                {/each}
-              </select>
+              <Select.Root type="single" bind:value={filterStatus}>
+                <Select.Trigger id="filter-status-mobile" class="w-full min-h-[44px]">
+                  {#if filterStatus}
+                    {statuses.find(s => String(s.value) === String(filterStatus))?.label || 'All'}
+                  {:else}
+                    <span class="text-muted-foreground">All</span>
+                  {/if}
+                </Select.Trigger>
+                <Select.Content>
+                  <Select.Item value="" label="All">All</Select.Item>
+                  {#each statuses as s}
+                    <Select.Item value={String(s.value)} label={s.label}>{s.label}</Select.Item>
+                  {/each}
+                </Select.Content>
+              </Select.Root>
+              
               <label for="filter-pipeline-mobile" class="block text-sm font-medium">Pipeline</label>
-              <select id="filter-pipeline-mobile" bind:value={filterPipelineStatus} class="w-full rounded-md border border-input bg-background px-3 py-2 text-sm min-h-[44px]">
-                <option value="">All</option>
-                {#each pipeline_statuses as p}
-                  <option value={p.value}>{p.label}</option>
-                {/each}
-              </select>
+              <Select.Root type="single" bind:value={filterPipelineStatus}>
+                <Select.Trigger id="filter-pipeline-mobile" class="w-full min-h-[44px]">
+                  {#if filterPipelineStatus}
+                    {pipeline_statuses.find(p => String(p.value) === String(filterPipelineStatus))?.label || 'All'}
+                  {:else}
+                    <span class="text-muted-foreground">All</span>
+                  {/if}
+                </Select.Trigger>
+                <Select.Content>
+                  <Select.Item value="" label="All">All</Select.Item>
+                  {#each pipeline_statuses as p}
+                    <Select.Item value={String(p.value)} label={p.label}>{p.label}</Select.Item>
+                  {/each}
+                </Select.Content>
+              </Select.Root>
+              
               <label for="filter-season-mobile" class="block text-sm font-medium">Season</label>
-              <select id="filter-season-mobile" bind:value={filterAcademicYearId} class="w-full rounded-md border border-input bg-background px-3 py-2 text-sm min-h-[44px]">
-                <option value="">Active</option>
-                {#each seasons as s}
-                  <option value={s.id}>{seasonLabel(s)}</option>
-                {/each}
-              </select>
+              <Select.Root type="single" bind:value={filterAcademicYearId}>
+                <Select.Trigger id="filter-season-mobile" class="w-full min-h-[44px]">
+                  {#if filterAcademicYearId}
+                    {seasonLabel(seasons.find(s => String(s.id) === String(filterAcademicYearId))) || 'Active'}
+                  {:else}
+                    <span class="text-muted-foreground">Active</span>
+                  {/if}
+                </Select.Trigger>
+                <Select.Content>
+                  <Select.Item value="" label="Active">Active</Select.Item>
+                  {#each seasons as s}
+                    <Select.Item value={String(s.id)} label={seasonLabel(s)}>{seasonLabel(s)}</Select.Item>
+                  {/each}
+                </Select.Content>
+              </Select.Root>
               <div class="grid grid-cols-2 gap-2">
                 <div>
                   <label for="filter-date-from-mobile" class="block text-xs text-muted-foreground">From</label>
-                  <input id="filter-date-from-mobile" type="date" bind:value={filterDateFrom} class="w-full rounded-md border border-input bg-background px-2 py-2 text-sm min-h-[44px]" />
+                  <Input id="filter-date-from-mobile" type="date" bind:value={filterDateFrom} class="w-full min-h-[44px]" />
                 </div>
                 <div>
                   <label for="filter-date-to-mobile" class="block text-xs text-muted-foreground">To</label>
-                  <input id="filter-date-to-mobile" type="date" bind:value={filterDateTo} class="w-full rounded-md border border-input bg-background px-2 py-2 text-sm min-h-[44px]" />
+                  <Input id="filter-date-to-mobile" type="date" bind:value={filterDateTo} class="w-full min-h-[44px]" />
                 </div>
               </div>
             </div>
           </div>
         </details>
         <div class="hidden md:flex md:items-center md:gap-3">
-          <select bind:value={filterStatus} class="rounded-md border border-input bg-background px-3 py-2 text-sm min-h-[40px]">
-            <option value="">All statuses</option>
-            {#each statuses as s}
-              <option value={s.value}>{s.label}</option>
-            {/each}
-          </select>
-          <select bind:value={filterPipelineStatus} class="rounded-md border border-input bg-background px-3 py-2 text-sm min-h-[40px]">
-            <option value="">All pipelines</option>
-            {#each pipeline_statuses as p}
-              <option value={p.value}>{p.label}</option>
-            {/each}
-          </select>
-          <select bind:value={filterAcademicYearId} class="rounded-md border border-input bg-background px-3 py-2 text-sm min-h-[40px]">
-            <option value="">Active season</option>
-            {#each seasons as s}
-              <option value={s.id}>{seasonLabel(s)}</option>
-            {/each}
-          </select>
-          <input type="date" bind:value={filterDateFrom} class="rounded-md border border-input bg-background px-2 py-2 text-sm min-h-[40px]" placeholder="From" />
-          <input type="date" bind:value={filterDateTo} class="rounded-md border border-input bg-background px-2 py-2 text-sm min-h-[40px]" placeholder="To" />
+          <Select.Root type="single" bind:value={filterStatus}>
+            <Select.Trigger class="w-[150px] min-h-[40px]">
+              {#if filterStatus}
+                {statuses.find(s => String(s.value) === String(filterStatus))?.label || 'All statuses'}
+              {:else}
+                <span class="text-muted-foreground">All statuses</span>
+              {/if}
+            </Select.Trigger>
+            <Select.Content>
+              <Select.Item value="" label="All statuses">All statuses</Select.Item>
+              {#each statuses as s}
+                <Select.Item value={String(s.value)} label={s.label}>{s.label}</Select.Item>
+              {/each}
+            </Select.Content>
+          </Select.Root>
+          
+          <Select.Root type="single" bind:value={filterPipelineStatus}>
+            <Select.Trigger class="w-[150px] min-h-[40px]">
+              {#if filterPipelineStatus}
+                {pipeline_statuses.find(p => String(p.value) === String(filterPipelineStatus))?.label || 'All pipelines'}
+              {:else}
+                <span class="text-muted-foreground">All pipelines</span>
+              {/if}
+            </Select.Trigger>
+            <Select.Content>
+              <Select.Item value="" label="All pipelines">All pipelines</Select.Item>
+              {#each pipeline_statuses as p}
+                <Select.Item value={String(p.value)} label={p.label}>{p.label}</Select.Item>
+              {/each}
+            </Select.Content>
+          </Select.Root>
+          
+          <Select.Root type="single" bind:value={filterAcademicYearId}>
+            <Select.Trigger class="w-[150px] min-h-[40px]">
+              {#if filterAcademicYearId}
+                {seasonLabel(seasons.find(s => String(s.id) === String(filterAcademicYearId))) || 'Active season'}
+              {:else}
+                <span class="text-muted-foreground">Active season</span>
+              {/if}
+            </Select.Trigger>
+            <Select.Content>
+              <Select.Item value="" label="Active season">Active season</Select.Item>
+              {#each seasons as s}
+                <Select.Item value={String(s.id)} label={seasonLabel(s)}>{seasonLabel(s)}</Select.Item>
+              {/each}
+            </Select.Content>
+          </Select.Root>
+          <Input type="date" bind:value={filterDateFrom} class="min-h-[40px]" placeholder="From" />
+          <Input type="date" bind:value={filterDateTo} class="min-h-[40px]" placeholder="To" />
         </div>
         <Button class="min-h-[44px] md:min-h-[40px]" onclick={applyFilters}>
           Apply

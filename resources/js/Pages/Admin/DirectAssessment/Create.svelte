@@ -3,8 +3,9 @@
   import { useForm } from '@inertiajs/svelte';
   import { Button } from '@/Components/ui/button';
   import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/Components/ui/card';
-  import Label from '@/Components/ui/label/Label.svelte';
-  import Input from '@/Components/ui/input/Input.svelte';
+  import { Label } from '@/Components/ui/label';
+  import { Input } from '@/Components/ui/input';
+  import { Checkbox } from '@/Components/ui/checkbox';
 
   let { academicYears, applicants, activeAcademicYearId, storeRoute } = $props();
 
@@ -28,7 +29,7 @@
     }));
   }
 
-  function submit(e: Event) {
+  function submit(e) {
     e.preventDefault();
     form.post(storeRoute);
   }
@@ -88,11 +89,9 @@
             <div class="space-y-2 max-h-64 overflow-y-auto">
               {#each applicants as applicant (applicant.id)}
                 <label class="flex items-center gap-3 p-2 rounded-md hover:bg-muted/50 cursor-pointer">
-                  <input
-                    type="checkbox"
+                  <Checkbox
                     checked={$form.applicant_ids.includes(applicant.id)}
-                    onchange={() => toggleApplicant(applicant.id)}
-                    class="h-4 w-4 rounded border-input"
+                    onCheckedChange={() => toggleApplicant(applicant.id)}
                   />
                   <div class="flex-1">
                     <span class="text-sm font-medium">{applicant.name}</span>

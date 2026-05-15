@@ -4,6 +4,7 @@
   import { Button } from '@/Components/ui/button';
   import { Badge } from '@/Components/ui/badge';
   import { Card, CardContent, CardHeader, CardTitle } from '@/Components/ui/card';
+  import { Textarea } from '@/Components/ui/textarea';
   import { ArrowLeft, CheckCircle, XCircle, Mail } from 'lucide-svelte';
   import { pipelineBadgeVariant, pipelineStatusLabel, pipelineMilestones, pipelineOrder } from '@/lib/pipeline-helpers';
 
@@ -241,12 +242,12 @@
       <div class="w-full max-w-md rounded-lg border border-border bg-card p-6 shadow-lg">
         <h2 id="dismiss-title" class="text-lg font-semibold">Dismiss application</h2>
         <p class="mt-2 text-sm text-muted-foreground">Optionally provide a reason for dismissal.</p>
-        <textarea
+        <Textarea
           bind:value={dismissReason}
           placeholder="Reason for dismissal (optional)"
           rows="3"
-          class="mt-3 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-        ></textarea>
+          class="mt-3 w-full"
+        />
         <div class="mt-4 flex justify-end gap-2">
           <Button variant="outline" onclick={cancelDismiss}>Cancel</Button>
           <Button
