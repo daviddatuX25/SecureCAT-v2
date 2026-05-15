@@ -15,11 +15,11 @@
   };
 
   const config = $derived(styles[variant]);
+  const Icon = $derived(config.icon);
 </script>
 
 <div class="rounded-lg bg-muted/50 p-3 text-sm border-l-4 {config.border} {className}">
   <div class="flex items-start gap-3">
-    {@const Icon = config.icon}
     <Icon class="h-5 w-5 shrink-0 {config.iconClass} mt-0.5" />
     <div class="space-y-1">
       {#if title}
