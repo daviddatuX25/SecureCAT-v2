@@ -206,6 +206,7 @@ Route::middleware(['auth'])->group(function () {
         Route::post('sessions/{exam_session}/start', [SessionRosterController::class, 'start'])->name('sessions.start');
         Route::post('sessions/{exam_session}/close', [SessionRosterController::class, 'close'])->name('sessions.close');
         Route::post('sessions/{exam_session}/bulk-attendance', [SessionRosterController::class, 'bulkAttendance'])->name('sessions.bulk-attendance');
+        Route::post('sessions/{exam_session}/extend', [SessionRosterController::class, 'extend'])->name('sessions.extend');
     });
 
     // Test Admin session management — dedicated index + roster with full permissions
@@ -246,10 +247,13 @@ Route::middleware(['auth'])->group(function () {
             // Print batch
             Route::prefix('print')->name('print.')->group(function () {
                 Route::get('bulk', [ReleasePrintController::class, 'printBulkAgnostic'])->name('bulk');
+                Route::get('bulk-pdf', [ReleasePrintController::class, 'printBulkAgnosticPdf'])->name('bulk-agnostic-pdf');
                 Route::get('{grading_session}', [ReleasePrintController::class, 'index'])->name('index');
                 Route::post('{grading_session}/mark-printed', [ReleasePrintController::class, 'markPrinted'])->name('mark-printed');
                 Route::get('{grading_session}/applicants/{applicant}', [ReleasePrintController::class, 'resultSheet'])->name('result-sheet');
+                Route::get('{grading_session}/applicants/{applicant}/pdf', [ReleasePrintController::class, 'resultSheetPdf'])->name('result-sheet-pdf');
                 Route::get('{grading_session}/print-bulk', [ReleasePrintController::class, 'printBulk'])->name('print-bulk');
+                Route::get('{grading_session}/print-bulk-pdf', [ReleasePrintController::class, 'printBulkPdf'])->name('print-bulk-pdf');
             });
         });
 });

@@ -124,11 +124,24 @@
   const isPastDate            = $derived(session.is_past_date === true);
   const noApplicants          = $derived(session.status === 'published' && !hasApplicants);
   const canMarkAttendance     = $derived(
-    p.canMarkAttendance && (session.status === 'published' || session.status === 'in_progress') && !clientPastEnd
+    p.canMarkAttendance && session.status === 'in_progress'
   );
-  const canLogSubmission      = $derived(p.canLogSubmission && session.status === 'in_progress' && !clientPastEnd);
+  const canLogSubmission      = $derived(p.canLogSubmission && session.status === 'in_progress');
   const canBulkSubmit         = $derived(
-    p.canBulkSubmit && session.status === 'in_progress' && !clientPastEnd && (stats.present_pending_submission ?? 0) > 0
+    p.canBulkSubmit && session.status === 'in_progress' && (stats.present_pending_submission ?? 0) > 0
+  );
+  
+  const hasStragglers = $derived((stats.present_pending_submission ?? 0) > 0);
+  const isPastEnd = $derived(session.is_past_end === true);
+  const showImpendingClose = $derived(
+    session.status === 'in_progress' && 
+    isPastEnd && 
+    !hasStragglers
+  );
+  const showStragglerWarning = $derived(
+    session.status === 'in_progress' && 
+    isPastEnd && 
+    hasStragglers
   );
 
   // ── Helpers ───────────────────────────────────────────────────────────────
@@ -302,6 +315,14 @@
     });
   }
 
+  function extendSession(minutes = 30) {
+    actionError = '';
+    router.post(`/proctor/sessions/${session.id}/extend`, { extension_minutes: minutes }, {
+      onError: handleRosterError,
+      onSuccess: () => router.reload(),
+    });
+  }
+
   function startSession() {
     actionError = '';
     router.post(`/proctor/sessions/${session.id}/start`, {}, {
@@ -329,6 +350,53 @@
       <ArrowLeft class="h-4 w-4" /> {backLabel}
     </Link>
   </div>
+
+  {#if actionError}
+    <div class="rounded-lg bg-destructive/10 p-4 text-sm text-destructive">
+      {actionError}
+    </div>
+  {/if}
+
+  {#if session.system_notes}
+    <div class="rounded-lg border border-primary/20 bg-primary/5 p-4 flex items-start gap-3">
+      <Info class="h-5 w-5 text-primary mt-0.5" />
+      <div>
+        <p class="text-sm font-medium text-primary">System Note</p>
+        <p class="text-sm text-primary/80">{session.system_notes}</p>
+      </div>
+    </div>
+  {/if}
+
+  {#if showImpendingClose}
+    <div class="rounded-lg border border-amber-200 bg-amber-50 p-4 flex items-start gap-3 dark:border-amber-900/50 dark:bg-amber-900/10">
+      <Clock class="h-5 w-5 text-amber-600 mt-0.5 dark:text-amber-400" />
+      <div>
+        <p class="text-sm font-medium text-amber-800 dark:text-amber-300">Impending Closure</p>
+        <p class="text-sm text-amber-700 dark:text-amber-400">
+          This session has passed its scheduled end time and all present applicants have submitted. 
+          The system will automatically close this session shortly.
+        </p>
+      </div>
+    </div>
+  {/if}
+
+  {#if showStragglerWarning}
+    <div class="rounded-lg border border-destructive/20 bg-destructive/5 p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div class="flex items-start gap-3">
+        <AlertTriangle class="h-5 w-5 text-destructive mt-0.5" />
+        <div>
+          <p class="text-sm font-medium text-destructive text-balance">Action Required: Session Time Ended</p>
+          <p class="text-sm text-destructive/80 text-balance">
+            {stats.present_pending_submission} applicant(s) are still pending submission. 
+            The session will forcefully auto-close 30 minutes after the scheduled end time unless extended.
+          </p>
+        </div>
+      </div>
+      <Button variant="outline" size="sm" class="shrink-0 border-destructive/20 text-destructive hover:bg-destructive/10" onclick={() => extendSession(30)}>
+        Extend by 30 mins
+      </Button>
+    </div>
+  {/if}
 
   <!-- Session info card -->
   <div class="rounded-lg border border-border bg-card p-6">

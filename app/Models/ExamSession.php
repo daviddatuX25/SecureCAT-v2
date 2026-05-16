@@ -34,6 +34,7 @@ class ExamSession extends Model
         'date',
         'start_time',
         'end_time',
+        'extended_end_time',
         'status',
         'published_at',
         'started_at',
@@ -41,6 +42,7 @@ class ExamSession extends Model
         'created_by',
         'type',
         'label',
+        'system_notes',
     ];
 
     protected $appends = ['is_publishable', 'publish_block_reason'];
@@ -199,6 +201,25 @@ class ExamSession extends Model
         $now ??= Carbon::now($tz);
         $sessionDate = Carbon::parse($this->date)->tz($tz);
         $end = $sessionDate->copy()->setTimeFromTimeString($this->end_time);
+
+        return $now->gt($end);
+    }
+
+    /**
+     * True when the current time is past the session's effective end time
+     * (extended_end_time if set, otherwise end_time).
+     */
+    public function isEffectiveEndTimePast(?Carbon $now = null): bool
+    {
+        $end = $this->extended_end_time ?? $this->end_time;
+        if (! $end) {
+            return false;
+        }
+
+        $tz = config('app.timezone', 'UTC');
+        $now ??= Carbon::now($tz);
+        $sessionDate = Carbon::parse($this->date)->tz($tz);
+        $end = $sessionDate->copy()->setTimeFromTimeString($end);
 
         return $now->gt($end);
     }

@@ -108,6 +108,11 @@
             <Printer class="h-4 w-4 mr-2" />
             Print bulk{selected.size > 0 ? ` (${selected.size})` : ''}
           </Button>
+          {#if !printDisabled && selected.size > 0}
+            <a href={`/admin/release/print/${sid}/print-bulk-pdf?ids=${Array.from(selected).join(',')}`} target="_blank" rel="noopener">
+              <Button variant="secondary" class="min-h-[44px]">Download PDF</Button>
+            </a>
+          {/if}
           {#if showMarkPrinted}
             <Button variant="outline" onclick={markAsPrinted} class="min-h-[44px]">
               Mark {selected.size} as printed

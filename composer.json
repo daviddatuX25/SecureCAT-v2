@@ -17,6 +17,8 @@
         "moe-mizrak/laravel-openrouter": "^2.8",
         "phpoffice/phpspreadsheet": "4.0",
         "phpoffice/phpword": "^1.4",
+        "spatie/browsershot": "^5.3",
+        "spatie/laravel-pdf": "^2.8",
         "symfony/expression-language": "^7.0"
     },
     "require-dev": {

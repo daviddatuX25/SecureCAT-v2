@@ -58,6 +58,11 @@
       <Button variant="outline" onclick={toggleMarkPrinted} class="min-h-[44px]">
         {markedPrinted ? 'Unmark printed' : 'Mark as printed'}
       </Button>
+      {#if !printDisabled && !templateError && templateHtml}
+        <a href={`/admin/release/print/${sid}/applicants/${applicant.id}/pdf`} target="_blank" rel="noopener">
+          <Button variant="secondary" class="min-h-[44px]">View PDF</Button>
+        </a>
+      {/if}
     </div>
     {#if printDisabled}
       <p class="text-xs text-muted-foreground">

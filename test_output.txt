@@ -1,0 +1,41 @@
+
+  [30;43;1m WARN [39;49;22m Option --colors cannot be used more than once
+
+   WARN  Metadata found in doc-comment for method Tests\Feature\ExamSessionWorkflowTest::proctor_can_start_published_session_within_window(). Metadata in doc-comments is deprecated and will no longer be supported in PHPUnit 12. Update your test code to use attributes instead.
+
+   WARN  Metadata found in doc-comment for method Tests\Feature\ExamSessionWorkflowTest::proctor_cannot_start_session_outside_window_without_override(). Metadata in doc-comments is deprecated and will no longer be supported in PHPUnit 12. Update your test code to use attributes instead.
+
+   WARN  Metadata found in doc-comment for method Tests\Feature\ExamSessionWorkflowTest::test_admin_can_start_session_outside_window(). Metadata in doc-comments is deprecated and will no longer be supported in PHPUnit 12. Update your test code to use attributes instead.
+
+   WARN  Metadata found in doc-comment for method Tests\Feature\ExamSessionWorkflowTest::test_admin_can_close_in_progress_session(). Metadata in doc-comments is deprecated and will no longer be supported in PHPUnit 12. Update your test code to use attributes instead.
+
+   WARN  Metadata found in doc-comment for method Tests\Feature\ExamSessionWorkflowTest::start_dispatches_exam_session_started_notification(). Metadata in doc-comments is deprecated and will no longer be supported in PHPUnit 12. Update your test code to use attributes instead.
+
+   WARN  Metadata found in doc-comment for method Tests\Feature\ExamSessionWorkflowTest::close_dispatches_exam_session_completed_notification(). Metadata in doc-comments is deprecated and will no longer be supported in PHPUnit 12. Update your test code to use attributes instead.
+
+   WARN  Metadata found in doc-comment for method Tests\Feature\ExamSessionWorkflowTest::exam_session_reminder_is_database_only(). Metadata in doc-comments is deprecated and will no longer be supported in PHPUnit 12. Update your test code to use attributes instead.
+
+   FAIL  Tests\Feature\Grading\ScoreImportControllerTest
+  ⨯ preview shows area code columns and resolved session                                                         1.06s  
+  ────────────────────────────────────────────────────────────────────────────────────────────────────────────────────  
+   FAILED  Tests\Feature\Grading\ScoreImportControllerTest > preview shows area code columns a…  AssertionFailedError   
+  Not a valid Inertia response.
+
+  at vendor\inertiajs\inertia-laravel\src\Testing\AssertableInertia.php:84
+     80▕             PHPUnit::assertArrayHasKey('version', $page);
+     81▕             PHPUnit::assertArrayHasKey('encryptHistory', $page);
+     82▕             PHPUnit::assertArrayHasKey('clearHistory', $page);
+     83▕         } catch (AssertionFailedError $e) {
+  ➜  84▕             PHPUnit::fail('Not a valid Inertia response.');
+     85▕         }
+     86▕ 
+     87▕         $instance = static::fromArray($page['props']);
+     88▕         $instance->component = $page['component'];
+
+  1   vendor\inertiajs\inertia-laravel\src\Testing\AssertableInertia.php:84
+  2   vendor\inertiajs\inertia-laravel\src\Testing\TestResponseMacros.php:20
+
+
+  Tests:    1 failed (2 assertions)
+  Duration: 1.71s
+

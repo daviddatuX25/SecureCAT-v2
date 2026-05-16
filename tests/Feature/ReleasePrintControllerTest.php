@@ -3,17 +3,27 @@
 namespace Tests\Feature;
 
 use App\Models\Applicant;
+use App\Models\ApplicantScore;
 use App\Models\AptitudeArea;
 use App\Models\ExamSession;
 use App\Models\GradingSession;
 use App\Models\ResultSheetTemplate;
 use App\Models\User;
+use App\Services\ResultSheetPdfService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\Response;
+use Mockery;
 use Tests\TestCase;
 
 class ReleasePrintControllerTest extends TestCase
 {
     use RefreshDatabase;
+
+    protected function tearDown(): void
+    {
+        Mockery::close();
+        parent::tearDown();
+    }
 
     private function createSessionWithApplicant(): array
     {
@@ -225,5 +235,95 @@ class ReleasePrintControllerTest extends TestCase
         $response->assertInertia(fn ($page) => $page
             ->where('applicants.0.printed', true)
         );
+    }
+
+    public function test_result_sheet_pdf_returns_inline_pdf_for_valid_applicant(): void
+    {
+        ResultSheetTemplate::factory()->create(['is_active' => true, 'mode' => 'html', 'content' => '<div>{{applicant_name}}</div>']);
+        [$session, $applicant] = $this->createSessionWithApplicant();
+        ApplicantScore::factory()->create([
+            'grading_session_id' => $session->id,
+            'applicant_id' => $applicant->id,
+            'aptitude_area_id' => AptitudeArea::factory(),
+        ]);
+
+        $mock = Mockery::mock(ResultSheetPdfService::class);
+        $mock->shouldReceive('inline')->once()->andReturn(
+            new Response('pdf-content', 200, ['Content-Type' => 'application/pdf'])
+        );
+        $this->app->instance(ResultSheetPdfService::class, $mock);
+
+        $admin = User::factory()->create();
+        $admin->assignRole('super_admin');
+
+        $response = $this->actingAs($admin)
+            ->get(route('admin.release.print.result-sheet-pdf', [$session, $applicant]));
+
+        $response->assertOk();
+        $response->assertHeader('Content-Type', 'application/pdf');
+    }
+
+    public function test_result_sheet_pdf_returns_404_for_applicant_not_in_session(): void
+    {
+        ResultSheetTemplate::factory()->create(['is_active' => true, 'mode' => 'html', 'content' => '<div>{{applicant_name}}</div>']);
+        [$session] = $this->createSessionWithApplicant();
+        $otherApplicant = Applicant::factory()->create();
+
+        $admin = User::factory()->create();
+        $admin->assignRole('super_admin');
+
+        $response = $this->actingAs($admin)
+            ->get(route('admin.release.print.result-sheet-pdf', [$session, $otherApplicant]));
+
+        $response->assertNotFound();
+    }
+
+    public function test_print_bulk_pdf_returns_downloadable_pdf(): void
+    {
+        ResultSheetTemplate::factory()->create(['is_active' => true, 'mode' => 'html', 'content' => '<div>{{applicant_name}}</div>']);
+        [$session, $applicant] = $this->createSessionWithApplicant();
+
+        $mock = Mockery::mock(ResultSheetPdfService::class);
+        $mock->shouldReceive('bulkDownload')->once()->andReturn(
+            new Response('pdf-content', 200, ['Content-Type' => 'application/pdf'])
+        );
+        $this->app->instance(ResultSheetPdfService::class, $mock);
+
+        $admin = User::factory()->create();
+        $admin->assignRole('super_admin');
+
+        $response = $this->actingAs($admin)
+            ->get(route('admin.release.print.print-bulk-pdf', ['grading_session' => $session->id, 'ids' => $applicant->id]));
+
+        $response->assertOk();
+        $response->assertHeader('Content-Type', 'application/pdf');
+    }
+
+    public function test_print_bulk_agnostic_pdf_returns_downloadable_pdf(): void
+    {
+        ResultSheetTemplate::factory()->create(['is_active' => true, 'mode' => 'html', 'content' => '<div>{{applicant_name}}</div>']);
+        $session = GradingSession::factory()->create();
+        $applicant = Applicant::factory()->create();
+        $session->applicants()->attach($applicant->id, ['result_printed_at' => null]);
+        ApplicantScore::factory()->create([
+            'grading_session_id' => $session->id,
+            'applicant_id' => $applicant->id,
+            'aptitude_area_id' => AptitudeArea::factory(),
+        ]);
+
+        $mock = Mockery::mock(ResultSheetPdfService::class);
+        $mock->shouldReceive('bulkDownload')->once()->andReturn(
+            new Response('pdf-content', 200, ['Content-Type' => 'application/pdf'])
+        );
+        $this->app->instance(ResultSheetPdfService::class, $mock);
+
+        $admin = User::factory()->create();
+        $admin->assignRole('super_admin');
+
+        $response = $this->actingAs($admin)
+            ->get(route('admin.release.print.bulk-agnostic-pdf', ['ids' => $applicant->id]));
+
+        $response->assertOk();
+        $response->assertHeader('Content-Type', 'application/pdf');
     }
 }

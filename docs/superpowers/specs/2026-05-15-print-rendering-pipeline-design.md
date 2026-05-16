@@ -40,7 +40,7 @@ Both HTML and DOCX template modes now produce PDF as the primary output. The bro
 │                   │                                │
 ├───────────────────┼───────────────────────────────┤
 │ Output:           │ Output:                        │
-│  PDF (Snappy)     │  PDF (Snappy, from HTML)       │
+│  PDF (Spatie)     │  PDF (Spatie, from HTML)       │
 │  Browser fallback │  Browser fallback              │
 │  (for preview)    │  (for preview)                 │
 └───────────────────┴───────────────────────────────┘
@@ -53,11 +53,11 @@ Template → ResultSheetTemplateService::render()
   → PrintTemplateCssService::wrap() or wrapDual()
   → HTML string (scoped Tailwind)
   → ResultSheetPdfService::generatePdf()
-  → Snappy generates PDF with setPaper() + setOrientation()
+  → Spatie generates PDF with format() + landscape()
   → Streamed to browser as inline PDF or download
 ```
 
-For DOCX mode, the HTML conversion from PHPWord still feeds into Snappy for PDF generation.
+For DOCX mode, the HTML conversion from PHPWord still feeds into Spatie PDF for PDF generation.
 
 ---
 
@@ -168,7 +168,7 @@ And in `print-template.css`, add:
 }
 ```
 
-For PDF output, Snappy respects CSS Grid and will split the page correctly.
+For PDF output, Chromium (Spatie) respects CSS Grid and will split the page correctly.
 
 The `ResultSheetTemplateService::renderDual()` method renders two applicants in one call, returning a single `RenderResult` with the dual-wrapped HTML. No more raw concatenation.
 
@@ -229,7 +229,7 @@ Add a "Copies" input to the print batch and bulk print pages:
 
 - **Full-page mode:** Each copy is a separate PDF page. 1 applicant × 3 copies = 3 pages.
 - **Crosswise mode:** Each copy is a separate PDF page with both halves filled. 2 applicants × 3 copies = 3 pages (not 6). If odd number of applicants, the last page's bottom half is blank.
-- **PDF generation:** Snappy duplicates pages in the PDF based on the copies parameter.
+- **PDF generation:** Spatie duplicates pages in the PDF based on the copies parameter.
 
 ### Server-Side
 
@@ -279,12 +279,10 @@ The `@page { size: A4 portrait; margin: 0; }` rule is currently hardcoded in the
 ### Snappy PDF
 
 ```php
-$pdf = SnappyPdf::loadHTML($html)
-    ->setPaper($paperSize, $orientation)
-    ->setOption('margin-top', '0mm')
-    ->setOption('margin-right', '0mm')
-    ->setOption('margin-bottom', '0mm')
-    ->setOption('margin-left', '0mm');
+$pdf = \Spatie\LaravelPdf\Facades\Pdf::view('pdf.template', ['html' => $html])
+    ->format($paperSize)
+    ->landscape($orientation === 'landscape')
+    ->margins(0, 0, 0, 0);
 ```
 
 ---
@@ -293,8 +291,7 @@ $pdf = SnappyPdf::loadHTML($html)
 
 ### New
 
-- `barryvdh/laravel-snappy` — Laravel wrapper for wkhtmltopdf PDF generation
-- `h4cc/wkhtmltopdf-amd64` (Linux) or `wemersonrv/wkhtmltopdf-windows` (Windows/Laragon) — Binary packages
+- `spatie/laravel-pdf` — Laravel wrapper for Chromium/Puppeteer PDF generation
 
 ### Existing (no changes)
 
@@ -314,12 +311,12 @@ $pdf = SnappyPdf::loadHTML($html)
 - Fix `ResultSheetBulk.svelte` and `ResultSheet.svelte` to use dynamic `@page`
 - Add `unwrap()` helper or `renderRaw()` to get inner HTML for dual wrapping without double-wrapping
 
-### Phase 2: PDF Export (Snappy)
-- Install `barryvdh/laravel-snappy` + wkhtmltopdf binary
+### Phase 2: PDF Export (Spatie)
+- Install `spatie/laravel-pdf` (and configure Puppeteer)
 - Create `ResultSheetPdfService`
 - Add PDF routes and controller methods
 - Add "View PDF" / "Download PDF" buttons to Svelte pages
-- Configure Snappy for zero margins + template paper size/orientation
+- Configure Spatie for zero margins + template paper size/orientation
 
 ### Phase 3: DOCX Service Extraction + Validation
 - Extract `ResultSheetDocxService` from `ResultSheetTemplateService`

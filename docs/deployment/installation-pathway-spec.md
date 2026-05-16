@@ -675,7 +675,29 @@ See `docs/deployment/troubleshooting.md`
 
 ---
 
-## 9. Out of Scope
+## 9. Chrome PDF Dependency (Result Sheet PDF Export)
+
+SecureCAT uses `spatie/laravel-pdf` (Chrome driver) to generate server-side PDFs.
+The server must have Google Chrome installed. No Docker or extra services needed.
+
+### Install
+Download from https://www.google.com/chrome/ and install normally.
+
+### Configure `.env`
+PDF_DRIVER=chrome
+CHROME_BINARY="C:/Program Files/Google/Chrome/Application/chrome.exe"
+
+### Verify
+php artisan tinker --execute '\Spatie\LaravelPdf\Facades\Pdf::html("<h1>ok</h1>")->save(storage_path("test.pdf")); echo "saved";'
+
+### Troubleshooting
+- "Chrome binary not found" → verify CHROME_BINARY path
+- Blank PDF → add --no-sandbox to chrome options in config/laravel-pdf.php
+- Timeout → increase timeout value in chrome driver config
+
+---
+
+## 10. Out of Scope
 
 - **Licensing server setup** — separate project, separate installer
 - **Linux/macOS support** — Laragon is Windows-only; Docker path is a future option

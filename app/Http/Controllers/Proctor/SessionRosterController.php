@@ -81,6 +81,8 @@ class SessionRosterController extends Controller
                 'is_within_window' => $exam_session->isWithinExamWindow(),
                 'is_past_end' => $exam_session->isPastEndTime(),
                 'is_past_date' => $exam_session->isPastDate(),
+                'extended_end_time' => $exam_session->extended_end_time,
+                'system_notes' => $exam_session->system_notes,
             ]),
             'applicants' => $applicants->values()->all(),
             'stats' => $stats,
@@ -343,6 +345,8 @@ class SessionRosterController extends Controller
      */
     public function bulkAttendance(Request $request, ExamSession $exam_session): RedirectResponse
     {
+        $this->authorize('manageRoster', $exam_session);
+
         $data = $request->validate([
             'applicant_ids' => ['required', 'array'],
             'applicant_ids.*' => ['integer'],
@@ -357,5 +361,36 @@ class SessionRosterController extends Controller
             ->update([$column => $data['status']]);
 
         return back()->with('success', 'Bulk update applied.');
+    }
+
+    public function extend(Request $request, ExamSession $exam_session): RedirectResponse|JsonResponse
+    {
+        $this->authorize('manageRoster', $exam_session);
+
+        $data = $request->validate([
+            'extension_minutes' => ['integer', 'min:1', 'max:120'],
+        ]);
+
+        $minutes = $data['extension_minutes'] ?? 30;
+
+        // Calculate effective current end time
+        $currentTime = $exam_session->extended_end_time ?? $exam_session->end_time;
+
+        if (! $currentTime) {
+            return response()->json(['message' => 'Session has no end time to extend.'], 400);
+        }
+
+        $newEndTime = Carbon::createFromFormat('H:i:s', $currentTime)->addMinutes($minutes)->format('H:i:s');
+
+        $exam_session->update([
+            'extended_end_time' => $newEndTime,
+        ]);
+
+        $message = "Session extended by {$minutes} minutes.";
+        if ($request->wantsJson()) {
+            return response()->json(['message' => $message, 'new_end_time' => $newEndTime], 200);
+        }
+
+        return back()->with('success', $message);
     }
 }

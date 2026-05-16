@@ -157,6 +157,11 @@
       >
         Print all {applicants.length} sheets
       </Button>
+      {#if !printDisabled && sheetsHtml.length > 0 && !templateError}
+        <a href={`${sid ? `/admin/release/print/${sid}/print-bulk-pdf` : '/admin/release/print/bulk-pdf'}?ids=${applicantIds.join(',')}`} target="_blank" rel="noopener">
+          <Button variant="secondary" class="min-h-[44px]">Download PDF</Button>
+        </a>
+      {/if}
       {#if sessionId}
         <Button variant="outline" onclick={toggleMarkAllPrinted} class="min-h-[44px]">
           {markedAllPrinted ? 'Unmark all printed' : 'Mark all as printed'}

@@ -1,0 +1,51 @@
+- generic [ref=e3]:
+  - banner [ref=e4]:
+    - generic [ref=e6]:
+      - generic [ref=e7]:
+        - img "SecureCAT" [ref=e8]
+        - generic [ref=e9]: SecureCAT
+      - navigation [ref=e10]:
+        - link "Home" [ref=e11] [cursor=pointer]:
+          - /url: http://127.0.0.1:8000/
+        - link "Application" [ref=e12] [cursor=pointer]:
+          - /url: http://127.0.0.1:8000/apply
+        - link "About" [ref=e13] [cursor=pointer]:
+          - /url: http://127.0.0.1:8000/about
+        - link "Login" [ref=e14] [cursor=pointer]:
+          - /url: http://127.0.0.1:8000/login
+  - main [ref=e15]:
+    - generic [ref=e19]:
+      - generic [ref=e20]:
+        - button "Applicant Portal" [ref=e22]:
+          - img [ref=e23]
+          - text: Applicant Portal
+        - button "Admin Portal" [active] [ref=e25]:
+          - img [ref=e26]
+          - text: Admin Portal
+      - generic [ref=e28]:
+        - generic [ref=e29]:
+          - img [ref=e57]
+          - generic [ref=e33]: Admin Login
+          - paragraph [ref=e34]: Securely access the system to manage exams, applicants, and administrative settings.
+        - generic [ref=e59]:
+          - generic [ref=e60]:
+            - text: Email Address
+            - textbox "Email Address" [ref=e61]:
+              - /placeholder: admin@example.com
+          - generic [ref=e62]:
+            - text: Password
+            - textbox "Password" [ref=e63]:
+              - /placeholder: ••••••••
+          - generic [ref=e65] [cursor=pointer]:
+            - checkbox "Remember my computer" [ref=e66]
+            - generic [ref=e67]: Remember my computer
+          - generic [ref=e72]: or
+          - link "Sign in with Google" [ref=e73] [cursor=pointer]:
+            - /url: /auth/google
+            - img [ref=e74]
+            - text: Sign in with Google
+          - button "Sign in as Admin" [ref=e79]
+  - contentinfo [ref=e54]:
+    - paragraph [ref=e56]:
+      - text: © 2026 Ilocos Sur Polytechnic State College - Tagudin Campus.
+      - text: Powered by SecureCAT.

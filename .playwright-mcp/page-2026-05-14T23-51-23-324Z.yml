@@ -1,0 +1,174 @@
+- generic [ref=e3]:
+  - complementary [ref=e4]:
+    - generic [ref=e5]:
+      - link "SecureCAT SecureCAT" [ref=e7] [cursor=pointer]:
+        - /url: http://securecat-v2.test/dashboard
+        - img "SecureCAT" [ref=e8]
+        - generic [ref=e9]: SecureCAT
+      - navigation [ref=e10]:
+        - link "Dashboard" [ref=e12] [cursor=pointer]:
+          - /url: http://securecat-v2.test/dashboard
+          - img [ref=e13]
+          - text: Dashboard
+        - generic [ref=e14]:
+          - paragraph [ref=e15]: Registrar Office
+          - link "Academic Years" [ref=e16] [cursor=pointer]:
+            - /url: http://securecat-v2.test/admin/academic-years
+            - img [ref=e17]
+            - text: Academic Years
+          - link "Applications" [ref=e18] [cursor=pointer]:
+            - /url: http://securecat-v2.test/admin/applications
+            - img [ref=e19]
+            - text: Applications
+          - link "Exam Scheduling" [ref=e20] [cursor=pointer]:
+            - /url: http://securecat-v2.test/admin/exam-scheduling
+            - img [ref=e21]
+            - text: Exam Scheduling
+        - generic [ref=e22]:
+          - paragraph [ref=e23]: Guidance Office
+          - link "Exam Monitoring" [ref=e24] [cursor=pointer]:
+            - /url: http://securecat-v2.test/admin/exam-monitoring
+            - img [ref=e25]
+            - text: Exam Monitoring
+          - link "Grading" [ref=e26] [cursor=pointer]:
+            - /url: http://securecat-v2.test/admin/grading
+            - img [ref=e27]
+            - text: Grading
+          - link "Release" [ref=e28] [cursor=pointer]:
+            - /url: http://securecat-v2.test/admin/release
+            - img [ref=e29]
+            - text: Release
+        - generic [ref=e30]:
+          - button "Administration" [ref=e31]:
+            - text: Administration
+            - img [ref=e32]
+          - link "Users" [ref=e33] [cursor=pointer]:
+            - /url: http://securecat-v2.test/admin/users
+            - img [ref=e34]
+            - text: Users
+          - link "Settings" [ref=e35] [cursor=pointer]:
+            - /url: http://securecat-v2.test/admin/settings
+            - img [ref=e36]
+            - text: Settings
+          - link "Audit Log" [ref=e37] [cursor=pointer]:
+            - /url: http://securecat-v2.test/admin/logs
+            - img [ref=e38]
+            - text: Audit Log
+    - button "SA Super Admin admin@example.com" [ref=e41]:
+      - generic [ref=e42]: SA
+      - generic [ref=e43]:
+        - paragraph [ref=e44]: Super Admin
+        - paragraph [ref=e45]: admin@example.com
+      - img [ref=e46]
+  - generic [ref=e47]:
+    - banner [ref=e48]:
+      - navigation "Breadcrumb" [ref=e50]:
+        - link "Release Management" [ref=e51] [cursor=pointer]:
+          - /url: http://securecat-v2.test/admin/release
+        - img [ref=e52]
+        - link "Result Sheet Templates" [ref=e53] [cursor=pointer]:
+          - /url: http://securecat-v2.test/admin/release/result-templates
+        - img [ref=e54]
+        - generic [ref=e55]: Edit
+      - generic [ref=e56]:
+        - button "Switch to dark mode" [ref=e57]:
+          - img
+        - button "Notifications" [ref=e59]:
+          - img [ref=e60]
+    - main [ref=e61]:
+      - generic [ref=e63]:
+        - button "Placeholder Reference & Templates Guide" [ref=e65]:
+          - generic [ref=e66]:
+            - img [ref=e67]
+            - generic [ref=e68]: Placeholder Reference & Templates Guide
+          - img [ref=e69]
+        - generic [ref=e70]:
+          - generic [ref=e71]:
+            - generic [ref=e72]:
+              - text: Name
+              - textbox "Name" [ref=e73]:
+                - /placeholder: Default
+                - text: Default
+            - generic [ref=e74]:
+              - generic [ref=e75]: Mode
+              - group [ref=e76]:
+                - radio "HTML" [checked] [ref=e77]:
+                  - img
+                  - generic [ref=e78]: HTML
+                - radio "DOCX" [ref=e79]:
+                  - img
+                  - generic [ref=e80]: DOCX
+            - generic [ref=e81]:
+              - text: Layout
+              - button "Half-crosswise" [ref=e82]:
+                - text: Half-crosswise
+                - img
+            - generic [ref=e83]:
+              - text: HTML + CSS (JavaScript not allowed)
+              - paragraph [ref=e84]: "Enter custom HTML and CSS. Use placeholders like {{applicant_name}}. Scripts and event handlers are stripped for security."
+              - textbox "HTML + CSS (JavaScript not allowed)" [ref=e85]:
+                - /placeholder: "<div style=\"padding: 1rem;\"><p>Hello <strong>{{applicant_name}}</strong></p></div>"
+                - text: "<div class=\"border border-foreground/20 rounded p-4 space-y-3\" style=\"font-size: 0.875rem;\"> <div class=\"text-center\"> <h1 class=\"text-base font-bold\">SecureCAT — Result Release Sheet</h1> <p class=\"text-xs text-muted-foreground mt-0.5\">Confidential · Half folio</p> </div> <p class=\"leading-relaxed\"> This certifies that <strong>{{applicant_name}}</strong> (ref: <strong>{{applicant_reference}}</strong>) took the exam on <strong>{{exam_date}}</strong> at <strong>{{room_name}}</strong>: </p> <table class=\"w-full text-sm border-collapse\"> <thead><tr><th>Pillar</th><th>Score</th><th>%</th></tr></thead> <tbody><tr class=\"scores-rows-placeholder\"><td colspan=\"3\"></td></tr></tbody> <tfoot><tr><td>Overall</td><td>—</td><td>{{overall_pct}}%</td></tr></tfoot> </table> <div class=\"flex justify-between items-end pt-4\"> <div><div class=\"border-b w-24\">&nbsp;</div><p class=\"text-xs\">Counselor</p></div> <div><div class=\"border-b w-24\">&nbsp;</div><p class=\"text-xs\">Principal</p></div> </div> </div>"
+            - generic [ref=e86]:
+              - switch [checked] [ref=e87]
+              - generic [ref=e88]: Active
+            - generic [ref=e89]:
+              - button "Save" [ref=e90]
+              - link "Cancel" [ref=e91] [cursor=pointer]:
+                - /url: http://securecat-v2.test/admin/release/result-templates
+                - button "Cancel" [ref=e92]
+          - generic [ref=e93]:
+            - heading "Live preview" [level=3] [ref=e94]
+            - generic [ref=e96]:
+              - generic [ref=e97]:
+                - heading "SecureCAT — Result Release Sheet" [level=1] [ref=e98]
+                - paragraph [ref=e99]: Confidential · Half folio
+              - paragraph [ref=e100]:
+                - text: This certifies that
+                - strong [ref=e101]: Juan M. Dela Cruz
+                - text: "(ref:"
+                - strong [ref=e102]: EXAM-2026-00042
+                - text: ) took the exam on
+                - strong [ref=e103]: May 15, 2026
+                - text: at
+                - strong [ref=e104]: Conference Hall A - Seat 12
+                - text: ":"
+              - table [ref=e105]:
+                - rowgroup [ref=e106]:
+                  - row "Pillar Score %" [ref=e107]:
+                    - columnheader "Pillar" [ref=e108]
+                    - columnheader "Score" [ref=e109]
+                    - columnheader "%" [ref=e110]
+                - rowgroup [ref=e111]:
+                  - row "Overall — 82%" [ref=e112]:
+                    - cell "Overall" [ref=e113]
+                    - cell "—" [ref=e114]
+                    - cell "82%" [ref=e115]
+                - rowgroup [ref=e116]:
+                  - row "Spatial Awareness 20 / 25 80%" [ref=e117]:
+                    - cell "Spatial Awareness" [ref=e118]
+                    - cell "20 / 25" [ref=e119]
+                    - cell "80%" [ref=e120]
+                  - row "Numerical Ability 22 / 25 88%" [ref=e121]:
+                    - cell "Numerical Ability" [ref=e122]
+                    - cell "22 / 25" [ref=e123]
+                    - cell "88%" [ref=e124]
+                  - row "Verbal Reasoning 19 / 25 76%" [ref=e125]:
+                    - cell "Verbal Reasoning" [ref=e126]
+                    - cell "19 / 25" [ref=e127]
+                    - cell "76%" [ref=e128]
+                  - row "Abstract Reasoning 16 / 20 80%" [ref=e129]:
+                    - cell "Abstract Reasoning" [ref=e130]
+                    - cell "16 / 20" [ref=e131]
+                    - cell "80%" [ref=e132]
+                  - row "Logical Reasoning 21 / 25 84%" [ref=e133]:
+                    - cell "Logical Reasoning" [ref=e134]
+                    - cell "21 / 25" [ref=e135]
+                    - cell "84%" [ref=e136]
+                  - row "Perceptual Speed & Accuracy 17 / 20 85%" [ref=e137]:
+                    - cell "Perceptual Speed & Accuracy" [ref=e138]
+                    - cell "17 / 20" [ref=e139]
+                    - cell "85%" [ref=e140]
+              - generic [ref=e141]:
+                - paragraph [ref=e144]: Counselor
+                - paragraph [ref=e147]: Principal
