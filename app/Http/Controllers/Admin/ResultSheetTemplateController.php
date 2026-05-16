@@ -8,7 +8,6 @@ use App\Http\Requests\UpdateResultSheetTemplateRequest;
 use App\Models\AptitudeArea;
 use App\Models\ResultSheetTemplate;
 use App\Services\ResultSheetTemplateService;
-use App\ValueObjects\RenderResult;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -190,26 +189,19 @@ class ResultSheetTemplateController extends Controller
         try {
             if ($mode === 'html') {
                 $content = Purifier::clean($request->input('content', ''), 'result_sheet');
-                $renderResult = $this->templateService->renderHtmlContent($content, [], true);
+                $renderResult = $this->templateService->renderHtmlContent($content, [], true, $paperSize, $orientation, $logicalUnit);
             } else {
                 if ($request->hasFile('docx')) {
                     $uploaded = $request->file('docx');
                     $path = $uploaded->getRealPath() ?: $uploaded->getPathname();
-                    $renderResult = $this->templateService->renderDocxFile($path, [], true);
+                    $renderResult = $this->templateService->renderDocxFile($path, [], true, $paperSize, $orientation, $logicalUnit);
                 } else {
                     $template = ResultSheetTemplate::findOrFail($request->input('template_id'));
                     $renderResult = $this->templateService->render($template, [], true);
                 }
             }
 
-            $dimsResult = new RenderResult(
-                html: $renderResult->html,
-                mode: $mode,
-                paperSize: $paperSize,
-                orientation: $orientation,
-                logicalUnit: $logicalUnit,
-            );
-            $dims = $dimsResult->pageDimensions();
+            $dims = $renderResult->pageDimensions();
 
             return response()->json([
                 'html' => $renderResult->html,

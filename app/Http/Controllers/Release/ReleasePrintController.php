@@ -11,6 +11,7 @@ use App\Models\ResultSheetTemplate;
 use App\Services\PrintBatchService;
 use App\Services\ResultSheetPdfService;
 use App\Services\ResultSheetTemplateService;
+use App\ValueObjects\RenderResult;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Collection;
 use Inertia\Inertia;
@@ -157,7 +158,7 @@ class ReleasePrintController extends Controller
         }
 
         $grading_session->load('examSession.room');
-        $ids = array_filter(array_map('intval', explode(',', request()->query('ids', ''))));
+        $ids = array_slice(array_filter(array_map('intval', explode(',', request()->query('ids', '')))), 0, 200);
         $applicants = $grading_session->applicants()
             ->whereIn('applicants.id', $ids)
             ->with('application')
@@ -195,7 +196,7 @@ class ReleasePrintController extends Controller
         abort_if(! $template, 404, 'No active result sheet template.');
 
         $grading_session->load('examSession.room');
-        $ids = array_filter(array_map('intval', explode(',', request()->query('ids', ''))));
+        $ids = array_slice(array_filter(array_map('intval', explode(',', request()->query('ids', '')))), 0, 200);
         $applicants = $grading_session->applicants()
             ->whereIn('applicants.id', $ids)
             ->with('application')
@@ -214,7 +215,7 @@ class ReleasePrintController extends Controller
 
         $sheetsHtml = $this->buildSheetsFromApplicants($applicantsWithScores, $template);
 
-        $meta = $this->templateService->render($template, [], false);
+        $meta = RenderResult::fromTemplate($template);
 
         return $this->pdfService->bulkDownload(
             $sheetsHtml,
@@ -226,7 +227,7 @@ class ReleasePrintController extends Controller
     public function printBulkAgnostic(): Response
     {
         $template = ResultSheetTemplate::where('is_active', true)->first();
-        $ids = array_filter(array_map('intval', explode(',', request()->query('ids', ''))));
+        $ids = array_slice(array_filter(array_map('intval', explode(',', request()->query('ids', '')))), 0, 200);
 
         if (! $template) {
             return Inertia::render('Release/ResultSheetBulk', $this->noTemplatePayload($ids));
@@ -238,7 +239,7 @@ class ReleasePrintController extends Controller
 
         $applicantSessionMap = [];
         foreach ($applicants as $applicant) {
-            $gs = $applicant->gradingSessions->first();
+            $gs = $applicant->gradingSessions->where('status', GradingSession::STATUS_FINALIZED)->first() ?? $applicant->gradingSessions->first();
             if ($gs) {
                 $applicantSessionMap[$applicant->id] = $gs->id;
             }
@@ -251,7 +252,7 @@ class ReleasePrintController extends Controller
             ->groupBy('applicant_id');
 
         $applicantsWithScores = $applicants->map(function ($a) use ($allScores) {
-            $gs = $a->gradingSessions->first();
+            $gs = $a->gradingSessions->where('status', GradingSession::STATUS_FINALIZED)->first() ?? $a->gradingSessions->first();
             $scores = $this->mapScores(
                 $allScores->get($a->id, collect())
                     ->filter(fn ($s) => $gs && $s->grading_session_id === $gs->id)
@@ -280,14 +281,14 @@ class ReleasePrintController extends Controller
         $template = ResultSheetTemplate::where('is_active', true)->first();
         abort_if(! $template, 404, 'No active result sheet template.');
 
-        $ids = array_filter(array_map('intval', explode(',', request()->query('ids', ''))));
+        $ids = array_slice(array_filter(array_map('intval', explode(',', request()->query('ids', '')))), 0, 200);
         $applicants = Applicant::whereIn('id', $ids)
             ->with('application', 'gradingSessions.examSession.room')
             ->get();
 
         $applicantSessionMap = [];
         foreach ($applicants as $applicant) {
-            $gs = $applicant->gradingSessions->first();
+            $gs = $applicant->gradingSessions->where('status', GradingSession::STATUS_FINALIZED)->first() ?? $applicant->gradingSessions->first();
             if ($gs) {
                 $applicantSessionMap[$applicant->id] = $gs->id;
             }
@@ -300,7 +301,7 @@ class ReleasePrintController extends Controller
             ->groupBy('applicant_id');
 
         $applicantsWithScores = $applicants->map(function ($a) use ($allScores) {
-            $gs = $a->gradingSessions->first();
+            $gs = $a->gradingSessions->where('status', GradingSession::STATUS_FINALIZED)->first() ?? $a->gradingSessions->first();
             $scores = $this->mapScores(
                 $allScores->get($a->id, collect())
                     ->filter(fn ($s) => $gs && $s->grading_session_id === $gs->id)
@@ -311,7 +312,7 @@ class ReleasePrintController extends Controller
 
         $sheetsHtml = $this->buildSheetsFromApplicants($applicantsWithScores, $template);
 
-        $meta = $this->templateService->render($template, [], false);
+        $meta = RenderResult::fromTemplate($template);
 
         return $this->pdfService->bulkDownload($sheetsHtml, $meta, 'result_sheets.pdf');
     }

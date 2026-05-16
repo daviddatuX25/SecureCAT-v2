@@ -83,17 +83,23 @@ class ResultSheetTemplateService
     /**
      * Render from raw HTML content (for preview before template is saved).
      */
-    public function renderHtmlContent(string $content, array $applicants = [], bool $useSampleData = true): RenderResult
-    {
+    public function renderHtmlContent(
+        string $content,
+        array $applicants = [],
+        bool $useSampleData = true,
+        string $paperSize = ResultSheetTemplate::PAPER_A4,
+        string $orientation = ResultSheetTemplate::ORIENTATION_PORTRAIT,
+        string $logicalUnit = ResultSheetTemplate::LOGICAL_FULL
+    ): RenderResult {
         $applicants = array_values($applicants);
         $replacements = $this->buildReplacements($applicants, $useSampleData);
 
         return new RenderResult(
             html: $this->cssService->wrap($this->renderRaw($content, $replacements)),
             mode: ResultSheetTemplate::MODE_HTML,
-            paperSize: ResultSheetTemplate::PAPER_A4,
-            orientation: ResultSheetTemplate::ORIENTATION_PORTRAIT,
-            logicalUnit: ResultSheetTemplate::LOGICAL_FULL,
+            paperSize: $paperSize,
+            orientation: $orientation,
+            logicalUnit: $logicalUnit,
         );
     }
 
@@ -102,8 +108,14 @@ class ResultSheetTemplateService
      *
      * @param  array<string, string>  $replacements
      */
-    public function renderDocxFile(string $path, array $replacements = [], bool $useSampleIfEmpty = true): RenderResult
-    {
+    public function renderDocxFile(
+        string $path,
+        array $replacements = [],
+        bool $useSampleIfEmpty = true,
+        string $paperSize = ResultSheetTemplate::PAPER_A4,
+        string $orientation = ResultSheetTemplate::ORIENTATION_PORTRAIT,
+        string $logicalUnit = ResultSheetTemplate::LOGICAL_FULL
+    ): RenderResult {
         if (empty($replacements) && $useSampleIfEmpty) {
             $sample = $this->sampleApplicantData();
             $replacements = [
@@ -127,9 +139,9 @@ class ResultSheetTemplateService
         return new RenderResult(
             html: $html,
             mode: ResultSheetTemplate::MODE_DOCX,
-            paperSize: ResultSheetTemplate::PAPER_A4,
-            orientation: ResultSheetTemplate::ORIENTATION_PORTRAIT,
-            logicalUnit: ResultSheetTemplate::LOGICAL_FULL,
+            paperSize: $paperSize,
+            orientation: $orientation,
+            logicalUnit: $logicalUnit,
         );
     }
 
@@ -248,10 +260,11 @@ class ResultSheetTemplateService
         }
 
         $tempDir = storage_path('app/temp/phpword');
-        if (! is_dir($tempDir)) {
-            mkdir($tempDir, 0755, true);
+        if (! is_dir($tempDir) && ! mkdir($tempDir, 0755, true)) {
+            // fall back to system temp — don't override Settings
+        } else {
+            Settings::setTempDir($tempDir);
         }
-        Settings::setTempDir($tempDir);
 
         $processor = new TemplateProcessor($fullPath);
         $processor->setMacroChars('{{', '}}');

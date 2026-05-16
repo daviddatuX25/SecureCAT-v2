@@ -2,6 +2,8 @@
 
 namespace App\ValueObjects;
 
+use App\Models\ResultSheetTemplate;
+
 readonly class RenderResult
 {
     private const PAGE_SIZES = [
@@ -17,6 +19,17 @@ readonly class RenderResult
         public readonly string $orientation,
         public readonly string $logicalUnit,
     ) {}
+
+    public static function fromTemplate(ResultSheetTemplate $template, string $html = ''): self
+    {
+        return new self(
+            html: $html,
+            mode: $template->mode,
+            paperSize: $template->paper_size ?? ResultSheetTemplate::PAPER_A4,
+            orientation: $template->orientation ?? ResultSheetTemplate::ORIENTATION_PORTRAIT,
+            logicalUnit: $template->logical_unit ?? ResultSheetTemplate::LOGICAL_FULL,
+        );
+    }
 
     public function isHalf(): bool
     {

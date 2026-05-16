@@ -114,14 +114,14 @@ class PrintTemplateCssService
     }
 
     /**
-     * Generate a <link> tag for external CSS (used in Vite dev mode).
+     * Fallback for Vite dev mode.
      *
-     * When the Vite dev server is running, we can't inline the CSS because
-     * it's served dynamically. Instead, we link to it and add an @import rule
-     * inside @scope so it's still scoped.
+     * Note: @import inside @scope is invalid CSS, and we cannot inline a dynamically
+     * served Vite CSS file cleanly. In dev mode, print templates will be largely unstyled.
+     * To test accurate print template styling, you must run `npm run build`.
      */
     protected function linkTagCss(string $url): string
     {
-        return "@scope (.print-template) {\n  @import url('{$url}');\n}";
+        return "/* DEV MODE: run 'npm run build' to see scoped print styles. */";
     }
 }
