@@ -3,22 +3,24 @@
   import { Link, router, usePage } from '@inertiajs/svelte';
   import { Button } from '@/Components/ui/button';
   import { Badge } from '@/Components/ui/badge';
+  import { Input } from '@/Components/ui/input';
   import * as Table from '@/Components/ui/table';
   import * as Dialog from '@/Components/ui/dialog';
   import * as Select from '@/Components/ui/select';
   import { error as toastError } from '@/lib/toast';
-  import { FileText, Printer } from 'lucide-svelte';
+  import { FileText, Printer, Search, Filter, ChevronDown } from 'lucide-svelte';
   import * as Popover from '@/Components/ui/popover';
   import * as Command from '@/Components/ui/command';
   import { Textarea } from '@/Components/ui/textarea';
   import { Checkbox } from '@/Components/ui/checkbox';
 
   import SwitchableListView from '@/Components/SwitchableListView.svelte';
+  import SimplePagination from '@/Components/SimplePagination.svelte';
   import { Card, CardContent } from '@/Components/ui/card';
 
   let viewMode = $state('responsive');
 
-  let { summaries, release_mode = 'online', courses = [], gradingSessions = [] } = $props();
+  let { summaries, release_mode = 'online', courses = [], gradingSessions = [], filters = {} } = $props();
 
 
   const page = usePage();
@@ -34,6 +36,24 @@
   let counselorComments = $state('');
   let showConfirmDialog = $state(false);
   let printPopoverOpen = $state(false);
+
+  // Filter state
+  let filterSearch = $state('');
+  let filterStatus = $state('');
+  let mobileFiltersDetails = $state(null);
+  $effect(() => {
+    filterSearch = filters.search ?? '';
+    filterStatus = filters.status ?? '';
+  });
+
+  function applyFilters() {
+    if (mobileFiltersDetails) mobileFiltersDetails.open = false;
+    router.get('/admin/release', {
+      search: filterSearch || undefined,
+      status: filterStatus || undefined,
+      page: 1,
+    }, { preserveState: true });
+  }
 
   const isF2F = $derived(release_mode === 'f2f');
 
@@ -304,6 +324,76 @@
       </div>
     {/if}
 
+    <!-- Filters -->
+    <div class="flex flex-col gap-3">
+      <!-- Desktop -->
+      <div class="hidden md:flex flex-wrap items-center gap-3">
+        <div class="relative">
+          <Search class="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
+          <Input
+            type="search"
+            bind:value={filterSearch}
+            onkeydown={(e) => e.key === 'Enter' && applyFilters()}
+            class="pl-8 min-w-[160px] max-w-[220px] h-10"
+          />
+        </div>
+        <Select.Root type="single" bind:value={filterStatus}>
+          <Select.Trigger class="w-[150px] min-h-[40px]">
+            {#if filterStatus}
+              {filterStatus === 'released' ? 'Released' : filterStatus === 'draft' ? 'Draft' : 'All statuses'}
+            {:else}
+              <span class="text-muted-foreground">All statuses</span>
+            {/if}
+          </Select.Trigger>
+          <Select.Content>
+            <Select.Item value="" label="All statuses">All statuses</Select.Item>
+            <Select.Item value="draft" label="Draft">Draft</Select.Item>
+            <Select.Item value="released" label="Released">Released</Select.Item>
+          </Select.Content>
+        </Select.Root>
+        <Button onclick={applyFilters} class="min-h-[40px]">Apply</Button>
+      </div>
+      <!-- Mobile -->
+      <div class="flex flex-wrap items-center gap-3 md:hidden">
+        <div class="relative flex-1 min-w-0">
+          <Search class="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
+          <Input
+            type="search"
+            bind:value={filterSearch}
+            onkeydown={(e) => e.key === 'Enter' && applyFilters()}
+            class="pl-8 min-h-[44px] w-full"
+          />
+        </div>
+        <details class="relative group" bind:this={mobileFiltersDetails}>
+          <summary class="list-none flex items-center gap-2 min-h-[44px] px-4 rounded-md border border-input bg-background text-sm font-medium cursor-pointer hover:bg-muted/50">
+            <Filter class="h-4 w-4" />
+            <span>Filters</span>
+            <ChevronDown class="h-4 w-4 transition-transform group-open:rotate-180" />
+          </summary>
+          <div class="absolute right-0 top-full z-10 mt-1 w-[min(320px,calc(100vw-2rem))] rounded-lg border border-border bg-card p-4 shadow-lg flex flex-col gap-3">
+            <div>
+              <label for="filter-status-mob" class="text-sm font-medium block mb-1">Status</label>
+              <Select.Root type="single" bind:value={filterStatus}>
+                <Select.Trigger id="filter-status-mob" class="w-full min-h-[44px]">
+                  {#if filterStatus}
+                    {filterStatus === 'released' ? 'Released' : filterStatus === 'draft' ? 'Draft' : 'All statuses'}
+                  {:else}
+                    <span class="text-muted-foreground">All statuses</span>
+                  {/if}
+                </Select.Trigger>
+                <Select.Content>
+                  <Select.Item value="" label="All statuses">All statuses</Select.Item>
+                  <Select.Item value="draft" label="Draft">Draft</Select.Item>
+                  <Select.Item value="released" label="Released">Released</Select.Item>
+                </Select.Content>
+              </Select.Root>
+            </div>
+          </div>
+        </details>
+        <Button onclick={applyFilters} class="min-h-[44px]">Apply</Button>
+      </div>
+    </div>
+
     <div class="min-w-0">
       <SwitchableListView bind:viewMode>
         {#snippet table()}
@@ -376,6 +466,7 @@
               {/each}
             </Table.Body>
           </Table.Root>
+          <SimplePagination data={summaries} variant="table" />
         {/snippet}
 
         {#snippet cards()}
@@ -447,16 +538,9 @@
               </div>
             {/each}
           </div>
+          <SimplePagination data={summaries} variant="centered" />
         {/snippet}
       </SwitchableListView>
-
-      {#if summaries?.last_page > 1}
-        <div class="flex items-center justify-between border-t border-border px-4 py-2">
-          <p class="text-sm text-muted-foreground">
-            Page {summaries.current_page} of {summaries.last_page}
-          </p>
-        </div>
-      {/if}
     </div>
   </div>
 </AuthenticatedLayout>

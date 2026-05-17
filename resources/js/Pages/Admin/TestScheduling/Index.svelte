@@ -189,8 +189,8 @@
             {/each}
           </Select.Content>
         </Select.Root>
-        <Input type="date" bind:value={filterDateFrom} class="min-h-[40px]" />
-        <Input type="date" bind:value={filterDateTo} class="min-h-[40px]" />
+        <Input type="date" bind:value={filterDateFrom} class="min-h-[40px] max-w-[160px]" />
+        <Input type="date" bind:value={filterDateTo} class="min-h-[40px] max-w-[160px]" />
         <Button onclick={applyFilters} class="min-h-[40px]">Apply</Button>
       </div>
 

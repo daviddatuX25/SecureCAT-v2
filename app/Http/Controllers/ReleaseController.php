@@ -17,21 +17,40 @@ use Inertia\Response;
 
 class ReleaseController extends Controller
 {
-    public function index(): Response
+    public function index(Request $request): Response
     {
         $mode = SystemSetting::releaseMode();
         $courses = Course::where('is_active', true)->orderBy('name')->get(['id', 'name', 'code']);
 
-        $summaries = ConsultationSummary::with([
+        $query = ConsultationSummary::with([
             'applicant.application.coursePreference1:id,name,code',
             'applicant.application.coursePreference2:id,name,code',
             'applicant.application.coursePreference3:id,name,code',
             'applicant.gradingSessions',
             'recommendedCourse:id,name,code',
         ])
-            ->whereIn('status', ['draft', 'released'])
+            ->whereIn('status', ['draft', 'released']);
+
+        if ($request->filled('status')) {
+            $query->where('status', $request->input('status'));
+        }
+
+        if ($request->filled('search')) {
+            $search = $request->input('search');
+            $query->whereHas('applicant', function ($q) use ($search) {
+                $q->where('email', 'like', "%{$search}%")
+                    ->orWhereHas('application', function ($q2) use ($search) {
+                        $q2->where('reference_number', 'like', "%{$search}%")
+                            ->orWhere('first_name', 'like', "%{$search}%")
+                            ->orWhere('last_name', 'like', "%{$search}%");
+                    });
+            });
+        }
+
+        $summaries = $query
             ->orderBy('updated_at', 'desc')
-            ->paginate(50)
+            ->paginate(25)
+            ->withQueryString()
             ->through(function ($summary) {
                 $app = $summary->applicant?->application;
                 if ($summary->applicant && $app) {
@@ -63,6 +82,7 @@ class ReleaseController extends Controller
             'summaries' => $summaries,
             'release_mode' => $mode,
             'courses' => $courses,
+            'filters' => $request->only(['search', 'status']),
             'gradingSessions' => GradingSession::where('status', GradingSession::STATUS_FINALIZED)
                 ->with('examSession.room')
                 ->get()
