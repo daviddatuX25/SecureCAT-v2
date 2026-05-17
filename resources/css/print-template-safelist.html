@@ -8,12 +8,13 @@
     - app/Services/ResultSheetTemplateService.php (buildScoresRows)
     - app/Services/AdmissionSlipTemplateService.php (photoPlaceholder, qrPlaceholder)
 -->
-<div class="border border-foreground/20 rounded p-4 space-y-3 text-center text-base text-xs text-sm text-muted-foreground text-right font-bold font-medium mt-0.5 leading-relaxed pt-4 w-full w-24 border-collapse border-b border-border/50 py-1.5 flex justify-between items-end print-template--dual print-template--half">
+<!-- Result sheet template classes (Default template) -->
+<div class="bg-primary px-4 py-3 py-2 py-1.5 pt-3 pb-1 pb-2 flex justify-between justify-center items-center items-end text-white text-right font-bold font-semibold font-medium text-left text-center grid grid-cols-2 gap-2 border-b border-collapse w-full border-foreground/20 rounded p-4 space-y-3 text-base text-xs text-sm text-muted-foreground mt-0.5 leading-relaxed pt-4 w-24 border-border/50 py-1.5 print-template--dual print-template--half scores-rows-placeholder">
   <table class="w-full text-sm border-collapse">
-    <thead><tr><th>Pillar</th><th>Score</th><th>%</th></tr></thead>
+    <thead><tr><th class="text-left py-1.5">Pillar</th><th class="text-right py-1.5">Score</th><th class="text-right py-1.5">%</th></tr></thead>
   </table>
   <div class="border-b w-24">&nbsp;</div>
-  <p class="text-xs">Counselor</p>
+  <p class="text-xs text-center">Counselor</p>
 </div>
 
 <!-- Admission slip classes -->
