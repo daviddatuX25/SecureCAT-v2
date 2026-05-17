@@ -42,14 +42,14 @@
           </CardTitle>
           <CardDescription>
             Aptitude areas must be set up before you can open grading sessions. Add them via
-            <Link href="/admin/aptitude-areas" class="font-medium text-primary underline hover:no-underline">Admin &rarr; Aptitude Areas</Link>.
+            <Link href="/admin/setup" class="font-medium text-primary underline hover:no-underline">Setup &rarr; Aptitude Areas</Link>.
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <Link href="/admin/aptitude-areas">
+          <Link href="/admin/setup">
             <Button class="min-h-[44px]">
               <Layers class="mr-2 h-4 w-4" />
-              Go to Aptitude Areas
+              Go to Setup
             </Button>
           </Link>
         </CardContent>
@@ -66,12 +66,7 @@
               <span class="hidden sm:inline">Import Scores</span>
             </Button>
           </Link>
-          <Link href="/admin/aptitude-areas">
-            <Button variant="outline" class="min-h-[44px] gap-2">
-              <Layers class="h-4 w-4" />
-              <span class="hidden sm:inline">Aptitude Areas</span>
-            </Button>
-          </Link>
+
         </div>
       </div>
 

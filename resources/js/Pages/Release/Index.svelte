@@ -339,12 +339,6 @@
             </Popover.Content>
           </Popover.Root>
         {/if}
-        <Link href="/admin/release/result-templates">
-          <Button variant="outline" class="min-h-[44px] gap-2">
-            <FileText class="h-4 w-4" />
-            <span class="hidden sm:inline">Result Templates</span>
-          </Button>
-        </Link>
       </div>
     </div>
 
