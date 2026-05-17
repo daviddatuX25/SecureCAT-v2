@@ -11,6 +11,7 @@ use App\Http\Controllers\Admin\ExamSchedulingAssistantController;
 use App\Http\Controllers\Admin\ExamSessionController;
 use App\Http\Controllers\Admin\KnowledgeDocumentController;
 use App\Http\Controllers\Admin\PrivacyPolicyController;
+use App\Http\Controllers\Admin\ReportController;
 use App\Http\Controllers\Admin\ResultSheetTemplateController;
 use App\Http\Controllers\Admin\RoomController;
 use App\Http\Controllers\Admin\SettingsController;
@@ -123,6 +124,17 @@ Route::middleware(['auth'])->group(function () {
         Route::put('knowledge-documents/{knowledge_document}', [KnowledgeDocumentController::class, 'update'])->name('knowledge-documents.update');
         Route::delete('knowledge-documents/{knowledge_document}', [KnowledgeDocumentController::class, 'destroy'])->name('knowledge-documents.destroy');
         Route::post('knowledge-documents/{knowledge_document}/retry-sync', [KnowledgeDocumentController::class, 'retrySync'])->name('knowledge-documents.retry-sync');
+    });
+
+    // Setup Hub — accessible to anyone who manages configuration
+    Route::middleware('role:super_admin,registrar_administrator,test_administrator')->prefix('admin')->name('admin.')->group(function () {
+        Route::get('setup', [\App\Http\Controllers\Admin\SetupController::class, 'index'])->name('setup.index');
+    });
+
+    // Reports
+    Route::middleware('role:super_admin,registrar_administrator,test_administrator')->prefix('admin')->name('admin.')->group(function () {
+        Route::get('reports', [ReportController::class, 'index'])->name('reports.index');
+        Route::get('reports/export/{type}', [ReportController::class, 'export'])->name('reports.export');
     });
 
     // Exam scheduling: all specific routes before {exam_session} catch-all
