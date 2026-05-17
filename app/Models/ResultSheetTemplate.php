@@ -17,6 +17,7 @@ class ResultSheetTemplate extends Model
         'logical_unit',
         'content',
         'docx_path',
+        'watermark_text',
         'is_active',
     ];
 

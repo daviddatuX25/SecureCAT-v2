@@ -4,17 +4,15 @@ namespace App\Services;
 
 use App\Models\AptitudeArea;
 use App\Models\ResultSheetTemplate;
+use App\ValueObjects\DocxValidationResult;
 use App\ValueObjects\RenderResult;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
-use PhpOffice\PhpWord\IOFactory;
-use PhpOffice\PhpWord\Settings;
-use PhpOffice\PhpWord\TemplateProcessor;
 
 class ResultSheetTemplateService
 {
     public function __construct(
         protected PrintTemplateCssService $cssService,
+        protected ResultSheetDocxService $docxService,
     ) {}
 
     public const PLACEHOLDERS = [
@@ -38,7 +36,7 @@ class ResultSheetTemplateService
                 $this->renderRaw($template->content ?: '', $replacements)
             );
         } else {
-            $html = $this->renderDocx($template->docx_path, $replacements);
+            $html = $this->docxService->renderDocxFromStoragePath($template->docx_path, $replacements);
         }
 
         return new RenderResult(
@@ -47,6 +45,7 @@ class ResultSheetTemplateService
             paperSize: $template->paper_size ?? ResultSheetTemplate::PAPER_A4,
             orientation: $template->orientation ?? ResultSheetTemplate::ORIENTATION_PORTRAIT,
             logicalUnit: $template->logical_unit ?? ResultSheetTemplate::LOGICAL_FULL,
+            watermarkText: $template->watermark_text,
         );
     }
 
@@ -66,8 +65,8 @@ class ResultSheetTemplateService
             $html2 = $this->renderRaw($template->content ?: '', $replacements2);
             $html = $this->cssService->wrapDual($html1, $html2);
         } else {
-            $html1 = $this->renderDocx($template->docx_path, $replacements1);
-            $html2 = $this->renderDocx($template->docx_path, $replacements2);
+            $html1 = $this->docxService->renderDocxFromStoragePath($template->docx_path, $replacements1);
+            $html2 = $this->docxService->renderDocxFromStoragePath($template->docx_path, $replacements2);
             $html = $this->cssService->wrapDual($html1, $html2);
         }
 
@@ -77,6 +76,7 @@ class ResultSheetTemplateService
             paperSize: $template->paper_size ?? ResultSheetTemplate::PAPER_A4,
             orientation: $template->orientation ?? ResultSheetTemplate::ORIENTATION_PORTRAIT,
             logicalUnit: $template->logical_unit ?? ResultSheetTemplate::LOGICAL_FULL,
+            watermarkText: $template->watermark_text,
         );
     }
 
@@ -100,6 +100,7 @@ class ResultSheetTemplateService
             paperSize: $paperSize,
             orientation: $orientation,
             logicalUnit: $logicalUnit,
+            watermarkText: null,
         );
     }
 
@@ -134,7 +135,7 @@ class ResultSheetTemplateService
             $this->addPerDomainReplacements($replacements, [], $sample, true);
         }
 
-        $html = $this->renderDocxFromFullPath($path, $replacements);
+        $html = $this->docxService->renderDocxFromFullPath($path, $replacements);
 
         return new RenderResult(
             html: $html,
@@ -142,6 +143,7 @@ class ResultSheetTemplateService
             paperSize: $paperSize,
             orientation: $orientation,
             logicalUnit: $logicalUnit,
+            watermarkText: null,
         );
     }
 
@@ -244,51 +246,28 @@ class ResultSheetTemplateService
         return $content;
     }
 
-    protected function renderDocx(?string $docxPath, array $replacements): string
+    public function getDocxValidation(string $fullPath, bool $isCrosswise): DocxValidationResult
     {
-        if (! $docxPath) {
-            return '<p class="text-muted-foreground">No DOCX template.</p>';
-        }
-
-        return $this->renderDocxFromFullPath(Storage::path($docxPath), $replacements);
+        return $this->docxService->validateDocxTemplate(
+            $fullPath,
+            $this->buildAllKnownPlaceholders(),
+            $isCrosswise,
+        );
     }
 
-    protected function renderDocxFromFullPath(string $fullPath, array $replacements): string
+    protected function buildAllKnownPlaceholders(): array
     {
-        if (! is_file($fullPath)) {
-            return '<p class="text-destructive">DOCX file not found.</p>';
+        $placeholders = self::PLACEHOLDERS;
+        $domains = AptitudeArea::where('is_active', true)->orderBy('display_order')->get(['name']);
+        foreach ($domains as $domain) {
+            $slug = $this->aptitudeAreaSlug($domain->name);
+            $placeholders[] = $slug;
+            $placeholders[] = $slug.'_raw';
+            $placeholders[] = $slug.'_2';
+            $placeholders[] = $slug.'_raw_2';
         }
 
-        $tempDir = storage_path('app/temp/phpword');
-        if (! is_dir($tempDir) && ! mkdir($tempDir, 0755, true)) {
-            // fall back to system temp — don't override Settings
-        } else {
-            Settings::setTempDir($tempDir);
-        }
-
-        $processor = new TemplateProcessor($fullPath);
-        $processor->setMacroChars('{{', '}}');
-        foreach ($replacements as $key => $value) {
-            $processor->setValue($key, $value);
-        }
-
-        $tempDocx = tempnam($tempDir, 'rst_').'.docx';
-        $processor->saveAs($tempDocx);
-
-        try {
-            $phpWord = IOFactory::load($tempDocx);
-            $tempHtml = tempnam($tempDir, 'rst_').'.html';
-            $writer = IOFactory::createWriter($phpWord, 'HTML');
-            $writer->save($tempHtml);
-            $html = file_get_contents($tempHtml);
-        } finally {
-            @unlink($tempDocx);
-            if (isset($tempHtml) && is_file($tempHtml)) {
-                @unlink($tempHtml);
-            }
-        }
-
-        return $html ?: '<p class="text-muted-foreground">Failed to convert DOCX to HTML.</p>';
+        return array_unique($placeholders);
     }
 
     protected function buildScoresRows(array $scores): string

@@ -18,6 +18,7 @@ readonly class RenderResult
         public readonly string $paperSize,
         public readonly string $orientation,
         public readonly string $logicalUnit,
+        public readonly ?string $watermarkText = null,
     ) {}
 
     public static function fromTemplate(ResultSheetTemplate $template, string $html = ''): self
@@ -28,6 +29,7 @@ readonly class RenderResult
             paperSize: $template->paper_size ?? ResultSheetTemplate::PAPER_A4,
             orientation: $template->orientation ?? ResultSheetTemplate::ORIENTATION_PORTRAIT,
             logicalUnit: $template->logical_unit ?? ResultSheetTemplate::LOGICAL_FULL,
+            watermarkText: $template->watermark_text,
         );
     }
 

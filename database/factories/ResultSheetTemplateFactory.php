@@ -22,6 +22,7 @@ class ResultSheetTemplateFactory extends Factory
             'logical_unit' => ResultSheetTemplate::LOGICAL_FULL,
             'content' => '<div>{{applicant_name}}</div>',
             'docx_path' => null,
+            'watermark_text' => null,
             'is_active' => false,
         ];
     }
