@@ -70,13 +70,13 @@
   };
 
   const canAccept = $derived(
-    within_application_window && application && application.status === 'pending'
+    application && application.status === 'pending'
   );
   const canDismiss = $derived(
-    within_application_window && application && application.status === 'pending'
+    application && application.status === 'pending'
   );
   const canRevert = $derived(
-    within_application_window && application && ['accepted', 'dismissed'].includes(application.status)
+    application && ['accepted', 'dismissed'].includes(application.status)
   );
   const breadcrumbs = $derived([
     { label: 'Applications', href: '/admin/applications' },

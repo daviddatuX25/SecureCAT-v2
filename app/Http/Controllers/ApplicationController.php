@@ -101,7 +101,13 @@ class ApplicationController extends Controller
         };
 
         // Native DB pipeline_status filter and sort — no in-memory collection processing
-        if ($pipelineStatus) {
+        // pipeline_status is nullable; NULL semantically equals 'pending' (pre-backfill rows).
+        if ($pipelineStatus === 'pending') {
+            $query->where(function ($q) {
+                $q->where('pipeline_status', 'pending')
+                    ->orWhereNull('pipeline_status');
+            });
+        } elseif ($pipelineStatus) {
             $query->where('pipeline_status', $pipelineStatus);
         }
 
@@ -109,8 +115,14 @@ class ApplicationController extends Controller
         $resolvedSort = in_array($sortField, $sortableColumns, true) ? $sortField : 'submitted_at';
         $resolvedDir = $sortDirection === 'asc' ? 'asc' : 'desc';
 
+        // Coalesce NULL pipeline_status to 'pending' for correct sort order
+        if ($resolvedSort === 'pipeline_status') {
+            $query->orderByRaw("COALESCE(pipeline_status, 'pending') {$resolvedDir}");
+        } else {
+            $query->orderBy($resolvedSort, $resolvedDir);
+        }
+
         $applications = $query
-            ->orderBy($resolvedSort, $resolvedDir)
             ->paginate(15)
             ->withQueryString();
 
