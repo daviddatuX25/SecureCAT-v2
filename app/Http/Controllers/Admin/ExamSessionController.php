@@ -17,6 +17,7 @@ use App\Models\User;
 use App\Notifications\ExamSessionCancelled;
 use App\Notifications\ExamSessionCompleted;
 use App\Notifications\ExamSessionPublished;
+use App\Notifications\ExamSessionStaffAssigned;
 use App\Notifications\ExamSessionStarted;
 use App\Services\ApplicationPipelineService;
 use Carbon\Carbon;
@@ -432,7 +433,7 @@ class ExamSessionController extends Controller
         $testAdmins = User::whereHas('roles', fn ($q) => $q->where('name', 'test_administrator'))->get();
         Notification::send(
             $recipients->merge($testAdmins)->unique('id'),
-            new ExamSessionPublished($exam_session)
+            new ExamSessionStaffAssigned($exam_session)
         );
 
         return redirect()->route('admin.exam-scheduling.show', $exam_session)->with('success', 'Session published.');
