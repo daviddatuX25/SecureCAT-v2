@@ -28,6 +28,7 @@ class DatabaseSeeder extends Seeder
             ResultSheetTemplateSeeder::class,
             DemoAccountSeeder::class,
             AcademicYearSeeder::class,
+            PrivacyPolicySeeder::class,
         ]);
 
         if (config('demo.enabled', false)) {

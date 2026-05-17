@@ -10,6 +10,7 @@ use App\Http\Controllers\Admin\CourseController;
 use App\Http\Controllers\Admin\ExamSchedulingAssistantController;
 use App\Http\Controllers\Admin\ExamSessionController;
 use App\Http\Controllers\Admin\KnowledgeDocumentController;
+use App\Http\Controllers\Admin\PrivacyPolicyController;
 use App\Http\Controllers\Admin\ResultSheetTemplateController;
 use App\Http\Controllers\Admin\RoomController;
 use App\Http\Controllers\Admin\SettingsController;
@@ -30,6 +31,7 @@ use App\Http\Controllers\Portal\NotificationController as PortalNotificationCont
 use App\Http\Controllers\PortalAuthController;
 use App\Http\Controllers\Proctor\ProctorSessionController;
 use App\Http\Controllers\Proctor\SessionRosterController;
+use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\Release\ReleasePrintController;
 use App\Http\Controllers\ReleaseController;
 use App\Support\GoogleOAuthConfig;
@@ -55,6 +57,9 @@ Route::middleware('guest')->group(function () {
 Route::get('/apply', [ApplicationController::class, 'create'])->name('applications.create');
 Route::post('/applications', [ApplicationController::class, 'store'])->name('applications.store');
 Route::get('/apply/success', [ApplicationController::class, 'success'])->name('applications.success');
+
+// Public privacy policy endpoint (for apply page)
+Route::get('/api/privacy-policy', [PrivacyPolicyController::class, 'active'])->name('privacy-policy.active');
 
 // Applicant portal (guest: login, setup, forgot/reset password)
 Route::middleware(['web', 'portal.guest'])->prefix('portal')->name('portal.')->group(function () {
@@ -87,6 +92,11 @@ Route::middleware(['web', 'auth:applicant'])->prefix('portal')->name('portal.')-
 Route::middleware(['auth'])->group(function () {
     Route::post('/logout', [AuthController::class, 'destroy'])->name('logout');
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+
+    // Profile management (self-service for all authenticated staff)
+    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
+    Route::put('/profile', [ProfileController::class, 'update'])->name('profile.update');
+    Route::put('/profile/password', [ProfileController::class, 'updatePassword'])->name('profile.password');
 
     // Authenticated user notifications (staff/admin/proctor etc.)
     Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');
@@ -194,6 +204,20 @@ Route::middleware(['auth'])->group(function () {
         Route::put('applications/{application}/reopen', [ApplicationController::class, 'reopen'])->name('reopen');
         Route::delete('applications/{application}', [ApplicationController::class, 'destroy'])->name('destroy');
         Route::get('applications/{application}/admission-slip', [ApplicationController::class, 'admissionSlip'])->name('admission-slip');
+
+        // Privacy Policy CRUD
+        Route::get('privacy-policies', [PrivacyPolicyController::class, 'index'])->name('privacy-policies.index');
+        Route::get('privacy-policies/create', [PrivacyPolicyController::class, 'create'])->name('privacy-policies.create');
+        Route::post('privacy-policies', [PrivacyPolicyController::class, 'store'])->name('privacy-policies.store');
+        Route::get('privacy-policies/{privacy_policy}/edit', [PrivacyPolicyController::class, 'edit'])->name('privacy-policies.edit');
+        Route::put('privacy-policies/{privacy_policy}', [PrivacyPolicyController::class, 'update'])->name('privacy-policies.update');
+        Route::delete('privacy-policies/{privacy_policy}', [PrivacyPolicyController::class, 'destroy'])->name('privacy-policies.destroy');
+    });
+
+    // Privacy policy activate/deactivate - restricted to super_admin and registrar_administrator
+    Route::middleware('role:super_admin,registrar_administrator')->prefix('admin')->name('admin.applications.')->group(function () {
+        Route::post('privacy-policies/{privacy_policy}/activate', [PrivacyPolicyController::class, 'activate'])->name('privacy-policies.activate');
+        Route::post('privacy-policies/{privacy_policy}/deactivate', [PrivacyPolicyController::class, 'deactivate'])->name('privacy-policies.deactivate');
     });
 
     Route::get('/proctor', fn () => redirect()->route('dashboard'))->middleware('role:super_admin,proctor');
@@ -238,6 +262,7 @@ Route::middleware(['auth'])->group(function () {
         ->group(function () {
             Route::get('/', [ReleaseController::class, 'index'])->name('index');
             Route::post('/summaries/{summary}/release', [ReleaseController::class, 'release'])->name('summaries.release');
+            Route::post('/summaries/{summary}/unrelease', [ReleaseController::class, 'unrelease'])->name('summaries.unrelease');
             Route::post('/summaries/bulk-release', [ReleaseController::class, 'releaseBulk'])->name('summaries.bulk-release');
             Route::post('/summaries/release-all', [ReleaseController::class, 'releaseAll'])->name('summaries.release-all');
             Route::put('/summaries/by-applicant/{applicantId}', [ReleaseController::class, 'storeOrUpdateByApplicant'])->name('summaries.storeOrUpdate');
@@ -256,11 +281,6 @@ Route::middleware(['auth'])->group(function () {
                 Route::get('{grading_session}/applicants/{applicant}/pdf', [ReleasePrintController::class, 'resultSheetPdf'])->name('result-sheet-pdf');
                 Route::get('{grading_session}/print-bulk', [ReleasePrintController::class, 'printBulk'])->name('print-bulk');
                 Route::get('{grading_session}/print-bulk-pdf', [ReleasePrintController::class, 'printBulkPdf'])->name('print-bulk-pdf');
-
-                // Print job (async bulk PDF)
-                Route::post('bulk-pdf-job', [ReleasePrintController::class, 'dispatchBulkPdfJob'])->name('bulk-pdf-job');
-                Route::get('print-job/{printJob}', [ReleasePrintController::class, 'printJobStatus'])->name('print-job-status');
-                Route::get('print-job/{printJob}/download', [ReleasePrintController::class, 'printJobDownload'])->name('print-job-download');
             });
         });
 });
