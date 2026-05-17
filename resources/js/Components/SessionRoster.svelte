@@ -541,11 +541,23 @@
                 <td class="px-4 py-3">
                   <Badge variant={attendanceStatusVariant(row.attendance_status)}>{row.attendance_status}</Badge>
                 </td>
-                <td class="px-4 py-3">{fmtDate(row.attendance_marked_at, 'time')}</td>
+                <td class="px-4 py-3">
+                  {#if row.attendance_marked_at}
+                    <span>{fmtDate(row.attendance_marked_at, 'time')}</span>
+                  {:else}
+                    <span class="text-xs text-muted-foreground/50">—</span>
+                  {/if}
+                </td>
                 <td class="px-4 py-3">
                   <Badge variant={attendanceStatusVariant(row.submission_status)}>{row.submission_status}</Badge>
                 </td>
-                <td class="px-4 py-3">{fmtDate(row.submitted_at, 'time')}</td>
+                <td class="px-4 py-3">
+                  {#if row.submitted_at}
+                    <span>{fmtDate(row.submitted_at, 'time')}</span>
+                  {:else}
+                    <span class="text-xs text-muted-foreground/50">—</span>
+                  {/if}
+                </td>
                 <td class="px-4 py-3 text-right">
                   <div class="flex flex-wrap justify-end gap-1">
                     {#if row.attendance_status === 'pending' && canMarkAttendance}
@@ -559,18 +571,16 @@
                       <Button variant="outline" size="sm" class="min-h-[44px]" onclick={() => logSubmission(row.id)}>
                         <FileCheck class="h-4 w-4 mr-1" /> Log submission
                       </Button>
-                    {:else}
-                      <span class="text-muted-foreground text-xs">—</span>
                     {/if}
                     {#if p.canRemoveApplicant && session.status !== 'completed' && session.status !== 'cancelled'}
                       <Button
-                        variant="ghost"
+                        variant="outline"
                         size="sm"
-                        class="min-h-[44px] text-destructive hover:text-destructive"
+                        class="min-h-[44px] text-destructive hover:text-destructive border-destructive/20 hover:bg-destructive/10"
                         onclick={() => removeApplicant(row.session_applicant_id)}
                         title="Remove from session"
                       >
-                        <UserMinus class="h-4 w-4" />
+                        <UserMinus class="h-4 w-4 mr-1" /> Unassign
                       </Button>
                     {/if}
                   </div>
