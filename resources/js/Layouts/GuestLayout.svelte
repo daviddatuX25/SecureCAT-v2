@@ -2,6 +2,7 @@
   import { Link } from '@inertiajs/svelte';
   import { Button } from '@/Components/ui/button';
   import { Sun, Moon } from 'lucide-svelte';
+  import ToastManager from '@/Components/ToastManager.svelte';
 
   let { children } = $props();
 
@@ -36,3 +37,5 @@
     <Link href="/" class="text-primary hover:underline">Back to home</Link>
   </p>
 </div>
+
+<ToastManager />
