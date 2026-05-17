@@ -65,7 +65,7 @@
   }
 
   let viewMode = $state('responsive');
-const breadcrumbs = [{ label: 'Exam Scheduling', href: '/admin/exam-scheduling' }, { label: 'Rooms' }];
+const breadcrumbs = [{ label: 'Setup', href: '/admin/setup' }, { label: 'Rooms' }];
 </script>
 
 <AuthenticatedLayout {breadcrumbs}>

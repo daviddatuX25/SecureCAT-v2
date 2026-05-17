@@ -28,7 +28,7 @@
   }
 
   const breadcrumbs = [
-    { label: 'Applications', href: '/admin/applications' },
+    { label: 'Setup', href: '/admin/setup' },
     { label: 'Privacy Policies', href: '/admin/privacy-policies' },
     { label: 'Edit' },
   ];

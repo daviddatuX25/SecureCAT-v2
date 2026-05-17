@@ -9,7 +9,7 @@
   let { templates = [] } = $props();
 
   const breadcrumbs = [
-    { label: 'Release Management', href: '/release' },
+    { label: 'Setup', href: '/admin/setup' },
     { label: 'Result Sheet Templates' }
   ];
 

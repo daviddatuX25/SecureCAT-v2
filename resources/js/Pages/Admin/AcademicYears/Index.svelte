@@ -10,7 +10,7 @@
 
   let { academic_years } = $props();
   const list = $derived(academic_years?.data ?? []);
-  const breadcrumbs = [{ label: 'Academic Years' }];
+  const breadcrumbs = [{ label: 'Setup', href: '/admin/setup' }, { label: 'Academic Years' }];
 
   let viewMode = $state('responsive');
 

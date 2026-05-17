@@ -24,7 +24,7 @@
     e.preventDefault();
     $form.post('/admin/academic-years');
   }
-  const breadcrumbs = [{ label: 'Academic Years', href: '/admin/academic-years' }, { label: 'Create' }];
+  const breadcrumbs = [{ label: 'Setup', href: '/admin/setup' }, { label: 'Academic Years', href: '/admin/academic-years' }, { label: 'Create' }];
 </script>
 
 <AuthenticatedLayout {breadcrumbs}>

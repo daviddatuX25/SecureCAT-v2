@@ -11,7 +11,7 @@
 
   const list = $derived(Array.isArray(aptitude_areas) ? aptitude_areas : []);
 
-  const breadcrumbs = [{ label: 'Grading', href: '/admin/grading' }, { label: 'Aptitude Areas' }];
+  const breadcrumbs = [{ label: 'Setup', href: '/admin/setup' }, { label: 'Aptitude Areas' }];
 
   let ordering = $state(list.map(a => a.id));
   $effect(() => {

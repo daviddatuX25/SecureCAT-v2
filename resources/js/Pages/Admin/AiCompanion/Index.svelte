@@ -12,7 +12,7 @@
   let { documents = [], ai_companion_persona = '' } = $props();
 
 
-  const breadcrumbs = [{ label: 'AI Companion' }];
+  const breadcrumbs = [{ label: 'Setup', href: '/admin/setup' }, { label: 'AI Companion' }];
 
   // Tab state
   let activeTab = $state('documents');

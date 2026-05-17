@@ -5,7 +5,7 @@
 
   let { room } = $props();
 
-  const breadcrumbs = [{ label: 'Exam Scheduling', href: '/admin/exam-scheduling' }, { label: 'Rooms', href: '/admin/rooms' }, { label: 'Edit' }];
+  const breadcrumbs = [{ label: 'Setup', href: '/admin/setup' }, { label: 'Rooms', href: '/admin/rooms' }, { label: 'Edit' }];
 </script>
 
 <AuthenticatedLayout {breadcrumbs}>

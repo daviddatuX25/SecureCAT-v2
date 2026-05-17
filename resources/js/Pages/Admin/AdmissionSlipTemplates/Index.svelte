@@ -9,7 +9,7 @@
 
   let { templates = [] } = $props();
 
-  const breadcrumbs = [{ label: 'Admission Slip Templates' }];
+  const breadcrumbs = [{ label: 'Setup', href: '/admin/setup' }, { label: 'Admission Slip Templates' }];
 
 
   let deleteId = $state(null);

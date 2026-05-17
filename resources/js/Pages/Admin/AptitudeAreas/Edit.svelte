@@ -65,7 +65,7 @@
   }
 
   const breadcrumbs = [
-    { label: 'Grading', href: '/admin/grading' },
+    { label: 'Setup', href: '/admin/setup' },
     { label: 'Aptitude Areas', href: '/admin/aptitude-areas' },
     { label: 'Edit' },
   ];

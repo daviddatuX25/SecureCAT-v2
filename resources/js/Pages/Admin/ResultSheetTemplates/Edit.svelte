@@ -14,7 +14,7 @@
   import { Badge } from '@/Components/ui/badge';
 
   const breadcrumbs = [
-    { label: 'Release Management', href: '/admin/release' },
+    { label: 'Setup', href: '/admin/setup' },
     { label: 'Result Sheet Templates', href: '/admin/release/result-templates' },
     { label: 'Edit' },
   ];

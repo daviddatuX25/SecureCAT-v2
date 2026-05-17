@@ -26,7 +26,7 @@
     }));
     $form.post('/admin/rooms');
   }
-const breadcrumbs = [{ label: 'Exam Scheduling', href: '/admin/exam-scheduling' }, { label: 'Rooms', href: '/admin/rooms' }, { label: 'Add Room' }];
+const breadcrumbs = [{ label: 'Setup', href: '/admin/setup' }, { label: 'Rooms', href: '/admin/rooms' }, { label: 'Add Room' }];
 </script>
 
 <AuthenticatedLayout {breadcrumbs}>

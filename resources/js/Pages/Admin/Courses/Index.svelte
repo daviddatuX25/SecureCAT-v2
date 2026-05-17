@@ -32,7 +32,7 @@
     }
   }
 
-const breadcrumbs = [{ label: 'Academic Years', href: '/admin/academic-years' }, { label: 'Courses' }];
+const breadcrumbs = [{ label: 'Setup', href: '/admin/setup' }, { label: 'Courses' }];
 </script>
 
 <AuthenticatedLayout {breadcrumbs}>

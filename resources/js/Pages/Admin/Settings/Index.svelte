@@ -16,7 +16,7 @@
     enable_normalized_scores,
   });
 
-  const breadcrumbs = [{ label: 'Settings' }];
+  const breadcrumbs = [{ label: 'Setup', href: '/admin/setup' }, { label: 'Settings' }];
 
   let saveTimeout = $state(null);
 
