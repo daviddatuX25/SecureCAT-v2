@@ -32,35 +32,21 @@ class ApplicationStatusChanged extends Notification implements ShouldQueue
 
     public function toMail(object $notifiable): MailMessage
     {
-        $applicantName = $this->application->first_name ?? 'Applicant';
+        $statusLabels = [
+            'pending' => 'Pending Review',
+            'accepted' => 'Accepted',
+            'dismissed' => 'Dismissed',
+        ];
 
-        $mail = (new MailMessage)
+        return (new MailMessage)
             ->subject('SecureCAT — Application Update')
-            ->greeting("Hello, {$applicantName}.");
-
-        if ($this->application->reference_number) {
-            $mail->line("Regarding your application **{$this->application->reference_number}**:");
-        }
-
-        if ($this->newStatus === 'dismissed') {
-            $mail->line('After careful review, we regret to inform you that your application was not accepted at this time.');
-
-            if ($this->application->rejection_reason) {
-                $mail->line("**Reason:** {$this->application->rejection_reason}");
-            }
-
-            $mail->line('If you have any questions about this decision, please contact the admissions office.');
-        } else {
-            $statusLabels = [
-                'pending' => 'Pending Review',
-                'accepted' => 'Accepted',
-                'dismissed' => 'Dismissed',
-            ];
-            $newLabel = $statusLabels[$this->newStatus] ?? ucfirst($this->newStatus);
-            $mail->line("Your application status has been updated to **{$newLabel}**.");
-        }
-
-        return $mail;
+            ->view('emails.application-status-changed', [
+                'applicantName' => $this->application->first_name ?? 'Applicant',
+                'referenceNumber' => $this->application->reference_number,
+                'newStatus' => $this->newStatus,
+                'statusLabel' => $statusLabels[$this->newStatus] ?? ucfirst($this->newStatus),
+                'rejectionReason' => $this->application->rejection_reason,
+            ]);
     }
 
     public function toArray(object $notifiable): array

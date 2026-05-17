@@ -21,12 +21,14 @@ class ResultReleasedF2F extends Notification implements ShouldQueue
 
     public function toMail(object $notifiable): MailMessage
     {
+        $application = $notifiable->application ?? null;
+        $applicantName = $application?->first_name ?? 'Applicant';
+
         return (new MailMessage)
-            ->subject('Your exam results are available for consultation')
-            ->greeting('Hello, '.($notifiable->name ?? 'Applicant').'!')
-            ->line('Your exam results are now available for face-to-face consultation.')
-            ->line('Please wait for further announcement regarding the venue and schedule for your consultation.')
-            ->line('If you have questions, please contact the guidance office.');
+            ->subject('SecureCAT — Results Available for Consultation')
+            ->view('emails.result-released-f2f', [
+                'applicantName' => $applicantName,
+            ]);
     }
 
     public function toArray(object $notifiable): array

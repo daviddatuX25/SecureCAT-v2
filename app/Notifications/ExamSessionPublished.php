@@ -21,27 +21,26 @@ class ExamSessionPublished extends Notification implements ShouldQueue
 
     public function toMail(object $notifiable): MailMessage
     {
-        $date = $this->session->scheduled_at?->format('F j, Y') ?? $this->session->date?->format('F j, Y') ?? 'TBA';
-        $time = $this->session->scheduled_at?->format('g:i A') ?? '';
-        $room = $this->session->room?->name ?? 'TBA';
+        $application = $notifiable->application ?? null;
+        $applicantName = $application?->first_name ?? 'Applicant';
 
         return (new MailMessage)
-            ->subject('Your exam has been scheduled')
-            ->greeting('Hello, ' . ($notifiable->name ?? 'Applicant') . '!')
-            ->line('Your exam session has been confirmed.')
-            ->line('**Date:** ' . $date)
-            ->when($time, fn ($mail) => $mail->line('**Time:** ' . $time))
-            ->line('**Room:** ' . $room)
-            ->action('View in Portal', url('/portal'))
-            ->line('Please arrive 15 minutes early with a valid ID.');
+            ->subject('SecureCAT — Your Exam Has Been Scheduled')
+            ->view('emails.exam-session-published', [
+                'applicantName' => $applicantName,
+                'sessionDate' => $this->session->scheduled_at?->format('F j, Y') ?? $this->session->date?->format('F j, Y') ?? 'TBA',
+                'sessionTime' => $this->session->scheduled_at?->format('g:i A') ?? '',
+                'sessionRoom' => $this->session->room?->name ?? 'TBA',
+                'portalUrl' => url('/portal'),
+            ]);
     }
 
     public function toArray(object $notifiable): array
     {
         return [
-            'type'       => 'exam_session_published',
+            'type' => 'exam_session_published',
             'session_id' => $this->session->id,
-            'message'    => 'Your exam session has been scheduled.',
+            'message' => 'Your exam session has been scheduled.',
         ];
     }
 }

@@ -23,13 +23,17 @@ class ExamSessionCancelled extends Notification implements ShouldQueue
 
     public function toMail(object $notifiable): MailMessage
     {
-        $date = $this->session->date?->format('F j, Y') ?? 'TBA';
+        $application = $notifiable->application ?? null;
+        $applicantName = $application?->first_name ?? 'Applicant';
 
         return (new MailMessage)
-            ->subject('Exam session cancelled')
-            ->greeting('Hello, '.($notifiable->name ?? 'Applicant').'!')
-            ->line("The exam session scheduled for {$date} has been cancelled.")
-            ->action('View in Portal', url('/portal'));
+            ->subject('SecureCAT — Exam Session Cancelled')
+            ->view('emails.exam-session-cancelled', [
+                'applicantName' => $applicantName,
+                'sessionDate' => $this->session->scheduled_at?->format('F j, Y') ?? $this->session->date?->format('F j, Y') ?? 'TBA',
+                'sessionRoom' => $this->session->room?->name,
+                'portalUrl' => url('/portal'),
+            ]);
     }
 
     public function toArray(object $notifiable): array

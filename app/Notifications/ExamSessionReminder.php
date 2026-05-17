@@ -26,18 +26,19 @@ class ExamSessionReminder extends Notification implements ShouldQueue
 
     public function toMail(object $notifiable): MailMessage
     {
-        $date = $this->session->scheduled_at?->format('F j, Y') ?? $this->session->date?->format('F j, Y') ?? 'TBA';
-        $time = $this->session->scheduled_at?->format('g:i A') ?? '';
-
+        $application = $notifiable->application ?? null;
+        $applicantName = $application?->first_name ?? 'Applicant';
         $daysLabel = $this->daysUntil === 1 ? 'day' : 'days';
 
         return (new MailMessage)
-            ->subject("Reminder: Your exam is {$this->daysUntil} {$daysLabel} away")
-            ->greeting('Hello, '.($notifiable->name ?? 'Applicant').'!')
-            ->line("This is a reminder that your exam session is scheduled for **{$date}**.")
-            ->when($time, fn ($mail) => $mail->line("**Time:** {$time}"))
-            ->line('Please arrive 15 minutes early with a valid ID.')
-            ->action('View Details', url('/portal'));
+            ->subject("SecureCAT — Reminder: Your exam is {$this->daysUntil} {$daysLabel} away")
+            ->view('emails.exam-session-reminder', [
+                'applicantName' => $applicantName,
+                'daysUntil' => $this->daysUntil,
+                'sessionDate' => $this->session->scheduled_at?->format('F j, Y') ?? $this->session->date?->format('F j, Y') ?? 'TBA',
+                'sessionTime' => $this->session->scheduled_at?->format('g:i A') ?? '',
+                'portalUrl' => url('/portal'),
+            ]);
     }
 
     public function toArray(object $notifiable): array
