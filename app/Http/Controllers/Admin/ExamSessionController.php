@@ -16,6 +16,7 @@ use App\Models\SystemSetting;
 use App\Models\User;
 use App\Notifications\ExamSessionCancelled;
 use App\Notifications\ExamSessionCompleted;
+use App\Notifications\ExamSessionPostponed;
 use App\Notifications\ExamSessionPublished;
 use App\Notifications\ExamSessionStaffAssigned;
 use App\Notifications\ExamSessionStarted;
@@ -447,12 +448,41 @@ class ExamSessionController extends Controller
         }
         $this->authorize('unpublish', $exam_session);
 
+        // Capture session details before reverting to draft
+        $exam_session->load(['applicants', 'proctors', 'room']);
+
         $exam_session->update([
             'status' => ExamSession::STATUS_DRAFT,
             'published_at' => null,
         ]);
 
-        return redirect()->route('admin.exam-scheduling.show', $exam_session)->with('success', 'Session unpublished.');
+        // Notify applicants their exam has been postponed
+        $exam_session->applicants->each(
+            fn (Applicant $applicant) => $applicant->notify(new ExamSessionPostponed($exam_session))
+        );
+
+        // Notify staff about the schedule change
+        $staffRecipients = $exam_session->proctors;
+        $testAdmins = User::whereHas('roles', fn ($q) => $q->where('name', 'test_administrator'))->get();
+        if ($staffRecipients->merge($testAdmins)->unique('id')->isNotEmpty()) {
+            Notification::send(
+                $staffRecipients->merge($testAdmins)->unique('id'),
+                new ExamSessionStaffAssigned($exam_session)
+            );
+        }
+
+        // Revert pipeline status for assigned applicants
+        $pipeline = app(ApplicationPipelineService::class);
+        $exam_session->applicants()->with('application')->get()
+            ->each(function (Applicant $applicant) use ($pipeline, $exam_session) {
+                if ($applicant->application) {
+                    $pipeline->transition($applicant->application, 'draft_scheduled', [
+                        'session_id' => $exam_session->id,
+                    ]);
+                }
+            });
+
+        return redirect()->route('admin.exam-scheduling.show', $exam_session)->with('success', 'Session unpublished. Applicants and staff have been notified.');
     }
 
     /**
