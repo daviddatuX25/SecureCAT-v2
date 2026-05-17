@@ -95,15 +95,18 @@
   }
 
   function isNavActive(item) {
-    const url = $page.url || '';
+    const rawUrl = $page.url || '';
+    // Strip query params and hash so ?search=foo&page=2 doesn't break matching
+    const url = rawUrl.split('?')[0].split('#')[0];
     const href = item.href ?? '';
     if (url === href || url === href + '/') return true;
-    if (url.startsWith(href + '/')) return true;
+    if (href !== '/' && url.startsWith(href + '/')) return true;
 
-    // Check activeFor prefixes for shared pages
+    // Check activeFor prefixes for shared pages & child routes
     if (item.activeFor) {
       for (const prefix of item.activeFor) {
-        if (url === prefix || url.startsWith(prefix + '/')) return true;
+        if (url === prefix || url === prefix + '/') return true;
+        if (prefix !== '/' && url.startsWith(prefix + '/')) return true;
       }
     }
 
@@ -226,9 +229,18 @@
             class="absolute left-0 right-0 bottom-full mb-1 rounded-xl border border-border bg-card-solid py-1 shadow-lg z-50"
             role="menu"
           >
+            <Link
+              href="/profile"
+              class="block w-full px-4 py-2 text-left text-sm text-foreground hover:bg-accent transition-colors min-h-[44px] rounded-lg"
+              role="menuitem"
+              onclick={() => { userDropdownOpen = false; }}
+            >
+              Profile
+            </Link>
+            <div class="my-1 border-t border-border/50"></div>
             <button
               type="button"
-              class="w-full px-4 py-2 text-left text-sm text-foreground hover:bg-accent transition-colors min-h-[44px] rounded-lg mx-1"
+              class="w-full px-4 py-2 text-left text-sm text-foreground hover:bg-accent transition-colors min-h-[44px] rounded-lg"
               role="menuitem"
               onclick={() => { logout(); userDropdownOpen = false; }}
             >
