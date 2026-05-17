@@ -242,6 +242,7 @@ Route::middleware(['auth'])->group(function () {
             Route::put('/summaries/by-applicant/{applicantId}', [ReleaseController::class, 'storeOrUpdateByApplicant'])->name('summaries.storeOrUpdate');
             // Result Sheet Templates
             Route::post('result-templates/preview', [ResultSheetTemplateController::class, 'preview'])->name('result-templates.preview');
+            Route::post('result-templates/validate-docx', [ResultSheetTemplateController::class, 'validateDocx'])->name('result-templates.validate-docx');
             Route::resource('result-templates', ResultSheetTemplateController::class)->except('show');
 
             // Print batch
@@ -254,6 +255,11 @@ Route::middleware(['auth'])->group(function () {
                 Route::get('{grading_session}/applicants/{applicant}/pdf', [ReleasePrintController::class, 'resultSheetPdf'])->name('result-sheet-pdf');
                 Route::get('{grading_session}/print-bulk', [ReleasePrintController::class, 'printBulk'])->name('print-bulk');
                 Route::get('{grading_session}/print-bulk-pdf', [ReleasePrintController::class, 'printBulkPdf'])->name('print-bulk-pdf');
+
+                // Print job (async bulk PDF)
+                Route::post('bulk-pdf-job', [ReleasePrintController::class, 'dispatchBulkPdfJob'])->name('bulk-pdf-job');
+                Route::get('print-job/{printJob}', [ReleasePrintController::class, 'printJobStatus'])->name('print-job-status');
+                Route::get('print-job/{printJob}/download', [ReleasePrintController::class, 'printJobDownload'])->name('print-job-download');
             });
         });
 });

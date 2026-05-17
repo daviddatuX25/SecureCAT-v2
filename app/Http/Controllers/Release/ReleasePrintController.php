@@ -195,6 +195,9 @@ class ReleasePrintController extends Controller
         $template = ResultSheetTemplate::where('is_active', true)->first();
         abort_if(! $template, 404, 'No active result sheet template.');
 
+        $copies = (int) request()->query('copies', 1);
+        abort_if($copies < 1 || $copies > 10, 422, 'Copies must be between 1 and 10.');
+
         $grading_session->load('examSession.room');
         $ids = array_slice(array_filter(array_map('intval', explode(',', request()->query('ids', '')))), 0, 200);
         $applicants = $grading_session->applicants()
@@ -220,7 +223,8 @@ class ReleasePrintController extends Controller
         return $this->pdfService->bulkDownload(
             $sheetsHtml,
             $meta,
-            "session_{$grading_session->id}_result_sheets.pdf"
+            "session_{$grading_session->id}_result_sheets.pdf",
+            $copies
         );
     }
 
@@ -281,6 +285,9 @@ class ReleasePrintController extends Controller
         $template = ResultSheetTemplate::where('is_active', true)->first();
         abort_if(! $template, 404, 'No active result sheet template.');
 
+        $copies = (int) request()->query('copies', 1);
+        abort_if($copies < 1 || $copies > 10, 422, 'Copies must be between 1 and 10.');
+
         $ids = array_slice(array_filter(array_map('intval', explode(',', request()->query('ids', '')))), 0, 200);
         $applicants = Applicant::whereIn('id', $ids)
             ->with('application', 'gradingSessions.examSession.room')
@@ -314,7 +321,56 @@ class ReleasePrintController extends Controller
 
         $meta = RenderResult::fromTemplate($template);
 
-        return $this->pdfService->bulkDownload($sheetsHtml, $meta, 'result_sheets.pdf');
+        return $this->pdfService->bulkDownload($sheetsHtml, $meta, 'result_sheets.pdf', $copies);
+    }
+
+    public function dispatchBulkPdfJob(): JsonResponse
+    {
+        $ids = array_slice(array_filter(array_map('intval', explode(',', request()->query('ids', '')))), 0, 200);
+        abort_if(empty($ids), 422, 'No applicant IDs provided.');
+
+        $copies = (int) request()->query('copies', 1);
+        abort_if($copies < 1 || $copies > 10, 422, 'Copies must be between 1 and 10.');
+
+        $sessionId = request()->query('grading_session_id');
+        $gradingSessionId = $sessionId ? (int) $sessionId : null;
+
+        $printJob = PrintJob::create([
+            'user_id' => auth()->id(),
+            'grading_session_id' => $gradingSessionId,
+            'applicant_ids' => $ids,
+            'copies' => $copies,
+            'status' => 'pending',
+        ]);
+
+        GenerateBulkResultSheetPdf::dispatch($printJob->id);
+
+        return response()->json(['jobId' => $printJob->id]);
+    }
+
+    public function printJobStatus(PrintJob $printJob): JsonResponse
+    {
+        abort_if($printJob->user_id !== auth()->id(), 403, 'Access denied.');
+
+        return response()->json([
+            'id' => $printJob->id,
+            'status' => $printJob->status,
+            'progress' => $printJob->progress,
+            'errorMessage' => $printJob->error_message,
+            'pdfUrl' => $printJob->isCompleted() ? route('admin.release.print.print-job-download', $printJob->id) : null,
+        ]);
+    }
+
+    public function printJobDownload(PrintJob $printJob): SymfonyResponse
+    {
+        abort_if($printJob->user_id !== auth()->id(), 403, 'Access denied.');
+        abort_if(! $printJob->isCompleted(), 404, 'PDF is not ready yet.');
+        abort_if(! $printJob->pdf_path, 404, 'PDF file not found.');
+
+        $fullPath = Storage::disk('local')->path($printJob->pdf_path);
+        abort_unless(file_exists($fullPath), 404, 'PDF file missing from disk.');
+
+        return response()->download($fullPath, "result_sheets_{$printJob->id}.pdf");
     }
 
     // -- Private Helpers ---------------------------------------------------
