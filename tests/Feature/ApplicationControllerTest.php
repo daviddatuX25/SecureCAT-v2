@@ -63,7 +63,7 @@ class ApplicationControllerTest extends TestCase
 
     public function test_index_returns_statuses_including_dismissed(): void
     {
-        $response = $this->actingAs($this->staff())->get(route('applications.index'));
+        $response = $this->actingAs($this->staff())->get(route('admin.applications.index'));
 
         $response->assertStatus(200);
         $response->assertInertia(fn ($page) => $page
@@ -79,7 +79,7 @@ class ApplicationControllerTest extends TestCase
     {
         $application = $this->createApplicationWithAcademicYear(true);
 
-        $response = $this->actingAs($this->staff())->get(route('applications.show', $application));
+        $response = $this->actingAs($this->staff())->get(route('admin.applications.admin-show', $application));
 
         $response->assertStatus(200);
         $response->assertInertia(fn ($page) => $page
@@ -93,7 +93,7 @@ class ApplicationControllerTest extends TestCase
     {
         $application = $this->createApplicationWithAcademicYear(false);
 
-        $response = $this->actingAs($this->staff())->get(route('applications.show', $application));
+        $response = $this->actingAs($this->staff())->get(route('admin.applications.admin-show', $application));
 
         $response->assertStatus(200);
         $response->assertInertia(fn ($page) => $page
@@ -106,9 +106,9 @@ class ApplicationControllerTest extends TestCase
     {
         $application = $this->createApplicationWithAcademicYear(true);
 
-        $response = $this->actingAs($this->staff())->put(route('applications.accept', $application));
+        $response = $this->actingAs($this->staff())->put(route('admin.applications.accept', $application));
 
-        $response->assertRedirect(route('applications.show', $application));
+        $response->assertRedirect(route('admin.applications.admin-show', $application));
         $response->assertSessionHas('success');
         $application->refresh();
         $this->assertSame('accepted', $application->status);
@@ -118,7 +118,7 @@ class ApplicationControllerTest extends TestCase
     {
         $application = $this->createApplicationWithAcademicYear(false);
 
-        $response = $this->actingAs($this->staff())->put(route('applications.accept', $application));
+        $response = $this->actingAs($this->staff())->put(route('admin.applications.accept', $application));
 
         $response->assertRedirect();
         $response->assertSessionHas('error');
@@ -130,11 +130,11 @@ class ApplicationControllerTest extends TestCase
     {
         $application = $this->createApplicationWithAcademicYear(true);
 
-        $response = $this->actingAs($this->staff())->put(route('applications.dismiss', $application), [
+        $response = $this->actingAs($this->staff())->put(route('admin.applications.dismiss', $application), [
             'reason' => 'Missing documents',
         ]);
 
-        $response->assertRedirect(route('applications.show', $application));
+        $response->assertRedirect(route('admin.applications.admin-show', $application));
         $response->assertSessionHas('success');
         $application->refresh();
         $this->assertSame('dismissed', $application->status);
@@ -145,7 +145,7 @@ class ApplicationControllerTest extends TestCase
     {
         $application = $this->createApplicationWithAcademicYear(false);
 
-        $response = $this->actingAs($this->staff())->put(route('applications.dismiss', $application), []);
+        $response = $this->actingAs($this->staff())->put(route('admin.applications.dismiss', $application), []);
 
         $response->assertRedirect();
         $response->assertSessionHas('error');
@@ -158,9 +158,9 @@ class ApplicationControllerTest extends TestCase
         $application = $this->createApplicationWithAcademicYear(true);
         $application->update(['status' => 'dismissed']);
 
-        $response = $this->actingAs($this->staff())->put(route('applications.accept', $application));
+        $response = $this->actingAs($this->staff())->put(route('admin.applications.accept', $application));
 
-        $response->assertRedirect(route('applications.show', $application));
+        $response->assertRedirect(route('admin.applications.admin-show', $application));
         $response->assertSessionHas('success');
         $application->refresh();
         $this->assertSame('accepted', $application->status);
@@ -170,7 +170,7 @@ class ApplicationControllerTest extends TestCase
     {
         $application = $this->createApplicationWithAcademicYear(true);
 
-        $response = $this->actingAs($this->staff())->put("/applications/{$application->id}/reject", ['reason' => 'Test']);
+        $response = $this->actingAs($this->staff())->put("/admin/applications/{$application->id}/reject", ['reason' => 'Test']);
 
         $response->assertStatus(404);
     }

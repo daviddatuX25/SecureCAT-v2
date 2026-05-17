@@ -312,17 +312,9 @@ class ApplicationController extends Controller
             'processed_at' => now(),
         ]);
 
-        // If auto-accept is enabled, create applicant and send setup email
+        // If auto-accept is enabled, safely create or re-link applicant
         if ($acceptImmediately) {
-            $setupToken = Applicant::generateSetupToken();
-            $expiresAt = now()->addHours(config('auth.setup_token_expires_hours', 72));
-            $applicant = Applicant::create([
-                'application_id' => $application->id,
-                'email' => $application->email,
-                'setup_token' => $setupToken,
-                'setup_token_expires_at' => $expiresAt,
-            ]);
-            SendApplicantSetupEmail::dispatch($applicant);
+            $this->ensureApplicantForAcceptance($application);
         }
 
         if (! empty($validated['appointment_id'])) {
@@ -342,7 +334,7 @@ class ApplicationController extends Controller
         }
 
         return redirect()
-            ->route('admin.applications.show', $application)
+            ->route('admin.applications.admin-show', $application)
             ->with('success', 'Application created successfully.');
     }
 
@@ -447,7 +439,7 @@ class ApplicationController extends Controller
         ]);
 
         return redirect()
-            ->route('admin.applications.show', $application)
+            ->route('admin.applications.admin-show', $application)
             ->with('success', 'Application updated successfully.');
     }
 
@@ -544,18 +536,7 @@ class ApplicationController extends Controller
                 'processed_at' => now(),
             ]);
 
-            $applicant = Applicant::where('application_id', $application->id)->first();
-            if (! $applicant) {
-                $setupToken = Applicant::generateSetupToken();
-                $expiresAt = now()->addHours(config('auth.setup_token_expires_hours', 72));
-                $applicant = Applicant::create([
-                    'application_id' => $application->id,
-                    'email' => $application->email,
-                    'setup_token' => $setupToken,
-                    'setup_token_expires_at' => $expiresAt,
-                ]);
-                SendApplicantSetupEmail::dispatch($applicant);
-            }
+            $this->ensureApplicantForAcceptance($application);
 
             // Notify applicant of status change
             if ($oldStatus !== 'accepted') {
@@ -705,19 +686,8 @@ class ApplicationController extends Controller
                 'processed_at' => now(),
             ]);
 
-            // Create applicant and send setup email (same as single accept method)
-            $applicant = Applicant::where('application_id', $application->id)->first();
-            if (! $applicant) {
-                $setupToken = Applicant::generateSetupToken();
-                $expiresAt = now()->addHours(config('auth.setup_token_expires_hours', 72));
-                $applicant = Applicant::create([
-                    'application_id' => $application->id,
-                    'email' => $application->email,
-                    'setup_token' => $setupToken,
-                    'setup_token_expires_at' => $expiresAt,
-                ]);
-                SendApplicantSetupEmail::dispatch($applicant);
-            }
+            // Safely create or re-link applicant (same as single accept method)
+            $this->ensureApplicantForAcceptance($application);
 
             // Notify applicant of status change
             $application->applicant?->notify(new ApplicationStatusChanged($application, $oldStatus, 'accepted'));
@@ -997,5 +967,45 @@ class ApplicationController extends Controller
         }
 
         return [];
+    }
+
+    /**
+     * Safely find or create an Applicant for an accepted application.
+     *
+     * Handles the case where an applicant with the same email already exists
+     * (e.g. from a prior application). If found, re-links to the new application.
+     * Only sends the setup email when the applicant hasn't completed account setup.
+     */
+    private function ensureApplicantForAcceptance(Application $application): Applicant
+    {
+        $applicant = Applicant::where('email', $application->email)->first();
+
+        if ($applicant) {
+            // Re-link existing applicant to the latest application
+            $applicant->update(['application_id' => $application->id]);
+
+            // If they haven't set up yet, refresh token and resend
+            if (! $applicant->hasCompletedSetup()) {
+                $applicant->update([
+                    'setup_token' => Applicant::generateSetupToken(),
+                    'setup_token_expires_at' => now()->addHours(config('auth.setup_token_expires_hours', 72)),
+                ]);
+                SendApplicantSetupEmail::dispatch($applicant->fresh());
+            }
+
+            return $applicant;
+        }
+
+        // No existing applicant — create a new one
+        $applicant = Applicant::create([
+            'application_id' => $application->id,
+            'email' => $application->email,
+            'setup_token' => Applicant::generateSetupToken(),
+            'setup_token_expires_at' => now()->addHours(config('auth.setup_token_expires_hours', 72)),
+        ]);
+
+        SendApplicantSetupEmail::dispatch($applicant);
+
+        return $applicant;
     }
 }

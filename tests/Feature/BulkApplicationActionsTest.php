@@ -28,7 +28,7 @@ class BulkApplicationActionsTest extends TestCase
         $a2 = Application::factory()->create(['status' => 'pending', 'academic_year_id' => $ay->id]);
 
         $this->actingAs($this->admin)
-            ->post('/applications/bulk-accept', ['ids' => [$a1->id, $a2->id]])
+            ->post('/admin/applications/bulk-accept', ['ids' => [$a1->id, $a2->id]])
             ->assertRedirect();
 
         $this->assertSame('accepted', $a1->fresh()->status);
@@ -42,7 +42,7 @@ class BulkApplicationActionsTest extends TestCase
         $dismissed = Application::factory()->create(['status' => 'dismissed', 'academic_year_id' => $ay->id]);
 
         $this->actingAs($this->admin)
-            ->post('/applications/bulk-accept', ['ids' => [$pending->id, $dismissed->id]])
+            ->post('/admin/applications/bulk-accept', ['ids' => [$pending->id, $dismissed->id]])
             ->assertRedirect();
 
         $this->assertSame('accepted', $pending->fresh()->status);
@@ -56,7 +56,7 @@ class BulkApplicationActionsTest extends TestCase
         $a2 = Application::factory()->create(['status' => 'pending', 'academic_year_id' => $ay->id]);
 
         $this->actingAs($this->admin)
-            ->post('/applications/bulk-dismiss', ['ids' => [$a1->id, $a2->id]])
+            ->post('/admin/applications/bulk-dismiss', ['ids' => [$a1->id, $a2->id]])
             ->assertRedirect();
 
         $this->assertSame('dismissed', $a1->fresh()->status);
@@ -69,7 +69,7 @@ class BulkApplicationActionsTest extends TestCase
         $application = Application::factory()->create(['status' => 'dismissed', 'academic_year_id' => $ay->id]);
 
         $this->actingAs($this->admin)
-            ->put("/applications/{$application->id}/reopen")
+            ->put("/admin/applications/{$application->id}/reopen")
             ->assertRedirect();
 
         $this->assertSame('pending', $application->fresh()->status);
@@ -81,7 +81,7 @@ class BulkApplicationActionsTest extends TestCase
         $application = Application::factory()->create(['status' => 'dismissed', 'academic_year_id' => $ay->id]);
 
         $this->actingAs($this->admin)
-            ->put("/applications/{$application->id}/reopen")
+            ->put("/admin/applications/{$application->id}/reopen")
             ->assertSessionHasErrors('error');
 
         $this->assertSame('dismissed', $application->fresh()->status);
@@ -92,8 +92,8 @@ class BulkApplicationActionsTest extends TestCase
         $application = Application::factory()->create(['status' => 'pending']);
 
         $this->actingAs($this->admin)
-            ->delete("/applications/{$application->id}")
-            ->assertRedirect('/applications');
+            ->delete("/admin/applications/{$application->id}")
+            ->assertRedirect();
 
         $this->assertDatabaseMissing('applications', ['id' => $application->id]);
     }
@@ -105,7 +105,7 @@ class BulkApplicationActionsTest extends TestCase
         $application = Application::factory()->create(['status' => 'pending']);
 
         $this->actingAs($staff)
-            ->delete("/applications/{$application->id}")
+            ->delete("/admin/applications/{$application->id}")
             ->assertForbidden();
     }
 }
