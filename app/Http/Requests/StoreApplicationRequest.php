@@ -3,10 +3,8 @@
 namespace App\Http\Requests;
 
 use App\Models\AcademicYear;
-use App\Models\Application;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
-use Illuminate\Validation\Validator;
 
 class StoreApplicationRequest extends FormRequest
 {
@@ -45,37 +43,6 @@ class StoreApplicationRequest extends FormRequest
             'appointment_id' => ['nullable', 'integer', 'exists:appointments,id'],
             'accept_immediately' => ['nullable', 'boolean'],
         ];
-    }
-
-    /**
-     * Check for identity-based duplicates (name + birthdate + sex) in the same academic year.
-     */
-    public function withValidator(Validator $validator): void
-    {
-        $validator->after(function (Validator $validator) {
-            if ($validator->errors()->isNotEmpty()) {
-                return; // Skip if basic validation already failed
-            }
-
-            $activeAcademicYear = AcademicYear::active();
-            if (! $activeAcademicYear) {
-                return;
-            }
-
-            $duplicate = Application::where('academic_year_id', $activeAcademicYear->id)
-                ->whereRaw('LOWER(first_name) = ?', [strtolower($this->input('first_name'))])
-                ->whereRaw('LOWER(last_name) = ?', [strtolower($this->input('last_name'))])
-                ->where('birthdate', $this->input('birthdate'))
-                ->where('sex', $this->input('sex'))
-                ->first();
-
-            if ($duplicate) {
-                $validator->errors()->add(
-                    'first_name',
-                    "A person with the same name, birthdate, and sex already has an application ({$duplicate->reference_number}) for this academic year."
-                );
-            }
-        });
     }
 
     public function messages(): array

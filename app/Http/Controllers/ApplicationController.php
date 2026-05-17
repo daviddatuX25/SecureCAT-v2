@@ -276,6 +276,21 @@ class ApplicationController extends Controller
 
         $validated = $request->validated();
 
+        // Identity-based duplicate check (name + birthdate + sex)
+        $identityDuplicate = Application::where('academic_year_id', $activeAcademicYear->id)
+            ->whereRaw('LOWER(first_name) = ?', [strtolower($validated['first_name'])])
+            ->whereRaw('LOWER(last_name) = ?', [strtolower($validated['last_name'])])
+            ->where('birthdate', $validated['birthdate'])
+            ->where('sex', $validated['sex'])
+            ->first();
+
+        if ($identityDuplicate) {
+            return redirect()
+                ->back()
+                ->withInput()
+                ->with('error', "A person with the same name, birthdate, and sex already has an application ({$identityDuplicate->reference_number}) for this academic year.");
+        }
+
         $birthdate = Carbon::parse($validated['birthdate']);
         $age = (int) $birthdate->diffInYears(now());
 
@@ -451,6 +466,21 @@ class ApplicationController extends Controller
         }
 
         $validated = $request->validated();
+
+        // Identity-based duplicate check (name + birthdate + sex)
+        $identityDuplicate = Application::where('academic_year_id', $activeAcademicYear->id)
+            ->whereRaw('LOWER(first_name) = ?', [strtolower($validated['first_name'])])
+            ->whereRaw('LOWER(last_name) = ?', [strtolower($validated['last_name'])])
+            ->where('birthdate', $validated['birthdate'])
+            ->where('sex', $validated['sex'])
+            ->first();
+
+        if ($identityDuplicate) {
+            return redirect()
+                ->back()
+                ->withInput()
+                ->with('error', "A person with the same name, birthdate, and sex already has an application ({$identityDuplicate->reference_number}) for this academic year.");
+        }
 
         $birthdate = Carbon::parse($validated['birthdate']);
         $age = (int) $birthdate->diffInYears(now());
