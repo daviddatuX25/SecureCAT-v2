@@ -310,6 +310,7 @@
   }
 
   function closeSessionAction() {
+    if (!confirm('Are you sure you want to close this session? This action cannot be undone.')) return;
     actionError = '';
     router.post(`/proctor/sessions/${session.id}/close`, {}, {
       onError: handleRosterError,
