@@ -15,6 +15,8 @@
     suffix: '',
     birthdate: '',
     sex: '',
+    applicant_type: 'new',
+    last_school_enrolled: '',
     email: '',
     phone: '',
     address_line: '',
@@ -142,6 +144,36 @@
             </Select.Root>
             {#if $form.errors?.sex}
               <p class="text-sm text-destructive">{$form.errors.sex}</p>
+            {/if}
+          </div>
+        </div>
+        <div class="grid gap-4 sm:grid-cols-2">
+          <div class="space-y-2">
+            <label for="applicant_type" class="text-sm font-medium">Applicant classification *</label>
+            <Select.Root type="single" bind:value={$form.applicant_type}>
+              <Select.Trigger id="applicant_type" class="w-full">
+                {#if $form.applicant_type === 'new'}
+                  New Student
+                {:else if $form.applicant_type === 'transferee'}
+                  Transferee
+                {:else}
+                  <span class="text-muted-foreground">Select</span>
+                {/if}
+              </Select.Trigger>
+              <Select.Content>
+                <Select.Item value="new" label="New Student">New Student</Select.Item>
+                <Select.Item value="transferee" label="Transferee">Transferee</Select.Item>
+              </Select.Content>
+            </Select.Root>
+            {#if $form.errors?.applicant_type}
+              <p class="text-sm text-destructive">{$form.errors.applicant_type}</p>
+            {/if}
+          </div>
+          <div class="space-y-2">
+            <label for="last_school_enrolled" class="text-sm font-medium">Last school enrolled</label>
+            <Input id="last_school_enrolled" bind:value={$form.last_school_enrolled} placeholder="School of origin" />
+            {#if $form.errors?.last_school_enrolled}
+              <p class="text-sm text-destructive">{$form.errors.last_school_enrolled}</p>
             {/if}
           </div>
         </div>

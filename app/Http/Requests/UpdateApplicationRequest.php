@@ -22,6 +22,8 @@ class UpdateApplicationRequest extends FormRequest
             'suffix' => ['nullable', 'string', 'max:20'],
             'birthdate' => ['nullable', 'date', 'before:-15 years', 'after:-50 years'],
             'sex' => ['nullable', 'string', 'in:male,female'],
+            'applicant_type' => ['nullable', 'string', 'in:new,transferee'],
+            'last_school_enrolled' => ['nullable', 'string', 'max:255'],
             'email' => ['nullable', 'email'],
             'phone' => ['nullable', 'string', 'max:12'],
             'address_line' => ['nullable', 'string', 'max:255'],

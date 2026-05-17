@@ -24,6 +24,8 @@ class StoreApplicationRequest extends FormRequest
             'suffix' => ['nullable', 'string', 'max:20'],
             'birthdate' => ['required', 'date', 'before:-15 years', 'after:-50 years'],
             'sex' => ['required', 'string', 'in:male,female'],
+            'applicant_type' => ['required', 'string', 'in:new,transferee'],
+            'last_school_enrolled' => ['nullable', 'string', 'max:255'],
             'email' => [
                 'required',
                 'email',

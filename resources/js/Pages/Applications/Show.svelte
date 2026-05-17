@@ -194,6 +194,10 @@
           <p><span class="text-muted-foreground">Name:</span> {fullName}</p>
           <p><span class="text-muted-foreground">Birthdate:</span> {formatDate(application?.birthdate, 'long')}</p>
           <p><span class="text-muted-foreground">Sex:</span> {application?.sex ?? '—'}</p>
+          <p><span class="text-muted-foreground">Classification:</span> {application?.applicant_type === 'transferee' ? 'Transferee' : 'New Student'}</p>
+          {#if application?.last_school_enrolled}
+            <p><span class="text-muted-foreground">Last school enrolled:</span> {application.last_school_enrolled}</p>
+          {/if}
           <p><span class="text-muted-foreground">Email:</span> {application?.email ?? '—'}</p>
           <p><span class="text-muted-foreground">Phone:</span> {application?.phone ?? '—'}</p>
           {#if application?.gwa != null}

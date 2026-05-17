@@ -397,7 +397,7 @@ class ReportExportService
 
         $headers = [
             'Reference #', 'Last Name', 'First Name', 'Middle Name', 'Suffix',
-            'Sex', 'Age', 'Birthdate', 'Email', 'Phone',
+            'Sex', 'Classification', 'Last School Enrolled', 'Age', 'Birthdate', 'Email', 'Phone',
             'Address', 'City', 'Province', 'Zip Code', 'GWA',
             'Course Pref 1', 'Course Pref 2', 'Course Pref 3',
             'Pipeline Status', 'Date Submitted', 'Date Processed',
@@ -410,6 +410,8 @@ class ReportExportService
             $app->middle_name,
             $app->suffix,
             $app->sex,
+            ucfirst($app->applicant_type ?? 'new'),
+            $app->last_school_enrolled ?? '',
             $app->age,
             $app->birthdate?->format('Y-m-d'),
             $app->email,

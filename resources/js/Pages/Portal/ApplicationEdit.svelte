@@ -16,6 +16,8 @@
     suffix: application.suffix || '',
     birthdate: application.birthdate || '',
     sex: application.sex || '',
+    applicant_type: application.applicant_type || 'new',
+    last_school_enrolled: application.last_school_enrolled || '',
     email: application.email || '',
     phone: application.phone || '',
     address_line: application.address_line || '',
@@ -158,6 +160,36 @@
                 </Select.Root>
                 {#if $form.errors?.sex}
                   <p class="mt-1 text-sm text-destructive">{$form.errors.sex}</p>
+                {/if}
+              </div>
+            </div>
+            <div class="grid gap-4 sm:grid-cols-2">
+              <div>
+                <label for="applicant_type" class="block text-sm font-medium">Applicant classification *</label>
+                <Select.Root type="single" bind:value={$form.applicant_type}>
+                  <Select.Trigger id="applicant_type" class="mt-1 w-full min-h-[44px]">
+                    {#if $form.applicant_type === 'new'}
+                      New Student
+                    {:else if $form.applicant_type === 'transferee'}
+                      Transferee
+                    {:else}
+                      <span class="text-muted-foreground">Select</span>
+                    {/if}
+                  </Select.Trigger>
+                  <Select.Content>
+                    <Select.Item value="new" label="New Student">New Student</Select.Item>
+                    <Select.Item value="transferee" label="Transferee">Transferee</Select.Item>
+                  </Select.Content>
+                </Select.Root>
+                {#if $form.errors?.applicant_type}
+                  <p class="mt-1 text-sm text-destructive">{$form.errors.applicant_type}</p>
+                {/if}
+              </div>
+              <div>
+                <label for="last_school_enrolled" class="block text-sm font-medium">Last school enrolled</label>
+                <Input id="last_school_enrolled" name="last_school_enrolled" bind:value={$form.last_school_enrolled} class="mt-1 min-h-[44px]" placeholder="School of origin" />
+                {#if $form.errors?.last_school_enrolled}
+                  <p class="mt-1 text-sm text-destructive">{$form.errors.last_school_enrolled}</p>
                 {/if}
               </div>
             </div>

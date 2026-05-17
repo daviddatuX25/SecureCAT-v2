@@ -22,6 +22,8 @@ class Application extends Model
         'birthdate',
         'age',
         'sex',
+        'applicant_type',
+        'last_school_enrolled',
         'email',
         'phone',
         'address_line',

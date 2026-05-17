@@ -147,6 +147,8 @@ class DemoDashboardSeeder extends Seeder
                         'processed_by' => $processedBy,
                         'processed_at' => $processedAt,
                         'rejection_reason' => $rejectionReason,
+                        'applicant_type' => ($idx % 3 === 1) ? 'transferee' : 'new',
+                        'last_school_enrolled' => ($idx % 3 === 1) ? 'Demo Previous School' : null,
                         'appointment_id' => $appointmentId,
                         'submitted_at' => $submittedAt,
                     ]

@@ -195,6 +195,14 @@ class DefenseDemoSeeder extends Seeder
                     'processed_by' => $processedBy,
                     'processed_at' => $processedAt,
                     'rejection_reason' => $rejectionReason,
+                    'applicant_type' => in_array($idx, [2, 5, 8, 14]) ? 'transferee' : 'new',
+                    'last_school_enrolled' => match ($idx) {
+                        2 => 'University of Northern Philippines',
+                        5 => 'Don Mariano Marcos Memorial State University',
+                        8 => 'University of the Philippines Baguio',
+                        14 => 'Saint Louis University',
+                        default => null,
+                    },
                     'appointment_id' => null,
                     'submitted_at' => $submittedAt,
                 ]

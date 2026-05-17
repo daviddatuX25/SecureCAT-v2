@@ -26,6 +26,8 @@ class ApplicationFactory extends Factory
             'birthdate' => $this->faker->date('Y-m-d', '-18 years'),
             'age' => 18,
             'sex' => $this->faker->randomElement(['Male', 'Female']),
+            'applicant_type' => $this->faker->randomElement(['new', 'new', 'new', 'new', 'transferee']),
+            'last_school_enrolled' => $this->faker->optional(0.3)->company().($this->faker->optional(0.3)->boolean() ? ' University' : ''),
             'email' => $this->faker->unique()->safeEmail(),
             'phone' => $this->faker->phoneNumber(),
             'address_line' => $this->faker->streetAddress(),
