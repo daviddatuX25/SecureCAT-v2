@@ -36,6 +36,7 @@ class UpdateResultSheetTemplateRequest extends FormRequest
             'content' => ['nullable', 'string'],
             'docx' => ['nullable', 'file', 'mimes:docx', 'max:5120'],
             'is_active' => ['sometimes', 'boolean'],
+            'watermark_text' => ['nullable', 'string', 'max:50'],
         ];
     }
 }

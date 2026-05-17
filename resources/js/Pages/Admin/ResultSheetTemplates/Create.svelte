@@ -11,6 +11,7 @@
   import { success } from '@/lib/toast';
   import { FileCode, FileText } from 'lucide-svelte';
   import { GuidePanel, GuideSection, CopyableGroup, GuideNote } from '@/Components/Guide';
+  import { Badge } from '@/Components/ui/badge';
 
   const breadcrumbs = [
     { label: 'Release Management', href: '/admin/release' },
@@ -39,6 +40,7 @@
     orientation: 'portrait',
     logical_unit: 'full',
     is_active: true,
+    watermark_text: null,
   });
 
   let isCrosswise = $derived($form.logical_unit !== 'full');
@@ -76,6 +78,31 @@
   let previewLoading = $state(false);
   let previewError = $state(null);
   let previewDebounce = null; // plain var: $state would make $effect depend on it → infinite loop on write
+
+  let validationResult = $state(null); // { valid, found, missing, extra }
+  let validationLoading = $state(false);
+
+  function fetchValidation() {
+    if ($form.mode !== 'docx') { validationResult = null; return; }
+    if (!rawDocxFile) { validationResult = null; return; }
+    validationLoading = true;
+    const fd = new FormData();
+    fd.append('logical_unit', $form.logical_unit);
+    fd.append('docx', rawDocxFile);
+    fetch('/admin/release/result-templates/validate-docx', {
+      method: 'POST',
+      body: fd,
+      headers: {
+        Accept: 'application/json',
+        'X-Requested-With': 'XMLHttpRequest',
+        'X-CSRF-TOKEN': csrfToken,
+      },
+    })
+      .then((r) => r.ok ? r.json() : null)
+      .then((data) => { if (data) validationResult = data; })
+      .catch(() => { validationResult = null; })
+      .finally(() => (validationLoading = false));
+  }
 
   function submitForm(e) {
     e.preventDefault();
@@ -151,6 +178,13 @@
     $form.orientation;
     if ($form.mode === 'html' && $form.content) fetchPreview();
     else if ($form.mode === 'docx' && docxFile) fetchPreview();
+  });
+
+  $effect(() => {
+    docxFile;
+    $form.mode;
+    $form.logical_unit;
+    fetchValidation();
   });
 </script>
 
@@ -249,6 +283,30 @@
               onfiles={handleDocxFile}
             />
             {#if $form.errors?.docx}<p class="text-sm text-destructive mt-1">{$form.errors.docx}</p>{/if}
+            {#if validationLoading}
+              <p class="text-xs text-muted-foreground mt-1">Checking placeholders…</p>
+            {:else if validationResult}
+              {#if validationResult.valid}
+                <Badge variant="success" class="mt-1">All required placeholders found ({validationResult.found.length})</Badge>
+              {:else}
+                <Badge variant="warning" class="mt-1">{validationResult.missing.length} missing placeholder(s)</Badge>
+                <div class="flex flex-wrap gap-1 mt-1">
+                  {#each validationResult.missing as ph}
+                    <Badge variant="outline" class="text-xs text-amber-600">{ph}</Badge>
+                  {/each}
+                </div>
+              {/if}
+              {#if validationResult.extra?.length}
+                <details class="mt-1 text-xs text-muted-foreground">
+                  <summary class="cursor-pointer">{validationResult.extra.length} unknown placeholder(s)</summary>
+                  <div class="flex flex-wrap gap-1 mt-1">
+                    {#each validationResult.extra as ph}
+                      <Badge variant="muted" class="text-xs">{ph}</Badge>
+                    {/each}
+                  </div>
+                </details>
+              {/if}
+            {/if}
           </div>
         {/if}
 
@@ -260,6 +318,19 @@
           <label for="is_active" class="text-sm">Active</label>
         </div>
 
+        <div>
+          <label for="watermark_text" class="text-sm font-medium">Watermark text (optional)</label>
+          <p class="text-xs text-muted-foreground mt-0.5">Leave blank for no watermark. Shown diagonally on each PDF page (e.g. DRAFT, FINAL).</p>
+          <Input
+            id="watermark_text"
+            bind:value={$form.watermark_text}
+            placeholder="DRAFT"
+            maxlength="50"
+            class="mt-1 max-w-xs"
+          />
+          {#if $form.errors?.watermark_text}<p class="text-sm text-destructive mt-1">{$form.errors.watermark_text}</p>{/if}
+        </div>
+
         <div class="flex gap-2 pt-4">
           <Button type="submit" disabled={$form.processing}>{$form.processing ? 'Creating...' : 'Create'}</Button>
           <Link href="/admin/release/result-templates"><Button type="button" variant="outline">Cancel</Button></Link>
@@ -268,6 +339,12 @@
 
       <div class="rounded-lg border bg-card p-4">
         <h3 class="text-sm font-medium mb-2">Live preview</h3>
+        {#if $form.mode === 'docx'}
+          <GuideNote variant="warning" title="Preview is approximate">
+            The DOCX preview is converted to HTML, which may differ from the final PDF output.
+            Always verify the printed result.
+          </GuideNote>
+        {/if}
         {#if previewLoading}
           <p class="text-sm text-muted-foreground p-4">Loading…</p>
         {:else if previewError}

@@ -69,6 +69,7 @@ class ResultSheetTemplateController extends Controller
             'orientation' => $request->validated('orientation', 'portrait'),
             'logical_unit' => $request->validated('logical_unit', 'full'),
             'is_active' => $request->validated('is_active', true),
+            'watermark_text' => $request->validated('watermark_text'),
         ];
 
         if ($mode === ResultSheetTemplate::MODE_HTML) {
@@ -127,6 +128,7 @@ class ResultSheetTemplateController extends Controller
             'orientation' => $request->validated('orientation'),
             'logical_unit' => $request->validated('logical_unit'),
             'is_active' => $request->validated('is_active'),
+            'watermark_text' => $request->validated('watermark_text'),
         ], fn ($v) => $v !== null);
 
         if ($mode === ResultSheetTemplate::MODE_HTML) {
@@ -213,5 +215,32 @@ class ResultSheetTemplateController extends Controller
         } catch (\Throwable $e) {
             return response()->json(['error' => $e->getMessage()], 422);
         }
+    }
+
+    public function validateDocx(Request $request): JsonResponse
+    {
+        $request->validate([
+            'docx' => ['nullable', 'file', 'mimes:docx', 'max:5120'],
+            'template_id' => ['nullable', 'exists:result_sheet_templates,id'],
+            'logical_unit' => ['required', Rule::in(['full', 'half_a4'])],
+        ]);
+
+        if ($request->hasFile('docx')) {
+            $fullPath = $request->file('docx')->getRealPath();
+        } elseif ($request->input('template_id')) {
+            $template = ResultSheetTemplate::findOrFail($request->input('template_id'));
+            if (! $template->docx_path) {
+                return response()->json(['error' => 'Template has no DOCX file.'], 422);
+            }
+            $fullPath = Storage::path($template->docx_path);
+        } else {
+            return response()->json(['error' => 'Either docx file or template_id is required.'], 422);
+        }
+
+        $isCrosswise = $request->input('logical_unit') === 'half_a4';
+
+        return response()->json(
+            $this->templateService->getDocxValidation($fullPath, $isCrosswise)->toArray()
+        );
     }
 }
