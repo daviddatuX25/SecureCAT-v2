@@ -34,7 +34,7 @@ class ExamSessionFactory extends Factory
             'date' => now()->format('Y-m-d'),
             'start_time' => now()->format('H:i:s'),
             'end_time' => null,
-            'status' => ExamSession::STATUS_IN_PROGRESS,
+            'status' => ExamSession::STATUS_COMPLETED,
             'label' => 'Walk-in '.$this->faker->numberBetween(1, 99),
         ]);
     }

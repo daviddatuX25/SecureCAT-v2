@@ -50,6 +50,10 @@ class ExamSessionPolicy
 
     public function delete(User $user, ExamSession $examSession): bool
     {
+        if (in_array($examSession->status, [ExamSession::STATUS_IN_PROGRESS, ExamSession::STATUS_COMPLETED, ExamSession::STATUS_CANCELLED], true)) {
+            return false;
+        }
+
         return $user->hasAnyRole(['super_admin', 'registrar_administrator']);
     }
 

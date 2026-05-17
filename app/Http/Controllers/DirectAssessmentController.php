@@ -69,8 +69,17 @@ class DirectAssessmentController extends Controller
             label: $validated['label'] ?? null
         );
 
+        // Users with grading access go directly to the grading page
+        if ($request->user()->hasAnyRole(['super_admin', 'test_administrator'])) {
+            return redirect()
+                ->route('admin.grading.sessions.show', $gradingSession->id)
+                ->with('success', 'Direct assessment session created. You can now encode scores.');
+        }
+
+        // Registrar/staff without grading access — redirect back with confirmation dialog
         return redirect()
-            ->route('admin.grading.sessions.show', $gradingSession->id)
-            ->with('success', 'Direct assessment session created. You can now encode scores.');
+            ->route('admin.direct-assessments.create')
+            ->with('direct_assessment_created', true)
+            ->with('success', 'Direct assessment session created successfully. Please contact a Test Administrator to begin score encoding.');
     }
 }

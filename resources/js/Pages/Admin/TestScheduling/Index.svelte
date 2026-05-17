@@ -269,7 +269,7 @@
           </Table.Header>
           <Table.Body>
             {#each list as session}
-              <Table.Row class="border-t border-border cursor-pointer hover:bg-muted/30" onclick={() => router.visit(`/admin/exam-scheduling/${session.id}`)}>
+              <Table.Row class="border-t border-border cursor-pointer hover:bg-muted/30" onclick={(e) => { if (e.target.closest('[data-action-cell]')) return; router.visit(`/admin/exam-scheduling/${session.id}`); }}>
                 <Table.Cell class="px-4 py-3">{formatDate(session.date)}</Table.Cell>
                 <Table.Cell class="px-4 py-3">
                   {formatTime(session.start_time)}{#if session.end_time} – {formatTime(session.end_time)}{/if}
@@ -288,7 +288,7 @@
                     —
                   {/if}
                 </Table.Cell>
-                <Table.Cell class="text-center">
+                <Table.Cell class="text-center" data-action-cell>
                     <div class="flex justify-center gap-2">
                       {#if !isProctorView && session.status === 'draft'}
                         <Link href={`/admin/exam-scheduling/${session.id}/edit`}>
@@ -298,12 +298,12 @@
                           </Button>
                         </Link>
                       {/if}
-                      {#if !isProctorView && session.status !== 'completed'}
+                      {#if !isProctorView && ['draft', 'published'].includes(session.status)}
                         <Button
                           variant="ghost"
                           size="sm"
                           class="h-8 px-2 text-xs text-destructive"
-                          onclick={() => confirmDelete(session.id)}
+                          onclick={(e) => { e.stopPropagation(); confirmDelete(session.id); }}
                         >
                           <Trash2 class="mr-1.5 h-3.5 w-3.5" />
                           Delete

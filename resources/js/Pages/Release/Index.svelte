@@ -8,7 +8,7 @@
   import * as Dialog from '@/Components/ui/dialog';
   import * as Select from '@/Components/ui/select';
   import { error as toastError } from '@/lib/toast';
-  import { FileText, Printer, Search, Filter, ChevronDown } from 'lucide-svelte';
+  import { FileText, Printer, Search, Filter, ChevronDown, Undo2 } from 'lucide-svelte';
   import * as Popover from '@/Components/ui/popover';
   import * as Command from '@/Components/ui/command';
   import { Textarea } from '@/Components/ui/textarea';
@@ -20,7 +20,7 @@
 
   let viewMode = $state('responsive');
 
-  let { summaries, release_mode = 'online', courses = [], gradingSessions = [], filters = {} } = $props();
+  let { summaries, release_mode = 'online', courses = [], gradingSessions = [], filters = {}, seasons = [], active_season_id = null } = $props();
 
 
   const page = usePage();
@@ -36,21 +36,38 @@
   let counselorComments = $state('');
   let showConfirmDialog = $state(false);
   let printPopoverOpen = $state(false);
+  let unreleaseTarget = $state(null);
+  let showUnreleaseConfirm = $state(false);
 
   // Filter state
   let filterSearch = $state('');
   let filterStatus = $state('');
+  let filterAcademicYearId = $state('');
   let mobileFiltersDetails = $state(null);
   $effect(() => {
     filterSearch = filters.search ?? '';
     filterStatus = filters.status ?? '';
+    const ayFromFilter = filters.academic_year_id;
+    if (ayFromFilter) {
+      filterAcademicYearId = String(ayFromFilter);
+    } else if (active_season_id != null) {
+      filterAcademicYearId = String(active_season_id);
+    } else {
+      filterAcademicYearId = '';
+    }
   });
+
+  function seasonLabel(season) {
+    if (!season) return '—';
+    return `${season.academic_year ?? ''} – ${season.semester ?? ''}`.trim() || '—';
+  }
 
   function applyFilters() {
     if (mobileFiltersDetails) mobileFiltersDetails.open = false;
     router.get('/admin/release', {
       search: filterSearch || undefined,
       status: filterStatus || undefined,
+      academic_year_id: filterAcademicYearId || undefined,
       page: 1,
     }, { preserveState: true });
   }
@@ -90,6 +107,20 @@
 
   function releaseOne(summaryId) {
     router.post(`/admin/release/summaries/${summaryId}/release`, { release_context: release_mode }, { preserveScroll: true });
+  }
+
+  function confirmUnrelease(summary) {
+    unreleaseTarget = summary;
+    showUnreleaseConfirm = true;
+  }
+
+  function handleUnrelease() {
+    if (!unreleaseTarget) return;
+    router.post(`/admin/release/summaries/${unreleaseTarget.id}/unrelease`, {}, {
+      preserveScroll: true,
+      onSuccess: () => { showUnreleaseConfirm = false; unreleaseTarget = null; },
+      onError: () => { toastError('Failed to reverse release.'); },
+    });
   }
 
   function releaseBulk() {
@@ -244,7 +275,10 @@
       Release
     </Button>
   {:else}
-    <Badge variant="success" class="capitalize">Released</Badge>
+    <Button size="sm" variant="ghost" onclick={() => confirmUnrelease(summary)} class="min-h-[36px] gap-1 text-muted-foreground hover:text-foreground">
+      <Undo2 class="h-3.5 w-3.5" />
+      Unreleased
+    </Button>
   {/if}
 {/snippet}
 
@@ -351,6 +385,29 @@
             <Select.Item value="released" label="Released">Released</Select.Item>
           </Select.Content>
         </Select.Root>
+        {#if seasons.length > 0}
+          <Select.Root type="single" bind:value={filterAcademicYearId}>
+            <Select.Trigger class="w-[200px] min-h-[40px]">
+              {#if filterAcademicYearId}
+                {@const sel = seasons.find((s) => String(s.id) === filterAcademicYearId)}
+                {sel ? seasonLabel(sel) : 'All years'}
+              {:else}
+                <span class="text-muted-foreground">All years</span>
+              {/if}
+            </Select.Trigger>
+            <Select.Content>
+              <Select.Item value="" label="All years">All years</Select.Item>
+              {#each seasons as s (s.id)}
+                <Select.Item value={String(s.id)} label={seasonLabel(s)}>
+                  {seasonLabel(s)}
+                  {#if s.is_active}
+                    <Badge variant="success" class="ml-2 text-[10px] px-1.5 py-0">Active</Badge>
+                  {/if}
+                </Select.Item>
+              {/each}
+            </Select.Content>
+          </Select.Root>
+        {/if}
         <Button onclick={applyFilters} class="min-h-[40px]">Apply</Button>
       </div>
       <!-- Mobile -->
@@ -388,6 +445,27 @@
                 </Select.Content>
               </Select.Root>
             </div>
+            {#if seasons.length > 0}
+              <div>
+                <label for="filter-ay-mob" class="text-sm font-medium block mb-1">Academic Year</label>
+                <Select.Root type="single" bind:value={filterAcademicYearId}>
+                  <Select.Trigger id="filter-ay-mob" class="w-full min-h-[44px]">
+                    {#if filterAcademicYearId}
+                      {@const sel = seasons.find((s) => String(s.id) === filterAcademicYearId)}
+                      {sel ? seasonLabel(sel) : 'All years'}
+                    {:else}
+                      <span class="text-muted-foreground">All years</span>
+                    {/if}
+                  </Select.Trigger>
+                  <Select.Content>
+                    <Select.Item value="" label="All years">All years</Select.Item>
+                    {#each seasons as s (s.id)}
+                      <Select.Item value={String(s.id)} label={seasonLabel(s)}>{seasonLabel(s)}</Select.Item>
+                    {/each}
+                  </Select.Content>
+                </Select.Root>
+              </div>
+            {/if}
           </div>
         </details>
         <Button onclick={applyFilters} class="min-h-[44px]">Apply</Button>
@@ -559,6 +637,28 @@
       <Dialog.Footer class="flex justify-end gap-2 mt-4">
         <Button variant="outline" onclick={() => (showConfirmDialog = false)}>Don't Release</Button>
         <Button onclick={handleReleaseAll}>Proceed</Button>
+      </Dialog.Footer>
+    </Dialog.Content>
+  </Dialog.Portal>
+</Dialog.Root>
+
+<!-- Unrelease Confirmation Dialog -->
+<Dialog.Root bind:open={showUnreleaseConfirm}>
+  <Dialog.Portal>
+    <Dialog.Overlay class="fixed inset-0 bg-black/40 z-50" />
+    <Dialog.Content class="fixed top-[50%] left-[50%] -translate-x-1/2 -translate-y-1/2 z-50 bg-background rounded-lg border p-6 shadow-lg max-w-md w-[calc(100%-2rem)]">
+      <Dialog.Header>
+        <Dialog.Title>Reverse Release?</Dialog.Title>
+        <Dialog.Description>
+          This will move <strong>{unreleaseTarget?.applicant?.full_name ?? 'this applicant'}</strong>'s result back to draft. The applicant will no longer see their released result in the portal.
+        </Dialog.Description>
+      </Dialog.Header>
+      <Dialog.Footer class="flex justify-end gap-2 mt-4">
+        <Button variant="outline" onclick={() => { showUnreleaseConfirm = false; unreleaseTarget = null; }}>Cancel</Button>
+        <Button variant="destructive" onclick={handleUnrelease}>
+          <Undo2 class="mr-1.5 h-4 w-4" />
+          Reverse Release
+        </Button>
       </Dialog.Footer>
     </Dialog.Content>
   </Dialog.Portal>

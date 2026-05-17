@@ -6,7 +6,7 @@
   import { Badge } from '@/Components/ui/badge';
   import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/Components/ui/card';
   import * as Table from '@/Components/ui/table';
-  import { ArrowLeft, Printer, CheckSquare, Square } from 'lucide-svelte';
+  import { ArrowLeft, Printer, Download, CheckSquare, Square } from 'lucide-svelte';
   import { formatDate } from '@/lib/date-utils';
 
   let { sessionId = '1', session = {}, applicants = [] } = $props();
@@ -24,11 +24,6 @@
   let selected = $state(new Set());
 
   let copies = $state(1);
-
-  let activeJobId = $state(null);
-  let jobStatus = $state(null);
-  let polling = $state(false);
-  let pollInterval = $state(null);
 
   const allSelected = $derived(applicants.length > 0 && selected.size === applicants.length);
 
@@ -64,60 +59,6 @@
     });
   }
 
-  function startBulkPdfJob() {
-    const ids = Array.from(selected);
-    if (ids.length === 0) return;
-
-    const params = new URLSearchParams({ ids: ids.join(','), copies: String(copies), grading_session_id: sid });
-    fetch(`/admin/release/print/bulk-pdf-job?${params}`, {
-      method: 'POST',
-      headers: {
-        Accept: 'application/json',
-        'X-Requested-With': 'XMLHttpRequest',
-        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content ?? '',
-      },
-    })
-      .then((r) => r.ok ? r.json() : r.json().then((e) => { throw new Error(e.message || 'Failed to start job'); }))
-      .then((data) => {
-        activeJobId = data.jobId;
-        jobStatus = { status: 'pending', progress: 0, errorMessage: null, pdfUrl: null };
-        startPolling();
-      })
-      .catch((err) => {
-        alert(err.message || 'Failed to start bulk PDF generation.');
-      });
-  }
-
-  function startPolling() {
-    if (polling) return;
-    polling = true;
-    pollInterval = setInterval(() => {
-      if (!activeJobId) { stopPolling(); return; }
-      fetch(`/admin/release/print/print-job/${activeJobId}`, {
-        headers: { Accept: 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
-      })
-        .then((r) => r.json())
-        .then((data) => {
-          jobStatus = data;
-          if (data.status === 'completed' || data.status === 'failed') {
-            stopPolling();
-          }
-        })
-        .catch(() => { stopPolling(); });
-    }, 2000);
-  }
-
-  function stopPolling() {
-    polling = false;
-    if (pollInterval) { clearInterval(pollInterval); pollInterval = null; }
-  }
-
-  function resetJob() {
-    stopPolling();
-    activeJobId = null;
-    jobStatus = null;
-  }
-
   function printBulk() {
     const ids = Array.from(selected);
     if (ids.length === 1) {
@@ -134,8 +75,6 @@
       printed,
     });
   }
-
-
 </script>
 
 <AuthenticatedLayout breadcrumbs={breadcrumbs}>
@@ -176,12 +115,12 @@
                 class="w-16 rounded-md border border-input bg-transparent px-2 py-1 text-sm"
               />
             </div>
-            <a href={`/admin/release/print/${sid}/print-bulk-pdf?ids=${Array.from(selected).join(',')}&copies=${copies}`} target="_blank" rel="noopener">
-              <Button variant="secondary" class="min-h-[44px]">Download PDF</Button>
+            <a href={`/admin/release/print/${sid}/print-bulk-pdf?ids=${Array.from(selected).join(',')}&copies=${copies}&download=1`} rel="noopener">
+              <Button variant="secondary" class="min-h-[44px] gap-2">
+                <Download class="h-4 w-4" />
+                Download PDF
+              </Button>
             </a>
-            <Button variant="outline" onclick={startBulkPdfJob} class="min-h-[44px]">
-              Generate PDF (async)
-            </Button>
           {/if}
           {#if showMarkPrinted}
             <Button variant="outline" onclick={markAsPrinted} class="min-h-[44px]">
@@ -191,30 +130,6 @@
             <Button variant="ghost" onclick={unmarkPrinted} class="min-h-[44px]">
               Unmark {selected.size} printed
             </Button>
-          {/if}
-          {#if jobStatus}
-            <div class="flex items-center gap-3 rounded-md border p-3 bg-muted/50">
-              {#if jobStatus.status === 'pending' || jobStatus.status === 'processing'}
-                <div class="flex-1">
-                  <p class="text-sm font-medium">Generating PDF... {jobStatus.progress}%</p>
-                  <div class="mt-1 h-2 rounded-full bg-muted-foreground/20 overflow-hidden">
-                    <div class="h-full bg-primary transition-all" style="width: {jobStatus.progress}%"></div>
-                  </div>
-                </div>
-              {:else if jobStatus.status === 'completed'}
-                <p class="text-sm font-medium text-green-600">PDF ready!</p>
-                <a href={jobStatus.pdfUrl} target="_blank" rel="noopener">
-                  <Button variant="default" size="sm">Download</Button>
-                </a>
-                <Button variant="ghost" size="sm" onclick={resetJob}>Dismiss</Button>
-              {:else if jobStatus.status === 'failed'}
-                <div class="flex-1">
-                  <p class="text-sm font-medium text-destructive">Generation failed</p>
-                  <p class="text-xs text-muted-foreground">{jobStatus.errorMessage ?? 'Unknown error'}</p>
-                </div>
-                <Button variant="outline" size="sm" onclick={resetJob}>Retry</Button>
-              {/if}
-            </div>
           {/if}
         </div>
 

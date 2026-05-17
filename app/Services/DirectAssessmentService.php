@@ -30,7 +30,7 @@ class DirectAssessmentService
                 'academic_year_id' => $academicYear->id,
                 'type' => ExamSession::TYPE_DIRECT,
                 'label' => $label,
-                'status' => ExamSession::STATUS_IN_PROGRESS,
+                'status' => ExamSession::STATUS_COMPLETED,
                 'room_id' => null,
                 'date' => $now->format('Y-m-d'),
                 'start_time' => $now->format('H:i:s'),

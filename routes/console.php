@@ -12,5 +12,3 @@ Schedule::command('seasons:expire-applications')->dailyAt('00:05');
 Schedule::command('notifications:exam-reminder --days=1')->dailyAt('06:00');
 Schedule::command('notifications:exam-reminder --days=3')->dailyAt('06:00');
 Schedule::command('sessions:auto-close')->everyFifteenMinutes()->withoutOverlapping();
-
-Schedule::command('app:cleanup-print-jobs')->daily()->at('03:00');

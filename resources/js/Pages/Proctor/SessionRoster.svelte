@@ -149,8 +149,11 @@
     });
   }
 
-  function startSession() {
+  let showStartDialog = $state(false);
+
+  function confirmStartSession() {
     actionError = '';
+    showStartDialog = false;
     router.post(`/proctor/sessions/${session.id}/start`, {}, { onError: handleRosterError, onSuccess: () => router.reload() });
   }
 
@@ -218,7 +221,7 @@
         <div class="flex items-center gap-2">
           <Badge variant={sessionStatusVariant(session.status)}>{sessionStatusLabel(session.status)}</Badge>
           {#if canStart}
-            <Button size="sm" onclick={startSession}>
+            <Button size="sm" onclick={() => showStartDialog = true}>
               <Play class="h-4 w-4 mr-1" />
               Start
             </Button>
@@ -358,6 +361,29 @@
         <Button variant="destructive" onclick={confirmCloseSession}>
           <Square class="h-4 w-4 mr-1" />
           Close Session
+        </Button>
+      </Dialog.Footer>
+    </Dialog.Content>
+  </Dialog.Root>
+  <!-- Start Session Confirmation Dialog -->
+  <Dialog.Root bind:open={showStartDialog}>
+    <Dialog.Content>
+      <Dialog.Header>
+        <Dialog.Title>Start Session</Dialog.Title>
+        <Dialog.Description>
+          Once started, this session cannot be deleted. Attendance and submission tracking will begin immediately.
+        </Dialog.Description>
+      </Dialog.Header>
+      <div class="py-4">
+        <p class="text-sm text-muted-foreground">
+          Session #{session.id} · {formatDate(session.date)} · {formatTime(session.start_time)}{#if session.end_time} - {formatTime(session.end_time)}{/if}
+        </p>
+      </div>
+      <Dialog.Footer>
+        <Button variant="outline" onclick={() => showStartDialog = false}>Cancel</Button>
+        <Button onclick={confirmStartSession}>
+          <Play class="h-4 w-4 mr-1" />
+          Start Session
         </Button>
       </Dialog.Footer>
     </Dialog.Content>

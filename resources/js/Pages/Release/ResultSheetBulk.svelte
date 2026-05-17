@@ -4,7 +4,7 @@
   import { usePage } from '@inertiajs/svelte';
   import { Link, router } from '@inertiajs/svelte';
   import { Button } from '@/Components/ui/button';
-  import { ArrowLeft } from 'lucide-svelte';
+  import { ArrowLeft, Printer, Download } from 'lucide-svelte';
 
   let {
     sessionId = '1',
@@ -77,9 +77,11 @@
     requestAnimationFrame(() => requestAnimationFrame(fitToBounds));
   }
 
-  function printAll() {
-    window.print();
-  }
+  const bulkPdfBaseUrl = $derived(
+    sid
+      ? `/admin/release/print/${sid}/print-bulk-pdf?ids=${applicantIds.join(',')}`
+      : `/admin/release/print/bulk-pdf?ids=${applicantIds.join(',')}`
+  );
 
   function toggleMarkAllPrinted() {
     markedAllPrinted = !markedAllPrinted;
@@ -105,11 +107,10 @@
 
 <svelte:head>
   <title>Print bulk - {applicants.length} result sheets - SecureCAT</title>
-  {@html `<style>@media print { @page { size: ${paperSize} ${orientation}; margin: 0; } }</style>`}
 </svelte:head>
 
 <AuthenticatedLayout breadcrumbs={breadcrumbs}>
-  <div class="print:hidden p-4 space-y-4">
+  <div class="p-4 space-y-4">
     {#if sessionId}
       <Link href={"/admin/release/print/" + sid} class="text-sm text-muted-foreground hover:text-foreground inline-flex items-center gap-1">
         <ArrowLeft class="h-4 w-4" />
@@ -148,19 +149,25 @@
           </select>
         </div>
       {/if}
-      <Button
-        variant="outline"
-        onclick={printAll}
-        class="min-h-[44px]"
-        disabled={printDisabled || sheetsHtml.length === 0 || !!templateError}
-        title={printDisabled ? 'Switch to F2F or Both release mode in Settings to enable printing.' : undefined}
-      >
-        Print all {applicants.length} sheets
-      </Button>
       {#if !printDisabled && sheetsHtml.length > 0 && !templateError}
-        <a href={`${sid ? `/admin/release/print/${sid}/print-bulk-pdf` : '/admin/release/print/bulk-pdf'}?ids=${applicantIds.join(',')}`} target="_blank" rel="noopener">
-          <Button variant="secondary" class="min-h-[44px]">Download PDF</Button>
+        <a href={bulkPdfBaseUrl} target="_blank" rel="noopener">
+          <Button class="min-h-[44px] gap-2">
+            <Printer class="h-4 w-4" />
+            Print all {applicants.length} sheets
+          </Button>
         </a>
+        <a href={`${bulkPdfBaseUrl}&download=1`} rel="noopener">
+          <Button variant="secondary" class="min-h-[44px] gap-2">
+            <Download class="h-4 w-4" />
+            Download PDF
+          </Button>
+        </a>
+      {/if}
+      {#if printDisabled}
+        <p class="text-xs text-muted-foreground">
+          Printing is disabled in online-only release mode.
+          <a href="/admin/settings" class="underline">Change in Settings</a>
+        </p>
       {/if}
       {#if sessionId}
         <Button variant="outline" onclick={toggleMarkAllPrinted} class="min-h-[44px]">
@@ -171,7 +178,7 @@
   </div>
 
   <div
-    class="p-6 mx-auto space-y-8 print:p-0 print:max-w-none print:space-y-0"
+    class="p-6 mx-auto space-y-8"
     style="max-width: {pageWidthMm}mm;"
   >
     {#if templateError}
@@ -201,16 +208,5 @@
   }
   .half-layout-page :global(.print-template--half) {
     overflow: hidden;
-  }
-  @media print {
-    .result-sheet-content {
-      page-break-after: always;
-      border: none;
-      border-radius: 0;
-      box-shadow: none;
-    }
-    .result-sheet-content:last-child {
-      page-break-after: auto;
-    }
   }
 </style>

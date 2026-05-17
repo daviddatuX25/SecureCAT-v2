@@ -7,6 +7,7 @@
   import { CalendarX } from 'lucide-svelte';
   import { Switch } from '@/Components/ui/switch';
   import * as Select from '@/Components/ui/select';
+  import * as Dialog from '@/Components/ui/dialog';
 
   let { courses = [], appointments = [], active_season = null, allow_apply = false, is_staff = false } = $props();
 
@@ -63,6 +64,39 @@
       form.setData({ ...$form, ...updates });
     }
   });
+
+  // Privacy policy dialog state
+  let policyDialogOpen = $state(false);
+  let policyTitle = $state('');
+  let policyContent = $state('');
+  let policyLoading = $state(false);
+  let policyLoaded = $state(false);
+
+  async function openPrivacyPolicy(e) {
+    e.preventDefault();
+    policyDialogOpen = true;
+
+    if (policyLoaded) return;
+
+    policyLoading = true;
+    try {
+      const res = await fetch('/api/privacy-policy');
+      const data = await res.json();
+      if (data.policy) {
+        policyTitle = data.policy.title;
+        policyContent = data.policy.content;
+      } else {
+        policyTitle = 'Privacy Policy';
+        policyContent = 'No privacy policy has been published yet.';
+      }
+      policyLoaded = true;
+    } catch {
+      policyTitle = 'Privacy Policy';
+      policyContent = 'Unable to load privacy policy at this time.';
+    } finally {
+      policyLoading = false;
+    }
+  }
 </script>
 
 <svelte:head>
@@ -304,7 +338,7 @@
                   class="mt-0.5 h-4 w-4 rounded border-border text-primary accent-primary cursor-pointer"
                 />
                 <span class="text-sm text-muted-foreground">
-                  I have read and agree to the <a href="#" class="underline hover:text-foreground">Terms and Conditions</a> and <a href="#" class="underline hover:text-foreground">Privacy Policy</a>. *
+                  I have read and agree to the <button type="button" onclick={openPrivacyPolicy} class="underline hover:text-foreground">Privacy Policy</button>. *
                 </span>
               </label>
             </div>
@@ -321,4 +355,30 @@
       </Card>
     {/if}
   </div>
+
+  <!-- Privacy Policy Dialog -->
+  <Dialog.Root bind:open={policyDialogOpen}>
+    <Dialog.Content class="max-w-2xl max-h-[80vh] overflow-y-auto">
+      <Dialog.Header>
+        <Dialog.Title>{policyLoading ? 'Loading...' : policyTitle || 'Privacy Policy'}</Dialog.Title>
+      </Dialog.Header>
+      <div class="py-4">
+        {#if policyLoading}
+          <div class="space-y-3">
+            <div class="h-4 bg-muted animate-pulse rounded w-3/4"></div>
+            <div class="h-4 bg-muted animate-pulse rounded w-full"></div>
+            <div class="h-4 bg-muted animate-pulse rounded w-5/6"></div>
+            <div class="h-4 bg-muted animate-pulse rounded w-2/3"></div>
+          </div>
+        {:else}
+          <div class="prose prose-sm max-w-none text-foreground whitespace-pre-wrap">
+            {policyContent}
+          </div>
+        {/if}
+      </div>
+      <Dialog.Footer>
+        <Button onclick={() => policyDialogOpen = false}>Close</Button>
+      </Dialog.Footer>
+    </Dialog.Content>
+  </Dialog.Root>
 </GuestLayout>

@@ -6,7 +6,7 @@
   import { Input } from '@/Components/ui/input';
   import * as Select from '@/Components/ui/select';
   import * as Table from '@/Components/ui/table';
-  import { Filter, ChevronDown, CheckCircle, XCircle, UploadCloud, Plus, Pencil, Search } from 'lucide-svelte';
+  import { Filter, ChevronDown, CheckCircle, XCircle, UploadCloud, Plus, Pencil, Search, ShieldCheck } from 'lucide-svelte';
   import SwitchableListView from '@/Components/SwitchableListView.svelte';
   import SimplePagination from '@/Components/SimplePagination.svelte';
   import { success as showSuccess, error as showError } from '@/lib/toast';
@@ -139,6 +139,14 @@
             <Button variant="outline" class="min-h-[44px] gap-2">
               <UploadCloud class="h-4 w-4" />
               <span class="hidden sm:inline">Import</span>
+            </Button>
+          </Link>
+        {/if}
+        {#if hasRole('super_admin') || hasRole('staff') || hasRole('registrar_administrator')}
+          <Link href="/admin/privacy-policies">
+            <Button variant="outline" class="min-h-[44px] gap-2">
+              <ShieldCheck class="h-4 w-4" />
+              <span class="hidden sm:inline">Privacy Policy</span>
             </Button>
           </Link>
         {/if}

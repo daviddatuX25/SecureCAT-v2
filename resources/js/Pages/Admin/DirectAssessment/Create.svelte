@@ -1,13 +1,24 @@
 <script>
   import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.svelte';
-  import { useForm } from '@inertiajs/svelte';
+  import { useForm, usePage } from '@inertiajs/svelte';
   import { Button } from '@/Components/ui/button';
   import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/Components/ui/card';
   import { Label } from '@/Components/ui/label';
   import { Input } from '@/Components/ui/input';
   import { Checkbox } from '@/Components/ui/checkbox';
+  import * as Dialog from '@/Components/ui/dialog';
 
   let { academicYears, applicants, activeAcademicYearId, storeRoute } = $props();
+
+  const page = usePage();
+  let showSuccessDialog = $state(false);
+
+  // Show success dialog when redirected back with flash
+  $effect(() => {
+    if ($page.props.flash?.direct_assessment_created) {
+      showSuccessDialog = true;
+    }
+  });
 
   const breadcrumbs = [
     { label: 'Exam Scheduling', href: '/admin/exam-scheduling' },
@@ -115,4 +126,28 @@
       </div>
     </form>
   </div>
+
+  <Dialog.Root bind:open={showSuccessDialog}>
+    <Dialog.Content class="sm:max-w-md">
+      <Dialog.Header>
+        <div class="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-green-100 dark:bg-green-900/30 mb-3">
+          <svg class="h-6 w-6 text-green-600 dark:text-green-400" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+          </svg>
+        </div>
+        <Dialog.Title class="text-center">Direct Assessment Created</Dialog.Title>
+        <Dialog.Description class="text-center">
+          The applicants have been registered for direct assessment and are ready for score encoding. Please contact a <strong>Test Administrator</strong> to begin grading.
+        </Dialog.Description>
+      </Dialog.Header>
+      <Dialog.Footer class="sm:justify-center gap-2 mt-2">
+        <Button variant="outline" onclick={() => { showSuccessDialog = false; }}>
+          Stay Here
+        </Button>
+        <Button onclick={() => { window.location.href = '/admin/exam-scheduling'; }}>
+          Go to Exam Scheduling
+        </Button>
+      </Dialog.Footer>
+    </Dialog.Content>
+  </Dialog.Root>
 </AuthenticatedLayout>

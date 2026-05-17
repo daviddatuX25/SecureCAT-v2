@@ -4,20 +4,16 @@ namespace App\Http\Controllers\Release;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Release\MarkPrintedRequest;
-use App\Jobs\GenerateBulkResultSheetPdf;
 use App\Models\Applicant;
 use App\Models\ApplicantScore;
 use App\Models\GradingSession;
-use App\Models\PrintJob;
 use App\Models\ResultSheetTemplate;
 use App\Services\PrintBatchService;
 use App\Services\ResultSheetPdfService;
 use App\Services\ResultSheetTemplateService;
 use App\ValueObjects\RenderResult;
-use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 use Inertia\Response;
 use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
@@ -151,7 +147,9 @@ class ReleasePrintController extends Controller
 
         $filename = str_replace(' ', '_', $applicantData['name']).'_result_sheet.pdf';
 
-        return $this->pdfService->inline($result, $filename);
+        return request()->boolean('download')
+            ? $this->pdfService->download($result, $filename)
+            : $this->pdfService->inline($result, $filename);
     }
 
     public function printBulk(GradingSession $grading_session): Response
@@ -224,12 +222,11 @@ class ReleasePrintController extends Controller
 
         $meta = RenderResult::fromTemplate($template);
 
-        return $this->pdfService->bulkDownload(
-            $sheetsHtml,
-            $meta,
-            "session_{$grading_session->id}_result_sheets.pdf",
-            $copies
-        );
+        $filename = "session_{$grading_session->id}_result_sheets.pdf";
+
+        return request()->boolean('download')
+            ? $this->pdfService->bulkDownload($sheetsHtml, $meta, $filename, $copies)
+            : $this->pdfService->bulkInline($sheetsHtml, $meta, $filename, $copies);
     }
 
     public function printBulkAgnostic(): Response
@@ -325,56 +322,9 @@ class ReleasePrintController extends Controller
 
         $meta = RenderResult::fromTemplate($template);
 
-        return $this->pdfService->bulkDownload($sheetsHtml, $meta, 'result_sheets.pdf', $copies);
-    }
-
-    public function dispatchBulkPdfJob(): JsonResponse
-    {
-        $ids = array_slice(array_filter(array_map('intval', explode(',', request()->query('ids', '')))), 0, 200);
-        abort_if(empty($ids), 422, 'No applicant IDs provided.');
-
-        $copies = (int) request()->query('copies', 1);
-        abort_if($copies < 1 || $copies > 10, 422, 'Copies must be between 1 and 10.');
-
-        $sessionId = request()->query('grading_session_id');
-        $gradingSessionId = $sessionId ? (int) $sessionId : null;
-
-        $printJob = PrintJob::create([
-            'user_id' => auth()->id(),
-            'grading_session_id' => $gradingSessionId,
-            'applicant_ids' => $ids,
-            'copies' => $copies,
-            'status' => 'pending',
-        ]);
-
-        GenerateBulkResultSheetPdf::dispatch($printJob->id);
-
-        return response()->json(['jobId' => $printJob->id]);
-    }
-
-    public function printJobStatus(PrintJob $printJob): JsonResponse
-    {
-        abort_if($printJob->user_id !== auth()->id(), 403, 'Access denied.');
-
-        return response()->json([
-            'id' => $printJob->id,
-            'status' => $printJob->status,
-            'progress' => $printJob->progress,
-            'errorMessage' => $printJob->error_message,
-            'pdfUrl' => $printJob->isCompleted() ? route('admin.release.print.print-job-download', $printJob->id) : null,
-        ]);
-    }
-
-    public function printJobDownload(PrintJob $printJob): SymfonyResponse
-    {
-        abort_if($printJob->user_id !== auth()->id(), 403, 'Access denied.');
-        abort_if(! $printJob->isCompleted(), 404, 'PDF is not ready yet.');
-        abort_if(! $printJob->pdf_path, 404, 'PDF file not found.');
-
-        $fullPath = Storage::disk('local')->path($printJob->pdf_path);
-        abort_unless(file_exists($fullPath), 404, 'PDF file missing from disk.');
-
-        return response()->download($fullPath, "result_sheets_{$printJob->id}.pdf");
+        return request()->boolean('download')
+            ? $this->pdfService->bulkDownload($sheetsHtml, $meta, 'result_sheets.pdf', $copies)
+            : $this->pdfService->bulkInline($sheetsHtml, $meta, 'result_sheets.pdf', $copies);
     }
 
     // -- Private Helpers ---------------------------------------------------

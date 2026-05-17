@@ -278,13 +278,13 @@ class ReleasePrintControllerTest extends TestCase
         $response->assertNotFound();
     }
 
-    public function test_print_bulk_pdf_returns_downloadable_pdf(): void
+    public function test_print_bulk_pdf_returns_inline_pdf_by_default(): void
     {
         ResultSheetTemplate::factory()->create(['is_active' => true, 'mode' => 'html', 'content' => '<div>{{applicant_name}}</div>']);
         [$session, $applicant] = $this->createSessionWithApplicant();
 
         $mock = Mockery::mock(ResultSheetPdfService::class);
-        $mock->shouldReceive('bulkDownload')->once()->andReturn(
+        $mock->shouldReceive('bulkInline')->once()->andReturn(
             new Response('pdf-content', 200, ['Content-Type' => 'application/pdf'])
         );
         $this->app->instance(ResultSheetPdfService::class, $mock);
@@ -299,7 +299,7 @@ class ReleasePrintControllerTest extends TestCase
         $response->assertHeader('Content-Type', 'application/pdf');
     }
 
-    public function test_print_bulk_agnostic_pdf_returns_downloadable_pdf(): void
+    public function test_print_bulk_agnostic_pdf_returns_inline_pdf_by_default(): void
     {
         ResultSheetTemplate::factory()->create(['is_active' => true, 'mode' => 'html', 'content' => '<div>{{applicant_name}}</div>']);
         $session = GradingSession::factory()->create();
@@ -312,7 +312,7 @@ class ReleasePrintControllerTest extends TestCase
         ]);
 
         $mock = Mockery::mock(ResultSheetPdfService::class);
-        $mock->shouldReceive('bulkDownload')->once()->andReturn(
+        $mock->shouldReceive('bulkInline')->once()->andReturn(
             new Response('pdf-content', 200, ['Content-Type' => 'application/pdf'])
         );
         $this->app->instance(ResultSheetPdfService::class, $mock);

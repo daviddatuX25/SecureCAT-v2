@@ -75,7 +75,7 @@ class DirectAssessmentTest extends TestCase
         $this->assertSame(ExamSession::TYPE_DIRECT, $session->type);
         $this->assertNull($session->room_id);
         $this->assertNull($session->end_time);
-        $this->assertSame('in_progress', $session->status);
+        $this->assertSame('completed', $session->status);
         $this->assertNotNull($session->label);
     }
 
@@ -104,7 +104,7 @@ class DirectAssessmentTest extends TestCase
         $examSession = $gradingSession->examSession;
         $this->assertSame('direct', $examSession->type);
         $this->assertSame('Walk-in Batch 1', $examSession->label);
-        $this->assertSame('in_progress', $examSession->status);
+        $this->assertSame('completed', $examSession->status);
         $this->assertNull($examSession->room_id);
         $this->assertEquals($academicYear->id, $examSession->academic_year_id);
 
@@ -159,7 +159,7 @@ class DirectAssessmentTest extends TestCase
         $response->assertSessionHasErrors('applicant_ids.0');
     }
 
-    public function test_store_direct_assessment_redirects_to_grading_session(): void
+    public function test_store_direct_assessment_redirects_to_grading_for_test_admin(): void
     {
         $admin = User::factory()->create();
         $admin->assignRole('super_admin');
@@ -178,6 +178,34 @@ class DirectAssessmentTest extends TestCase
 
         $gradingSession = GradingSession::latest()->first();
         $response->assertRedirect(route('admin.grading.sessions.show', $gradingSession->id));
+    }
+
+    public function test_store_direct_assessment_shows_dialog_for_registrar(): void
+    {
+        $registrar = User::factory()->create();
+        $registrar->assignRole('registrar_administrator');
+        $this->actingAs($registrar);
+        SystemSetting::set('allow_direct_assessment', true);
+
+        $academicYear = AcademicYear::factory()->create(['is_active' => true]);
+        $application = Application::factory()->create(['status' => 'accepted', 'academic_year_id' => $academicYear->id]);
+        $applicant = Applicant::factory()->create(['application_id' => $application->id]);
+
+        $response = $this->post(route('admin.direct-assessments.store'), [
+            'academic_year_id' => $academicYear->id,
+            'applicant_ids' => [$applicant->id],
+            'label' => 'Walk-in Batch 4',
+        ]);
+
+        $response->assertRedirect(route('admin.direct-assessments.create'));
+        $response->assertSessionHas('direct_assessment_created', true);
+        $response->assertSessionHas('success');
+
+        // Verify the session was still created
+        $this->assertDatabaseHas('exam_sessions', [
+            'type' => 'direct',
+            'label' => 'Walk-in Batch 4',
+        ]);
     }
 
     public function test_store_direct_assessment_returns_403_when_disabled(): void
@@ -281,7 +309,7 @@ class DirectAssessmentTest extends TestCase
         $this->assertSame(now()->format('Y-m-d'), $gradingSession->examSession->date->format('Y-m-d'));
     }
 
-    public function test_direct_session_status_is_in_progress(): void
+    public function test_direct_session_status_is_completed(): void
     {
         $admin = User::factory()->create();
         $admin->assignRole('super_admin');
@@ -294,7 +322,7 @@ class DirectAssessmentTest extends TestCase
         $service = app(DirectAssessmentService::class);
         $gradingSession = $service->create($academicYear, [$applicant->id], $admin);
 
-        $this->assertSame('in_progress', $gradingSession->examSession->status);
+        $this->assertSame('completed', $gradingSession->examSession->status);
     }
 
     public function test_existing_scheduled_flows_unchanged(): void

@@ -60,11 +60,28 @@
   let showCloseConfirm = $state(false);
   let closeTargetId = $state(null);
 
-  function startSession(sessionId) {
+  let showStartConfirm = $state(false);
+  let startTargetId = $state(null);
+
+  function initiateStart(sessionId) {
+    startTargetId = sessionId;
+    showStartConfirm = true;
+  }
+
+  function confirmStart() {
+    if (startTargetId === null) return;
+    const sessionId = startTargetId;
+    showStartConfirm = false;
+    startTargetId = null;
     router.post(`/admin/exam-scheduling/${sessionId}/start`, {}, {
       onSuccess: () => router.reload(),
       onError: (err) => showError(err?.message ?? 'Unable to start session. Please refresh the page or try again.'),
     });
+  }
+
+  function cancelStart() {
+    showStartConfirm = false;
+    startTargetId = null;
   }
 
   function initiateClose(sessionId) {
@@ -182,12 +199,12 @@
                     <Badge variant={statusVariant(session.status)}>{statusLabel(session.status)}</Badge>
 
                     {#if canStart(session)}
-                      <Button size="sm" onclick={() => startSession(session.id)}>
+                      <Button size="sm" onclick={() => initiateStart(session.id)}>
                         <Play class="h-4 w-4 mr-1" />
                         Start session
                       </Button>
                     {:else if canStartWithOverride(session)}
-                      <Button size="sm" variant="outline" class="border-amber-500 text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-950" onclick={() => startSession(session.id)}>
+                      <Button size="sm" variant="outline" class="border-amber-500 text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-950" onclick={() => initiateStart(session.id)}>
                         <Play class="h-4 w-4 mr-1" />
                         Start (override)
                       </Button>
@@ -362,6 +379,22 @@
     {/if}
   </div>
 </AuthenticatedLayout>
+
+<!-- Start confirmation dialog -->
+{#if showStartConfirm}
+  <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50" role="dialog" aria-modal="true">
+    <div class="bg-card rounded-lg p-6 max-w-md shadow-xl border border-border">
+      <h3 class="text-lg font-semibold mb-2">Start session</h3>
+      <p class="text-sm text-muted-foreground mb-4">
+        Once started, this session cannot be deleted. Attendance and submission tracking will begin immediately.
+      </p>
+      <div class="flex gap-3 justify-end">
+        <Button variant="outline" onclick={cancelStart}>Cancel</Button>
+        <Button onclick={confirmStart}>Start session</Button>
+      </div>
+    </div>
+  </div>
+{/if}
 
 <!-- Close confirmation dialog -->
 {#if showCloseConfirm}
