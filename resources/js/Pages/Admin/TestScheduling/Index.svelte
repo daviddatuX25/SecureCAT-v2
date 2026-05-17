@@ -11,7 +11,7 @@
   import InfoPopover from '@/Components/InfoPopover.svelte';
   import SwitchableListView from '@/Components/SwitchableListView.svelte';
   import SimplePagination from '@/Components/SimplePagination.svelte';
-  import { Plus, Eye, Pencil, ChevronDown, Filter, ClipboardList, Sparkles, DoorOpen, Send, Undo, X, Trash2, Search } from 'lucide-svelte';
+  import { Plus, Eye, Pencil, ChevronDown, Filter, ClipboardList, Sparkles, Send, Undo, X, Trash2, Search } from 'lucide-svelte';
   import { formatDate } from '@/lib/date-utils';
 
   let { sessions, filters = {}, statuses = [], view = 'admin', schedule_assistant = null, breadcrumbParent = { label: 'Exam Scheduling', href: '/admin/exam-scheduling' } } = $props();
@@ -148,12 +148,6 @@
             <Button variant="secondary" class="min-h-[44px] gap-2">
               <ClipboardList class="h-4 w-4" />
               <span class="hidden sm:inline">Direct Assessment</span>
-            </Button>
-          </Link>
-          <Link href="/admin/rooms">
-            <Button variant="outline" class="min-h-[44px] gap-2">
-              <DoorOpen class="h-4 w-4" />
-              <span class="hidden sm:inline">Manage Rooms</span>
             </Button>
           </Link>
         {/if}

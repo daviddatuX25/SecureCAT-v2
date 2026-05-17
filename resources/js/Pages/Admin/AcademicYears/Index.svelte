@@ -4,7 +4,7 @@
   import { Button } from '@/Components/ui/button';
   import { Badge } from '@/Components/ui/badge';
   import * as Table from '@/Components/ui/table';
-  import { Plus, Pencil, Pause, Play, BookOpen, Trash2 } from 'lucide-svelte';
+  import { Plus, Pencil, Pause, Play, Trash2 } from 'lucide-svelte';
   import SwitchableListView from '@/Components/SwitchableListView.svelte';
   import SimplePagination from '@/Components/SimplePagination.svelte';
 
@@ -36,12 +36,6 @@
           <Button class="min-h-[44px] gap-2">
             <Plus class="h-4 w-4" />
             <span class="hidden sm:inline">Add Academic Year</span>
-          </Button>
-        </Link>
-        <Link href="/admin/courses">
-          <Button variant="outline" class="min-h-[44px] gap-2">
-            <BookOpen class="h-4 w-4" />
-            <span class="hidden sm:inline">Manage Courses</span>
           </Button>
         </Link>
       </div>
