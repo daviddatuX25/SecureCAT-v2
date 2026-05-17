@@ -145,47 +145,6 @@ class Application extends Model
     }
 
     /**
-     * Returns the current pipeline status.
-     *
-     * Reads from the `pipeline_status` DB column — no relationship traversal.
-     * Falls back to the acceptance `status` column while the backfill command
-     * is still running on existing data.
-     *
-     * @deprecated  Prefer reading `$application->pipeline_status` directly.
-     */
-    public function pipelineStatus(): string
-    {
-        return $this->pipeline_status ?? $this->status ?? 'pending';
-    }
-
-    /**
-     * Returns structured pipeline details compatible with the existing frontend contract.
-     *
-     * Reads from the `pipeline_milestones` JSON column — no relationship traversal.
-     * The `is_f2f` / `is_direct` flags are inferred from which milestone keys are present
-     * (set by the hook points in controllers when each milestone is first reached).
-     *
-     * @deprecated  Prefer reading `pipeline_status` / `pipeline_milestones` directly.
-     *
-     * @return array{status: string, milestones: array<string, mixed>, is_f2f: bool, is_direct: bool}
-     */
-    public function pipelineDetails(): array
-    {
-        $milestones = $this->pipeline_milestones ?? [];
-        $status = $this->pipelineStatus();
-
-        $isF2f = isset($milestones['scheduled']) || isset($milestones['printed']) || isset($milestones['attended']);
-        $isDirect = isset($milestones['scored']) && ! $isF2f;
-
-        return [
-            'status' => $status,
-            'milestones' => $milestones,
-            'is_f2f' => $isF2f,
-            'is_direct' => $isDirect,
-        ];
-    }
-
-    /**
      * Check if the applicant can edit this application.
      * Rules:
      * - Application status must be 'accepted'

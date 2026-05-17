@@ -6,10 +6,12 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Proctor\MarkAttendanceRequest;
 use App\Http\Requests\Proctor\MarkSubmissionBulkRequest;
 use App\Http\Requests\Proctor\MarkSubmissionRequest;
+use App\Models\Applicant;
 use App\Models\ExamSession;
 use App\Models\User;
 use App\Notifications\ExamSessionCompleted;
 use App\Notifications\ExamSessionStarted;
+use App\Services\ApplicationPipelineService;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
@@ -149,6 +151,18 @@ class SessionRosterController extends Controller
             return response()->json(['message' => 'Attendance updated.'], 200);
         }
 
+        // Pipeline hook: advance to attended when marked present
+        if ($status === 'present') {
+            $applicant = Applicant::with('application')->find($applicantId);
+            if ($applicant?->application) {
+                app(ApplicationPipelineService::class)->transition(
+                    $applicant->application,
+                    'attended',
+                    ['session_id' => $exam_session->id, 'marked_at' => now()->toIso8601String()]
+                );
+            }
+        }
+
         return back()->with('success', 'Attendance marked.');
     }
 
@@ -200,6 +214,16 @@ class SessionRosterController extends Controller
             return response()->json(['message' => 'Submission recorded.'], 200);
         }
 
+        // Pipeline hook: advance to submitted
+        $applicant = Applicant::with('application')->find($applicantId);
+        if ($applicant?->application) {
+            app(ApplicationPipelineService::class)->transition(
+                $applicant->application,
+                'submitted',
+                ['session_id' => $exam_session->id, 'submitted_at' => now()->toIso8601String()]
+            );
+        }
+
         return back()->with('success', 'Submission recorded.');
     }
 
@@ -248,6 +272,22 @@ class SessionRosterController extends Controller
         $message = $count === 0
             ? 'No applicants to mark as submitted.'
             : "Submission recorded for {$count} applicant(s).";
+
+        // Pipeline hook: advance each to submitted
+        if ($count > 0) {
+            $pipeline = app(ApplicationPipelineService::class);
+            $bulkApplicantIds = collect($pivots)->pluck('applicant_id')->all();
+            Applicant::whereIn('id', $bulkApplicantIds)->with('application')->get()
+                ->each(function (Applicant $applicant) use ($pipeline, $exam_session) {
+                    if ($applicant->application) {
+                        $pipeline->transition(
+                            $applicant->application,
+                            'submitted',
+                            ['session_id' => $exam_session->id, 'submitted_at' => now()->toIso8601String()]
+                        );
+                    }
+                });
+        }
 
         if ($request->wantsJson()) {
             return response()->json(['message' => $message, 'count' => $count], 200);
@@ -359,6 +399,19 @@ class SessionRosterController extends Controller
             ->where('exam_session_id', $exam_session->id)
             ->whereIn('applicant_id', $data['applicant_ids'])
             ->update([$column => $data['status']]);
+
+        // Pipeline hook: advance to attended when bulk-marking present
+        if ($data['status'] === 'present') {
+            $pipeline = app(ApplicationPipelineService::class);
+            Applicant::whereIn('id', $data['applicant_ids'])->with('application')->get()
+                ->each(function (Applicant $applicant) use ($pipeline, $exam_session) {
+                    if ($applicant->application) {
+                        $pipeline->transition($applicant->application, 'attended', [
+                            'session_id' => $exam_session->id,
+                        ]);
+                    }
+                });
+        }
 
         return back()->with('success', 'Bulk update applied.');
     }

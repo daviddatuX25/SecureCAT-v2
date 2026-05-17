@@ -9,6 +9,7 @@ use App\Models\AptitudeArea;
 use App\Models\ConsultationSummary;
 use App\Models\GradingSession;
 use App\Models\SystemSetting;
+use App\Services\ApplicationPipelineService;
 use App\Services\AuditService;
 use App\Services\ScoreInputService;
 use Illuminate\Http\RedirectResponse;
@@ -136,6 +137,14 @@ class GradingScoreController extends Controller
 
         if ($summary->status === ConsultationSummary::STATUS_PENDING) {
             $summary->update(['status' => ConsultationSummary::STATUS_DRAFT]);
+        }
+
+        // Pipeline hook: advance to scored once all domains are complete
+        $applicant = Applicant::with('application')->find($applicantId);
+        if ($applicant?->application) {
+            app(ApplicationPipelineService::class)->transition($applicant->application, 'scored', [
+                'grading_session_id' => $gradingSession->id,
+            ]);
         }
     }
 }

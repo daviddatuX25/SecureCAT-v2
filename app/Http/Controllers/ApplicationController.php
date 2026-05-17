@@ -209,8 +209,16 @@ class ApplicationController extends Controller
             'created_at' => $application->created_at?->toIso8601String(),
         ];
 
-        $pipelineStatus = $application->pipelineStatus();
-        $pipelineDetails = $application->pipelineDetails();
+        $milestones = $application->pipeline_milestones ?? [];
+        $pipelineStatus = $application->pipeline_status ?? 'pending';
+        $isF2f = isset($milestones['scheduled']) || isset($milestones['printed']) || isset($milestones['attended']);
+        $isDirect = isset($milestones['scored']) && ! $isF2f;
+        $pipelineDetails = [
+            'status' => $pipelineStatus,
+            'milestones' => $milestones,
+            'is_f2f' => $isF2f,
+            'is_direct' => $isDirect,
+        ];
 
         return Inertia::render('Applications/Show', [
             'application' => $applicationData,

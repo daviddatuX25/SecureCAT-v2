@@ -3,7 +3,6 @@
 namespace Tests\Unit;
 
 use App\Models\AcademicYear;
-use App\Models\Applicant;
 use App\Models\Application;
 use App\Models\Course;
 use App\Services\ApplicationPipelineService;
@@ -13,11 +12,9 @@ use Tests\TestCase;
 /**
  * Tests for pipeline status management.
  *
- * Strategy: the model accessor pipelineStatus() / pipelineDetails() now read
- * from the DB column. Tests set the column explicitly via
- * ApplicationPipelineService::transition() (or forceSet() for test setup),
- * then assert against the DB-backed accessor. This validates both the service
- * and the accessor in one flow.
+ * Strategy: all assertions read `pipeline_status` / `pipeline_milestones`
+ * DB columns directly — no wrapper method calls. State is set via
+ * ApplicationPipelineService::transition() or forceSet().
  */
 class ApplicationPipelineStatusTest extends TestCase
 {
@@ -53,96 +50,106 @@ class ApplicationPipelineStatusTest extends TestCase
         return $app;
     }
 
-    // ── pipelineStatus() accessor ────────────────────────────────────────────
+    /** Helper: compute pipeline details inline from DB columns (mirrors ApplicationController::show logic). */
+    private function pipelineDetails(Application $app): array
+    {
+        $milestones = $app->pipeline_milestones ?? [];
+        $status = $app->pipeline_status ?? 'pending';
+        $isF2f = isset($milestones['scheduled']) || isset($milestones['printed']) || isset($milestones['attended']);
+        $isDirect = isset($milestones['scored']) && ! $isF2f;
+
+        return [
+            'status' => $status,
+            'milestones' => $milestones,
+            'is_f2f' => $isF2f,
+            'is_direct' => $isDirect,
+        ];
+    }
+
+    // ── pipeline_status DB column ─────────────────────────────────────────────
 
     public function test_pending_application_returns_pending(): void
     {
         $app = $this->createApp('pending');
 
-        $this->assertSame('pending', $app->pipelineStatus());
+        $this->assertNull($app->pipeline_status); // no hook fired yet
+        $this->assertSame('pending', $app->pipeline_status ?? 'pending');
     }
 
     public function test_dismissed_application_returns_dismissed(): void
     {
         $app = $this->createApp('dismissed', 'dismissed');
 
-        $this->assertSame('dismissed', $app->pipelineStatus());
+        $this->assertSame('dismissed', $app->pipeline_status);
     }
 
-    public function test_accepted_without_applicant_returns_accepted(): void
+    public function test_accepted_pipeline_status_set_explicitly(): void
     {
-        // No pipeline_status set yet → falls back to acceptance status
-        $app = $this->createApp('accepted');
+        // Hook fires in ApplicationController::accept() → in unit tests we simulate via forceSet
+        $app = $this->createApp('accepted', 'accepted');
 
-        $this->assertSame('accepted', $app->pipelineStatus());
+        $this->assertSame('accepted', $app->pipeline_status);
     }
 
-    public function test_accepted_without_exam_session_returns_accepted(): void
+    public function test_accepted_without_hook_has_null_pipeline_status(): void
     {
+        // A freshly factory-created accepted app has no pipeline hook fired yet
         $app = $this->createApp('accepted');
-        Applicant::create([
-            'application_id' => $app->id,
-            'email' => $app->email,
-            'setup_token' => 'tok',
-            'setup_token_expires_at' => now()->addDays(3),
-        ]);
 
-        // pipeline_status not yet set (applicant created but no session) → accepted
-        $this->assertSame('accepted', $app->pipelineStatus());
+        $this->assertNull($app->pipeline_status);
     }
 
     public function test_accepted_with_draft_session_returns_draft_scheduled(): void
     {
         $app = $this->createApp('accepted', 'draft_scheduled');
 
-        $this->assertSame('draft_scheduled', $app->pipelineStatus());
+        $this->assertSame('draft_scheduled', $app->pipeline_status);
     }
 
-    public function test_accepted_with_published_session_not_attended_returns_scheduled(): void
+    public function test_accepted_with_published_session_returns_scheduled(): void
     {
         $app = $this->createApp('accepted', 'scheduled');
 
-        $this->assertSame('scheduled', $app->pipelineStatus());
+        $this->assertSame('scheduled', $app->pipeline_status);
     }
 
     public function test_attended_returns_attended(): void
     {
         $app = $this->createApp('accepted', 'attended');
 
-        $this->assertSame('attended', $app->pipelineStatus());
+        $this->assertSame('attended', $app->pipeline_status);
     }
 
     public function test_submitted_returns_submitted(): void
     {
         $app = $this->createApp('accepted', 'submitted');
 
-        $this->assertSame('submitted', $app->pipelineStatus());
+        $this->assertSame('submitted', $app->pipeline_status);
     }
 
     public function test_graded_returns_graded(): void
     {
         $app = $this->createApp('accepted', 'graded');
 
-        $this->assertSame('graded', $app->pipelineStatus());
+        $this->assertSame('graded', $app->pipeline_status);
     }
 
-    public function test_cancelled_session_returns_accepted(): void
+    public function test_cancelled_session_leaves_pipeline_unchanged(): void
     {
-        // A cancelled session does not advance the pipeline — app stays at accepted
-        $app = $this->createApp('accepted');
-        // No pipeline_status set → falls back to 'accepted'
+        // A cancelled session does not advance the pipeline; stays at 'accepted'
+        $app = $this->createApp('accepted', 'accepted');
 
-        $this->assertSame('accepted', $app->pipelineStatus());
+        $this->assertSame('accepted', $app->pipeline_status);
     }
 
     public function test_dismissed_overrides_everything(): void
     {
         $app = $this->createApp('dismissed', 'dismissed');
 
-        $this->assertSame('dismissed', $app->pipelineStatus());
+        $this->assertSame('dismissed', $app->pipeline_status);
     }
 
-    // ── pipelineDetails() accessor ───────────────────────────────────────────
+    // ── pipeline_milestones / pipelineDetails (inline) ───────────────────────
 
     public function test_pipeline_details_returns_status_and_milestones(): void
     {
@@ -155,7 +162,7 @@ class ApplicationPipelineStatusTest extends TestCase
         $service->transition($app, 'submitted');
 
         $app->refresh();
-        $details = $app->pipelineDetails();
+        $details = $this->pipelineDetails($app);
 
         $this->assertSame('submitted', $details['status']);
         $this->assertArrayHasKey('milestones', $details);
@@ -170,7 +177,7 @@ class ApplicationPipelineStatusTest extends TestCase
     public function test_pipeline_details_for_pending_application(): void
     {
         $app = $this->createApp('pending');
-        $details = $app->pipelineDetails();
+        $details = $this->pipelineDetails($app);
 
         $this->assertSame('pending', $details['status']);
         $this->assertArrayHasKey('milestones', $details);
@@ -187,14 +194,14 @@ class ApplicationPipelineStatusTest extends TestCase
         $service->transition($app, 'graded');
 
         $app->refresh();
-        $details = $app->pipelineDetails();
+        $details = $this->pipelineDetails($app);
 
         $this->assertSame('graded', $details['status']);
         $this->assertTrue($details['is_direct']);
         $this->assertFalse($details['is_f2f']);
     }
 
-    // ── ApplicationPipelineService ───────────────────────────────────────────
+    // ── ApplicationPipelineService ────────────────────────────────────────────
 
     public function test_transition_advances_forward(): void
     {
@@ -272,7 +279,7 @@ class ApplicationPipelineStatusTest extends TestCase
         $service = $this->service();
         $app = $this->createApp('accepted', 'released');
 
-        // forceSet can go backwards (used by backfill command)
+        // forceSet can go backwards (used by backfill command and reopen)
         $service->forceSet($app, 'pending');
 
         $this->assertSame('pending', $app->fresh()->pipeline_status);
