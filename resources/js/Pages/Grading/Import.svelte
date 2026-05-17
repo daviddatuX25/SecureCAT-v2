@@ -71,7 +71,7 @@
     </div>
 
     {#if message}
-      <div class="rounded-md bg-green-50 dark:bg-green-950/30 border border-green-200 dark:border-green-800 p-4 text-green-700 dark:text-green-400">
+      <div class="rounded-md bg-success/10 border border-success/30 p-4 text-foreground">
         <pre class="whitespace-pre-wrap text-sm">{message}</pre>
       </div>
     {/if}

@@ -111,7 +111,7 @@
     </div>
 
     {#if message}
-      <div class="rounded-md bg-green-50 dark:bg-green-950/30 border border-green-200 dark:border-green-800 p-4 text-green-700 dark:text-green-400">
+      <div class="rounded-md bg-success/10 border border-success/30 p-4 text-foreground">
         <pre class="whitespace-pre-wrap text-sm">{message}</pre>
       </div>
     {/if}
@@ -133,7 +133,7 @@
       <div class="rounded-md bg-muted px-3 py-2">
         <span class="font-medium">{totalCount}</span> total rows
       </div>
-      <div class="rounded-md bg-green-50 dark:bg-green-950/30 px-3 py-2 text-green-700 dark:text-green-400">
+      <div class="rounded-md bg-success/10 px-3 py-2 text-success font-semibold">
         <Check class="inline size-4 mr-1" />
         <span class="font-medium">{validCount}</span> valid
       </div>
@@ -208,7 +208,7 @@
                   <td class="px-3 py-2 text-muted-foreground">{record.data.email || '—'}</td>
                   <td class="px-3 py-2">
                     {#if record.is_valid}
-                      <span class="inline-flex items-center rounded-full bg-green-100 dark:bg-green-900/30 px-2 py-0.5 text-xs font-medium text-green-700 dark:text-green-400">
+                      <span class="inline-flex items-center rounded-full bg-success/15 px-2 py-0.5 text-xs font-semibold text-success">
                         <Check class="size-3 mr-1" /> Valid
                       </span>
                     {:else}
