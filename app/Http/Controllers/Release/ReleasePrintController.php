@@ -175,7 +175,7 @@ class ReleasePrintController extends Controller
             return $this->buildApplicantData($a, $grading_session, null, $scores);
         })->values()->all();
 
-        $sheetsHtml = $this->buildSheetsFromApplicants($applicantsWithScores, $template);
+        $sheetsHtml = $this->templateService->buildSheetsFromApplicantData($applicantsWithScores, $template);
 
         return Inertia::render('Release/ResultSheetBulk', [
             'sessionId' => (string) $grading_session->id,
@@ -213,7 +213,7 @@ class ReleasePrintController extends Controller
             return $this->buildApplicantData($a, $grading_session, null, $scores);
         })->values()->all();
 
-        $sheetsHtml = $this->buildSheetsFromApplicants($applicantsWithScores, $template);
+        $sheetsHtml = $this->templateService->buildSheetsFromApplicantData($applicantsWithScores, $template);
 
         $meta = RenderResult::fromTemplate($template);
 
@@ -261,7 +261,7 @@ class ReleasePrintController extends Controller
             return $this->buildApplicantData($a, $gs, null, $scores);
         })->values()->all();
 
-        $sheetsHtml = $this->buildSheetsFromApplicants($applicantsWithScores, $template);
+        $sheetsHtml = $this->templateService->buildSheetsFromApplicantData($applicantsWithScores, $template);
 
         return Inertia::render('Release/ResultSheetBulk', [
             'sessionId' => null,
@@ -310,7 +310,7 @@ class ReleasePrintController extends Controller
             return $this->buildApplicantData($a, $gs, null, $scores);
         })->values()->all();
 
-        $sheetsHtml = $this->buildSheetsFromApplicants($applicantsWithScores, $template);
+        $sheetsHtml = $this->templateService->buildSheetsFromApplicantData($applicantsWithScores, $template);
 
         $meta = RenderResult::fromTemplate($template);
 
@@ -370,29 +370,6 @@ class ReleasePrintController extends Controller
             'max' => $s->max_score,
             'pct' => $s->max_score > 0 ? (int) round(($s->raw_score / $s->max_score) * 100) : 0,
         ])->values()->all();
-    }
-
-    /**
-     * @param  array<int, array<string, mixed>>  $applicantsWithScores
-     * @return array<int, string>
-     */
-    private function buildSheetsFromApplicants(array $applicantsWithScores, ResultSheetTemplate $template): array
-    {
-        $logicalUnit = $template->logical_unit ?? 'full';
-        $chunkSize = in_array($logicalUnit, ['half_a4', 'half_legal', 'half_letter'], true) ? 2 : 1;
-
-        $sheetsHtml = [];
-        foreach (array_chunk($applicantsWithScores, $chunkSize) as $chunk) {
-            if (count($chunk) === 2) {
-                $result = $this->templateService->renderDual($template, $chunk[0], $chunk[1], false);
-                $sheetsHtml[] = $result->html;
-            } else {
-                $result = $this->templateService->render($template, $chunk, false);
-                $sheetsHtml[] = $result->html;
-            }
-        }
-
-        return $sheetsHtml;
     }
 
     /**

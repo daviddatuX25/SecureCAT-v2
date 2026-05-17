@@ -81,6 +81,31 @@ class ResultSheetTemplateService
     }
 
     /**
+     * Build sheet HTML from pre-built applicant data arrays.
+     *
+     * @param  array<int, array<string, mixed>>  $applicantsWithScores
+     * @return string[]
+     */
+    public function buildSheetsFromApplicantData(array $applicantsWithScores, ResultSheetTemplate $template): array
+    {
+        $logicalUnit = $template->logical_unit ?? ResultSheetTemplate::LOGICAL_FULL;
+        $chunkSize = in_array($logicalUnit, [ResultSheetTemplate::LOGICAL_HALF_A4, ResultSheetTemplate::LOGICAL_HALF_LEGAL, ResultSheetTemplate::LOGICAL_HALF_LETTER], true) ? 2 : 1;
+
+        $sheetsHtml = [];
+        foreach (array_chunk($applicantsWithScores, $chunkSize) as $chunk) {
+            if (count($chunk) === 2) {
+                $result = $this->renderDual($template, $chunk[0], $chunk[1], false);
+                $sheetsHtml[] = $result->html;
+            } else {
+                $result = $this->render($template, $chunk, false);
+                $sheetsHtml[] = $result->html;
+            }
+        }
+
+        return $sheetsHtml;
+    }
+
+    /**
      * Render from raw HTML content (for preview before template is saved).
      */
     public function renderHtmlContent(
