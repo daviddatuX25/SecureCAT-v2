@@ -7,6 +7,7 @@
   import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/Components/ui/card';
   import * as Table from '@/Components/ui/table';
   import { ArrowLeft, Printer, CheckSquare, Square } from 'lucide-svelte';
+  import { formatDate } from '@/lib/date-utils';
 
   let { sessionId = '1', session = {}, applicants = [] } = $props();
   const sid = $derived(String(sessionId));
@@ -134,13 +135,7 @@
     });
   }
 
-  function formatDate(value) {
-    if (!value) return '—';
-    const s = String(value).split('T')[0];
-    if (!s) return '—';
-    const [y, m, d] = s.split('-').map(Number);
-    return new Date(y, (m || 1) - 1, d || 1).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
-  }
+
 </script>
 
 <AuthenticatedLayout breadcrumbs={breadcrumbs}>

@@ -8,6 +8,7 @@
   import * as Dialog from '@/Components/ui/dialog';
   import { ArrowLeft, UserCheck, UserX, FileCheck, Play, Square, AlertTriangle } from 'lucide-svelte';
   import { success as showSuccess, error as showError } from '@/lib/toast';
+  import { formatDate, formatDate as fmtDate } from '@/lib/date-utils';
   import { onMount } from 'svelte';
 
   let { session, applicants = [], stats = {}, breadcrumbParent = { label: 'My Sessions', href: '/proctor/my-sessions' } } = $props();
@@ -183,16 +184,6 @@
     session.status === 'in_progress' || session.status === 'completed'
   );
 
-  function formatDate(value) {
-    if (value == null || value === '') return '—';
-    const s = String(value);
-    const part = s.split('T')[0];
-    if (!part) return '—';
-    const [y, m, d] = part.split('-').map(Number);
-    const date = new Date(y, (m || 1) - 1, d || 1);
-    return date.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }).replace(',', '');
-  }
-
   function formatTime(value) {
     if (value == null || value === '') return '—';
     const parts = String(value).split(':');
@@ -201,20 +192,6 @@
     const h = hours % 12 || 12;
     const ampm = hours < 12 ? 'AM' : 'PM';
     return `${h}:${String(mins).padStart(2, '0')} ${ampm}`;
-  }
-
-  function formatDateTime(isoString) {
-    if (isoString == null || isoString === '') return '—';
-    try {
-      const d = new Date(isoString);
-      if (Number.isNaN(d.getTime())) return '—';
-      const h = d.getHours() % 12 || 12;
-      const m = String(d.getMinutes()).padStart(2, '0');
-      const ampm = d.getHours() < 12 ? 'AM' : 'PM';
-      return `${h}:${m} ${ampm}`;
-    } catch {
-      return '—';
-    }
   }
 
   const breadcrumbs = $derived([
@@ -331,11 +308,11 @@
                     <Table.Cell class="px-4 py-3">
                       <Badge variant={attendanceStatusVariant(row.attendance_status)}>{row.attendance_status}</Badge>
                     </Table.Cell>
-                    <Table.Cell class="px-4 py-3">{formatDateTime(row.attendance_marked_at)}</Table.Cell>
+                    <Table.Cell class="px-4 py-3">{fmtDate(row.attendance_marked_at, 'time')}</Table.Cell>
                     <Table.Cell class="px-4 py-3">
                       <Badge variant={attendanceStatusVariant(row.submission_status)}>{row.submission_status}</Badge>
                     </Table.Cell>
-                    <Table.Cell class="px-4 py-3">{formatDateTime(row.submitted_at)}</Table.Cell>
+                    <Table.Cell class="px-4 py-3">{fmtDate(row.submitted_at, 'time')}</Table.Cell>
                   {/if}
                   <Table.Cell class="px-4 py-3 text-center">
                     {#if row.attendance_status === 'pending' && canMarkAttendance}

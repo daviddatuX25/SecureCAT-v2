@@ -7,6 +7,7 @@
   import * as Table from '@/Components/ui/table';
   import { GraduationCap, Layers, UploadCloud } from 'lucide-svelte';
   import SwitchableListView from '@/Components/SwitchableListView.svelte';
+  import { formatDate } from '@/lib/date-utils';
 
   let viewMode = $state('responsive');
 
@@ -17,13 +18,7 @@
     aptitude_areas_count = 0,
   } = $props();
 
-  function formatDate(value) {
-    if (!value) return '—';
-    const s = String(value).split('T')[0];
-    if (!s) return '—';
-    const [y, m, d] = s.split('-').map(Number);
-    return new Date(y, (m || 1) - 1, d || 1).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-  }
+
 
   function formatTime(value) {
     if (!value) return '—';

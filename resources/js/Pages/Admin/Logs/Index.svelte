@@ -6,6 +6,7 @@
   import { Input } from '@/Components/ui/input';
   import SimplePagination from '@/Components/SimplePagination.svelte';
   import { ChevronDown, Filter, Download, ChevronRight, X } from 'lucide-svelte';
+  import { formatDateTime } from '@/lib/date-utils';
 
   let { logs, filters = {}, events = [], categories = [], scopeLabel = 'Activity log', showActorFilter = false } = $props();
 
@@ -255,7 +256,7 @@
           {#each (logs?.data ?? []) as log (log.id)}
             <Table.Row class="border-t border-border hover:bg-muted/30">
               <Table.Cell class="px-4 py-3 text-muted-foreground whitespace-nowrap">
-                {log.created_at ? new Date(log.created_at).toLocaleString() : '—'}
+                {formatDateTime(log.created_at)}
               </Table.Cell>
               <Table.Cell class="px-4 py-3">{eventLabel(log.event)}</Table.Cell>
               <Table.Cell class="px-4 py-3">{categoryLabel(log.category)}</Table.Cell>
@@ -307,7 +308,7 @@
           <span class="text-muted-foreground">Event</span>
           <span>{eventLabel(detailLog.event)}</span>
           <span class="text-muted-foreground">Time</span>
-          <span>{detailLog.created_at ? new Date(detailLog.created_at).toLocaleString() : '—'}</span>
+          <span>{formatDateTime(detailLog.created_at)}</span>
           <span class="text-muted-foreground">Actor</span>
           <span>{actorDisplay(detailLog)}</span>
           <span class="text-muted-foreground">IP</span>

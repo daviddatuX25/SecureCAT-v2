@@ -11,6 +11,7 @@
   import SimplePagination from '@/Components/SimplePagination.svelte';
   import { success as showSuccess, error as showError } from '@/lib/toast';
   import { pipelineBadgeVariant, pipelineStatusLabel, pipelineStatusOptions } from '@/lib/pipeline-helpers';
+  import { formatDate } from '@/lib/date-utils';
   import { onMount } from 'svelte';
 
   let { applications, filters = {}, seasons = [], active_season_id = null, statuses = [], pipeline_statuses = [] } = $props();
@@ -324,7 +325,7 @@
                   <Badge variant={pipelineBadgeVariant(app.pipeline_status)}>{pipelineStatusLabel(app.pipeline_status)}</Badge>
                 </Table.Cell>
                 <Table.Cell class="px-4 py-3 text-muted-foreground cursor-pointer" onclick={() => router.visit(`/admin/applications/${app.id}`)}>
-                  {app.submitted_at ? new Date(app.submitted_at).toLocaleDateString() : '—'}
+                  {formatDate(app.submitted_at, 'short')}
                 </Table.Cell>
                 <Table.Cell class="text-left" onclick={(e) => e.stopPropagation()}>
                   <div class="flex justify-start gap-3" onclick={(e) => e.stopPropagation()}>
@@ -380,7 +381,7 @@
                 <Badge variant={pipelineBadgeVariant(app.pipeline_status)}>{pipelineStatusLabel(app.pipeline_status)}</Badge>
               </p>
               <p class="mt-1 text-xs text-muted-foreground" onclick={() => router.visit(`/admin/applications/${app.id}`)}>
-                {app.submitted_at ? new Date(app.submitted_at).toLocaleDateString() : '—'}
+                {formatDate(app.submitted_at, 'short')}
               </p>
               <div class="mt-3 flex flex-wrap gap-3" onclick={(e) => e.stopPropagation()}>
                 <Link href={`/admin/applications/${app.id}/edit`} class="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground" onclick={(e) => e.stopPropagation()}>

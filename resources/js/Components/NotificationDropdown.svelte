@@ -3,6 +3,7 @@
   import { usePoll } from '@inertiajs/svelte';
   import { usePage } from '@inertiajs/svelte';
   import { message } from '@/lib/toast.js';
+  import { formatRelativeDate } from '@/lib/date-utils';
 
   let { initialNotifications = [] } = $props();
   const page = usePage();
@@ -92,21 +93,7 @@
     }
   }
 
-  function formatDate(dateStr) {
-    if (!dateStr) return '';
-    const date = new Date(dateStr);
-    const now = new Date();
-    const diffMs = now - date;
-    const diffMins = Math.floor(diffMs / 60000);
-    const diffHours = Math.floor(diffMs / 3600000);
-    const diffDays = Math.floor(diffMs / 86400000);
 
-    if (diffMins < 1) return 'Just now';
-    if (diffMins < 60) return `${diffMins}m ago`;
-    if (diffHours < 24) return `${diffHours}h ago`;
-    if (diffDays < 7) return `${diffDays}d ago`;
-    return date.toLocaleDateString();
-  }
 
   function getNotificationIcon(type) {
     // Map type to icon name string for dynamic rendering
@@ -193,7 +180,7 @@
                       {notification.message}
                     </p>
                     <p class="text-xs text-muted-foreground mt-1">
-                      {formatDate(notification.created_at)}
+                      {formatRelativeDate(notification.created_at)}
                     </p>
                   </div>
 

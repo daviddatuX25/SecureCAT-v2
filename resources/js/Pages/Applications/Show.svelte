@@ -7,6 +7,7 @@
   import { Textarea } from '@/Components/ui/textarea';
   import { ArrowLeft, CheckCircle, XCircle, Mail } from 'lucide-svelte';
   import { pipelineBadgeVariant, pipelineStatusLabel, pipelineMilestones, pipelineOrder } from '@/lib/pipeline-helpers';
+  import { formatDate, formatDateTime } from '@/lib/date-utils';
 
   let { application, courses = [], within_application_window = false, application_window_label = null, pipeline_status = null, pipeline_details = null } = $props();
 
@@ -163,7 +164,7 @@
               </span>
               {#if milestoneData?.at}
                 <span class="text-[9px] text-muted-foreground/60">
-                  {new Date(milestoneData.at).toLocaleDateString()}
+                  {formatDate(milestoneData.at, 'short')}
                 </span>
               {/if}
             </div>
@@ -191,7 +192,7 @@
         </CardHeader>
         <CardContent class="space-y-2 text-sm">
           <p><span class="text-muted-foreground">Name:</span> {fullName}</p>
-          <p><span class="text-muted-foreground">Birthdate:</span> {application?.birthdate ?? '—'}</p>
+          <p><span class="text-muted-foreground">Birthdate:</span> {formatDate(application?.birthdate, 'long')}</p>
           <p><span class="text-muted-foreground">Sex:</span> {application?.sex ?? '—'}</p>
           <p><span class="text-muted-foreground">Email:</span> {application?.email ?? '—'}</p>
           <p><span class="text-muted-foreground">Phone:</span> {application?.phone ?? '—'}</p>
@@ -226,9 +227,9 @@
         <CardTitle>Timeline</CardTitle>
       </CardHeader>
       <CardContent class="space-y-2 text-sm">
-        <p><span class="text-muted-foreground">Submitted:</span> {application?.submitted_at ? new Date(application.submitted_at).toLocaleString() : '—'}</p>
+        <p><span class="text-muted-foreground">Submitted:</span> {formatDateTime(application?.submitted_at)}</p>
         {#if application?.processed_at}
-          <p><span class="text-muted-foreground">Processed:</span> {new Date(application.processed_at).toLocaleString()}</p>
+          <p><span class="text-muted-foreground">Processed:</span> {formatDateTime(application.processed_at)}</p>
         {/if}
         {#if application?.status === 'dismissed' && application?.rejection_reason}
           <p><span class="text-muted-foreground">Dismissal reason:</span> {application.rejection_reason}</p>

@@ -6,6 +6,7 @@
   import * as Select from '@/Components/ui/select';
   import { Textarea } from '@/Components/ui/textarea';
   import { success, error } from '@/lib/toast';
+  import { formatDateTime } from '@/lib/date-utils';
 
   let { application, courses = [], appointments = [], active_season = null, statuses = [] } = $props();
 
@@ -97,7 +98,7 @@
         </div>
         <div>
           <span class="text-muted-foreground">Submitted:</span>
-          <span class="ml-2">{new Date(application.submitted_at).toLocaleString()}</span>
+          <span class="ml-2">{formatDateTime(application.submitted_at)}</span>
         </div>
       </div>
     {/if}

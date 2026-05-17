@@ -8,6 +8,7 @@
   import { ClipboardList, Eye, Pencil } from 'lucide-svelte';
   import SwitchableListView from '@/Components/SwitchableListView.svelte';
   import { Card, CardContent } from '@/Components/ui/card';
+  import { formatDate } from '@/lib/date-utils';
 
   let viewMode = $state('responsive');
 
@@ -29,15 +30,7 @@
     return () => clearInterval(interval);
   });
 
-  function formatDate(value) {
-    if (value == null || value === '') return '—';
-    const s = String(value);
-    const part = s.split('T')[0];
-    if (!part) return '—';
-    const [y, m, d] = part.split('-').map(Number);
-    const date = new Date(y, (m || 1) - 1, d || 1);
-    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-  }
+
 
   function formatTime(value) {
     if (value == null || value === '') return '—';

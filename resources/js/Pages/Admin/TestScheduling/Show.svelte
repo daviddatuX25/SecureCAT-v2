@@ -5,6 +5,7 @@
   import * as Table from '@/Components/ui/table';
   import { Badge } from '@/Components/ui/badge';
   import { UserPlus, UserMinus, Send, ClipboardList, RotateCcw, Pencil } from 'lucide-svelte';
+  import { formatDate } from '@/lib/date-utils';
 
   let { session, assigned_applicants = [], available_applicants = [], proctors = [], view = 'admin', breadcrumbParent = { label: 'Exam Scheduling', href: '/admin/exam-scheduling' } } = $props();
   const isProctorView = $derived(view === 'proctor');
@@ -17,21 +18,7 @@
 
   let selectedAvailable = $state([]);
 
-  function dateToYmd(value) {
-    if (value == null || value === '') return '';
-    const s = String(value);
-    const part = s.split('T')[0];
-    return part || '';
-  }
 
-  function formatDate(value) {
-    if (value == null || value === '') return '—';
-    const part = dateToYmd(value);
-    if (!part) return '—';
-    const [y, m, d] = part.split('-').map(Number);
-    const date = new Date(y, (m || 1) - 1, d || 1);
-    return date.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }).replace(',', '');
-  }
 
   function formatTime(value) {
     if (value == null || value === '') return '—';

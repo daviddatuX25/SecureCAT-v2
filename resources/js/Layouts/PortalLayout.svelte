@@ -5,6 +5,7 @@
   import ToastManager from '@/Components/ToastManager.svelte';
   import AiCompanionChatWidget from '@/Components/AiCompanionChatWidget.svelte';
   import { registerSounds } from '@/lib/notifStore.js';
+  import { formatRelativeDate } from '@/lib/date-utils';
 
   function toggleTheme() {
     document.documentElement.classList.toggle('dark');
@@ -42,22 +43,7 @@
     }
   }
 
-  function formatNotifDate(iso) {
-    if (!iso) return '';
-    try {
-      const d = new Date(iso);
-      const now = new Date();
-      const diffMs = now - d;
-      const diffMins = Math.floor(diffMs / 60000);
-      if (diffMins < 1) return 'Just now';
-      if (diffMins < 60) return `${diffMins}m ago`;
-      const diffHours = Math.floor(diffMins / 60);
-      if (diffHours < 24) return `${diffHours}h ago`;
-      return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
-    } catch {
-      return '';
-    }
-  }
+
 </script>
 
 <svelte:head>
@@ -107,7 +93,7 @@
                   >
                     <span class="text-sm">{notif.message}</span>
                     <div class="flex items-center justify-between gap-2">
-                      <span class="text-xs text-muted-foreground">{formatNotifDate(notif.created_at)}</span>
+                      <span class="text-xs text-muted-foreground">{formatRelativeDate(notif.created_at)}</span>
                       {#if !notif.read}
                         <Button
                           type="button"

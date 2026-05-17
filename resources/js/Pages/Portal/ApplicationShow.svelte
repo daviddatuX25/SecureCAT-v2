@@ -4,6 +4,7 @@
   import { Button } from '@/Components/ui/button';
   import * as Card from '@/Components/ui/card';
   import { ArrowLeft, Edit, Lock, FileText } from 'lucide-svelte';
+  import { formatDate } from '@/lib/date-utils';
 
   let { application = {}, courses = [] } = $props();
 </script>
@@ -137,7 +138,7 @@
         <Card.Content class="p-4">
           <div class="flex items-center gap-2 text-sm text-muted-foreground">
             <FileText class="h-4 w-4" />
-            <span>Submitted on {new Date(application.submitted_at).toLocaleDateString()}</span>
+            <span>Submitted on {formatDate(application.submitted_at)}</span>
           </div>
         </Card.Content>
       </Card.Root>

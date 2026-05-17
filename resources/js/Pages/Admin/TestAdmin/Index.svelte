@@ -6,6 +6,7 @@
   import { Play, Square, ClipboardList, Calendar, Clock, Users, AlertTriangle } from 'lucide-svelte';
   import { success as showSuccess, error as showError } from '@/lib/toast';
   import { hasApplicants, timeWindowLabel, isOutsideStartWindow, canOverrideStartWindow } from '@/lib/session-helpers';
+  import { formatDate } from '@/lib/date-utils';
   import { onMount } from 'svelte';
 
   let { today = [], upcoming = [], past = [], filters = {}, statuses = [], flash = {}, breadcrumbParent = { label: 'My Sessions', href: '/proctor/my-sessions' } } = $props();
@@ -38,13 +39,7 @@
     return labels[s] ?? s;
   }
 
-  function formatDate(value) {
-    if (!value) return '—';
-    const part = String(value).split('T')[0];
-    const [y, m, d] = part.split('-').map(Number);
-    return new Date(y, (m || 1) - 1, d || 1)
-      .toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-  }
+
 
   function formatTime(value) {
     if (!value) return '—';

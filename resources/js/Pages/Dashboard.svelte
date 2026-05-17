@@ -6,6 +6,7 @@
   import PieChart from '@/Components/PieChart.svelte';
   import * as Tabs from '@/Components/ui/tabs';
   import { FileText, Calendar, GraduationCap, SendHorizonal, Users, DoorOpen, BookOpen, Sparkles } from 'lucide-svelte';
+  import { formatDateTime } from '@/lib/date-utils';
 
   let { user, applicationStats, sessionStats, gradingStats, analytics, myActivity } = $props();
 
@@ -369,7 +370,7 @@
                       </div>
                       <div class="min-w-0 flex-1">
                         <p class="text-sm text-foreground">{entry.summary || entry.event}</p>
-                        <p class="text-xs text-muted-foreground mt-0.5 capitalize">{entry.category?.replace('_', ' ')} &middot; {new Date(entry.created_at).toLocaleString()}</p>
+                        <p class="text-xs text-muted-foreground mt-0.5 capitalize">{entry.category?.replace('_', ' ')} &middot; {formatDateTime(entry.created_at)}</p>
                       </div>
                     </li>
                   {/each}

@@ -11,6 +11,7 @@
   import SwitchableListView from '@/Components/SwitchableListView.svelte';
   import SimplePagination from '@/Components/SimplePagination.svelte';
   import { Plus, Eye, Pencil, ChevronDown, Filter, ClipboardList, Sparkles, DoorOpen, Send, Undo, X, Trash2 } from 'lucide-svelte';
+  import { formatDate } from '@/lib/date-utils';
 
   let { sessions, filters = {}, statuses = [], view = 'admin', schedule_assistant = null, breadcrumbParent = { label: 'Exam Scheduling', href: '/admin/exam-scheduling' } } = $props();
 
@@ -61,15 +62,7 @@
     return s ? s.label : value;
   }
 
-  function formatDate(value) {
-    if (value == null || value === '') return '—';
-    const s = String(value);
-    const part = s.split('T')[0];
-    if (!part) return '—';
-    const [y, m, d] = part.split('-').map(Number);
-    const date = new Date(y, (m || 1) - 1, d || 1);
-    return date.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }).replace(',', '');
-  }
+
 
   function formatTime(value) {
     if (value == null || value === '') return '—';

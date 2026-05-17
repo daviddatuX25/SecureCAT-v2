@@ -7,6 +7,7 @@
   import * as Table from '@/Components/ui/table';
   import { Plus, Pencil, Trash2, FileText, Upload, RefreshCw } from 'lucide-svelte';
   import ActionDropdown from '@/Components/ActionDropdown.svelte';
+  import { formatDate } from '@/lib/date-utils';
 
   let { documents, filters = {} } = $props();
 
@@ -45,15 +46,7 @@
     router.post(`/admin/knowledge-documents/${docId}/retry-sync`, {}, { onSuccess: () => router.reload() });
   }
 
-  function formatDate(iso) {
-    if (!iso) return '—';
-    try {
-      const d = new Date(iso);
-      return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-    } catch {
-      return '—';
-    }
-  }
+
 
   const sourceLabel = (source) => (source === 'csv_import' ? 'CSV import' : 'Manual');
   const rows = $derived(documents?.data ?? []);

@@ -10,6 +10,7 @@
   } from 'lucide-svelte';
   import axios from 'axios';
   import { success as showSuccess, error as showError } from '@/lib/toast';
+  import { formatDate, formatDate as fmtDate } from '@/lib/date-utils';
   import { onMount, onDestroy } from 'svelte';
 
   /**
@@ -172,16 +173,6 @@
     return labels[status] ?? status;
   }
 
-  function formatDate(value) {
-    if (value == null || value === '') return '—';
-    const part = String(value).split('T')[0];
-    if (!part) return '—';
-    const [y, m, d] = part.split('-').map(Number);
-    return new Date(y, (m || 1) - 1, d || 1)
-      .toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })
-      .replace(',', '');
-  }
-
   function formatTime(value) {
     if (value == null || value === '') return '—';
     const parts = String(value).split(':');
@@ -189,19 +180,6 @@
     const mins  = parseInt(parts[1], 10) || 0;
     const h     = hours % 12 || 12;
     return `${h}:${String(mins).padStart(2, '0')} ${hours < 12 ? 'AM' : 'PM'}`;
-  }
-
-  function formatDateTime(isoString) {
-    if (isoString == null || isoString === '') return '—';
-    try {
-      const d = new Date(isoString);
-      if (Number.isNaN(d.getTime())) return '—';
-      const h = d.getHours() % 12 || 12;
-      const m = String(d.getMinutes()).padStart(2, '0');
-      return `${h}:${m} ${d.getHours() < 12 ? 'AM' : 'PM'}`;
-    } catch {
-      return '—';
-    }
   }
 
   function handleRosterError(err) {
@@ -423,13 +401,13 @@
       {#if session.started_at}
         <div>
           <dt class="text-sm text-muted-foreground">Started</dt>
-          <dd class="font-medium">{formatDateTime(session.started_at)}</dd>
+          <dd class="font-medium">{fmtDate(session.started_at, 'time')}</dd>
         </div>
       {/if}
       {#if session.closed_at}
         <div>
           <dt class="text-sm text-muted-foreground">Closed</dt>
-          <dd class="font-medium">{formatDateTime(session.closed_at)}</dd>
+          <dd class="font-medium">{fmtDate(session.closed_at, 'time')}</dd>
         </div>
       {/if}
     </dl>
@@ -563,11 +541,11 @@
                 <td class="px-4 py-3">
                   <Badge variant={attendanceStatusVariant(row.attendance_status)}>{row.attendance_status}</Badge>
                 </td>
-                <td class="px-4 py-3">{formatDateTime(row.attendance_marked_at)}</td>
+                <td class="px-4 py-3">{fmtDate(row.attendance_marked_at, 'time')}</td>
                 <td class="px-4 py-3">
                   <Badge variant={attendanceStatusVariant(row.submission_status)}>{row.submission_status}</Badge>
                 </td>
-                <td class="px-4 py-3">{formatDateTime(row.submitted_at)}</td>
+                <td class="px-4 py-3">{fmtDate(row.submitted_at, 'time')}</td>
                 <td class="px-4 py-3 text-right">
                   <div class="flex flex-wrap justify-end gap-1">
                     {#if row.attendance_status === 'pending' && canMarkAttendance}
