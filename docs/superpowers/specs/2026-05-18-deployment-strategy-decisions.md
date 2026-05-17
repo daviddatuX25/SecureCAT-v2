@@ -475,4 +475,234 @@ GET  /v1/health               → Server health check
 
 ---
 
-*This document captures all strategic decisions from the 2026-05-18 architecture discussion. Reference this when implementing Phases A–F.*
+## 12. Cross-Reference: Installation Pathway Spec
+
+**Source:** [`docs/deployment/installation-pathway-spec.md`](../../deployment/installation-pathway-spec.md)
+
+The installation pathway spec was written before several key decisions in this document. Below is a reconciliation of what's **still valid**, what's **outdated**, and what's **additive**.
+
+### Still Valid ✅
+
+| Item | Notes |
+|------|-------|
+| `install.ps1` PowerShell bootstrap script | Core install flow unchanged |
+| `setup-securecat.bat` double-click wrapper | Still needed for non-technical staff |
+| `securecat:install` artisan command | Core structure valid; needs license flow updates |
+| `securecat:status` diagnostic command | Still needed; add pgvector + Brevo checks |
+| Inno Setup `.exe` phase (Phase 2 of that spec) | Still the plan for distribution |
+| Prerequisites check (PHP, Composer, Node) | Still needed |
+| Hardware fingerprint (`installation_id`) | Still used; fingerprint formula updated in licensing spec |
+| `INSTALL.md` root-level quick start | Still needed |
+| Chrome PDF dependency (spatie/laravel-pdf) | Still valid |
+| Background task scheduler (Windows Task Scheduler) | Still valid, critical for auto-close |
+| `setup-scheduler.bat` | Still needed |
+
+### Outdated / Superseded ⚠️
+
+| Item | Old | New (this document) |
+|------|-----|-----|
+| Ollama installation in `install.ps1` | Steps 2 installs Ollama + pulls models | **Remove entirely** — AI runs via central server, not locally |
+| `--SkipOllama` / `--SkipModels` flags | Existed for optional Ollama skip | **Remove** — no Ollama at all |
+| Ollama connectivity check in `securecat:install` | Step 5 checks `localhost:11434` | **Replace** with central server connectivity check (`api.securecat.ph/v1/health`) |
+| PostgreSQL as sole DB mention | Listed PostgreSQL as only DB | **Dual DB**: MySQL (app data) + Postgres (pgvector only) |
+| `mxbai-embed-large` model pull | Pulled during install | **Remove** — embeddings via central server |
+| `llama3` model pull | Pulled during install | **Remove** — LLM via central server |
+| `.env` Ollama config | `LLM_DRIVER=ollama` | Change to `LLM_DRIVER=openrouter` (via central server proxy) |
+| Installer size estimate (470MB) | Included Ollama (~100MB) + models (~4GB post-install) | **Smaller** — no Ollama bundle, ~370MB |
+
+### Additive (New in This Document)
+
+| Item | What to Add to Installer |
+|------|-------------------------|
+| Postgres setup | `install.ps1` must configure Postgres alongside MySQL in Laragon |
+| pgvector extension | Install `pgvector` extension into Laragon's Postgres |
+| Central server check | `securecat:install` should ping `api.securecat.ph/v1/health` and report status |
+| Brevo SMTP test | `securecat:status` should test Brevo API connectivity (if Premium) |
+| Dual DB `.env` entries | `DB_CONNECTION=mysql` + `PGVECTOR_CONNECTION=pgsql` with separate config |
+
+> [!NOTE]
+> The installation-pathway-spec.md should be **updated** (not replaced) when implementation begins. This document provides the strategic corrections; the pathway spec provides the detailed implementation patterns.
+
+---
+
+## 13. Future Documentation Roadmap
+
+Documentation to produce in later phases, for the public website and enterprise deployments:
+
+### Website Documentation (www.securecat.ph/docs)
+
+| Document | Audience | Phase |
+|----------|----------|-------|
+| Getting Started Guide | School IT / Admin | Phase E |
+| Installation Walkthrough (with screenshots) | Non-technical staff | Phase E |
+| Feature Tour / Demo Video | Decision makers (principals, registrars) | Phase F |
+| Pricing & Tier Comparison | Purchasers | Phase F |
+| FAQ | All | Phase E |
+| API Documentation (for integrations) | Developers | Phase C |
+| Changelog / Release Notes | Existing clients | Ongoing |
+
+### Enterprise Deployment Guide (Premium clients)
+
+| Document | Contents |
+|----------|----------|
+| Premium Setup Guide | Cloudflare tunnel config, Brevo email setup, subdomain provisioning |
+| Network Requirements | Firewall rules, required domains to whitelist (`api.securecat.ph`, `cdn.mixedbread.ai`, etc.) |
+| Data Privacy & Compliance | Where data lives (local MySQL + Postgres), what goes to central server (embeddings, chat, license checks) |
+| Backup & Recovery | MySQL/Postgres backup scripts, restore procedures |
+| Upgrade Guide | How to update SecureCAT versions, migration steps |
+| Troubleshooting Handbook | Common issues + resolutions (expanded from current `troubleshooting.md`) |
+
+### Internal Documentation (your eyes only)
+
+| Document | Contents |
+|----------|----------|
+| Central Server Operations | Deployment, monitoring, scaling, incident response |
+| License Key Management | How to generate, revoke, transfer keys |
+| Client Onboarding Checklist | Step-by-step for setting up a new school |
+| Revenue & Cost Tracking | Per-client cost breakdown (AI usage, email, hosting) |
+
+---
+
+## 14. Legal & Software Protection Strategy
+
+### 14.1 End-User License Agreement (EULA)
+
+A EULA must be presented during installation (Inno Setup license page) and displayed in-app (Settings > About). Key clauses:
+
+| Clause | Purpose |
+|--------|---------|
+| **Single-installation license** | One key = one school = one machine. Transferable only via deactivation + reactivation. |
+| **No reverse engineering** | Prohibits decompilation, modification of licensing code, or circumvention of feature gating. |
+| **No redistribution** | Cannot share installer, license key, or derivative copies. |
+| **Data ownership** | School owns all their data (applicants, scores, docs). SecureCAT owns the software. |
+| **Central server dependency** | Premium features require internet connectivity to `api.securecat.ph`. Clarifies this is by design, not a defect. |
+| **Termination** | License can be revoked for ToS violations. 30-day grace period for data export before deactivation. |
+| **Counterfeit notice** | Unauthorized copies are traceable via embedded fingerprints (see §14.3). Violation may result in legal action under Philippine IP law (RA 8293). |
+| **Warranty disclaimer** | Software provided "as-is" for educational institution use. |
+| **Jurisdiction** | Philippine courts, governed by Philippine law. |
+
+### 14.2 Philippine Legal Framework
+
+| Law | Relevance |
+|-----|-----------|
+| **RA 8293** (IP Code of the Philippines) | Protects software as a literary work under copyright. Unauthorized reproduction = infringement. |
+| **RA 10175** (Cybercrime Prevention Act) | Computer-related offenses including unauthorized access and data interference. |
+| **RA 10173** (Data Privacy Act) | Governs how applicant/student data must be handled. Relevant for compliance documentation. |
+
+> [!TIP]
+> You don't need to be bulletproof — you need to be **legally defensible**. A clear EULA + traceable fingerprints + server-side enforcement makes piracy not worth the legal risk for a school (which is a government-supervised institution).
+
+### 14.3 Per-Copy Software Fingerprinting (Steganographic Signatures)
+
+Each distributed copy of SecureCAT should contain a **hidden, unique identifier** embedded in the codebase. If a pirated copy surfaces, you can trace it back to the original licensee.
+
+#### Techniques (PHP-Compatible)
+
+**Technique 1: Invisible Code Markers**
+```php
+// Embed a unique hash in a comment that looks like a build ID
+// Different per client installation package
+// File: app/Providers/AppServiceProvider.php
+// Build: a7f3c9e2-d841-4b1f-9e3a → this is actually the license fingerprint
+```
+
+**Technique 2: Whitespace Steganography**
+- Inject unique patterns of spaces/tabs at end of lines in select PHP files
+- Invisible to the eye, survives code reading, detectable by scanning
+- Each client build has a different whitespace pattern = unique fingerprint
+- Tools: encode license key hash into trailing whitespace across 10-20 files
+
+**Technique 3: Variable Naming Fingerprint**
+```php
+// Internal constants with "random" names that are actually derived from the license
+private const BUILD_HASH = 'a7f3c9e2'; // ← derived from license key
+private const INTEGRITY_TOKEN = 'd841'; // ← second segment
+```
+
+**Technique 4: Asset Fingerprinting**
+- Embed invisible data in CSS/JS build output (comments stripped in minification, but a custom marker survives)
+- Or embed in a small PNG/SVG asset (steganographic pixel data)
+
+#### Implementation Plan
+
+```
+Build Pipeline (Inno Setup / distribution):
+  1. Client purchases license key: SCAT-XXXX-YYYY-ZZZZ
+  2. Build script generates fingerprint: sha256(license_key + secret_salt)
+  3. Fingerprint injected into 10-15 files using Techniques 1-3
+  4. Installer packaged with fingerprinted source
+  5. Fingerprint hash stored in central server DB (per license)
+  
+Forensics (if pirated copy found):
+  1. Extract fingerprint markers from the pirated copy
+  2. Match against central server DB
+  3. Identify original licensee
+  4. EULA clause enables legal action
+```
+
+> [!IMPORTANT]
+> **Don't over-invest here.** The central server is your real protection. Fingerprinting is a forensic tool for AFTER piracy is discovered, not a prevention mechanism. Implement as a simple build step — not a complex anti-tamper system.
+
+#### Priority Order
+
+```
+Must-have:  Server-side enforcement (already planned)
+Should-have: EULA with counterfeit clauses
+Nice-to-have: Per-copy fingerprinting (build pipeline addition)
+Overkill:   Code obfuscation (ionCube etc.) — skip this entirely
+```
+
+---
+
+## 15. Deployment Ecosystem Summary
+
+```
+                    ┌──────────────────────────┐
+                    │   www.securecat.ph        │
+                    │   Marketing + Docs        │
+                    │   (static site / Vercel)  │
+                    └──────────────────────────┘
+                               │
+         ┌─────────────────────┼─────────────────────┐
+         │                     │                     │
+         ▼                     ▼                     ▼
+┌─────────────────┐  ┌─────────────────┐  ┌─────────────────┐
+│ api.securecat.ph│  │ admin.securecat  │  │{school}.securecat│
+│ Central Server  │  │ License Admin   │  │ Public Portal    │
+│ - License API   │  │ Dashboard       │  │ (Cloudflare →    │
+│ - Embed proxy   │  │ (your eyes only)│  │  school Laragon) │
+│ - LLM proxy     │  │                 │  │                  │
+│ - Brevo email   │  │                 │  │                  │
+│ Hosting: TBD    │  │ Same server     │  │ Client-side      │
+└────────┬────────┘  └─────────────────┘  └─────────────────┘
+         │
+         │ validates + serves
+         ▼
+┌──────────────────────────────────────────────────────┐
+│  School Installation (Laragon on Windows)             │
+│  ┌──────────────────────────────────────────────────┐│
+│  │  SecureCAT Application                          ││
+│  │  ├── MySQL (app data, users, applications...)   ││
+│  │  ├── Postgres + pgvector (cached embeddings)    ││
+│  │  ├── LicenseService → api.securecat.ph          ││
+│  │  ├── EmbeddingService → api.securecat.ph/embed  ││
+│  │  ├── LlmService → api.securecat.ph/chat         ││
+│  │  └── Core exam mgmt (works fully offline)       ││
+│  └──────────────────────────────────────────────────┘│
+│  Protected by: EULA + hardware fingerprint +         │
+│  server-side enforcement + per-copy signatures       │
+└──────────────────────────────────────────────────────┘
+```
+
+### Related Specifications
+
+| Document | Status | Relationship |
+|----------|--------|-------------|
+| [`2026-05-12-tiered-licensing-design.md`](2026-05-12-tiered-licensing-design.md) | **Partially superseded** | AI architecture changed (central server vs local Ollama), email changed (Brevo vs custom SMTP). License validation flow, feature flags, and tier matrix still valid with adjustments. |
+| [`2026-05-12-tiered-licensing-review.md`](2026-05-12-tiered-licensing-review.md) | **Still valid** | All 7 review findings were addressed in the design spec. Security recommendations (HMAC, anti-sharing) carry forward. |
+| [`installation-pathway-spec.md`](../../deployment/installation-pathway-spec.md) | **Partially outdated** | See §12 above. Install flow valid; Ollama sections must be removed; Postgres/pgvector must be added. |
+| [`2026-04-11-ai-companion-rag-spec.md`](2026-04-11-ai-companion-rag-spec.md) | **Partially superseded** | Mixedbread integration architecture still valid. Storage changes: vectors now in local pgvector instead of Mixedbread Stores. Retrieval: local pgvector search replaces Mixedbread search API. Fallback to MySQL fulltext unchanged. |
+
+---
+
+*This document captures all strategic decisions from the 2026-05-18 architecture discussion. Reference this when implementing Phases A–F. Cross-reference with the specs listed in §15 for implementation details.*
