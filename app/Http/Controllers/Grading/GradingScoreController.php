@@ -55,6 +55,7 @@ class GradingScoreController extends Controller
                 'name' => $d->name,
                 'code' => $d->code,
                 'max_items' => $d->max_items,
+                'formula' => $d->formula,
                 'has_formula' => $d->formula !== null,
             ])->values()->all(),
             'existing_scores' => $existingScores->map(fn ($s) => [
@@ -93,6 +94,28 @@ class GradingScoreController extends Controller
 
         return redirect()->route('admin.grading.sessions.show', $grading_session->id)
             ->with('success', 'Scores saved.');
+    }
+
+    public function destroy(GradingSession $grading_session, Applicant $applicant): RedirectResponse
+    {
+        if (! $grading_session->applicants()->where('applicants.id', $applicant->id)->exists()) {
+            abort(404, 'Applicant is not part of this grading session.');
+        }
+        if ($grading_session->status === GradingSession::STATUS_FINALIZED) {
+            return redirect()->back()->with('error', 'Scores cannot be cleared when the grading session is finalized.');
+        }
+
+        $this->scoreService->clearScores($grading_session, $applicant->id);
+
+        app(AuditService::class)->log('score.cleared', GradingSession::class, $grading_session->id, [], [
+            'grading_session_id' => $grading_session->id,
+            'applicant_id' => $applicant->id,
+        ], "Scores cleared for applicant {$applicant->id} in grading session {$grading_session->id}");
+
+        $this->ensureDraftSummary($grading_session, $applicant->id);
+
+        return redirect()->route('admin.grading.sessions.show', $grading_session->id)
+            ->with('success', 'Scores cleared.');
     }
 
     private function ensureDraftSummary(GradingSession $gradingSession, int $applicantId): void

@@ -54,4 +54,11 @@ class ScoreInputService
             );
         }
     }
+
+    public function clearScores(GradingSession $gradingSession, int $applicantId): void
+    {
+        ApplicantScore::where('grading_session_id', $gradingSession->id)
+            ->where('applicant_id', $applicantId)
+            ->delete();
+    }
 }

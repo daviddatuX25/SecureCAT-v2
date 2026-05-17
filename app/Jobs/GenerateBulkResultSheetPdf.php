@@ -45,7 +45,7 @@ class GenerateBulkResultSheetPdf implements ShouldQueue
             foreach (array_chunk($applicantIds, $chunkSize) as $i => $chunk) {
                 $sheetsHtml = array_merge(
                     $sheetsHtml,
-                    $templateService->buildSheetsForApplicantIds($chunk, $template, $printJob->grading_session_id)
+                    $templateService->buildRawSheetsForApplicantIds($chunk, $template, $printJob->grading_session_id)
                 );
                 $processed = min(($i + 1) * $chunkSize, $total);
                 $progress = (int) round(($processed / $total) * 100);

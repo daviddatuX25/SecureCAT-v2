@@ -9,6 +9,10 @@ use Symfony\Component\HttpFoundation\Response;
 
 class ResultSheetPdfService
 {
+    public function __construct(
+        protected PrintTemplateCssService $cssService
+    ) {}
+
     public function inline(RenderResult $result, string $filename = 'result-sheet.pdf'): Response
     {
         return $this->builder($result)->inline($filename)->toResponse(request());
@@ -57,10 +61,15 @@ class ResultSheetPdfService
 
     private function builder(RenderResult $meta, ?string $html = null): PdfBuilder
     {
+        $isBulk = $html !== null;
         $html ??= $meta->html;
 
         if ($meta->watermarkText !== null) {
             $html = $this->injectWatermark($html, $meta->watermarkText);
+        }
+
+        if ($isBulk) {
+            $html = $this->cssService->wrapBulkForPdf($html, $meta->paperSize, $meta->orientation);
         }
 
         $builder = Pdf::html($html)

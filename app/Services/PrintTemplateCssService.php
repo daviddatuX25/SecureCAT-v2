@@ -11,10 +11,16 @@ use Illuminate\Support\Facades\Vite;
  * utilities used by print templates. This service loads the built CSS and wraps
  * it in a CSS @scope rule so styles only apply inside .print-template containers,
  * preventing global app styles from bleeding in.
+ *
+ * Two render paths:
+ *  - wrap() / wrapDual()         → browser preview & window.print() (uses @scope)
+ *  - wrapForPdf() / wrapDualForPdf() → Headless Chromium PDF (full HTML doc, no @scope)
  */
 class PrintTemplateCssService
 {
     private ?string $cachedCss = null;
+
+    private ?string $cachedRawCss = null;
 
     /**
      * Wrap rendered template HTML in a scoped container with injected CSS.
@@ -53,12 +59,120 @@ class PrintTemplateCssService
             return $this->cachedCss;
         }
 
-        $rawCss = $this->loadBuiltCss();
+        $rawCss = $this->getRawCss();
         $scoped = "@scope (.print-template) {\n{$rawCss}\n}";
 
         $this->cachedCss = $scoped;
 
         return $scoped;
+    }
+
+    /**
+     * Get the raw (unscoped) built CSS string (cached per request).
+     */
+    public function getRawCss(): string
+    {
+        if ($this->cachedRawCss !== null) {
+            return $this->cachedRawCss;
+        }
+
+        $this->cachedRawCss = $this->loadBuiltCss();
+
+        return $this->cachedRawCss;
+    }
+
+    /**
+     * Produce a full <!DOCTYPE html> document for PDF rendering (Headless Chromium).
+     *
+     * No @scope is used — the isolated Chromium context has no global CSS to protect
+     * against. Styles are applied directly to .print-template. An @page rule sets the
+     * paper size and removes default margins. A Google Fonts import loads Montserrat
+     * on Chromium's cold start.
+     *
+     * @param  string  $paperSize  e.g. 'a4', 'letter', 'legal'
+     * @param  string  $orientation  'portrait' | 'landscape'
+     */
+    public function wrapForPdf(string $html, string $paperSize = 'a4', string $orientation = 'portrait'): string
+    {
+        $css = $this->getRawCss();
+        $pageRule = $this->buildPageRule($paperSize, $orientation);
+
+        return $this->buildHtmlDocument(
+            "<div class=\"print-template\">{$html}</div>",
+            $pageRule.$css
+        );
+    }
+
+    /**
+     * Produce a full <!DOCTYPE html> document for a dual-layout PDF (Headless Chromium).
+     */
+    public function wrapDualForPdf(string $html1, string $html2, string $paperSize = 'a4', string $orientation = 'portrait'): string
+    {
+        $css = $this->getRawCss();
+        $pageRule = $this->buildPageRule($paperSize, $orientation);
+
+        $body = "<div class=\"print-template print-template--dual\">\n"
+            ."  <div class=\"print-template--half\">{$html1}</div>\n"
+            ."  <div class=\"print-template--half\">{$html2}</div>\n"
+            .'</div>';
+
+        return $this->buildHtmlDocument($body, $pageRule.$css);
+    }
+
+    /**
+     * Wrap arbitrary bulk HTML (joined fragments) into a full document.
+     */
+    public function wrapBulkForPdf(string $html, string $paperSize = 'a4', string $orientation = 'portrait'): string
+    {
+        $css = $this->getRawCss();
+        $pageRule = $this->buildPageRule($paperSize, $orientation);
+
+        return $this->buildHtmlDocument($html, $pageRule.$css);
+    }
+
+    /**
+     * Build the @page CSS rule for the given paper size and orientation.
+     */
+    private function buildPageRule(string $paperSize, string $orientation): string
+    {
+        $size = match (strtolower($paperSize)) {
+            'letter' => '8.5in 11in',
+            'legal' => '8.5in 14in',
+            default => 'A4',
+        };
+
+        if (strtolower($orientation) === 'landscape') {
+            $size .= ' landscape';
+        }
+
+        return "@page { size: {$size}; margin: 0; }\n";
+    }
+
+    /**
+     * Wrap body HTML and CSS into a complete HTML document ready for Chromium.
+     */
+    private function buildHtmlDocument(string $body, string $css): string
+    {
+        return <<<HTML
+            <!DOCTYPE html>
+            <html lang="en">
+            <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <link rel="preconnect" href="https://fonts.googleapis.com">
+            <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+            <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
+            <style>
+            *, *::before, *::after { box-sizing: border-box; }
+            body { margin: 0; padding: 0; background: white; }
+            {$css}
+            </style>
+            </head>
+            <body>
+            {$body}
+            </body>
+            </html>
+            HTML;
     }
 
     /**

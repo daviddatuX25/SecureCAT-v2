@@ -46,8 +46,7 @@
             No aptitude areas configured
           </CardTitle>
           <CardDescription>
-            Aptitude areas must be set up before you can open grading sessions. Run
-            <span class="font-mono text-sm">php artisan db:seed</span> to create default aptitude areas, or add them via
+            Aptitude areas must be set up before you can open grading sessions. Add them via
             <Link href="/admin/aptitude-areas" class="font-medium text-primary underline hover:no-underline">Admin &rarr; Aptitude Areas</Link>.
           </CardDescription>
         </CardHeader>

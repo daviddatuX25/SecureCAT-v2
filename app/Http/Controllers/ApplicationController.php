@@ -13,10 +13,10 @@ use App\Models\Appointment;
 use App\Models\Course;
 use App\Notifications\ApplicationStatusChanged;
 use App\Services\AdmissionSlipService;
+use App\Services\ApplicationPipelineService;
 use Carbon\Carbon;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Inertia\Inertia;
@@ -46,9 +46,6 @@ class ApplicationController extends Controller
                 'coursePreference2:id,name,code',
                 'coursePreference3:id,name,code',
                 'academicYear:id,academic_year,semester',
-                'applicant.examSessions:id,status,type',
-                'applicant.applicantScores:id,applicant_id',
-                'applicant.consultationSummary:id,applicant_id,status,released_at',
             ]);
 
         if ($queryAcademicYearId !== null) {
@@ -97,44 +94,27 @@ class ApplicationController extends Controller
                 'full_name' => $fullName,
                 'email' => $app->email,
                 'status' => $app->status,
-                'pipeline_status' => $app->pipelineStatus(),
+                'pipeline_status' => $app->pipeline_status ?? 'pending',
                 'submitted_at' => $app->submitted_at?->toIso8601String(),
                 'course_preferences' => $courses,
             ];
         };
 
-        // When filtering or sorting by computed pipeline_status, fetch all and paginate manually
-        if ($pipelineStatus || $sortField === 'pipeline_status') {
-            $all = $query->orderByDesc('submitted_at')->get();
-            $transformed = $all->map($transformApp);
-
-            if ($pipelineStatus) {
-                $transformed = $transformed->filter(fn ($item) => $item['pipeline_status'] === $pipelineStatus)->values();
-            }
-
-            if ($sortField === 'pipeline_status') {
-                $order = ['pending' => 0, 'accepted' => 1, 'draft_scheduled' => 2, 'scheduled' => 3, 'printed' => 4, 'attended' => 5, 'submitted' => 6, 'scored' => 7, 'graded' => 8, 'released' => 9, 'dismissed' => 10];
-                $transformed = $sortDirection === 'asc'
-                    ? $transformed->sortBy(fn ($item) => $order[$item['pipeline_status']] ?? 99)->values()
-                    : $transformed->sortByDesc(fn ($item) => $order[$item['pipeline_status']] ?? 99)->values();
-            }
-
-            $page = (int) $request->input('page', 1);
-            $perPage = 15;
-            $offset = ($page - 1) * $perPage;
-            $items = $transformed->slice($offset, $perPage)->values();
-
-            $applications = new LengthAwarePaginator(
-                $items,
-                $transformed->count(),
-                $perPage,
-                $page,
-                ['path' => $request->url(), 'query' => $request->query()]
-            );
-        } else {
-            $applications = $query->orderByDesc('submitted_at')->paginate(15)->withQueryString();
-            $applications->getCollection()->transform($transformApp);
+        // Native DB pipeline_status filter and sort — no in-memory collection processing
+        if ($pipelineStatus) {
+            $query->where('pipeline_status', $pipelineStatus);
         }
+
+        $sortableColumns = ['submitted_at', 'pipeline_status', 'last_name', 'first_name'];
+        $resolvedSort = in_array($sortField, $sortableColumns, true) ? $sortField : 'submitted_at';
+        $resolvedDir = $sortDirection === 'asc' ? 'asc' : 'desc';
+
+        $applications = $query
+            ->orderBy($resolvedSort, $resolvedDir)
+            ->paginate(15)
+            ->withQueryString();
+
+        $applications->getCollection()->transform($transformApp);
 
         $academicYears = AcademicYear::query()
             ->orderByDesc('academic_year')
@@ -335,6 +315,11 @@ class ApplicationController extends Controller
             'staff_id' => auth()->id(),
             'accept_immediately' => $acceptImmediately,
         ]);
+
+        // Pipeline hook: set initial accepted status when auto-accepted
+        if ($acceptImmediately) {
+            app(ApplicationPipelineService::class)->transition($application->fresh(), 'accepted');
+        }
 
         return redirect()
             ->route('admin.applications.show', $application)
@@ -557,6 +542,9 @@ class ApplicationController extends Controller
                 $application->applicant?->notify(new ApplicationStatusChanged($application, $oldStatus, 'accepted'));
             }
 
+            // Pipeline hook: advance to accepted
+            app(ApplicationPipelineService::class)->transition($application->fresh(), 'accepted');
+
             Log::info('Application accepted', [
                 'application_id' => $application->id,
                 'reference_number' => $application->reference_number,
@@ -647,6 +635,9 @@ class ApplicationController extends Controller
         // Notify applicant of status change
         $application->applicant?->notify(new ApplicationStatusChanged($application, $oldStatus, 'dismissed'));
 
+        // Pipeline hook: mark dismissed (always overrides)
+        app(ApplicationPipelineService::class)->transition($application->fresh(), 'dismissed');
+
         Log::info('Application dismissed', [
             'application_id' => $application->id,
             'reference_number' => $application->reference_number,
@@ -710,6 +701,9 @@ class ApplicationController extends Controller
 
             // Notify applicant of status change
             $application->applicant?->notify(new ApplicationStatusChanged($application, $oldStatus, 'accepted'));
+
+            // Pipeline hook: advance to accepted
+            app(ApplicationPipelineService::class)->transition($application->fresh(), 'accepted');
         }
 
         return back()->with('success', 'Selected applications accepted. Setup emails have been sent.');
@@ -736,6 +730,9 @@ class ApplicationController extends Controller
 
             // Notify applicant of status change
             $application->applicant?->notify(new ApplicationStatusChanged($application, $oldStatus, 'dismissed'));
+
+            // Pipeline hook: mark dismissed
+            app(ApplicationPipelineService::class)->transition($application->fresh(), 'dismissed');
         }
 
         return back()->with('success', 'Selected applications dismissed.');
@@ -767,6 +764,9 @@ class ApplicationController extends Controller
 
         // Delete applicant record if exists (will be recreated if accepted again)
         $application->applicant?->delete();
+
+        // Pipeline hook: force-reset pipeline status back to pending on reopen
+        app(ApplicationPipelineService::class)->forceSet($application->fresh(), 'pending');
 
         return back()->with('success', 'Application reverted to pending.');
     }

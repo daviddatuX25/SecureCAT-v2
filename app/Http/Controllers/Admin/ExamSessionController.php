@@ -18,6 +18,7 @@ use App\Notifications\ExamSessionCancelled;
 use App\Notifications\ExamSessionCompleted;
 use App\Notifications\ExamSessionPublished;
 use App\Notifications\ExamSessionStarted;
+use App\Services\ApplicationPipelineService;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
@@ -342,6 +343,22 @@ class ExamSessionController extends Controller
         $toAttach = array_diff($applicantIds, $alreadyAttached);
         if (! empty($toAttach)) {
             $exam_session->applicants()->attach($toAttach);
+
+            // Pipeline hook: newly assigned applicants advance to draft_scheduled or scheduled
+            $targetStatus = $exam_session->status === ExamSession::STATUS_DRAFT
+                ? 'draft_scheduled'
+                : 'scheduled';
+            $pipeline = app(ApplicationPipelineService::class);
+            Applicant::whereIn('id', $toAttach)
+                ->with('application')
+                ->get()
+                ->each(function (Applicant $applicant) use ($pipeline, $targetStatus, $exam_session) {
+                    if ($applicant->application) {
+                        $pipeline->transition($applicant->application, $targetStatus, [
+                            'session_id' => $exam_session->id,
+                        ]);
+                    }
+                });
         }
 
         $exam_session->loadCount('applicants');
@@ -386,6 +403,17 @@ class ExamSessionController extends Controller
                 fn ($applicant) => $applicant->notify(new ExamSessionPublished($exam_session))
             );
         }
+
+        // Pipeline hook: advance all assigned applicants to scheduled on publish
+        $pipeline = app(ApplicationPipelineService::class);
+        $exam_session->applicants()->with('application')->get()
+            ->each(function (Applicant $applicant) use ($pipeline, $exam_session) {
+                if ($applicant->application) {
+                    $pipeline->transition($applicant->application, 'scheduled', [
+                        'session_id' => $exam_session->id,
+                    ]);
+                }
+            });
 
         // Notify assigned proctors and test_admins on publish
         $exam_session->load('proctors');

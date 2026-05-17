@@ -64,12 +64,29 @@
     return scores.find((x) => x.aptitude_area_id === domainId)?.max_score ?? 0;
   }
 
-  function pct(domainId) {
-    const raw = getScore(domainId);
-    const max = getMax(domainId);
-    if (max <= 0) return 0;
-    return Math.round((raw / max) * 100);
+  function computeNormalized(domainId, raw) {
+    const d = domains.find((x) => x.id === domainId);
+    if (!d || !d.formula) return null;
+    
+    // Robust Security Pattern: Prevent XSS by strictly limiting allowed characters
+    // We only allow math operators, digits, spaces, and the specific variables 'x' and 'max_items'.
+    const stripped = d.formula.replace(/max_items/g, '').replace(/x/g, '');
+    if (!/^[\d\s\+\-\*\/\(\)\.]+$/.test(stripped)) {
+      // Fallback if formula uses unsupported advanced functions (e.g. max(), min())
+      // The backend will calculate it upon saving.
+      return null;
+    }
+
+    try {
+      const fn = new Function('x', 'max_items', `return ${d.formula};`);
+      const res = fn(raw, d.max_items || 0);
+      return Number.isFinite(res) ? Number(res.toFixed(2)) : null;
+    } catch (e) {
+      return null;
+    }
   }
+
+
 
   let saving = $state(false);
   let saveError = $state('');
@@ -95,6 +112,22 @@
         saveError = Object.values(err).flat().join(', ') || 'Failed to save scores.';
       },
       onFinish: () => (saving = false),
+    });
+  }
+
+  let clearing = $state(false);
+  function clearScores() {
+    if (!confirm('Are you sure you want to clear all scores for this applicant?')) return;
+    clearing = true;
+    saveError = '';
+    router.delete(`/admin/grading/sessions/${sid}/applicants/${applicantId}/scores`, {
+      onError: (err) => {
+        clearing = false;
+        saveError = Object.values(err).flat().join(', ') || 'Failed to clear scores.';
+      },
+      onFinish: () => {
+        clearing = false;
+      },
     });
   }
 </script>
@@ -140,7 +173,7 @@
               </label>
               {#if autoCompute}
                 {@const raw = getScore(domain.id)}
-                {@const percent = max > 0 ? Math.round((raw / max) * 100) : 0}
+                {@const computedNorm = computeNormalized(domain.id, raw)}
                 <div class="flex items-center gap-3">
                   <Input
                     id="score-{domain.id}"
@@ -153,7 +186,11 @@
                     class="w-20"
                   />
                   <span class="text-muted-foreground">/ {max}</span>
-                  <span class="text-sm font-medium tabular-nums">{percent}%</span>
+                  {#if computedNorm !== null}
+                    <span class="text-sm font-medium tabular-nums text-muted-foreground">
+                      ({computedNorm} pts)
+                    </span>
+                  {/if}
                 </div>
                 {#if !domain.has_formula}
                   <p class="text-xs text-muted-foreground">No formula configured — normalized score will not be computed.</p>
@@ -185,10 +222,15 @@
 
         <div class="flex flex-wrap gap-3 pt-2">
           {#if !isReadOnly}
-          <Button onclick={saveScores} disabled={saving} class="min-h-[44px]">
+          <Button onclick={saveScores} disabled={saving || clearing} class="min-h-[44px]">
             <Save class="h-4 w-4 mr-2" />
             {saving ? 'Saving…' : 'Save scores'}
           </Button>
+          {#if existing_scores.length > 0}
+            <Button variant="destructive" onclick={clearScores} disabled={saving || clearing} class="min-h-[44px]">
+              {clearing ? 'Clearing…' : 'Clear scores'}
+            </Button>
+          {/if}
           {/if}
           <Link href={`/admin/grading/sessions/${sid}`}>
             <Button variant="outline" class="min-h-[44px]">

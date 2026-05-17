@@ -2,9 +2,11 @@
 
 namespace Tests\Feature\Admin;
 
+use App\Models\AptitudeArea;
 use App\Models\Role;
 use App\Models\SystemSetting;
 use App\Models\User;
+use Database\Seeders\RoleSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -15,7 +17,7 @@ class SettingsControllerTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->seed(\Database\Seeders\RoleSeeder::class);
+        $this->seed(RoleSeeder::class);
     }
 
     public function test_super_admin_can_view_settings_index(): void
@@ -111,5 +113,35 @@ class SettingsControllerTest extends TestCase
         ]);
 
         $this->assertSame('You are helpful.', SystemSetting::get('ai_companion_persona'));
+    }
+
+    public function test_super_admin_can_enable_auto_compute_if_all_areas_have_formula(): void
+    {
+        $user = User::factory()->create();
+        $user->roles()->attach(Role::where('name', 'super_admin')->first());
+
+        AptitudeArea::factory()->create(['is_active' => true, 'formula' => 'score * 1']);
+
+        $response = $this->actingAs($user)->put('/admin/settings', [
+            'enable_normalized_scores' => true,
+        ]);
+
+        $response->assertSessionHasNoErrors();
+        $this->assertTrue((bool) SystemSetting::get('enable_normalized_scores'));
+    }
+
+    public function test_super_admin_cannot_enable_auto_compute_if_any_area_missing_formula(): void
+    {
+        $user = User::factory()->create();
+        $user->roles()->attach(Role::where('name', 'super_admin')->first());
+
+        AptitudeArea::factory()->create(['is_active' => true, 'formula' => null]);
+
+        $response = $this->actingAs($user)->put('/admin/settings', [
+            'enable_normalized_scores' => true,
+        ]);
+
+        $response->assertSessionHasErrors(['enable_normalized_scores']);
+        $this->assertFalse((bool) SystemSetting::get('enable_normalized_scores'));
     }
 }

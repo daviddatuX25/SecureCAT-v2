@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Grading;
 use App\Http\Controllers\Controller;
 use App\Models\AptitudeArea;
 use App\Models\GradingSession;
+use App\Services\ApplicationPipelineService;
 use App\Services\AuditService;
 use App\Services\GradingSessionService;
 use Illuminate\Http\RedirectResponse;
@@ -72,6 +73,17 @@ class GradingSessionController extends Controller
                 'status' => GradingSession::STATUS_FINALIZED,
                 'actor_id' => $request->user()->id,
             ], "Grading session {$grading_session->id} finalized");
+
+            // Pipeline hook: mark all applicants in this session as graded
+            $pipeline = app(ApplicationPipelineService::class);
+            $grading_session->load('applicants.application');
+            foreach ($grading_session->applicants as $applicant) {
+                if ($applicant->application) {
+                    $pipeline->transition($applicant->application, 'graded', [
+                        'grading_session_id' => $grading_session->id,
+                    ]);
+                }
+            }
         }
 
         return redirect()->back()->with('success', 'Status updated.');

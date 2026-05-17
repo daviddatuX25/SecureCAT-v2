@@ -8,6 +8,7 @@ use App\Models\GradingSession;
 use App\Models\SystemSetting;
 use App\Notifications\ResultReleased;
 use App\Notifications\ResultReleasedF2F;
+use App\Services\ApplicationPipelineService;
 use App\Services\ConsultationSummaryService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -123,6 +124,15 @@ class ReleaseController extends Controller
             $summary->applicant->notify(new ResultReleased($summary));
         }
 
+        // Pipeline hook: mark released
+        if ($summary->applicant?->application) {
+            app(ApplicationPipelineService::class)->transition(
+                $summary->applicant->application,
+                'released',
+                ['released_at' => now()->toIso8601String()]
+            );
+        }
+
         return back()->with('success', 'Result released.');
     }
 
@@ -152,6 +162,15 @@ class ReleaseController extends Controller
             } else {
                 $summary->applicant->notify(new ResultReleased($summary));
             }
+
+            // Pipeline hook: mark released
+            if ($summary->applicant?->application) {
+                app(ApplicationPipelineService::class)->transition(
+                    $summary->applicant->application,
+                    'released',
+                    ['released_at' => now()->toIso8601String()]
+                );
+            }
         }
 
         return back()->with('success', count($summaries).' result(s) released.');
@@ -179,6 +198,16 @@ class ReleaseController extends Controller
             ]);
 
             $summary->applicant->notify(new ResultReleased($summary));
+
+            // Pipeline hook: mark released
+            if ($summary->applicant?->application) {
+                app(ApplicationPipelineService::class)->transition(
+                    $summary->applicant->application,
+                    'released',
+                    ['released_at' => now()->toIso8601String()]
+                );
+            }
+
             $releasedCount++;
         }
 

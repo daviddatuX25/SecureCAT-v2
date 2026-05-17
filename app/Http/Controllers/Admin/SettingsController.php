@@ -6,6 +6,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\UpdateSystemSettingsRequest;
+use App\Models\AptitudeArea;
 use App\Models\SystemSetting;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -59,6 +60,17 @@ class SettingsController extends Controller
         }
 
         if (array_key_exists('enable_normalized_scores', $validated)) {
+            if ($validated['enable_normalized_scores']) {
+                $areasWithoutFormula = AptitudeArea::where('is_active', true)
+                    ->whereNull('formula')
+                    ->count();
+
+                if ($areasWithoutFormula > 0) {
+                    return redirect()->back()->withErrors([
+                        'enable_normalized_scores' => 'Cannot enable auto-compute: All active aptitude areas must have a formula configured first.',
+                    ]);
+                }
+            }
             SystemSetting::set('enable_normalized_scores', (bool) $validated['enable_normalized_scores']);
         }
 

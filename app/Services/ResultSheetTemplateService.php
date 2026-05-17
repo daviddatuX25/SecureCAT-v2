@@ -30,15 +30,18 @@ class ResultSheetTemplateService
      *
      * @param  array<int, array{name: string, reference: string, exam_date: string, room_name: string, scores: array<array{domain: string, raw: int, max: int, pct: int}>, overall_pct: int}>  $applicants
      */
-    public function render(ResultSheetTemplate $template, array $applicants, bool $useSampleData = false): RenderResult
+    public function render(ResultSheetTemplate $template, array $applicants, bool $useSampleData = false, bool $forPdf = false): RenderResult
     {
         $applicants = array_values($applicants);
         $replacements = $this->buildReplacements($applicants, $useSampleData);
+        $paperSize = $template->paper_size ?? ResultSheetTemplate::PAPER_A4;
+        $orientation = $template->orientation ?? ResultSheetTemplate::ORIENTATION_PORTRAIT;
 
         if ($template->mode === ResultSheetTemplate::MODE_HTML) {
-            $html = $this->cssService->wrap(
-                $this->renderRaw($template->content ?: '', $replacements)
-            );
+            $rawHtml = $this->renderRaw($template->content ?: '', $replacements);
+            $html = $forPdf
+                ? $this->cssService->wrapForPdf($rawHtml, $paperSize, $orientation)
+                : $this->cssService->wrap($rawHtml);
         } else {
             $html = $this->docxService->renderDocxFromStoragePath($template->docx_path, $replacements);
         }
@@ -46,8 +49,8 @@ class ResultSheetTemplateService
         return new RenderResult(
             html: $html,
             mode: $template->mode,
-            paperSize: $template->paper_size ?? ResultSheetTemplate::PAPER_A4,
-            orientation: $template->orientation ?? ResultSheetTemplate::ORIENTATION_PORTRAIT,
+            paperSize: $paperSize,
+            orientation: $orientation,
             logicalUnit: $template->logical_unit ?? ResultSheetTemplate::LOGICAL_FULL,
             watermarkText: $template->watermark_text,
         );
@@ -59,26 +62,32 @@ class ResultSheetTemplateService
      * @param  array{name: string, reference: string, exam_date: string, room_name: string, scores: array<array{domain: string, raw: int, max: int, pct: int}>, overall_pct: int}  $applicant1
      * @param  array{name: string, reference: string, exam_date: string, room_name: string, scores: array<array{domain: string, raw: int, max: int, pct: int}>, overall_pct: int}  $applicant2
      */
-    public function renderDual(ResultSheetTemplate $template, array $applicant1, array $applicant2, bool $useSampleData = false): RenderResult
+    public function renderDual(ResultSheetTemplate $template, array $applicant1, array $applicant2, bool $useSampleData = false, bool $forPdf = false): RenderResult
     {
         $replacements1 = $this->buildReplacements([$applicant1], $useSampleData);
         $replacements2 = $this->buildReplacements([$applicant2], $useSampleData);
+        $paperSize = $template->paper_size ?? ResultSheetTemplate::PAPER_A4;
+        $orientation = $template->orientation ?? ResultSheetTemplate::ORIENTATION_PORTRAIT;
 
         if ($template->mode === ResultSheetTemplate::MODE_HTML) {
             $html1 = $this->renderRaw($template->content ?: '', $replacements1);
             $html2 = $this->renderRaw($template->content ?: '', $replacements2);
-            $html = $this->cssService->wrapDual($html1, $html2);
+            $html = $forPdf
+                ? $this->cssService->wrapDualForPdf($html1, $html2, $paperSize, $orientation)
+                : $this->cssService->wrapDual($html1, $html2);
         } else {
             $html1 = $this->docxService->renderDocxFromStoragePath($template->docx_path, $replacements1);
             $html2 = $this->docxService->renderDocxFromStoragePath($template->docx_path, $replacements2);
-            $html = $this->cssService->wrapDual($html1, $html2);
+            $html = $forPdf
+                ? $this->cssService->wrapDualForPdf($html1, $html2, $paperSize, $orientation)
+                : $this->cssService->wrapDual($html1, $html2);
         }
 
         return new RenderResult(
             html: $html,
             mode: $template->mode,
-            paperSize: $template->paper_size ?? ResultSheetTemplate::PAPER_A4,
-            orientation: $template->orientation ?? ResultSheetTemplate::ORIENTATION_PORTRAIT,
+            paperSize: $paperSize,
+            orientation: $orientation,
             logicalUnit: $template->logical_unit ?? ResultSheetTemplate::LOGICAL_FULL,
             watermarkText: $template->watermark_text,
         );
@@ -106,7 +115,7 @@ class ResultSheetTemplateService
      * @param  array<int, array<string, mixed>>  $applicantsWithScores
      * @return string[]
      */
-    public function buildSheetsFromApplicantData(array $applicantsWithScores, ResultSheetTemplate $template): array
+    public function buildSheetsFromApplicantData(array $applicantsWithScores, ResultSheetTemplate $template, bool $forPdf = false): array
     {
         $logicalUnit = $template->logical_unit ?? ResultSheetTemplate::LOGICAL_FULL;
         $chunkSize = in_array($logicalUnit, [ResultSheetTemplate::LOGICAL_HALF_A4, ResultSheetTemplate::LOGICAL_HALF_LEGAL, ResultSheetTemplate::LOGICAL_HALF_LETTER], true) ? 2 : 1;
@@ -114,15 +123,98 @@ class ResultSheetTemplateService
         $sheetsHtml = [];
         foreach (array_chunk($applicantsWithScores, $chunkSize) as $chunk) {
             if (count($chunk) === 2) {
-                $result = $this->renderDual($template, $chunk[0], $chunk[1], false);
+                $result = $this->renderDual($template, $chunk[0], $chunk[1], false, $forPdf);
                 $sheetsHtml[] = $result->html;
             } else {
-                $result = $this->render($template, $chunk, false);
+                $result = $this->render($template, $chunk, false, $forPdf);
                 $sheetsHtml[] = $result->html;
             }
         }
 
         return $sheetsHtml;
+    }
+
+    /**
+     * Build raw (unwrapped) HTML fragments for each sheet — for use in bulk PDF assembly.
+     *
+     * Unlike buildSheetsFromApplicantData(), these fragments have NO CSS wrapping and no
+     * full HTML document shell. The caller (ResultSheetPdfService) is responsible for
+     * combining them and producing a single valid HTML document.
+     *
+     * @param  array<int, array<string, mixed>>  $applicantsWithScores
+     * @return string[]
+     */
+    public function buildRawSheetsFromApplicantData(array $applicantsWithScores, ResultSheetTemplate $template): array
+    {
+        $logicalUnit = $template->logical_unit ?? ResultSheetTemplate::LOGICAL_FULL;
+        $chunkSize = in_array($logicalUnit, [ResultSheetTemplate::LOGICAL_HALF_A4, ResultSheetTemplate::LOGICAL_HALF_LEGAL, ResultSheetTemplate::LOGICAL_HALF_LETTER], true) ? 2 : 1;
+
+        $sheetsHtml = [];
+        foreach (array_chunk($applicantsWithScores, $chunkSize) as $chunk) {
+            if (count($chunk) === 2) {
+                $sheetsHtml[] = $this->buildRawDualFragment($template, $chunk[0], $chunk[1]);
+            } else {
+                $sheetsHtml[] = $this->buildRawFragment($template, $chunk);
+            }
+        }
+
+        return $sheetsHtml;
+    }
+
+    /**
+     * Fetch applicants + scores for given IDs and return raw HTML fragments for bulk PDF.
+     *
+     * @param  int[]  $applicantIds
+     * @return string[]
+     */
+    public function buildRawSheetsForApplicantIds(
+        array $applicantIds,
+        ResultSheetTemplate $template,
+        ?int $gradingSessionId = null,
+    ): array {
+        $applicantsWithScores = $this->fetchApplicantsWithScores($applicantIds, $gradingSessionId);
+
+        return $this->buildRawSheetsFromApplicantData($applicantsWithScores, $template);
+    }
+
+    /**
+     * @param  array<int, array{name: string, reference: string, exam_date: string, room_name: string, scores: array<array{domain: string, raw: int, max: int, pct: int}>, overall_pct: int}>  $applicants
+     */
+    public function buildRawFragment(ResultSheetTemplate $template, array $applicants, bool $useSampleData = false): string
+    {
+        $applicants = array_values($applicants);
+        $replacements = $this->buildReplacements($applicants, $useSampleData);
+
+        if ($template->mode === ResultSheetTemplate::MODE_HTML) {
+            $html = $this->renderRaw($template->content ?: '', $replacements);
+        } else {
+            $html = $this->docxService->renderDocxFromStoragePath($template->docx_path, $replacements);
+        }
+
+        return "<div class=\"print-template\">{$html}</div>";
+    }
+
+    /**
+     * @param  array{name: string, reference: string, exam_date: string, room_name: string, scores: array<array{domain: string, raw: int, max: int, pct: int}>, overall_pct: int}  $applicant1
+     * @param  array{name: string, reference: string, exam_date: string, room_name: string, scores: array<array{domain: string, raw: int, max: int, pct: int}>, overall_pct: int}  $applicant2
+     */
+    public function buildRawDualFragment(ResultSheetTemplate $template, array $applicant1, array $applicant2, bool $useSampleData = false): string
+    {
+        $replacements1 = $this->buildReplacements([$applicant1], $useSampleData);
+        $replacements2 = $this->buildReplacements([$applicant2], $useSampleData);
+
+        if ($template->mode === ResultSheetTemplate::MODE_HTML) {
+            $html1 = $this->renderRaw($template->content ?: '', $replacements1);
+            $html2 = $this->renderRaw($template->content ?: '', $replacements2);
+        } else {
+            $html1 = $this->docxService->renderDocxFromStoragePath($template->docx_path, $replacements1);
+            $html2 = $this->docxService->renderDocxFromStoragePath($template->docx_path, $replacements2);
+        }
+
+        return "<div class=\"print-template print-template--dual\">\n"
+            ."  <div class=\"print-template--half\">{$html1}</div>\n"
+            ."  <div class=\"print-template--half\">{$html2}</div>\n"
+            .'</div>';
     }
 
     /**
@@ -262,7 +354,9 @@ class ResultSheetTemplateService
                 $slug = $this->aptitudeAreaSlug($domain->name);
                 $score = $scoresByDomain->get($domain->name);
                 $pct = $score !== null ? (string) ((int) ($score['pct'] ?? 0)) : '—';
-                $raw = $score !== null ? sprintf('%d / %d', (int) ($score['raw'] ?? 0), (int) ($score['max'] ?? 0)) : '—';
+                $raw = $score !== null
+                    ? ($score['max'] > 0 ? sprintf('%d / %d', (int) ($score['raw'] ?? 0), (int) ($score['max'])) : (string) ($score['raw'] ?? '—'))
+                    : '—';
                 $replacements[$slug.$suffix] = $pct;
                 $replacements[$slug.'_raw'.$suffix] = $raw;
             }
@@ -352,9 +446,9 @@ class ResultSheetTemplateService
     {
         return $scores->map(fn ($s) => [
             'domain' => $s->aptitudeArea?->name ?? '—',
-            'raw' => $s->raw_score,
+            'raw' => $s->normalized_score ?? $s->raw_score,
             'max' => $s->max_score,
-            'pct' => $s->max_score > 0 ? (int) round(($s->raw_score / $s->max_score) * 100) : 0,
+            'pct' => $s->normalized_score ?? ($s->max_score > 0 ? (int) round(($s->raw_score / $s->max_score) * 100) : 0),
         ])->values()->all();
     }
 
@@ -400,12 +494,25 @@ class ResultSheetTemplateService
 
         foreach (['scores_rows_2' => 'scores-rows-placeholder-2', 'scores_rows' => 'scores-rows-placeholder'] as $key => $class) {
             $rows = $replacements[$key] ?? '';
+
+            // Try matching TR first
             $content = preg_replace_callback(
                 '/<\s*tr\s+class\s*=\s*["\']'.preg_quote($class, '/').'["\'][^>]*>.*?<\s*\/\s*tr\s*>/s',
                 fn () => $rows ?: '<tr class="'.$class.'"><td colspan="3"></td></tr>',
                 $content,
-                1
+                1,
+                $count
             );
+
+            // If no TR matched, try matching TBODY
+            if ($count === 0) {
+                $content = preg_replace_callback(
+                    '/(<\s*tbody\s+class\s*=\s*["\']'.preg_quote($class, '/').'["\'][^>]*>)(.*?)(<\s*\/\s*tbody\s*>)/s',
+                    fn ($matches) => $matches[1]."\n".($rows ?: '<tr><td colspan="3"></td></tr>')."\n".$matches[3],
+                    $content,
+                    1
+                );
+            }
         }
 
         return $content;
@@ -439,11 +546,14 @@ class ResultSheetTemplateService
     {
         $rows = [];
         foreach ($scores as $s) {
+            $rawFormatted = $s['max'] > 0
+                ? sprintf('%d / %d', (int) ($s['raw'] ?? 0), (int) ($s['max']))
+                : (string) ($s['raw'] ?? '—');
+
             $rows[] = sprintf(
-                '<tr class="border-b border-border/50"><td class="py-1.5">%s</td><td class="text-right py-1.5">%d / %d</td><td class="text-right py-1.5 font-medium">%d%%</td></tr>',
+                '<tr class="border-b border-border/50"><td class="py-1.5">%s</td><td class="text-right py-1.5">%s</td><td class="text-right py-1.5 font-medium">%d%%</td></tr>',
                 htmlspecialchars($s['domain'] ?? '—'),
-                (int) ($s['raw'] ?? 0),
-                (int) ($s['max'] ?? 0),
+                $rawFormatted,
                 (int) ($s['pct'] ?? 0)
             );
         }

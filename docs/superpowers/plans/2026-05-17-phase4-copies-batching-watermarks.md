@@ -328,12 +328,16 @@ class ResultSheetPdfServiceCopiesTest extends TestCase
 }
 ```
 
-- [ ] **Step 2: Run tests to verify they fail**
+- [ ] **Step 2: Check ResultSheetTemplate factory for watermark_text**
+
+ Open `database/factories/ResultSheetTemplateFactory.php` and verify the `definition()` array. If `watermark_text` is absent, add `'watermark_text' => null` to it so factory `make()` overrides work cleanly in tests.
+
+- [ ] **Step 3: Run tests to verify they fail**
 
 Run: `php artisan test --compact tests/Unit/Services/ResultSheetPdfServiceCopiesTest.php`
 Expected: `test_builder_injects_watermark_overlay_when_present` FAILS (no watermark injection yet). `test_copies_duplications_are_collated_per_sheet` FAILS (no copies param). `test_render_result_from_template_*` should PASS (implemented in Task 1).
 
-- [ ] **Step 3: Implement watermark injection + copies expansion**
+- [ ] **Step 4: Implement watermark injection + copies expansion**
 
 Replace `app/Services/ResultSheetPdfService.php` entirely with:
 
@@ -391,22 +395,14 @@ class ResultSheetPdfService
 
     /**
      * Generate bulk PDF content as a string (for disk storage by queued jobs).
+     * Uses builder() so watermark injection is applied consistently.
      *
      * @param  string[]  $sheetsHtml  One HTML blob per logical sheet.
      */
     public function generateBulkPdfContent(array $sheetsHtml, RenderResult $meta, int $copies = 1): string
     {
-        $html = $this->combineSheets($sheetsHtml, $copies);
-
-        $builder = Pdf::html($html)
-            ->format($meta->paperSize)
-            ->margins(0, 0, 0, 0);
-
-        if ($meta->orientation === 'landscape') {
-            $builder->landscape();
-        }
-
-        return $builder->content();
+        // IMPORTANT: go through builder() — not Pdf::html() directly — so watermark is injected
+        return $this->builder($meta, $this->combineSheets($sheetsHtml, $copies))->content();
     }
 
     /**
@@ -666,21 +662,17 @@ use Illuminate\Support\Collection;
 
 - [ ] **Step 2: Refactor ReleasePrintController to delegate to service**
 
-In `app/Http/Controllers/Release/ReleasePrintController.php`, replace the private helpers with calls to the service. The controller keeps `buildApplicantData()` for the single-sheet view only (where it loads data inline). The bulk methods delegate to the service.
-
-Replace the `buildSheetsFromApplicants()` method (lines 379-396) with a delegation:
+**Delete** the `buildSheetsFromApplicants()` private method from `app/Http/Controllers/Release/ReleasePrintController.php` entirely (current lines 379-396). Then update every call site that calls it to delegate to the service:
 
 ```php
-/**
- * @param  array<int, array<string, mixed>>  $applicantsWithScores
- * @return array<int, string>
- */
-private function buildSheetsFromApplicants(array $applicantsWithScores, ResultSheetTemplate $template): array
-{
-    // Delegate to service for consistent logic between sync and async paths
-    return $this->templateService->buildSheetsFromApplicantData($applicantsWithScores, $template);
-}
+// Before (in printBulk, printBulkAgnostic, printBulkPdf, printBulkAgnosticPdf — 4 call sites):
+$sheetsHtml = $this->buildSheetsFromApplicants($applicantsWithScores, $template);
+
+// After (all 4 callers):
+$sheetsHtml = $this->templateService->buildSheetsFromApplicantData($applicantsWithScores, $template);
 ```
+
+> **Note:** `printBulk()` and `printBulkAgnostic()` (the HTML preview routes) also call this method — update those too. After this step the controller retains only `buildApplicantData()`, `mapScores()`, `formatName()`, and `noTemplatePayload()` as private helpers.
 
 Add `buildSheetsFromApplicantData()` to `ResultSheetTemplateService` as well — this accepts pre-built applicant data arrays (what the controller already has from its inline paths):
 
@@ -1113,9 +1105,12 @@ public function dispatchBulkPdfJob(): JsonResponse
 
 /**
  * Return the status of a print job (for polling).
+ * Scoped to the authenticated user's own jobs to prevent cross-user data leaks.
  */
 public function printJobStatus(PrintJob $printJob): JsonResponse
 {
+    abort_if($printJob->user_id !== auth()->id(), 403, 'Access denied.');
+
     return response()->json([
         'id' => $printJob->id,
         'status' => $printJob->status,
@@ -1127,9 +1122,11 @@ public function printJobStatus(PrintJob $printJob): JsonResponse
 
 /**
  * Download the PDF for a completed print job.
+ * Scoped to the authenticated user's own jobs.
  */
 public function printJobDownload(PrintJob $printJob): SymfonyResponse
 {
+    abort_if($printJob->user_id !== auth()->id(), 403, 'Access denied.');
     abort_if(! $printJob->isCompleted(), 404, 'PDF is not ready yet.');
     abort_if(! $printJob->pdf_path, 404, 'PDF file not found.');
 

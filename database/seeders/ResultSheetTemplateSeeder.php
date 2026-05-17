@@ -54,8 +54,8 @@ class ResultSheetTemplateSeeder extends Seeder
           <th class="text-right py-1.5" style="color:#166534; font-weight:700; font-size:0.65rem; text-transform:uppercase; letter-spacing:0.06em;">Rating</th>
         </tr>
       </thead>
-      <tbody class="scores-rows-placeholder">
-        <tr><td colspan="3" style="padding:2px 0;"></td></tr>
+      <tbody>
+        <tr class="scores-rows-placeholder"><td colspan="3" style="padding:2px 0;"></td></tr>
       </tbody>
       <tfoot>
         <tr style="border-top:2px solid #bbf7d0; background:#f0fdf4;">

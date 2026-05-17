@@ -222,6 +222,7 @@ Route::middleware(['auth'])->group(function () {
         Route::put('grading/sessions/{grading_session}/workflow', [GradingSessionController::class, 'updateWorkflowStatus'])->name('sessions.workflow');
         Route::get('grading/sessions/{grading_session}/applicants/{applicant}', [GradingScoreController::class, 'show'])->name('sessions.applicants.scores');
         Route::put('grading/sessions/{grading_session}/applicants/{applicant}/scores', [GradingScoreController::class, 'update'])->name('sessions.applicants.scores.update');
+        Route::delete('grading/sessions/{grading_session}/applicants/{applicant}/scores', [GradingScoreController::class, 'destroy'])->name('sessions.applicants.scores.destroy');
         // Bulk score import
         Route::get('grading/import', [ScoreImportController::class, 'importForm'])->name('import');
         Route::post('grading/import', [ScoreImportController::class, 'import'])->name('import.store');

@@ -147,7 +147,7 @@ class ReleasePrintController extends Controller
             ->get();
 
         $applicantData = $this->buildApplicantData($applicant, $session, $scores);
-        $result = $this->templateService->render($template, [$applicantData], false);
+        $result = $this->templateService->render($template, [$applicantData], false, true);
 
         $filename = str_replace(' ', '_', $applicantData['name']).'_result_sheet.pdf';
 
@@ -220,7 +220,7 @@ class ReleasePrintController extends Controller
             return $this->buildApplicantData($a, $grading_session, null, $scores);
         })->values()->all();
 
-        $sheetsHtml = $this->templateService->buildSheetsFromApplicantData($applicantsWithScores, $template);
+        $sheetsHtml = $this->templateService->buildRawSheetsFromApplicantData($applicantsWithScores, $template);
 
         $meta = RenderResult::fromTemplate($template);
 
@@ -321,7 +321,7 @@ class ReleasePrintController extends Controller
             return $this->buildApplicantData($a, $gs, null, $scores);
         })->values()->all();
 
-        $sheetsHtml = $this->templateService->buildSheetsFromApplicantData($applicantsWithScores, $template);
+        $sheetsHtml = $this->templateService->buildRawSheetsFromApplicantData($applicantsWithScores, $template);
 
         $meta = RenderResult::fromTemplate($template);
 

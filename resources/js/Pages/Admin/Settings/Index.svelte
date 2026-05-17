@@ -32,6 +32,10 @@
         onError: (errors) => {
           const first = Object.values(errors)[0];
           showError(first ?? 'Failed to save settings.');
+          // Revert the local form state to match the server props on error
+          if (errors.enable_normalized_scores) {
+            $form.enable_normalized_scores = enable_normalized_scores;
+          }
         },
       });
     }, 300);
@@ -83,7 +87,6 @@
           </CardTitle>
           <CardDescription>
             When enabled, applicants receive an email when their exam session is published.
-            Requires a queue worker in production (or QUEUE_CONNECTION=sync in .env for local dev).
           </CardDescription>
         </CardHeader>
         <CardContent class="flex items-center gap-4">

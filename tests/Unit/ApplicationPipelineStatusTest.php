@@ -4,27 +4,31 @@ namespace Tests\Unit;
 
 use App\Models\AcademicYear;
 use App\Models\Applicant;
-use App\Models\ApplicantScore;
 use App\Models\Application;
 use App\Models\Course;
-use App\Models\ExamSession;
-use App\Models\GradingSession;
-use App\Models\User;
+use App\Services\ApplicationPipelineService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
+/**
+ * Tests for pipeline status management.
+ *
+ * Strategy: the model accessor pipelineStatus() / pipelineDetails() now read
+ * from the DB column. Tests set the column explicitly via
+ * ApplicationPipelineService::transition() (or forceSet() for test setup),
+ * then assert against the DB-backed accessor. This validates both the service
+ * and the accessor in one flow.
+ */
 class ApplicationPipelineStatusTest extends TestCase
 {
     use RefreshDatabase;
 
-    private ?User $user = null;
-
-    private function user(): User
+    private function service(): ApplicationPipelineService
     {
-        return $this->user ??= User::factory()->create();
+        return app(ApplicationPipelineService::class);
     }
 
-    private function createApp(string $status = 'pending'): Application
+    private function createApp(string $status = 'pending', ?string $pipelineStatus = null): Application
     {
         $course = Course::factory()->create();
         $ay = AcademicYear::factory()->create([
@@ -35,28 +39,41 @@ class ApplicationPipelineStatusTest extends TestCase
             'application_end_date' => now()->addDays(30)->toDateString(),
         ]);
 
-        return Application::factory()->create([
+        $app = Application::factory()->create([
             'academic_year_id' => $ay->id,
             'course_preference_1' => $course->id,
             'status' => $status,
         ]);
+
+        if ($pipelineStatus !== null) {
+            $this->service()->forceSet($app, $pipelineStatus);
+            $app->refresh();
+        }
+
+        return $app;
     }
+
+    // ── pipelineStatus() accessor ────────────────────────────────────────────
 
     public function test_pending_application_returns_pending(): void
     {
         $app = $this->createApp('pending');
+
         $this->assertSame('pending', $app->pipelineStatus());
     }
 
     public function test_dismissed_application_returns_dismissed(): void
     {
-        $app = $this->createApp('dismissed');
+        $app = $this->createApp('dismissed', 'dismissed');
+
         $this->assertSame('dismissed', $app->pipelineStatus());
     }
 
     public function test_accepted_without_applicant_returns_accepted(): void
     {
+        // No pipeline_status set yet → falls back to acceptance status
         $app = $this->createApp('accepted');
+
         $this->assertSame('accepted', $app->pipelineStatus());
     }
 
@@ -70,252 +87,74 @@ class ApplicationPipelineStatusTest extends TestCase
             'setup_token_expires_at' => now()->addDays(3),
         ]);
 
-        $app->load('applicant.examSessions');
+        // pipeline_status not yet set (applicant created but no session) → accepted
         $this->assertSame('accepted', $app->pipelineStatus());
     }
 
     public function test_accepted_with_draft_session_returns_draft_scheduled(): void
     {
-        $app = $this->createApp('accepted');
-        $applicant = Applicant::create([
-            'application_id' => $app->id,
-            'email' => $app->email,
-            'setup_token' => 'tok',
-            'setup_token_expires_at' => now()->addDays(3),
-        ]);
+        $app = $this->createApp('accepted', 'draft_scheduled');
 
-        $session = ExamSession::create([
-            'academic_year_id' => $app->academic_year_id,
-            'room_id' => null,
-            'date' => now()->addDays(7)->toDateString(),
-            'start_time' => '08:00',
-            'end_time' => '12:00',
-            'max_capacity' => 50,
-            'status' => ExamSession::STATUS_DRAFT,
-            'created_by' => $this->user()->id,
-        ]);
-        $session->applicants()->attach($applicant);
-
-        $app->load('applicant.examSessions');
         $this->assertSame('draft_scheduled', $app->pipelineStatus());
     }
 
     public function test_accepted_with_published_session_not_attended_returns_scheduled(): void
     {
-        $app = $this->createApp('accepted');
-        $applicant = Applicant::create([
-            'application_id' => $app->id,
-            'email' => $app->email,
-            'setup_token' => 'tok',
-            'setup_token_expires_at' => now()->addDays(3),
-        ]);
+        $app = $this->createApp('accepted', 'scheduled');
 
-        $session = ExamSession::create([
-            'academic_year_id' => $app->academic_year_id,
-            'room_id' => null,
-            'date' => now()->addDays(7)->toDateString(),
-            'start_time' => '08:00',
-            'end_time' => '12:00',
-            'max_capacity' => 50,
-            'status' => ExamSession::STATUS_PUBLISHED,
-            'created_by' => $this->user()->id,
-        ]);
-        $session->applicants()->attach($applicant, ['attendance_status' => 'pending']);
-
-        $app->load('applicant.examSessions');
         $this->assertSame('scheduled', $app->pipelineStatus());
     }
 
     public function test_attended_returns_attended(): void
     {
-        $app = $this->createApp('accepted');
-        $applicant = Applicant::create([
-            'application_id' => $app->id,
-            'email' => $app->email,
-            'setup_token' => 'tok',
-            'setup_token_expires_at' => now()->addDays(3),
-        ]);
+        $app = $this->createApp('accepted', 'attended');
 
-        $session = ExamSession::create([
-            'academic_year_id' => $app->academic_year_id,
-            'room_id' => null,
-            'date' => now()->addDays(7)->toDateString(),
-            'start_time' => '08:00',
-            'end_time' => '12:00',
-            'max_capacity' => 50,
-            'status' => ExamSession::STATUS_PUBLISHED,
-            'created_by' => $this->user()->id,
-        ]);
-        $session->applicants()->attach($applicant, [
-            'attendance_status' => 'present',
-            'attendance_marked_at' => now(),
-        ]);
-
-        $app->load('applicant.examSessions');
         $this->assertSame('attended', $app->pipelineStatus());
     }
 
     public function test_submitted_returns_submitted(): void
     {
-        $app = $this->createApp('accepted');
-        $applicant = Applicant::create([
-            'application_id' => $app->id,
-            'email' => $app->email,
-            'setup_token' => 'tok',
-            'setup_token_expires_at' => now()->addDays(3),
-        ]);
+        $app = $this->createApp('accepted', 'submitted');
 
-        $session = ExamSession::create([
-            'academic_year_id' => $app->academic_year_id,
-            'room_id' => null,
-            'date' => now()->addDays(7)->toDateString(),
-            'start_time' => '08:00',
-            'end_time' => '12:00',
-            'max_capacity' => 50,
-            'status' => ExamSession::STATUS_COMPLETED,
-            'created_by' => $this->user()->id,
-        ]);
-        $session->applicants()->attach($applicant, [
-            'attendance_status' => 'present',
-            'attendance_marked_at' => now(),
-            'submission_status' => 'submitted',
-            'submitted_at' => now(),
-        ]);
-
-        $app->load('applicant.examSessions');
         $this->assertSame('submitted', $app->pipelineStatus());
     }
 
     public function test_graded_returns_graded(): void
     {
-        $app = $this->createApp('accepted');
-        $applicant = Applicant::create([
-            'application_id' => $app->id,
-            'email' => $app->email,
-            'setup_token' => 'tok',
-            'setup_token_expires_at' => now()->addDays(3),
-        ]);
+        $app = $this->createApp('accepted', 'graded');
 
-        $session = ExamSession::create([
-            'academic_year_id' => $app->academic_year_id,
-            'room_id' => null,
-            'date' => now()->addDays(7)->toDateString(),
-            'start_time' => '08:00',
-            'end_time' => '12:00',
-            'max_capacity' => 50,
-            'status' => ExamSession::STATUS_COMPLETED,
-            'created_by' => $this->user()->id,
-        ]);
-        $session->applicants()->attach($applicant, [
-            'attendance_status' => 'present',
-            'attendance_marked_at' => now(),
-            'submission_status' => 'submitted',
-            'submitted_at' => now(),
-        ]);
-
-        $gradingSession = GradingSession::create([
-            'exam_session_id' => $session->id,
-            'status' => GradingSession::STATUS_FINALIZED,
-            'opened_by' => $this->user()->id,
-            'finalized_by' => $this->user()->id,
-            'finalized_at' => now(),
-        ]);
-
-        ApplicantScore::create([
-            'grading_session_id' => $gradingSession->id,
-            'applicant_id' => $applicant->id,
-            'aptitude_area_id' => 1,
-            'raw_score' => 85,
-            'max_score' => 100,
-            'normalized_score' => 85.0,
-            'scored_by' => $this->user()->id,
-            'scored_at' => now(),
-        ]);
-
-        $app->load('applicant.examSessions', 'applicant.applicantScores');
         $this->assertSame('graded', $app->pipelineStatus());
     }
 
     public function test_cancelled_session_returns_accepted(): void
     {
+        // A cancelled session does not advance the pipeline — app stays at accepted
         $app = $this->createApp('accepted');
-        $applicant = Applicant::create([
-            'application_id' => $app->id,
-            'email' => $app->email,
-            'setup_token' => 'tok',
-            'setup_token_expires_at' => now()->addDays(3),
-        ]);
+        // No pipeline_status set → falls back to 'accepted'
 
-        $session = ExamSession::create([
-            'academic_year_id' => $app->academic_year_id,
-            'room_id' => null,
-            'date' => now()->addDays(7)->toDateString(),
-            'start_time' => '08:00',
-            'end_time' => '12:00',
-            'max_capacity' => 50,
-            'status' => ExamSession::STATUS_CANCELLED,
-            'created_by' => $this->user()->id,
-        ]);
-        $session->applicants()->attach($applicant);
-
-        $app->load('applicant.examSessions');
         $this->assertSame('accepted', $app->pipelineStatus());
     }
 
     public function test_dismissed_overrides_everything(): void
     {
-        $app = $this->createApp('dismissed');
-        $applicant = Applicant::create([
-            'application_id' => $app->id,
-            'email' => $app->email,
-            'setup_token' => 'tok',
-            'setup_token_expires_at' => now()->addDays(3),
-        ]);
+        $app = $this->createApp('dismissed', 'dismissed');
 
-        $session = ExamSession::create([
-            'academic_year_id' => $app->academic_year_id,
-            'room_id' => null,
-            'date' => now()->addDays(7)->toDateString(),
-            'start_time' => '08:00',
-            'end_time' => '12:00',
-            'max_capacity' => 50,
-            'status' => ExamSession::STATUS_PUBLISHED,
-            'created_by' => $this->user()->id,
-        ]);
-        $session->applicants()->attach($applicant, ['attendance_status' => 'present']);
-
-        $app->load('applicant.examSessions');
         $this->assertSame('dismissed', $app->pipelineStatus());
     }
 
+    // ── pipelineDetails() accessor ───────────────────────────────────────────
+
     public function test_pipeline_details_returns_status_and_milestones(): void
     {
+        $service = $this->service();
         $app = $this->createApp('accepted');
-        $applicant = Applicant::create([
-            'application_id' => $app->id,
-            'email' => $app->email,
-            'setup_token' => 'tok',
-            'setup_token_expires_at' => now()->addDays(3),
-        ]);
 
-        $session = ExamSession::create([
-            'academic_year_id' => $app->academic_year_id,
-            'room_id' => null,
-            'date' => now()->addDays(7)->toDateString(),
-            'start_time' => '08:00',
-            'end_time' => '12:00',
-            'max_capacity' => 50,
-            'status' => ExamSession::STATUS_PUBLISHED,
-            'created_by' => $this->user()->id,
-        ]);
-        $session->applicants()->attach($applicant, [
-            'attendance_status' => 'present',
-            'attendance_marked_at' => now(),
-            'submission_status' => 'submitted',
-            'submitted_at' => now(),
-        ]);
+        $service->transition($app, 'accepted');
+        $service->transition($app, 'scheduled', ['session_id' => 99]);
+        $service->transition($app, 'attended');
+        $service->transition($app, 'submitted');
 
-        $app->load('applicant.examSessions');
+        $app->refresh();
         $details = $app->pipelineDetails();
 
         $this->assertSame('submitted', $details['status']);
@@ -324,6 +163,8 @@ class ApplicationPipelineStatusTest extends TestCase
         $this->assertArrayHasKey('scheduled', $details['milestones']);
         $this->assertArrayHasKey('attended', $details['milestones']);
         $this->assertArrayHasKey('submitted', $details['milestones']);
+        $this->assertTrue($details['is_f2f']);
+        $this->assertFalse($details['is_direct']);
     }
 
     public function test_pipeline_details_for_pending_application(): void
@@ -333,5 +174,107 @@ class ApplicationPipelineStatusTest extends TestCase
 
         $this->assertSame('pending', $details['status']);
         $this->assertArrayHasKey('milestones', $details);
+        $this->assertEmpty($details['milestones']);
+    }
+
+    public function test_pipeline_details_detects_direct_assessment(): void
+    {
+        $service = $this->service();
+        $app = $this->createApp('accepted');
+
+        $service->transition($app, 'accepted');
+        $service->transition($app, 'scored', ['session_id' => 1]);
+        $service->transition($app, 'graded');
+
+        $app->refresh();
+        $details = $app->pipelineDetails();
+
+        $this->assertSame('graded', $details['status']);
+        $this->assertTrue($details['is_direct']);
+        $this->assertFalse($details['is_f2f']);
+    }
+
+    // ── ApplicationPipelineService ───────────────────────────────────────────
+
+    public function test_transition_advances_forward(): void
+    {
+        $service = $this->service();
+        $app = $this->createApp('accepted', 'accepted');
+
+        $result = $service->transition($app, 'scheduled');
+
+        $this->assertTrue($result);
+        $this->assertSame('scheduled', $app->fresh()->pipeline_status);
+    }
+
+    public function test_transition_ignores_backward_move(): void
+    {
+        $service = $this->service();
+        $app = $this->createApp('accepted', 'graded');
+
+        $result = $service->transition($app, 'accepted');
+
+        $this->assertFalse($result);
+        $this->assertSame('graded', $app->fresh()->pipeline_status);
+    }
+
+    public function test_transition_dismissed_always_allowed(): void
+    {
+        $service = $this->service();
+        $app = $this->createApp('dismissed', 'released');
+
+        $result = $service->transition($app, 'dismissed');
+
+        $this->assertTrue($result);
+        $this->assertSame('dismissed', $app->fresh()->pipeline_status);
+    }
+
+    public function test_transition_returns_false_for_no_op(): void
+    {
+        $service = $this->service();
+        $app = $this->createApp('accepted', 'scheduled');
+
+        // Same status → no-op
+        $result = $service->transition($app, 'scheduled');
+
+        $this->assertFalse($result);
+    }
+
+    public function test_milestone_timestamp_is_recorded_on_first_reach_only(): void
+    {
+        $service = $this->service();
+        $app = $this->createApp('accepted', 'accepted');
+
+        $service->transition($app, 'scheduled');
+        $app->refresh();
+        $firstAt = $app->pipeline_milestones['scheduled']['at'];
+
+        // Attempting the same status again is a no-op
+        $service->transition($app, 'scheduled');
+        $app->refresh();
+
+        $this->assertSame($firstAt, $app->pipeline_milestones['scheduled']['at']);
+    }
+
+    public function test_transition_logs_unknown_status_and_returns_false(): void
+    {
+        $service = $this->service();
+        $app = $this->createApp('accepted', 'accepted');
+
+        $result = $service->transition($app, 'nonexistent_status');
+
+        $this->assertFalse($result);
+        $this->assertSame('accepted', $app->fresh()->pipeline_status);
+    }
+
+    public function test_force_set_bypasses_forward_only_guard(): void
+    {
+        $service = $this->service();
+        $app = $this->createApp('accepted', 'released');
+
+        // forceSet can go backwards (used by backfill command)
+        $service->forceSet($app, 'pending');
+
+        $this->assertSame('pending', $app->fresh()->pipeline_status);
     }
 }

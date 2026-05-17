@@ -81,7 +81,7 @@
 
   const generateButtonTitle = $derived(
     !openrouter_configured
-      ? 'Configure OPENROUTER_API_KEY in .env to enable'
+      ? 'AI scheduling is not configured. Please contact the system administrator.'
       : !hasReplyThisSession
         ? 'Send a message and get a reply from the assistant to unlock'
         : 'Ask the AI to output a structured schedule'
@@ -257,8 +257,8 @@
     <Card.Root class="border-amber-500/50 bg-amber-500/10">
       <Card.Content class="pt-6">
         <p class="text-sm text-foreground">
-          <strong>Generate schedule</strong> requires <code class="rounded bg-muted px-1">OPENROUTER_API_KEY</code> in your <code class="rounded bg-muted px-1">.env</code>.
-          You can still send messages below; configure the key to enable AI replies and schedule generation.
+          <strong>AI scheduling is currently disabled.</strong>
+          Please contact your system administrator to configure the AI service. You can still use manual scheduling.
         </p>
       </Card.Content>
     </Card.Root>

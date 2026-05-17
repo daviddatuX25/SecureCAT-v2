@@ -3,6 +3,7 @@
 namespace Tests\Unit\Services;
 
 use App\Models\ResultSheetTemplate;
+use App\Services\PrintTemplateCssService;
 use App\Services\ResultSheetPdfService;
 use App\ValueObjects\RenderResult;
 use Illuminate\Http\Response;
@@ -18,7 +19,9 @@ class ResultSheetPdfServiceCopiesTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->service = new ResultSheetPdfService;
+        $cssServiceMock = Mockery::mock(PrintTemplateCssService::class);
+        $cssServiceMock->shouldReceive('wrapBulkForPdf')->andReturnUsing(fn ($html) => $html)->byDefault();
+        $this->service = new ResultSheetPdfService($cssServiceMock);
     }
 
     protected function tearDown(): void

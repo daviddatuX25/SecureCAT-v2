@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -40,6 +39,8 @@ class Application extends Model
         'submitted_at',
         'gwa',
         'admission_slip_printed_at',
+        'pipeline_status',
+        'pipeline_milestones',
     ];
 
     protected $casts = [
@@ -47,6 +48,7 @@ class Application extends Model
         'processed_at' => 'datetime',
         'submitted_at' => 'datetime',
         'admission_slip_printed_at' => 'datetime',
+        'pipeline_milestones' => 'array',
     ];
 
     public function academicYear(): BelongsTo
@@ -117,258 +119,63 @@ class Application extends Model
     }
 
     /**
-     * Check if the applicant can edit this application.
-     * Rules:
-     * - Application status must be 'accepted'
-     * - No exam session assigned OR assigned session is 'draft'
-     */
-    /**
-     * Get the applicant's pipeline status for display in admin lists.
-     * Returns the most advanced milestone reached.
+     * Persist a new pipeline status and record its milestone timestamp.
      *
-     * Pipeline order:
-     *   f2f:  pending → accepted → draft_scheduled → scheduled → printed → attended → submitted → graded → released → dismissed
-     *   direct: pending → accepted → scored → graded → released → dismissed
+     * Only called by ApplicationPipelineService — do not invoke directly from
+     * controllers or other services.
+     *
+     * @param  array<string, mixed>  $extraMeta  Additional context stored in the milestone record.
      */
-    public function pipelineStatus(): string
+    public function updatePipelineStatus(string $newStatus, array $extraMeta = []): void
     {
-        // Dismissed overrides everything
-        if ($this->status === 'dismissed') {
-            return 'dismissed';
+        $milestones = $this->pipeline_milestones ?? [];
+
+        // Only record a timestamp on the first time a milestone is reached.
+        if (! isset($milestones[$newStatus])) {
+            $milestones[$newStatus] = array_merge(
+                ['at' => now()->toIso8601String()],
+                $extraMeta
+            );
         }
 
-        if ($this->status === 'pending') {
-            return 'pending';
-        }
-
-        // status === 'accepted'
-        $applicant = $this->applicant;
-        if (! $applicant) {
-            return 'accepted';
-        }
-
-        $examSessions = $applicant->relationLoaded('examSessions')
-            ? $applicant->examSessions
-            : $applicant->examSessions()->get();
-
-        if ($examSessions->isEmpty()) {
-            return 'accepted';
-        }
-
-        // Filter out cancelled sessions — they don't block progression
-        $activeSessions = $examSessions->reject(
-            fn (ExamSession $s) => $s->status === ExamSession::STATUS_CANCELLED
-        );
-
-        if ($activeSessions->isEmpty()) {
-            return 'accepted';
-        }
-
-        // Sort by status priority (most advanced first)
-        $statusPriority = [
-            ExamSession::STATUS_COMPLETED => 4,
-            ExamSession::STATUS_IN_PROGRESS => 3,
-            ExamSession::STATUS_PUBLISHED => 2,
-            ExamSession::STATUS_DRAFT => 1,
-        ];
-
-        $sortedSessions = $activeSessions->sortByDesc(
-            fn (ExamSession $s) => $statusPriority[$s->status] ?? 0
-        );
-
-        // Examine each session to find the most advanced pipeline state
-        $bestStatus = 'accepted';
-        foreach ($sortedSessions as $session) {
-            $pivot = $session->pivot;
-
-            // Direct assessment: skip scheduling milestones, go straight to scored/graded/released
-            if ($session->type === ExamSession::TYPE_DIRECT) {
-                $hasScores = $applicant->relationLoaded('applicantScores')
-                    ? $applicant->applicantScores->isNotEmpty()
-                    : $applicant->applicantScores()->exists();
-
-                if ($hasScores) {
-                    $summary = $applicant->relationLoaded('consultationSummary')
-                        ? $applicant->consultationSummary
-                        : $applicant->consultationSummary;
-                    if ($summary && $summary->status === ConsultationSummary::STATUS_RELEASED) {
-                        return 'released';
-                    }
-
-                    return 'graded';
-                }
-
-                if ($bestStatus === 'accepted') {
-                    $bestStatus = 'scored';
-                }
-
-                continue;
-            }
-
-            // Scheduled (f2f) session — full pipeline
-            if ($session->status === ExamSession::STATUS_DRAFT) {
-                if ($this->admission_slip_printed_at) {
-                    return 'printed';
-                }
-
-                return 'draft_scheduled';
-            }
-
-            if (in_array($session->status, [ExamSession::STATUS_PUBLISHED, ExamSession::STATUS_IN_PROGRESS, ExamSession::STATUS_COMPLETED], true)) {
-                if ($this->admission_slip_printed_at && $bestStatus === 'accepted') {
-                    $bestStatus = 'printed';
-                }
-
-                if ($pivot && $pivot->attendance_status === 'present') {
-                    if ($pivot->submission_status === 'submitted') {
-                        $hasScores = $applicant->relationLoaded('applicantScores')
-                            ? $applicant->applicantScores->isNotEmpty()
-                            : $applicant->applicantScores()->exists();
-
-                        if ($hasScores) {
-                            $summary = $applicant->relationLoaded('consultationSummary')
-                                ? $applicant->consultationSummary
-                                : $applicant->consultationSummary;
-                            if ($summary && $summary->status === ConsultationSummary::STATUS_RELEASED) {
-                                return 'released';
-                            }
-
-                            return 'graded';
-                        }
-
-                        $bestStatus = 'submitted';
-
-                        continue;
-                    }
-
-                    $bestStatus = 'attended';
-
-                    continue;
-                }
-
-                if ($bestStatus === 'accepted') {
-                    $bestStatus = 'scheduled';
-                }
-            }
-        }
-
-        return $bestStatus;
+        $this->update([
+            'pipeline_status' => $newStatus,
+            'pipeline_milestones' => $milestones,
+        ]);
     }
 
     /**
-     * Get structured pipeline details with milestone timestamps.
+     * Returns the current pipeline status.
+     *
+     * Reads from the `pipeline_status` DB column — no relationship traversal.
+     * Falls back to the acceptance `status` column while the backfill command
+     * is still running on existing data.
+     *
+     * @deprecated  Prefer reading `$application->pipeline_status` directly.
+     */
+    public function pipelineStatus(): string
+    {
+        return $this->pipeline_status ?? $this->status ?? 'pending';
+    }
+
+    /**
+     * Returns structured pipeline details compatible with the existing frontend contract.
+     *
+     * Reads from the `pipeline_milestones` JSON column — no relationship traversal.
+     * The `is_f2f` / `is_direct` flags are inferred from which milestone keys are present
+     * (set by the hook points in controllers when each milestone is first reached).
+     *
+     * @deprecated  Prefer reading `pipeline_status` / `pipeline_milestones` directly.
+     *
+     * @return array{status: string, milestones: array<string, mixed>, is_f2f: bool, is_direct: bool}
      */
     public function pipelineDetails(): array
     {
+        $milestones = $this->pipeline_milestones ?? [];
         $status = $this->pipelineStatus();
 
-        $milestones = [];
-        $isF2f = false;
-        $isDirect = false;
-
-        // Accepted milestone
-        if ($this->status !== 'pending') {
-            $milestones['accepted'] = ['at' => $this->processed_at?->toIso8601String()];
-        }
-
-        // Session-related milestones
-        $applicant = $this->applicant;
-        if ($applicant) {
-            $examSessions = $applicant->relationLoaded('examSessions')
-                ? $applicant->examSessions
-                : $applicant->examSessions()->get();
-
-            $activeSessions = $examSessions->reject(
-                fn (ExamSession $s) => $s->status === ExamSession::STATUS_CANCELLED
-            );
-
-            $statusPriority = [
-                ExamSession::STATUS_COMPLETED => 4,
-                ExamSession::STATUS_IN_PROGRESS => 3,
-                ExamSession::STATUS_PUBLISHED => 2,
-                ExamSession::STATUS_DRAFT => 1,
-            ];
-
-            $sortedSessions = $activeSessions->sortByDesc(
-                fn (ExamSession $s) => $statusPriority[$s->status] ?? 0
-            );
-
-            foreach ($sortedSessions as $session) {
-                if ($session->type === ExamSession::TYPE_DIRECT) {
-                    $isDirect = true;
-
-                    // Direct assessment: skip scheduling milestones, only include scored/graded/released
-                    $milestones['scored'] = [
-                        'at' => $session->created_at?->toIso8601String(),
-                        'session_label' => 'Direct Assessment #'.$session->id,
-                    ];
-
-                    $hasScores = $applicant->relationLoaded('applicantScores')
-                        ? $applicant->applicantScores->isNotEmpty()
-                        : $applicant->applicantScores()->exists();
-
-                    if ($hasScores) {
-                        $milestones['graded'] = ['at' => null];
-
-                        $summary = $applicant->relationLoaded('consultationSummary')
-                            ? $applicant->consultationSummary
-                            : $applicant->consultationSummary;
-                        if ($summary && $summary->status === ConsultationSummary::STATUS_RELEASED) {
-                            $milestones['released'] = ['at' => $summary->released_at?->toIso8601String()];
-                        }
-                    }
-
-                    break;
-                }
-
-                // Scheduled (f2f) session — full pipeline
-                $isF2f = true;
-
-                $milestones['scheduled'] = [
-                    'at' => $session->created_at?->toIso8601String(),
-                    'session_date' => $session->date,
-                    'session_label' => 'Session #'.$session->id,
-                ];
-
-                // Printed milestone (f2f/scheduled type only)
-                if ($isF2f && $this->admission_slip_printed_at) {
-                    $milestones['printed'] = ['at' => $this->admission_slip_printed_at?->toIso8601String()];
-                }
-
-                $pivot = $session->pivot;
-                if ($pivot && $pivot->attendance_status === 'present') {
-                    $attendedAt = $pivot->attendance_marked_at
-                        ? (is_string($pivot->attendance_marked_at) ? Carbon::parse($pivot->attendance_marked_at) : $pivot->attendance_marked_at)
-                        : null;
-                    $milestones['attended'] = ['at' => $attendedAt?->toIso8601String()];
-
-                    if ($pivot->submission_status === 'submitted') {
-                        $submittedAt = $pivot->submitted_at
-                            ? (is_string($pivot->submitted_at) ? Carbon::parse($pivot->submitted_at) : $pivot->submitted_at)
-                            : null;
-                        $milestones['submitted'] = ['at' => $submittedAt?->toIso8601String()];
-
-                        $hasScores = $applicant->relationLoaded('applicantScores')
-                            ? $applicant->applicantScores->isNotEmpty()
-                            : $applicant->applicantScores()->exists();
-
-                        if ($hasScores) {
-                            $milestones['graded'] = ['at' => null];
-
-                            // Released milestone
-                            $summary = $applicant->relationLoaded('consultationSummary')
-                                ? $applicant->consultationSummary
-                                : $applicant->consultationSummary;
-                            if ($summary && $summary->status === ConsultationSummary::STATUS_RELEASED) {
-                                $milestones['released'] = ['at' => $summary->released_at?->toIso8601String()];
-                            }
-                        }
-                    }
-                }
-
-                break; // Only record milestones from the most advanced session
-            }
-        }
+        $isF2f = isset($milestones['scheduled']) || isset($milestones['printed']) || isset($milestones['attended']);
+        $isDirect = isset($milestones['scored']) && ! $isF2f;
 
         return [
             'status' => $status,
@@ -378,6 +185,12 @@ class Application extends Model
         ];
     }
 
+    /**
+     * Check if the applicant can edit this application.
+     * Rules:
+     * - Application status must be 'accepted'
+     * - No exam session assigned OR assigned session is 'draft'
+     */
     public function isEditableByApplicant(): bool
     {
         // Must be accepted first

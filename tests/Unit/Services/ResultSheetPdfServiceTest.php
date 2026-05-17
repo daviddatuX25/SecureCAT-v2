@@ -2,6 +2,7 @@
 
 namespace Tests\Unit\Services;
 
+use App\Services\PrintTemplateCssService;
 use App\Services\ResultSheetPdfService;
 use App\ValueObjects\RenderResult;
 use Illuminate\Http\Response;
@@ -14,10 +15,13 @@ class ResultSheetPdfServiceTest extends TestCase
 {
     private ResultSheetPdfService $service;
 
+    private $cssServiceMock;
+
     protected function setUp(): void
     {
         parent::setUp();
-        $this->service = new ResultSheetPdfService;
+        $this->cssServiceMock = Mockery::mock(PrintTemplateCssService::class);
+        $this->service = new ResultSheetPdfService($this->cssServiceMock);
     }
 
     protected function tearDown(): void
@@ -108,7 +112,13 @@ class ResultSheetPdfServiceTest extends TestCase
         $meta = new RenderResult(html: '', mode: 'bulk', paperSize: 'a4', orientation: 'portrait', logicalUnit: 'full');
         $sheets = ['<div>Sheet 1</div>', '<div>Sheet 2</div>'];
 
-        $expectedHtml = '<div>Sheet 1</div><div style="page-break-after: always;"></div><div>Sheet 2</div>';
+        $combinedHtml = '<div>Sheet 1</div><div style="page-break-after: always;"></div><div>Sheet 2</div>';
+        $expectedHtml = '<wrapped>'.$combinedHtml.'</wrapped>';
+
+        $this->cssServiceMock->shouldReceive('wrapBulkForPdf')
+            ->once()
+            ->with($combinedHtml, 'a4', 'portrait')
+            ->andReturn($expectedHtml);
 
         $builderMock = Mockery::mock(PdfBuilder::class);
         $builderMock->shouldReceive('html')->with($expectedHtml)->andReturn($builderMock);

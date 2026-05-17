@@ -64,14 +64,18 @@ public function bulkInline(array $sheetsHtml, RenderResult $meta, string $filena
 public function bulkDownload(array $sheetsHtml, RenderResult $meta, string $filename = 'result-sheets.pdf', int $copies = 1): Response
 ```
 
-Implementation: before calling `combineSheets()`, expand the array:
+Implementation: before calling `combineSheets()`, expand the array with **per-sheet interleaving** so each applicant's N copies are collated together (not all applicants printed once then repeated):
 
 ```php
 $expanded = [];
-for ($i = 0; $i < $copies; $i++) {
-    $expanded = array_merge($expanded, $sheetsHtml);
+foreach ($sheetsHtml as $sheet) {
+    for ($i = 0; $i < $copies; $i++) {
+        $expanded[] = $sheet;
+    }
 }
 ```
+
+> ⚠️ **Do NOT use `array_merge($expanded, $sheetsHtml)` in a loop** — that produces uncollated output (all copies of Sheet 1 printed after all copies of Sheet 2), which is wrong for exam-day use.
 
 ### Controller Changes
 
@@ -126,7 +130,21 @@ public function __construct(
 ) {}
 ```
 
-`fromTemplate()` reads `$template->watermark_text`.
+**Also update `fromTemplate()` to read the new column** (required — this is a named constructor and must be updated explicitly):
+
+```php
+public static function fromTemplate(ResultSheetTemplate $template, string $html = ''): self
+{
+    return new self(
+        html: $html,
+        mode: $template->mode,
+        paperSize: $template->paper_size ?? ResultSheetTemplate::PAPER_A4,
+        orientation: $template->orientation ?? ResultSheetTemplate::ORIENTATION_PORTRAIT,
+        logicalUnit: $template->logical_unit ?? ResultSheetTemplate::LOGICAL_FULL,
+        watermarkText: $template->watermark_text,  // new
+    );
+}
+```
 
 ### Watermark CSS
 
@@ -196,7 +214,7 @@ PDF stored on disk at `print-jobs/{uuid}.pdf` — keeps the table lightweight an
 ```php
 class GenerateBulkResultSheetPdf implements ShouldQueue
 {
-    use Dispatchable, Interactable, Queueable;
+    use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
     public function __construct(
         public string $printJobId,
@@ -217,13 +235,16 @@ class GenerateBulkResultSheetPdf implements ShouldQueue
             $meta = RenderResult::fromTemplate($template);
             $applicantIds = $printJob->applicant_ids;
             $chunkSize = 10;
-
-            $sheetsHtml = [];
             $total = count($applicantIds);
+            $sheetsHtml = [];
 
             foreach (array_chunk($applicantIds, $chunkSize) as $i => $chunk) {
-                // Fetch applicants + scores for this chunk
-                // Render each chunk into sheetsHtml[]
+                // NOTE: Use $templateService->buildSheetsForApplicants() — see architecture note below.
+                // This must NOT duplicate the fetch+render logic from ReleasePrintController.
+                $sheetsHtml = array_merge(
+                    $sheetsHtml,
+                    $templateService->buildSheetsForApplicantIds($chunk, $template, $printJob->grading_session_id)
+                );
                 $progress = (int) round((($i + 1) * $chunkSize / $total) * 100);
                 $printJob->update(['progress' => min($progress, 99)]);
             }
@@ -233,7 +254,7 @@ class GenerateBulkResultSheetPdf implements ShouldQueue
             $pdfContent = $pdfService->generateBulkPdfContent(
                 $sheetsHtml, $meta, $printJob->copies
             );
-            Storage::put($path, $pdfContent);
+            Storage::disk('local')->put($path, $pdfContent);
 
             $printJob->update([
                 'status' => 'completed',
@@ -251,15 +272,34 @@ class GenerateBulkResultSheetPdf implements ShouldQueue
 }
 ```
 
-### New Service Method
+### New Service Methods
 
-`ResultSheetPdfService` — add a method that returns PDF content as string (for disk storage):
+**`ResultSheetPdfService`** — add a method that returns PDF content as string (for disk storage):
 
 ```php
 public function generateBulkPdfContent(array $sheetsHtml, RenderResult $meta, int $copies = 1): string
 ```
 
 This is the same logic as `bulkDownload()` but returns the raw PDF bytes instead of a response.
+
+**`ResultSheetTemplateService`** — extract shared sheet-building logic from the controller into the service so the job and controller share the same code path:
+
+```php
+/**
+ * Fetch applicants + scores for the given IDs, render into sheet HTML blobs.
+ * When $gradingSessionId is null, resolves the best session per applicant (agnostic mode).
+ *
+ * @param  int[]  $applicantIds
+ * @return string[]  One HTML blob per logical sheet
+ */
+public function buildSheetsForApplicantIds(
+    array $applicantIds,
+    ResultSheetTemplate $template,
+    ?int $gradingSessionId = null,
+): array
+```
+
+> ⚠️ **Architecture note:** The controller currently has `buildSheetsFromApplicants()` and `buildApplicantData()` as private helpers. These must be **extracted to `ResultSheetTemplateService`** as part of this phase. If they remain private to the controller, the job will either duplicate the logic (maintenance fork) or call the controller (wrong layer). Extraction is required — not optional.
 
 ### Routes
 
@@ -309,9 +349,10 @@ Artisan command `app:cleanup-print-jobs` to purge completed jobs older than 24 h
 - `database/migrations/2026_05_16_000002_add_watermark_text_to_result_sheet_templates_table.php`
 
 ### Modified Files
-- `app/Services/ResultSheetPdfService.php` — copies + watermark + `generateBulkPdfContent()`
-- `app/ValueObjects/RenderResult.php` — `$watermarkText` property
-- `app/Http/Controllers/Release/ReleasePrintController.php` — copies param + job dispatch + job status routes
+- `app/Services/ResultSheetPdfService.php` — copies (interleaved expansion) + watermark injection + `generateBulkPdfContent()`
+- `app/Services/ResultSheetTemplateService.php` — new `buildSheetsForApplicantIds()` method (extracted from controller)
+- `app/ValueObjects/RenderResult.php` — `$watermarkText` property + `fromTemplate()` update
+- `app/Http/Controllers/Release/ReleasePrintController.php` — copies param + job dispatch + job status routes; refactor private helpers to delegate to `ResultSheetTemplateService`
 - `resources/js/Pages/Release/PrintBatch.svelte` — copies input + progress bar + job flow
 - `resources/js/Pages/Admin/ResultSheetTemplates/Create.svelte` — watermark field
 - `resources/js/Pages/Admin/ResultSheetTemplates/Edit.svelte` — watermark field
