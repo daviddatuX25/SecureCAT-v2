@@ -44,7 +44,7 @@ class DashboardAnalyticsService
      *
      * @return array{labels: string[], values: int[]}
      */
-    public function getApplicationTrends(User $user, int $days = 30): array
+    public function getApplicationTrends(User $user, int $months = 6): array
     {
         if (! $user->hasAnyRole(['super_admin', 'admin', 'registrar_administrator'])) {
             return ['labels' => [], 'values' => []];
@@ -55,32 +55,35 @@ class DashboardAnalyticsService
         }
 
         $academicYear = AcademicYear::active();
+        $driver = DB::connection()->getDriverName();
+        $monthExpr = $driver === 'sqlite'
+            ? 'strftime("%Y-%m", created_at)'
+            : 'DATE_FORMAT(created_at, "%Y-%m")';
 
         $rows = Application::query()
-            ->selectRaw('DATE(submitted_at) as date, COUNT(*) as count')
-            ->where('submitted_at', '>=', now()->subDays($days))
+            ->selectRaw("{$monthExpr} as month, COUNT(*) as count")
+            ->where('created_at', '>=', now()->subMonths($months)->startOfMonth())
             ->when($academicYear !== null, fn ($q) => $q->where('academic_year_id', $academicYear->id))
-            ->groupByRaw('DATE(submitted_at)')
-            ->orderByRaw('DATE(submitted_at)')
+            ->groupByRaw($monthExpr)
+            ->orderByRaw($monthExpr)
             ->get();
 
-        // Fill in missing dates with zero
-        $map = $rows->pluck('count', 'date')->map(fn ($v) => (int) $v)->toArray();
+        $map = $rows->pluck('count', 'month')->map(fn ($v) => (int) $v)->toArray();
 
         $labels = [];
         $values = [];
 
-        for ($i = $days - 1; $i >= 0; $i--) {
-            $date = now()->subDays($i);
-            $labels[] = $date->format('M d');
-            $values[] = $map[$date->toDateString()] ?? 0;
+        for ($i = $months - 1; $i >= 0; $i--) {
+            $date = now()->subMonths($i);
+            $labels[] = $date->format('M Y');
+            $values[] = $map[$date->format('Y-m')] ?? 0;
         }
 
         return ['labels' => $labels, 'values' => $values];
     }
 
     /**
-     * Current application status distribution (pending / accepted / dismissed).
+     * Current application pipeline status distribution (all 11 statuses).
      *
      * @return array<int, array{label: string, value: int, color: string}>
      */
@@ -97,21 +100,43 @@ class DashboardAnalyticsService
         $academicYear = AcademicYear::active();
 
         $rows = Application::query()
-            ->select('status', DB::raw('COUNT(*) as count'))
+            ->select(DB::raw("COALESCE(pipeline_status, 'pending') as status"), DB::raw('COUNT(*) as count'))
             ->when($academicYear !== null, fn ($q) => $q->where('academic_year_id', $academicYear->id))
-            ->groupBy('status')
+            ->groupBy(DB::raw("COALESCE(pipeline_status, 'pending')"))
             ->get();
 
         $colorMap = [
-            'pending' => '#f59e0b',
-            'accepted' => '#22c55e',
+            'pending' => '#94a3b8',
+            'accepted' => '#3b82f6',
+            'draft_scheduled' => '#818cf8',
+            'scheduled' => '#6366f1',
+            'printed' => '#8b5cf6',
+            'attended' => '#a78bfa',
+            'submitted' => '#7c3aed',
+            'scored' => '#c084fc',
+            'graded' => '#a855f7',
+            'released' => '#22c55e',
             'dismissed' => '#ef4444',
         ];
 
+        $labelMap = [
+            'pending' => 'Pending',
+            'accepted' => 'Accepted',
+            'draft_scheduled' => 'Draft Scheduled',
+            'scheduled' => 'Scheduled',
+            'printed' => 'Printed',
+            'attended' => 'Attended',
+            'submitted' => 'Submitted',
+            'scored' => 'Scored',
+            'graded' => 'Graded',
+            'released' => 'Released',
+            'dismissed' => 'Dismissed',
+        ];
+
         return $rows->map(fn ($row) => [
-            'label' => ucfirst($row->status),
+            'label' => $labelMap[$row->status] ?? ucfirst($row->status),
             'value' => (int) $row->count,
-            'color' => $colorMap[$row->status] ?? '#3b82f6',
+            'color' => $colorMap[$row->status] ?? '#94a3b8',
         ])->toArray();
     }
 

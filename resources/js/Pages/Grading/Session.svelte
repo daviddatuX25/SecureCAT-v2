@@ -5,7 +5,7 @@
   import { Badge } from '@/Components/ui/badge';
   import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/Components/ui/card';
   import * as Table from '@/Components/ui/table';
-  import { ArrowLeft, UserCheck, CheckCircle2, Circle, Printer, RotateCcw, Send } from 'lucide-svelte';
+  import { UserCheck, CheckCircle2, Circle, Printer, RotateCcw, Send } from 'lucide-svelte';
   import { formatDate } from '@/lib/date-utils';
 
   let { sessionId = '1', session = {}, applicants = [], workflowStatus = 'in_progress' } = $props();

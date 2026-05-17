@@ -28,9 +28,9 @@ class DashboardTest extends TestCase
         $response->assertInertia(fn ($page) => $page
             ->component('Dashboard')
             ->has('applicationStats')
+            ->has('pipelineDistribution')
             ->has('sessionStats')
             ->has('gradingStats')
         );
     }
 }
-

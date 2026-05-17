@@ -48,8 +48,8 @@ class DefenseDemoSeeder extends Seeder
             $appMap = $this->seedApplications($today, $academicYear, $courses, $users);
             $this->seedSessionA($today, $academicYear, $rooms, $appMap, $users, $domains);
             $this->seedSessionB($today, $academicYear, $rooms, $appMap, $users, $domains);
-            $this->seedSessionC($today, $academicYear, $rooms, $appMap, $users);
-            $this->seedSessionD($today, $academicYear, $rooms);
+            $this->seedSessionC($today, $academicYear, $rooms, $appMap, $users, $domains);
+            $this->seedSessionD($today, $academicYear, $rooms, $appMap, $users);
             $this->seedSystemSettings();
         });
     }
@@ -184,6 +184,14 @@ class DefenseDemoSeeder extends Seeder
                     'course_preference_2' => $courseIdMap['BSCS'],
                     'course_preference_3' => $courseIdMap['BSDS'],
                     'status' => $status,
+                    'pipeline_status' => match ($slot) {
+                        'A' => 'released',
+                        'B' => 'graded',
+                        'C' => 'submitted',
+                        'unassigned' => 'accepted',
+                        'dismissed' => 'dismissed',
+                        default => 'pending',
+                    },
                     'processed_by' => $processedBy,
                     'processed_at' => $processedAt,
                     'rejection_reason' => $rejectionReason,
@@ -226,7 +234,6 @@ class DefenseDemoSeeder extends Seeder
                 'published_at' => $date->subDays(5),
                 'started_at' => $date->setTimeFromTimeString('09:00:00'),
                 'closed_at' => $date->setTimeFromTimeString('11:05:00'),
-                'score_release_date' => $date->addDays(7)->toDateString(),
                 'created_by' => $users['registrar_admin']->id,
             ]
         );
@@ -324,7 +331,6 @@ class DefenseDemoSeeder extends Seeder
                 'published_at' => $date->subDays(5),
                 'started_at' => $date->setTimeFromTimeString('13:00:00'),
                 'closed_at' => $date->setTimeFromTimeString('15:05:00'),
-                'score_release_date' => $date->addDays(7)->toDateString(),
                 'created_by' => $users['registrar_admin']->id,
             ]
         );
@@ -405,81 +411,108 @@ class DefenseDemoSeeder extends Seeder
         }
     }
 
-    private function seedSessionC(CarbonImmutable $today, AcademicYear $academicYear, $rooms, array $appMap, array $users): void
+    private function seedSessionC(CarbonImmutable $today, AcademicYear $academicYear, $rooms, array $appMap, array $users, $domains): void
     {
+        $date = $today->subDays(2);
         $room = $rooms[1]; // Main Building Room 102
 
         $es = ExamSession::query()->updateOrCreate(
-            ['academic_year_id' => $academicYear->id, 'room_id' => $room->id, 'date' => $today->toDateString()],
+            ['academic_year_id' => $academicYear->id, 'room_id' => $room->id, 'date' => $date->toDateString()],
             [
                 'start_time' => '09:00:00',
                 'end_time' => '11:00:00',
-                'status' => ExamSession::STATUS_PUBLISHED,
-                'published_at' => $today->subDays(3),
-                'score_release_date' => $today->addDays(7)->toDateString(),
+                'status' => ExamSession::STATUS_COMPLETED,
+                'published_at' => $today->subDays(5),
+                'started_at' => $date->setTimeFromTimeString('09:00:00'),
+                'closed_at' => $date->setTimeFromTimeString('11:05:00'),
                 'created_by' => $users['registrar_admin']->id,
             ]
         );
 
         $es->proctors()->syncWithoutDetaching([$users['proctor']->id]);
 
-        // Lorena — pre-marked present (arrived early before demo)
-        $this->attachApplicant($es, $appMap[6]['applicant'], [
-            'attendance_status' => 'present',
-            'attendance_marked_at' => $today->setTimeFromTimeString('09:03:00'),
-            'attendance_marked_by' => $users['proctor']->id,
-            'submission_status' => 'pending',
-        ]);
+        $sessionApplicants = [
+            $appMap[6]['applicant'],  // Lorena
+            $appMap[7]['applicant'],  // Roberto
+            $appMap[8]['applicant'],  // Maribel
+            $appMap[9]['applicant'],  // Arturo
+        ];
 
-        // Roberto — pending (proctor marks present during live demo)
-        $this->attachApplicant($es, $appMap[7]['applicant'], [
-            'attendance_status' => 'pending',
-            'submission_status' => 'pending',
-        ]);
-
-        // Maribel — pending (proctor marks present during live demo)
-        $this->attachApplicant($es, $appMap[8]['applicant'], [
-            'attendance_status' => 'pending',
-            'submission_status' => 'pending',
-        ]);
-
-        // Arturo — pending (proctor marks absent during live demo)
-        $this->attachApplicant($es, $appMap[9]['applicant'], [
-            'attendance_status' => 'pending',
-            'submission_status' => 'pending',
-        ]);
+        foreach ($sessionApplicants as $applicant) {
+            $this->attachApplicant($es, $applicant, [
+                'attendance_status' => 'present',
+                'attendance_marked_at' => $date->setTimeFromTimeString('09:05:00'),
+                'attendance_marked_by' => $users['proctor']->id,
+                'submission_status' => 'submitted',
+                'submitted_at' => $date->setTimeFromTimeString('10:55:00'),
+                'submitted_to' => $users['proctor']->id,
+            ]);
+        }
 
         $gs = GradingSession::query()->updateOrCreate(
             ['exam_session_id' => $es->id],
             [
-                'status' => GradingSession::STATUS_OPEN,
-                'opened_at' => $today->setTimeFromTimeString('08:45:00'),
+                'status' => GradingSession::STATUS_IN_PROGRESS,
+                'opened_at' => $date->addDay()->setTimeFromTimeString('08:00:00'),
                 'opened_by' => $users['test_admin']->id,
             ]
         );
 
-        foreach ([$appMap[6]['applicant'], $appMap[7]['applicant'], $appMap[8]['applicant'], $appMap[9]['applicant']] as $applicant) {
+        foreach ($sessionApplicants as $applicant) {
             $gs->applicants()->syncWithoutDetaching([$applicant->id]);
         }
+
+        // Only score the first 2 applicants (Lorena & Roberto) — halfway graded
+        $scoredApplicants = [$sessionApplicants[0], $sessionApplicants[1]];
+        $scoreMap = [
+            0 => ['SA' => 19, 'NA' => 17, 'VR' => 18, 'AR' => 14, 'LR' => 17, 'PSA' => 15], // Lorena
+            1 => ['SA' => 12, 'NA' => 10, 'VR' => 11, 'AR' => 9, 'LR' => 10, 'PSA' => 8],  // Roberto
+        ];
+
+        foreach ($scoredApplicants as $i => $applicant) {
+            foreach ($domains as $domain) {
+                $raw = $scoreMap[$i][$domain->code] ?? (int) round($domain->max_items * 0.5);
+                ApplicantScore::query()->updateOrCreate(
+                    ['grading_session_id' => $gs->id, 'applicant_id' => $applicant->id, 'aptitude_area_id' => $domain->id],
+                    [
+                        'raw_score' => $raw,
+                        'max_score' => $domain->max_items,
+                        'normalized_score' => null,
+                        'scored_by' => $users['test_admin']->id,
+                        'scored_at' => $date->addDay()->setTimeFromTimeString('14:00:00'),
+                    ]
+                );
+            }
+        }
+        // Maribel & Arturo remain unscored — demonstrates halfway grading
     }
 
-    private function seedSessionD(CarbonImmutable $today, AcademicYear $academicYear, $rooms): void
+    private function seedSessionD(CarbonImmutable $today, AcademicYear $academicYear, $rooms, array $appMap, array $users): void
     {
-        $date = $today->addDays(5);
         $room = $rooms[3]; // Vocational Building Lab Room 1
-        $admin = User::query()->where('email', 'josefina@securecat.local')->first();
 
-        ExamSession::query()->updateOrCreate(
-            ['academic_year_id' => $academicYear->id, 'room_id' => $room->id, 'date' => $date->toDateString()],
+        $es = ExamSession::query()->updateOrCreate(
+            ['academic_year_id' => $academicYear->id, 'room_id' => $room->id, 'date' => $today->toDateString()],
             [
-                'start_time' => '09:00:00',
-                'end_time' => '11:00:00',
+                'start_time' => now()->addMinutes(10)->format('H:i:s'),
+                'end_time' => now()->addMinutes(130)->format('H:i:s'),
                 'status' => ExamSession::STATUS_PUBLISHED,
                 'published_at' => $today->subDay(),
-                'score_release_date' => $date->addDays(7)->toDateString(),
-                'created_by' => $admin?->id,
+                'created_by' => $users['registrar_admin']->id,
             ]
         );
+
+        $es->proctors()->syncWithoutDetaching([$users['proctor']->id]);
+
+        // Assign the 3 unassigned accepted applicants
+        foreach ([10, 11, 12] as $idx) {
+            if ($appMap[$idx]['applicant']) {
+                $this->attachApplicant($es, $appMap[$idx]['applicant'], [
+                    'attendance_status' => 'pending',
+                    'submission_status' => 'pending',
+                ]);
+            }
+        }
     }
 
     private function upsertUserWithRole(string $email, string $name, string $roleName): User

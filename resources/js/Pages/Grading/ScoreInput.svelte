@@ -4,7 +4,7 @@
   import { Button } from '@/Components/ui/button';
   import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/Components/ui/card';
   import { Input } from '@/Components/ui/input';
-  import { ArrowLeft, Save, User, ChevronRight, Calculator, PenLine } from 'lucide-svelte';
+  import { Save, User, Calculator, PenLine } from 'lucide-svelte';
 
   let { sessionId = '1', applicantId = '1001', workflowStatus = 'in_progress', enableNormalizedScores = false, applicant = {}, domains = [], existing_scores = [] } = $props();
   const sid = $derived(String(sessionId));
@@ -232,12 +232,7 @@
             </Button>
           {/if}
           {/if}
-          <Link href={`/admin/grading/sessions/${sid}`}>
-            <Button variant="outline" class="min-h-[44px]">
-              <ChevronRight class="h-4 w-4 mr-2" />
-              Back to applicant list
-            </Button>
-          </Link>
+
         </div>
       </CardContent>
     </Card>

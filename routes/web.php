@@ -15,6 +15,7 @@ use App\Http\Controllers\Admin\ReportController;
 use App\Http\Controllers\Admin\ResultSheetTemplateController;
 use App\Http\Controllers\Admin\RoomController;
 use App\Http\Controllers\Admin\SettingsController;
+use App\Http\Controllers\Admin\SetupController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\ApplicationController;
 use App\Http\Controllers\Auth\GoogleAuthController;
@@ -128,7 +129,7 @@ Route::middleware(['auth'])->group(function () {
 
     // Setup Hub — accessible to anyone who manages configuration
     Route::middleware('role:super_admin,registrar_administrator,test_administrator')->prefix('admin')->name('admin.')->group(function () {
-        Route::get('setup', [\App\Http\Controllers\Admin\SetupController::class, 'index'])->name('setup.index');
+        Route::get('setup', [SetupController::class, 'index'])->name('setup.index');
     });
 
     // Reports
@@ -199,8 +200,10 @@ Route::middleware(['auth'])->group(function () {
         // Bulk applicant import - MUST come before {application} wildcard
         Route::get('applications/import', [ApplicationImportController::class, 'importForm'])->name('import');
         Route::post('applications/import', [ApplicationImportController::class, 'import'])->name('import.store');
+        Route::post('applications/import/analyze', [ApplicationImportController::class, 'analyze'])->name('import.analyze');
         Route::post('applications/import/preview', [ApplicationImportController::class, 'preview'])->name('import.preview');
         Route::post('applications/import/confirm', [ApplicationImportController::class, 'confirm'])->name('import.confirm');
+        Route::get('applications/import/template', [ApplicationImportController::class, 'template'])->name('import.template');
 
         Route::get('applications', [ApplicationController::class, 'index'])->name('index');
         Route::get('applications/create', [ApplicationController::class, 'create'])->name('create');
@@ -213,6 +216,7 @@ Route::middleware(['auth'])->group(function () {
         Route::put('applications/{application}/dismiss', [ApplicationController::class, 'dismiss'])->name('dismiss');
         Route::post('applications/bulk-accept', [ApplicationController::class, 'bulkAccept'])->name('bulk-accept');
         Route::post('applications/bulk-dismiss', [ApplicationController::class, 'bulkDismiss'])->name('bulk-dismiss');
+        Route::post('applications/bulk-reopen', [ApplicationController::class, 'bulkReopen'])->name('bulk-reopen');
         Route::put('applications/{application}/reopen', [ApplicationController::class, 'reopen'])->name('reopen');
         Route::delete('applications/{application}', [ApplicationController::class, 'destroy'])->name('destroy');
         Route::get('applications/{application}/admission-slip', [ApplicationController::class, 'admissionSlip'])->name('admission-slip');
@@ -262,9 +266,14 @@ Route::middleware(['auth'])->group(function () {
         // Bulk score import
         Route::get('grading/import', [ScoreImportController::class, 'importForm'])->name('import');
         Route::post('grading/import', [ScoreImportController::class, 'import'])->name('import.store');
+        Route::post('grading/import/analyze', [ScoreImportController::class, 'analyze'])->name('import.analyze');
+        Route::get('grading/import/template', [ScoreImportController::class, 'template'])->name('import.template');
         // Preview flow
         Route::post('grading/import/preview', [ScoreImportController::class, 'preview'])->name('import.preview');
         Route::post('grading/import/confirm', [ScoreImportController::class, 'confirm'])->name('import.confirm');
+        // GET fallbacks — redirect to import form on page refresh
+        Route::get('grading/import/preview', fn () => redirect()->route('admin.grading.import'));
+        Route::get('grading/import/confirm', fn () => redirect()->route('admin.grading.import'));
     });
 
     // Release Management

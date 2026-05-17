@@ -8,6 +8,7 @@ use App\Models\AptitudeArea;
 use App\Models\GradingSession;
 use App\Models\SystemSetting;
 use App\Services\ScoreImportService;
+use App\Services\SpreadsheetParser;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -15,11 +16,13 @@ use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 use Inertia\Response as InertiaResponse;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class ScoreImportController extends Controller
 {
     public function __construct(
         private readonly ScoreImportService $importService,
+        private readonly SpreadsheetParser $parser,
     ) {}
 
     /**
@@ -35,9 +38,17 @@ class ScoreImportController extends Controller
         }
         Session::forget('score_import_temp_path');
 
+        $aptitudeAreaCodes = AptitudeArea::where('is_active', true)->pluck('code')->toArray();
+
+        // Score columns are "optional" from the file-structure perspective;
+        // the user can import any subset of aptitude areas.
+        $optionalColumns = array_map('strtolower', $aptitudeAreaCodes);
+
         return Inertia::render('Grading/Import', [
             'enableNormalizedScores' => SystemSetting::enableNormalizedScores(),
-            'aptitudeAreaCodes' => AptitudeArea::where('is_active', true)->pluck('code')->toArray(),
+            'aptitudeAreaCodes' => $aptitudeAreaCodes,
+            'requiredColumns' => ScoreImportService::REQUIRED_COLUMNS,
+            'optionalColumns' => $optionalColumns,
             'previewUrl' => route('admin.grading.import.preview'),
         ]);
     }
@@ -65,6 +76,50 @@ class ScoreImportController extends Controller
     }
 
     /**
+     * Analyze uploaded file structure for real-time pre-upload feedback.
+     */
+    public function analyze(Request $request)
+    {
+        $request->validate([
+            'file' => 'required|file|mimes:csv,txt,xlsx,xls|max:10240',
+        ]);
+
+        $aptitudeAreaCodes = AptitudeArea::where('is_active', true)->pluck('code')->map(fn ($c) => strtolower($c))->toArray();
+
+        try {
+            $analysis = $this->parser->analyze(
+                $request->file('file'),
+                ScoreImportService::REQUIRED_COLUMNS,
+                $aptitudeAreaCodes
+            );
+
+            return response()->json($analysis);
+        } catch (\Exception $e) {
+            return response()->json([
+                'error' => $e->getMessage(),
+                'checks' => [['label' => 'File parsing', 'status' => 'fail', 'detail' => $e->getMessage()]],
+            ], 422);
+        }
+    }
+
+    /**
+     * Download a CSV template for score imports.
+     */
+    public function template(): StreamedResponse
+    {
+        $aptitudeAreaCodes = AptitudeArea::where('is_active', true)->pluck('code')->toArray();
+        $headers = array_merge(['reference_number'], $aptitudeAreaCodes);
+
+        return response()->streamDownload(function () use ($headers) {
+            $handle = fopen('php://output', 'w');
+            fputcsv($handle, $headers);
+            fclose($handle);
+        }, 'score_import_template.csv', [
+            'Content-Type' => 'text/csv',
+        ]);
+    }
+
+    /**
      * Preview parsed CSV data before importing.
      */
     public function preview(StoreScoreImportRequest $request): RedirectResponse|InertiaResponse
@@ -73,11 +128,16 @@ class ScoreImportController extends Controller
 
         try {
             $file = $request->file('file');
-            $tempPath = $file->store('temp/score_imports');
-            Session::put('score_import_temp_path', $tempPath);
 
-            $records = $this->importService->parseSpreadsheet(Storage::path($tempPath));
+            // Parse directly from the uploaded file (SpreadsheetParser handles path resolution)
+            $records = $this->importService->parseSpreadsheet($file);
             $validated = $this->importService->validateRecords($records);
+
+            // Store the file for the confirm step (avoids getRealPath issues in $file->store())
+            $tempName = uniqid('score_import_').'.'.$file->getClientOriginalExtension();
+            $tempPath = 'temp/score_imports/'.$tempName;
+            Storage::put($tempPath, file_get_contents($file->getPathname()));
+            Session::put('score_import_temp_path', $tempPath);
 
             return Inertia::render('Grading/ImportPreview', [
                 'records' => $validated['records'],

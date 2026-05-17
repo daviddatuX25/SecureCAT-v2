@@ -190,4 +190,84 @@ class ScoreImportControllerTest extends TestCase
             'normalized_score' => 88.5,
         ]);
     }
+
+    public function test_analyze_returns_column_analysis_for_valid_csv()
+    {
+        $csv = "reference_number,SA,VR\nAPP-2026-00001,20,30\n";
+        $file = UploadedFile::fake()->createWithContent('scores.csv', $csv);
+
+        $response = $this->actingAs($this->admin)
+            ->post('/admin/grading/import/analyze', ['file' => $file]);
+
+        $response->assertOk()
+            ->assertJsonStructure(['checks', 'column_analysis', 'row_count']);
+    }
+
+    public function test_analyze_detects_missing_required_columns()
+    {
+        $csv = "SA,VR\n20,30\n";
+        $file = UploadedFile::fake()->createWithContent('scores.csv', $csv);
+
+        $response = $this->actingAs($this->admin)
+            ->post('/admin/grading/import/analyze', ['file' => $file]);
+
+        $response->assertOk();
+        $data = $response->json();
+        $failedChecks = collect($data['checks'])->where('status', 'fail');
+        $this->assertGreaterThan(0, $failedChecks->count());
+    }
+
+    public function test_analyze_rejects_invalid_file_type()
+    {
+        $file = UploadedFile::fake()->create('scores.pdf', 100, 'application/pdf');
+
+        $response = $this->actingAs($this->admin)
+            ->post('/admin/grading/import/analyze', ['file' => $file]);
+
+        $response->assertSessionHasErrors('file');
+    }
+
+    public function test_template_download_returns_csv()
+    {
+        $response = $this->actingAs($this->admin)
+            ->get('/admin/grading/import/template');
+
+        $response->assertOk()
+            ->assertHeader('content-type', 'text/csv; charset=UTF-8')
+            ->assertDownload('score_import_template.csv');
+
+        // Should contain reference_number and aptitude area codes
+        $content = $response->streamedContent();
+        $this->assertStringContainsString('reference_number', $content);
+        $this->assertStringContainsString('SA', $content);
+        $this->assertStringContainsString('VR', $content);
+    }
+
+    public function test_preview_rejects_unmatched_reference_number()
+    {
+        $csv = "reference_number,SA\nNONEXISTENT-REF,20\n";
+        $file = UploadedFile::fake()->createWithContent('scores.csv', $csv);
+
+        $response = $this->actingAs($this->admin)
+            ->post('/admin/grading/import/preview', ['file' => $file]);
+
+        $response->assertInertia(fn ($page) => $page
+            ->where('records.0.is_valid', false)
+            ->where('records.0.errors.0', 'Application not found')
+        );
+    }
+
+    public function test_preview_rejects_missing_reference_number()
+    {
+        $csv = "reference_number,SA\n,20\n";
+        $file = UploadedFile::fake()->createWithContent('scores.csv', $csv);
+
+        $response = $this->actingAs($this->admin)
+            ->post('/admin/grading/import/preview', ['file' => $file]);
+
+        $response->assertInertia(fn ($page) => $page
+            ->where('records.0.is_valid', false)
+            ->where('records.0.errors.0', 'Reference number is required')
+        );
+    }
 }

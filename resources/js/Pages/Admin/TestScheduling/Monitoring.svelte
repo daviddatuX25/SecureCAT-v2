@@ -7,7 +7,7 @@
   import ElapsedTime from '@/Components/ElapsedTime.svelte';
   import { ClipboardList, Eye, Pencil } from 'lucide-svelte';
   import SwitchableListView from '@/Components/SwitchableListView.svelte';
-  import { Card, CardContent } from '@/Components/ui/card';
+
   import { formatDate } from '@/lib/date-utils';
 
   let viewMode = $state('responsive');
@@ -58,59 +58,55 @@
       <div class="min-w-0 max-w-full">
         <SwitchableListView bind:viewMode class="sm:space-y-3">
           {#snippet table()}
-            <div class="rounded-lg border border-border overflow-hidden min-w-0 max-w-full">
-              <div class="w-full min-w-0 overflow-x-auto scrollbar-hide">
-                <Table.Root>
-                  <Table.Header class="bg-muted/50">
-                    <Table.Row>
-                      <Table.Head>Room</Table.Head>
-                      <Table.Head>Date</Table.Head>
-                      <Table.Head>Start time</Table.Head>
-                      <Table.Head>Total</Table.Head>
-                      <Table.Head>Present</Table.Head>
-                      <Table.Head>Submitted</Table.Head>
-                      <Table.Head>Elapsed</Table.Head>
-                      <Table.Head class="text-center">Actions</Table.Head>
-                    </Table.Row>
-                  </Table.Header>
-                  <Table.Body>
-                    {#each sessions as session (session.id)}
-                      <Table.Row>
-                        <Table.Cell class="font-medium">{session.room?.name ?? '—'}{session.room?.building ? ` (${session.room.building})` : ''}</Table.Cell>
-                        <Table.Cell>{formatDate(session.date)}</Table.Cell>
-                        <Table.Cell>{formatTime(session.start_time)}</Table.Cell>
-                        <Table.Cell>{session.total ?? 0}</Table.Cell>
-                        <Table.Cell>{session.present ?? 0}</Table.Cell>
-                        <Table.Cell>{session.submitted ?? 0}</Table.Cell>
-                        <Table.Cell>
-                          <ElapsedTime startedAt={session.started_at} />
-                        </Table.Cell>
-                        <Table.Cell class="text-center">
-                          <div class="flex justify-center gap-2">
-                            <Link href={rosterHref(session.id)}>
-                              <Button variant="ghost" size="sm" class="h-8 px-2 text-xs">
-                                <ClipboardList class="mr-1.5 h-3.5 w-3.5" />
-                                View Session
-                              </Button>
-                            </Link>
-                          </div>
-                        </Table.Cell>
-                      </Table.Row>
-                    {/each}
-                  </Table.Body>
-                </Table.Root>
-              </div>
-            </div>
+            <Table.Root class="w-full min-w-[640px] text-sm">
+              <Table.Header class="bg-muted/50">
+                <Table.Row>
+                  <Table.Head class="px-4 py-3">Room</Table.Head>
+                  <Table.Head class="px-4 py-3">Date</Table.Head>
+                  <Table.Head class="px-4 py-3">Start time</Table.Head>
+                  <Table.Head class="px-4 py-3">Total</Table.Head>
+                  <Table.Head class="px-4 py-3">Present</Table.Head>
+                  <Table.Head class="px-4 py-3">Submitted</Table.Head>
+                  <Table.Head class="px-4 py-3">Elapsed</Table.Head>
+                  <Table.Head class="px-4 py-3 text-center">Actions</Table.Head>
+                </Table.Row>
+              </Table.Header>
+              <Table.Body>
+                {#each sessions as session (session.id)}
+                  <Table.Row>
+                    <Table.Cell class="px-4 font-medium">{session.room?.name ?? '—'}{session.room?.building ? ` (${session.room.building})` : ''}</Table.Cell>
+                    <Table.Cell class="px-4">{formatDate(session.date)}</Table.Cell>
+                    <Table.Cell class="px-4">{formatTime(session.start_time)}</Table.Cell>
+                    <Table.Cell class="px-4">{session.total ?? 0}</Table.Cell>
+                    <Table.Cell class="px-4">{session.present ?? 0}</Table.Cell>
+                    <Table.Cell class="px-4">{session.submitted ?? 0}</Table.Cell>
+                    <Table.Cell class="px-4">
+                      <ElapsedTime startedAt={session.started_at} />
+                    </Table.Cell>
+                    <Table.Cell class="px-4 text-center">
+                      <div class="flex justify-center gap-2">
+                        <Link href={rosterHref(session.id)}>
+                          <Button variant="ghost" size="sm" class="h-8 px-2 text-xs">
+                            <ClipboardList class="mr-1.5 h-3.5 w-3.5" />
+                            View Session
+                          </Button>
+                        </Link>
+                      </div>
+                    </Table.Cell>
+                  </Table.Row>
+                {/each}
+              </Table.Body>
+            </Table.Root>
           {/snippet}
 
           {#snippet cards()}
             <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {#each sessions as session (session.id)}
-                <Card>
-                  <CardContent class="p-4 space-y-4">
+                <div class="rounded-xl border border-border bg-card shadow-sm hover:shadow-md transition-all">
+                  <div class="p-4 space-y-4">
                     <div class="flex justify-between items-start">
                       <div>
-                        <p class="font-semibold leading-none mb-1">{session.room?.name ?? '—'}{session.room?.building ? ` (${session.room.building})` : ''}</p>
+                        <p class="font-bold tracking-tight leading-none mb-1">{session.room?.name ?? '—'}{session.room?.building ? ` (${session.room.building})` : ''}</p>
                         <p class="text-sm text-muted-foreground">{formatDate(session.date)} • {formatTime(session.start_time)}</p>
                       </div>
                       <Badge variant="outline" class="font-mono bg-muted/50">
@@ -120,29 +116,29 @@
 
                     <div class="grid grid-cols-3 gap-2 text-center text-sm py-2 border-y border-border/50">
                       <div>
-                        <p class="text-muted-foreground text-xs uppercase tracking-wider mb-1">Total</p>
-                        <p class="font-medium">{session.total ?? 0}</p>
+                        <p class="text-muted-foreground text-[11px] font-semibold uppercase tracking-wider mb-1">Total</p>
+                        <p class="font-bold text-lg">{session.total ?? 0}</p>
                       </div>
                       <div>
-                        <p class="text-muted-foreground text-xs uppercase tracking-wider mb-1">Present</p>
-                        <p class="font-medium">{session.present ?? 0}</p>
+                        <p class="text-muted-foreground text-[11px] font-semibold uppercase tracking-wider mb-1">Present</p>
+                        <p class="font-bold text-lg">{session.present ?? 0}</p>
                       </div>
                       <div>
-                        <p class="text-muted-foreground text-xs uppercase tracking-wider mb-1">Done</p>
-                        <p class="font-medium">{session.submitted ?? 0}</p>
+                        <p class="text-muted-foreground text-[11px] font-semibold uppercase tracking-wider mb-1">Done</p>
+                        <p class="font-bold text-lg">{session.submitted ?? 0}</p>
                       </div>
                     </div>
 
-                    <div class="flex items-center justify-end">
-                      <Link href={rosterHref(session.id)} class="w-full sm:w-auto">
-                        <Button variant="outline" size="sm" class="w-full sm:w-auto">
+                    <div class="flex">
+                      <Link href={rosterHref(session.id)} class="w-full">
+                        <Button variant="outline" size="sm" class="w-full min-h-[40px] font-semibold">
                           <ClipboardList class="mr-1.5 h-3.5 w-3.5" />
                           View Session
                         </Button>
                       </Link>
                     </div>
-                  </CardContent>
-                </Card>
+                  </div>
+                </div>
               {/each}
             </div>
           {/snippet}

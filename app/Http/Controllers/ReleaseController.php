@@ -127,7 +127,6 @@ class ReleaseController extends Controller
         ];
 
         if ($releaseMode === 'online') {
-            $rules['recommended_course_id'] = ['required', 'integer', 'exists:courses,id'];
             $rules['counselor_comments'] = ['required', 'string', 'max:5000'];
         }
 

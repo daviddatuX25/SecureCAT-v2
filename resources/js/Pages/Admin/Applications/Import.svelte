@@ -3,8 +3,9 @@
   import { Link, useForm, page } from '@inertiajs/svelte';
   import { Button } from '@/Components/ui/button';
   import { FileUpload } from '@/Components/ui/file-upload';
-  import { Upload } from 'lucide-svelte';
+  import { Upload, Download, ArrowRight } from 'lucide-svelte';
   import { GuidePanel, GuideSection, CopyableGroup, GuideNote } from '@/Components/Guide';
+  import ImportFileAnalyzer from '@/Components/ImportFileAnalyzer.svelte';
 
   let {
     academicYears = [],
@@ -19,23 +20,26 @@
   ];
 
   const columnLabels = {
-    middle_name: 'middle name',
+    first_name: 'first_name',
+    last_name: 'last_name',
+    email: 'email',
+    middle_name: 'middle_name',
     suffix: 'suffix',
     birthdate: 'birthdate',
     sex: 'sex',
     phone: 'phone',
-    address_line: 'address line',
+    address_line: 'address_line',
     city: 'city',
     province: 'province',
-    zip_code: 'zip code',
-    course_preference_1: 'course preference 1',
-    course_preference_2: 'course preference 2',
-    course_preference_3: 'course preference 3',
+    zip_code: 'zip_code',
+    course_preference_1: 'course_preference_1',
+    course_preference_2: 'course_preference_2',
+    course_preference_3: 'course_preference_3',
     gwa: 'gwa',
   };
 
-  const requiredItems = $derived(requiredColumns.map((c) => ({ value: c, label: columnLabels[c] ?? c.replace(/_/g, ' ') })));
-  const optionalItems = $derived(optionalColumns.map((c) => ({ value: c, label: columnLabels[c] ?? c.replace(/_/g, ' ') })));
+  const requiredItems = $derived(requiredColumns.map((c) => ({ value: c, label: columnLabels[c] ?? c })));
+  const optionalItems = $derived(optionalColumns.map((c) => ({ value: c, label: columnLabels[c] ?? c })));
   const courseItems = $derived(
     courses.map((c) => ({ value: c.code, label: `${c.code} — ${c.name}` })),
   );
@@ -46,22 +50,31 @@
   });
 
   let selectedFile = $state(null);
+  let fileAnalysis = $state(null);
+
+  function onAnalysis(result) {
+    fileAnalysis = result;
+  }
+
+  // Whether the file passes all checks (no failures)
+  let fileReady = $derived(
+    fileAnalysis?.checks?.length > 0 && fileAnalysis.checks.every(c => c.status !== 'fail')
+  );
 
   function submitForm(e) {
     e.preventDefault();
-    if (!selectedFile) return;
-    $form.transform((data) => ({
-      ...data,
-      file: selectedFile,
-    }));
-    // Post to preview route for 2-step flow
+    if (!selectedFile || !fileReady) return;
+
+    const actualFile = Array.isArray(selectedFile) ? selectedFile[0] : selectedFile;
+    if (!actualFile) return;
+
+    $form.file = actualFile;
     $form.post('/admin/applications/import/preview', { forceFormData: true });
   }
 
   let message = $state('');
   let error = $state('');
 
-  // Check for flash messages
   $effect(() => {
     message = $page.props.flash?.message || '';
     error = $page.props.flash?.error || '';
@@ -69,23 +82,23 @@
 </script>
 
 <AuthenticatedLayout {breadcrumbs}>
-  <div class="max-w-2xl space-y-6">
+  <div class="max-w-3xl space-y-6">
 
     <div>
       <h1 class="text-2xl font-semibold">Bulk Import Applicants</h1>
       <p class="text-sm text-muted-foreground mt-1">
-        Import applicant records via CSV file upload. The first row must contain column headers.
+        Import applicant records via spreadsheet upload. Headers are auto-matched — spaces, dashes, and capitalization are handled automatically.
       </p>
     </div>
 
     {#if message}
-      <div class="rounded-md bg-green-50 border border-green-200 p-4 text-green-700">
+      <div class="rounded-md bg-green-50 dark:bg-green-950/30 border border-green-200 dark:border-green-800 p-4 text-green-700 dark:text-green-400">
         <pre class="whitespace-pre-wrap text-sm">{message}</pre>
       </div>
     {/if}
 
     {#if error}
-      <div class="rounded-md bg-red-50 border border-red-200 p-4 text-red-700">
+      <div class="rounded-md bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800 p-4 text-red-700 dark:text-red-400">
         <pre class="whitespace-pre-wrap text-sm">{error}</pre>
       </div>
     {/if}
@@ -107,9 +120,11 @@
 
       <GuideNote variant="tip" title="Tips">
         <ul class="list-disc pl-4 space-y-1 text-xs text-muted-foreground">
-          <li>First row must contain column headers matching the names above</li>
-          <li>Email addresses must be unique across all applicants</li>
-          <li>Course preferences use course codes, not names</li>
+          <li>First row must contain column headers — spaces are fine (e.g. "first name" works)</li>
+          <li>Supports CSV, XLSX, and XLS files up to 10MB</li>
+          <li>Email addresses must be unique per academic year</li>
+          <li>Course preferences use course codes (e.g. BSCS), not full names</li>
+          <li>Unrecognized columns are safely ignored</li>
         </ul>
       </GuideNote>
     </GuidePanel>
@@ -134,7 +149,16 @@
       </div>
 
       <div class="space-y-2">
-        <label for="file" class="text-sm font-medium leading-none">Spreadsheet File</label>
+        <div class="flex items-center justify-between">
+          <label for="file" class="text-sm font-medium leading-none">Spreadsheet File</label>
+          <a
+            href="/admin/applications/import/template"
+            class="text-xs text-primary hover:underline inline-flex items-center gap-1"
+          >
+            <Download class="size-3" />
+            Download Template
+          </a>
+        </div>
         <FileUpload
           label="Upload file"
           accept=".csv,.xlsx,.xls,.txt"
@@ -147,10 +171,26 @@
         {/if}
       </div>
 
+      <!-- File Analysis -->
+      <ImportFileAnalyzer
+        file={selectedFile}
+        analyzeUrl="/admin/applications/import/analyze"
+        onanalysis={onAnalysis}
+      />
+
       <div class="flex gap-3 pt-2">
-        <Button type="submit" disabled={$form.processing} class="min-h-[44px]">
-          <Upload class="mr-2 size-4" />
-          {$form.processing ? 'Importing...' : 'Import CSV'}
+        <Button
+          type="submit"
+          disabled={$form.processing || !fileReady || !$form.academic_year_id}
+          class="min-h-[44px]"
+        >
+          {#if $form.processing}
+            <Upload class="mr-2 size-4 animate-spin" />
+            Processing...
+          {:else}
+            <ArrowRight class="mr-2 size-4" />
+            Preview & Import
+          {/if}
         </Button>
         <Link href="/admin/applications">
           <Button type="button" variant="outline" class="min-h-[44px]">Cancel</Button>

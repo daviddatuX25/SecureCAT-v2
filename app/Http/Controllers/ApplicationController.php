@@ -689,6 +689,8 @@ class ApplicationController extends Controller
             ->where('status', 'pending')
             ->get();
 
+        $emailFailures = 0;
+
         foreach ($applications as $application) {
             $oldStatus = $application->status;
             $application->update([
@@ -700,11 +702,23 @@ class ApplicationController extends Controller
             // Safely create or re-link applicant (same as single accept method)
             $this->ensureApplicantForAcceptance($application);
 
-            // Notify applicant of status change
-            $application->applicant?->notify(new ApplicationStatusChanged($application, $oldStatus, 'accepted'));
+            // Notify applicant of status change — don't let mail failures crash acceptance
+            try {
+                $application->applicant?->notify(new ApplicationStatusChanged($application, $oldStatus, 'accepted'));
+            } catch (\Throwable $e) {
+                $emailFailures++;
+                \Log::warning('Bulk accept: failed to send status notification', [
+                    'application_id' => $application->id,
+                    'error' => $e->getMessage(),
+                ]);
+            }
 
             // Pipeline hook: advance to accepted
             app(ApplicationPipelineService::class)->transition($application->fresh(), 'accepted');
+        }
+
+        if ($emailFailures > 0) {
+            return back()->with('warning', "Selected applications accepted. However, {$emailFailures} notification email(s) could not be sent — they will need to be resent.");
         }
 
         return back()->with('success', 'Selected applications accepted. Setup emails have been sent.');
@@ -737,6 +751,36 @@ class ApplicationController extends Controller
         }
 
         return back()->with('success', 'Selected applications dismissed.');
+    }
+
+    /**
+     * Bulk revert accepted/dismissed applications back to pending.
+     */
+    public function bulkReopen(Request $request): RedirectResponse
+    {
+        $ids = $request->validate(['ids' => 'required|array', 'ids.*' => 'integer'])['ids'];
+
+        $applications = Application::whereIn('id', $ids)
+            ->whereIn('status', ['accepted', 'dismissed'])
+            ->get();
+
+        $count = 0;
+        foreach ($applications as $application) {
+            $application->update([
+                'status' => 'pending',
+                'processed_by' => null,
+                'processed_at' => null,
+            ]);
+
+            // Delete applicant record if exists (will be recreated if accepted again)
+            $application->applicant?->delete();
+
+            // Pipeline hook: force-reset pipeline status back to pending
+            app(ApplicationPipelineService::class)->forceSet($application->fresh(), 'pending');
+            $count++;
+        }
+
+        return back()->with('success', "{$count} application(s) reverted to pending.");
     }
 
     /**
@@ -1001,7 +1045,15 @@ class ApplicationController extends Controller
                     'setup_token' => Applicant::generateSetupToken(),
                     'setup_token_expires_at' => now()->addHours(config('auth.setup_token_expires_hours', 72)),
                 ]);
-                SendApplicantSetupEmail::dispatch($applicant->fresh());
+
+                try {
+                    SendApplicantSetupEmail::dispatch($applicant->fresh());
+                } catch (\Throwable $e) {
+                    \Log::warning('Failed to send setup email (existing applicant)', [
+                        'applicant_id' => $applicant->id,
+                        'error' => $e->getMessage(),
+                    ]);
+                }
             }
 
             return $applicant;
@@ -1015,7 +1067,14 @@ class ApplicationController extends Controller
             'setup_token_expires_at' => now()->addHours(config('auth.setup_token_expires_hours', 72)),
         ]);
 
-        SendApplicantSetupEmail::dispatch($applicant);
+        try {
+            SendApplicantSetupEmail::dispatch($applicant);
+        } catch (\Throwable $e) {
+            \Log::warning('Failed to send setup email (new applicant)', [
+                'applicant_id' => $applicant->id,
+                'error' => $e->getMessage(),
+            ]);
+        }
 
         return $applicant;
     }

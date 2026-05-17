@@ -118,7 +118,7 @@
   <title>{headTitle}</title>
 </svelte:head>
 
-<div class="min-h-screen w-full max-w-[100vw] flex overflow-x-hidden">
+<div class="h-dvh w-full max-w-[100vw] flex overflow-hidden">
   <!-- Sidebar backdrop (mobile) - only show when sidebar is open -->
   {#if sidebarOpen}
   <button
@@ -252,9 +252,9 @@
     </div>
   </aside>
 
-  <div class="flex min-w-0 flex-1 flex-col md:pl-64 overflow-x-hidden relative print:pl-0">
+  <div class="flex min-w-0 flex-1 flex-col md:pl-64 relative print:pl-0">
     <!-- Header -->
-    <header class="sticky top-0 z-20 h-20 glass-panel border-b border-l-0 flex items-center justify-between px-4 lg:px-8 relative print:hidden">
+    <header class="shrink-0 z-20 h-20 glass-panel border-b border-l-0 flex items-center justify-between px-4 lg:px-8 relative print:hidden">
       <div class="flex items-center gap-4">
         <Button variant="ghost" size="icon" class="md:hidden" onclick={() => (sidebarOpen = true)} aria-label="Open menu">
           <Menu class="h-5 w-5" />
@@ -347,7 +347,7 @@
     </header>
 
     <!-- Main content -->
-    <main class="flex-1 min-w-0 overflow-x-hidden overflow-y-auto p-4 lg:p-8 scroll-smooth">
+    <main class="flex-1 min-w-0 overflow-x-hidden overflow-y-auto p-4 lg:p-8 scroll-smooth" id="main-content">
       <div class="min-w-0 w-full max-w-full">
         {@render children?.()}
       </div>

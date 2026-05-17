@@ -15,7 +15,12 @@ class StoreApplicantImportRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'file' => ['required', 'file', 'mimes:csv,txt', 'max:10240'],
+            'file' => [
+                'required',
+                'file',
+                'mimes:csv,txt,xlsx,xls',
+                'max:10240',
+            ],
             'academic_year_id' => ['required', 'integer', 'exists:academic_years,id'],
         ];
     }
@@ -23,9 +28,9 @@ class StoreApplicantImportRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'file.required' => 'Please select a CSV file.',
-            'file.file' => 'The uploaded file is invalid.',
-            'file.mimes' => 'File must be a CSV (.csv or .txt).',
+            'file.required' => 'Please select a file to import.',
+            'file.file' => 'The uploaded file is invalid. Please try again.',
+            'file.mimes' => 'File must be a spreadsheet (.csv, .xlsx, .xls, or .txt).',
             'file.max' => 'File must not exceed 10MB.',
             'academic_year_id.required' => 'Please select an academic year.',
             'academic_year_id.exists' => 'The selected academic year is invalid.',

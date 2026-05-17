@@ -3,12 +3,15 @@
   import { Link, useForm, page } from '@inertiajs/svelte';
   import { Button } from '@/Components/ui/button';
   import { FileUpload } from '@/Components/ui/file-upload';
-  import { Upload, ArrowLeft } from 'lucide-svelte';
+  import { Upload, Download, ArrowRight } from 'lucide-svelte';
   import { GuidePanel, GuideSection, CopyableGroup, GuideNote } from '@/Components/Guide';
+  import ImportFileAnalyzer from '@/Components/ImportFileAnalyzer.svelte';
 
   let {
     enableNormalizedScores = false,
     aptitudeAreaCodes = [],
+    requiredColumns = ['reference_number'],
+    optionalColumns = [],
     previewUrl = '/admin/grading/import/preview',
   } = $props();
 
@@ -22,14 +25,25 @@
   });
 
   let selectedFile = $state(null);
+  let fileAnalysis = $state(null);
+
+  function onAnalysis(result) {
+    fileAnalysis = result;
+  }
+
+  // Whether the file passes all checks (no failures)
+  let fileReady = $derived(
+    fileAnalysis?.checks?.length > 0 && fileAnalysis.checks.every(c => c.status !== 'fail')
+  );
 
   function submitPreview(e) {
     e.preventDefault();
-    if (!selectedFile) return;
-    $form.transform((data) => ({
-      ...data,
-      file: selectedFile,
-    }));
+    if (!selectedFile || !fileReady) return;
+
+    const actualFile = Array.isArray(selectedFile) ? selectedFile[0] : selectedFile;
+    if (!actualFile) return;
+
+    $form.file = actualFile;
     $form.post(previewUrl, { forceFormData: true });
   }
 
@@ -42,34 +56,28 @@
   });
 
   const scoreSuffix = enableNormalizedScores ? '(raw)' : '(normalized)';
-  const requiredItems = [{ value: 'reference_number', label: 'reference_number' }];
+  const requiredItems = requiredColumns.map((c) => ({ value: c, label: c }));
   const aptitudeAreaItems = aptitudeAreaCodes.map((code) => ({ value: code }));
 </script>
 
 <AuthenticatedLayout {breadcrumbs}>
   <div class="max-w-3xl space-y-6">
     <div>
-      <Link href="/admin/grading" class="text-sm text-muted-foreground hover:text-foreground inline-flex items-center gap-1">
-        <ArrowLeft class="size-4" />
-        Back to Grading
-      </Link>
-    </div>
-
-    <div>
       <h1 class="text-2xl font-semibold">Bulk Import Scores</h1>
       <p class="text-sm text-muted-foreground mt-1">
         Import applicant scores via spreadsheet upload. Columns use aptitude area codes.
+        Headers are auto-matched — spaces, dashes, and capitalization are handled automatically.
       </p>
     </div>
 
     {#if message}
-      <div class="rounded-md bg-green-50 border border-green-200 p-4 text-green-700">
+      <div class="rounded-md bg-green-50 dark:bg-green-950/30 border border-green-200 dark:border-green-800 p-4 text-green-700 dark:text-green-400">
         <pre class="whitespace-pre-wrap text-sm">{message}</pre>
       </div>
     {/if}
 
     {#if error}
-      <div class="rounded-md bg-red-50 border border-red-200 p-4 text-red-700">
+      <div class="rounded-md bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800 p-4 text-red-700 dark:text-red-400">
         <pre class="whitespace-pre-wrap text-sm">{error}</pre>
       </div>
     {/if}
@@ -91,11 +99,30 @@
           ? 'Scores are stored as raw values. Enter the original scores from the exam.'
           : 'Scores are automatically normalized after import. Enter raw scores — the system will normalize them.'}
       </GuideNote>
+
+      <GuideNote variant="tip" title="Tips">
+        <ul class="list-disc pl-4 space-y-1 text-xs text-muted-foreground">
+          <li>First row must contain column headers — spaces are fine (e.g. "reference number" works)</li>
+          <li>Supports CSV, XLSX, and XLS files up to 10MB</li>
+          <li>Each applicant must have a completed exam session with an open grading session</li>
+          <li>Duplicate scores for the same aptitude area in the same academic year will be rejected</li>
+          <li>Unrecognized columns are safely ignored</li>
+        </ul>
+      </GuideNote>
     </GuidePanel>
 
     <form onsubmit={submitPreview} class="space-y-4 rounded-lg border border-border bg-card p-6">
       <div class="space-y-2">
-        <label for="file" class="text-sm font-medium leading-none">Spreadsheet File</label>
+        <div class="flex items-center justify-between">
+          <label for="file" class="text-sm font-medium leading-none">Spreadsheet File</label>
+          <a
+            href="/admin/grading/import/template"
+            class="text-xs text-primary hover:underline inline-flex items-center gap-1"
+          >
+            <Download class="size-3" />
+            Download Template
+          </a>
+        </div>
         <FileUpload
           label="Upload file"
           accept=".csv,.xlsx,.xls,.txt"
@@ -108,10 +135,26 @@
         {/if}
       </div>
 
+      <!-- File Analysis -->
+      <ImportFileAnalyzer
+        file={selectedFile}
+        analyzeUrl="/admin/grading/import/analyze"
+        onanalysis={onAnalysis}
+      />
+
       <div class="flex gap-3 pt-2">
-        <Button type="submit" disabled={$form.processing} class="min-h-[44px]">
-          <Upload class="mr-2 size-4" />
-          {$form.processing ? 'Uploading...' : 'Preview Import'}
+        <Button
+          type="submit"
+          disabled={$form.processing || !fileReady}
+          class="min-h-[44px]"
+        >
+          {#if $form.processing}
+            <Upload class="mr-2 size-4 animate-spin" />
+            Processing...
+          {:else}
+            <ArrowRight class="mr-2 size-4" />
+            Preview & Import
+          {/if}
         </Button>
         <Link href="/admin/grading">
           <Button type="button" variant="outline" class="min-h-[44px]">Cancel</Button>

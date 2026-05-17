@@ -7,11 +7,12 @@ use App\Models\Application;
 use App\Models\Course;
 use Carbon\Carbon;
 use Illuminate\Http\UploadedFile;
-use PhpOffice\PhpSpreadsheet\IOFactory;
 
 class ApplicantImportService
 {
-    public const MAX_FILE_SIZE_BYTES = 10 * 1024 * 1024; // 10MB
+    public function __construct(
+        private readonly SpreadsheetParser $parser,
+    ) {}
 
     public const REQUIRED_COLUMNS = [
         'first_name',
@@ -34,6 +35,24 @@ class ApplicantImportService
         'course_preference_3',
         'gwa',
     ];
+
+    /**
+     * Normalize a header string: lowercase, replace spaces/dashes/dots with underscores,
+     * strip non-alphanumeric/underscore characters, and collapse multiple underscores.
+     * This allows CSVs with headers like "First Name" or "course preference 1" to work.
+     */
+    private function normalizeHeader(string $header): string
+    {
+        $header = strtolower(trim($header));
+        // Replace common separators with underscore
+        $header = preg_replace('/[\s\-\.]+/', '_', $header);
+        // Strip anything that isn't alphanumeric or underscore
+        $header = preg_replace('/[^a-z0-9_]/', '', $header);
+        // Collapse multiple underscores
+        $header = preg_replace('/_+/', '_', $header);
+
+        return trim($header, '_');
+    }
 
     /** Cached course code→id map for resolving preferences */
     private ?array $courseCodeMap = null;
@@ -92,109 +111,19 @@ class ApplicantImportService
         return ['resolved' => null, 'error' => "{$fieldName}: unknown course code \"{$trimmed}\""];
     }
 
-    public function validateFile(UploadedFile $file): void
-    {
-        if ($file->getSize() > self::MAX_FILE_SIZE_BYTES) {
-            throw new \InvalidArgumentException('File too large. Maximum size is 10MB.');
-        }
-    }
-
     /**
      * Parse spreadsheet file (CSV, XLSX, XLS) into array of records.
+     * Delegates to the shared SpreadsheetParser.
      *
      * @return array<int, array<string, mixed>>
      */
     public function parseSpreadsheet(UploadedFile $file): array
     {
-        $extension = strtolower($file->getClientOriginalExtension());
+        $records = $this->parser->parse($file);
 
-        $records = match ($extension) {
-            'xlsx', 'xls' => $this->parseExcel($file),
-            'csv' => $this->parseCsv($file),
-            default => throw new \InvalidArgumentException(
-                'Unsupported file format. Please upload CSV or Excel file (XLSX/XLS).'
-            ),
-        };
-
-        // Validate required columns after parsing
         if (! empty($records)) {
             $this->validateHeaders(array_keys($records[0]));
         }
-
-        return $records;
-    }
-
-    /**
-     * Parse Excel file (XLSX/XLS) into array of records.
-     *
-     * @return array<int, array<string, mixed>>
-     */
-    protected function parseExcel(UploadedFile $file): array
-    {
-        $this->validateFile($file);
-
-        try {
-            $spreadsheet = IOFactory::load($file->getRealPath());
-            $worksheet = $spreadsheet->getActiveSheet();
-            $rows = $worksheet->toArray();
-
-            if (empty($rows)) {
-                throw new \InvalidArgumentException('Excel file is empty.');
-            }
-
-            // First row is headers
-            $headers = array_map('strtolower', array_map('trim', array_shift($rows)));
-
-            $records = [];
-            foreach ($rows as $rowIndex => $row) {
-                // Skip completely empty rows
-                if (empty(array_filter($row, fn ($v) => $v !== null && $v !== ''))) {
-                    continue;
-                }
-
-                // Pad row to match header count
-                $row = array_pad($row, count($headers), null);
-                $record = array_combine($headers, $row);
-
-                if ($record !== false) {
-                    $records[] = array_map(fn ($v) => is_string($v) ? trim($v) : $v, $record);
-                }
-            }
-
-            return $records;
-        } catch (\PhpOffice\PhpSpreadsheet\Exception $e) {
-            throw new \InvalidArgumentException('Unable to parse Excel file: '.$e->getMessage());
-        }
-    }
-
-    /**
-     * Parse CSV file into array of records.
-     *
-     * @return array<int, array<string, mixed>>
-     */
-    public function parseCsv(UploadedFile $file): array
-    {
-        $this->validateFile($file);
-
-        $handle = fopen($file->getRealPath(), 'r');
-        if ($handle === false) {
-            throw new \RuntimeException('Unable to read uploaded file.');
-        }
-
-        $headers = array_map('strtolower', array_map('trim', fgetcsv($handle)));
-
-        // Validate required columns exist
-        $this->validateHeaders($headers);
-
-        $records = [];
-        while (($row = fgetcsv($handle)) !== false) {
-            $record = array_combine($headers, $row);
-            if ($record !== false) {
-                $records[] = array_map('trim', $record);
-            }
-        }
-
-        fclose($handle);
 
         return $records;
     }
@@ -294,6 +223,32 @@ class ApplicantImportService
             $errors[] = 'Invalid email format';
         }
 
+        // Required by DB: birthdate
+        $birthdate = $record['birthdate'] ?? null;
+        if (empty($birthdate)) {
+            $errors[] = 'Birthdate is required';
+        } else {
+            try {
+                Carbon::parse($birthdate);
+            } catch (\Exception $e) {
+                $errors[] = 'Invalid birthdate format (use YYYY-MM-DD or any standard date format)';
+            }
+        }
+
+        // Required by DB: sex
+        $sex = strtolower(trim($record['sex'] ?? ''));
+        if (empty($sex)) {
+            $errors[] = 'Sex is required (male or female)';
+        } elseif (! in_array($sex, ['male', 'female'], true)) {
+            $errors[] = "Sex must be 'male' or 'female', got '{$sex}'";
+        }
+
+        // Required by DB: course_preference_1
+        $pref1Value = $record['course_preference_1'] ?? null;
+        if (empty($pref1Value)) {
+            $errors[] = 'Course preference 1 is required';
+        }
+
         // Validate course preferences: accept course code or numeric ID
         $resolvedPrefs = [];
         foreach ([1, 2, 3] as $prefNum) {
@@ -310,6 +265,12 @@ class ApplicantImportService
         $prefValues = array_filter($resolvedPrefs);
         if (count($prefValues) !== count(array_unique($prefValues))) {
             $errors[] = 'Course preferences must be different from each other';
+        }
+
+        // Validate GWA if present
+        $gwa = $record['gwa'] ?? null;
+        if (! empty($gwa) && ! is_numeric($gwa)) {
+            $errors[] = 'GWA must be a number';
         }
 
         return $errors;
@@ -414,6 +375,16 @@ class ApplicantImportService
             // Generate reference number
             $referenceNumber = $this->generateReferenceNumber($academicYearId);
 
+            // Parse birthdate and calculate age
+            $birthdate = $this->parseDate($record['birthdate'] ?? null);
+            $age = $birthdate ? Carbon::parse($birthdate)->age : 0;
+
+            // Normalize sex value
+            $sex = strtolower(trim($record['sex'] ?? 'male'));
+            if (! in_array($sex, ['male', 'female'], true)) {
+                $sex = 'male'; // fallback, should be caught by validation
+            }
+
             Application::create([
                 'academic_year_id' => $academicYearId,
                 'reference_number' => $referenceNumber,
@@ -421,8 +392,9 @@ class ApplicantImportService
                 'middle_name' => $record['middle_name'] ?? null,
                 'last_name' => $record['last_name'],
                 'suffix' => $record['suffix'] ?? null,
-                'birthdate' => $this->parseDate($record['birthdate'] ?? null),
-                'sex' => $record['sex'] ?? null,
+                'birthdate' => $birthdate,
+                'age' => $age,
+                'sex' => $sex,
                 'email' => $record['email'],
                 'phone' => $record['phone'] ?? null,
                 'address_line' => $record['address_line'] ?? null,
@@ -434,8 +406,10 @@ class ApplicantImportService
                 'course_preference_2' => $coursePref2['resolved'],
                 'course_preference_3' => $coursePref3['resolved'],
                 'status' => 'pending',
+                'pipeline_status' => 'pending',
                 'processed_by' => $importerId,
                 'processed_at' => now(),
+                'submitted_at' => now(),
             ]);
 
             return ['success' => true];

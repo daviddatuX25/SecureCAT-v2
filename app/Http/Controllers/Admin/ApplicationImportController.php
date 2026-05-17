@@ -8,16 +8,21 @@ use App\Models\AcademicYear;
 use App\Models\Application;
 use App\Models\Course;
 use App\Services\ApplicantImportService;
+use App\Services\SpreadsheetParser;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Session;
 use Inertia\Inertia;
 use Inertia\Response as InertiaResponse;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class ApplicationImportController extends Controller
 {
     public function __construct(
         private readonly ApplicantImportService $importService,
+        private readonly SpreadsheetParser $parser,
     ) {}
 
     /**
@@ -40,6 +45,36 @@ class ApplicationImportController extends Controller
             'requiredColumns' => ApplicantImportService::REQUIRED_COLUMNS,
             'optionalColumns' => ApplicantImportService::OPTIONAL_COLUMNS,
         ]);
+    }
+
+    /**
+     * Analyze uploaded file — returns header mapping, checks, and row count
+     * without importing anything. Used for pre-upload validation feedback.
+     */
+    public function analyze(Request $request): JsonResponse
+    {
+        $this->authorize('create', Application::class);
+
+        $request->validate([
+            'file' => ['required', 'file', 'mimes:csv,txt,xlsx,xls', 'max:10240'],
+        ]);
+
+        try {
+            $analysis = $this->parser->analyze(
+                $request->file('file'),
+                ApplicantImportService::REQUIRED_COLUMNS,
+                ApplicantImportService::OPTIONAL_COLUMNS
+            );
+
+            return response()->json($analysis);
+        } catch (\Exception $e) {
+            return response()->json([
+                'error' => $e->getMessage(),
+                'checks' => [
+                    ['label' => 'File parsing', 'status' => 'fail', 'detail' => $e->getMessage()],
+                ],
+            ], 422);
+        }
     }
 
     /**
@@ -198,5 +233,43 @@ class ApplicationImportController extends Controller
             return redirect()->route('admin.applications.import')
                 ->with('error', 'Import failed: '.$e->getMessage());
         }
+    }
+
+    /**
+     * Download a CSV template for applicant import.
+     */
+    public function template(): StreamedResponse
+    {
+        $headers = array_merge(
+            ApplicantImportService::REQUIRED_COLUMNS,
+            ApplicantImportService::OPTIONAL_COLUMNS
+        );
+
+        return response()->streamDownload(function () use ($headers) {
+            $handle = fopen('php://output', 'w');
+            fputcsv($handle, $headers);
+            // Add one example row
+            fputcsv($handle, [
+                'Juan',            // first_name
+                'Dela Cruz',       // last_name
+                'juan@example.com', // email
+                'Santos',          // middle_name
+                'Jr.',             // suffix
+                '2000-01-15',      // birthdate
+                'Male',            // sex
+                '09171234567',     // phone
+                '123 Main St',    // address_line
+                'Manila',          // city
+                'Metro Manila',    // province
+                '1000',            // zip_code
+                'BSCS',            // course_preference_1
+                'BSIT',            // course_preference_2
+                '',                // course_preference_3
+                '1.50',            // gwa
+            ]);
+            fclose($handle);
+        }, 'applicant_import_template.csv', [
+            'Content-Type' => 'text/csv',
+        ]);
     }
 }

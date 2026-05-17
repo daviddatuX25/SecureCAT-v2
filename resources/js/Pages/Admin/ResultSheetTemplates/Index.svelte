@@ -72,12 +72,12 @@
                 <Table.Cell class="text-center">
                   <div class="flex justify-center gap-2">
                     <Link href={`/admin/release/result-templates/${t.id}/edit`}>
-                      <Button variant="ghost" size="sm" class="h-8 px-2 text-xs">
+                      <Button variant="ghost" size="sm" class="h-8 px-2 text-xs font-semibold hover:bg-muted">
                         <Pencil class="mr-1.5 h-3.5 w-3.5" />
                         Edit
                       </Button>
                     </Link>
-                    <Button variant="ghost" size="sm" class="h-8 px-2 text-xs text-destructive" onclick={() => confirmDelete(t.id)}>
+                    <Button variant="ghost" size="sm" class="h-8 px-2 text-xs font-semibold text-destructive hover:text-destructive hover:bg-destructive/5" onclick={() => confirmDelete(t.id)}>
                       <Trash2 class="mr-1.5 h-3.5 w-3.5" />
                       Delete
                     </Button>

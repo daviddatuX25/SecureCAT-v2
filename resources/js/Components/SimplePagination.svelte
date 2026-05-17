@@ -11,7 +11,7 @@
 </script>
 
 {#if data != null && data.last_page > 1}
-  <div class="flex items-center justify-between {variant === 'centered' ? 'justify-center' : ''} {className}">
+  <div class="mt-4 pt-4 border-t border-border/50 flex items-center {variant === 'centered' ? 'justify-center' : 'justify-between'} {className}">
     {#if variant === 'table'}
       <div class="text-sm text-muted-foreground hidden sm:block">
         Showing

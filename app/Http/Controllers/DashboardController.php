@@ -22,6 +22,7 @@ class DashboardController extends Controller
         return Inertia::render('Dashboard', [
             'user' => $user,
             'applicationStats' => $this->dashboardService->getApplicationStats($user),
+            'pipelineDistribution' => $this->dashboardService->getPipelineDistribution($user),
             'sessionStats' => $this->dashboardService->getSessionStats($user),
             'gradingStats' => $this->dashboardService->getGradingStats($user),
             'analytics' => [
@@ -38,10 +39,6 @@ class DashboardController extends Controller
                 'grading' => [
                     'statusDistribution' => $this->analyticsService->getGradingStatusDistribution($user),
                     'turnaround' => $this->analyticsService->getGradingTurnaround($user),
-                ],
-                'users' => [
-                    'growth' => $this->analyticsService->getUserGrowth(),
-                    'roleDistribution' => $this->analyticsService->getUserRoleDistribution(),
                 ],
             ],
             'myActivity' => $this->analyticsService->getMyActivity($user),

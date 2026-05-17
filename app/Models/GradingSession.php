@@ -69,11 +69,6 @@ class GradingSession extends Model
         return $this->belongsToMany(AptitudeArea::class, 'applicant_scores', 'grading_session_id', 'aptitude_area_id');
     }
 
-    public function consultationSchedules(): HasMany
-    {
-        return $this->hasMany(ConsultationSchedule::class);
-    }
-
     public function workflowStatus(): string
     {
         return $this->status === self::STATUS_FINALIZED ? 'completed' : 'in_progress';

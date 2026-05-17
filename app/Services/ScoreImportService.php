@@ -12,122 +12,30 @@ use App\Models\SystemSetting;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
-use PhpOffice\PhpSpreadsheet\Exception;
-use PhpOffice\PhpSpreadsheet\IOFactory;
 
 class ScoreImportService
 {
-    public const MAX_FILE_SIZE_BYTES = 10 * 1024 * 1024; // 10MB
-
     public const REQUIRED_COLUMNS = [
         'reference_number',
     ];
 
-    public function validateFile(UploadedFile $file): void
-    {
-        if ($file->getSize() > self::MAX_FILE_SIZE_BYTES) {
-            throw new \InvalidArgumentException('File too large. Maximum size is 10MB.');
-        }
-    }
+    public function __construct(
+        private readonly SpreadsheetParser $parser,
+    ) {}
 
     /**
      * Parse spreadsheet file (CSV, XLSX, XLS) into array of records.
+     * Delegates to the shared SpreadsheetParser.
      *
      * @return array<int, array<string, mixed>>
      */
     public function parseSpreadsheet(UploadedFile|string $file): array
     {
-        $extension = is_string($file)
-            ? strtolower(pathinfo($file, PATHINFO_EXTENSION))
-            : strtolower($file->getClientOriginalExtension());
-
-        $realPath = is_string($file) ? $file : $file->getRealPath();
-
-        if (is_string($file)) {
-            if (! file_exists($file)) {
-                throw new \InvalidArgumentException('Import file not found. Please upload again.');
-            }
-        } else {
-            $this->validateFile($file);
-        }
-
-        $records = match ($extension) {
-            'xlsx', 'xls' => $this->parseExcel($realPath),
-            'csv' => $this->parseCsv($realPath),
-            default => throw new \InvalidArgumentException(
-                'Unsupported file format. Please upload CSV or Excel file (XLSX/XLS).'
-            ),
-        };
+        $records = $this->parser->parse($file);
 
         if (! empty($records)) {
             $this->validateHeaders(array_keys($records[0]));
         }
-
-        return $records;
-    }
-
-    /**
-     * Parse Excel file (XLSX/XLS) into array of records.
-     *
-     * @return array<int, array<string, mixed>>
-     */
-    protected function parseExcel(string $path): array
-    {
-        try {
-            $spreadsheet = IOFactory::load($path);
-            $worksheet = $spreadsheet->getActiveSheet();
-            $rows = $worksheet->toArray();
-
-            if (empty($rows)) {
-                throw new \InvalidArgumentException('Excel file is empty.');
-            }
-
-            $headers = array_map('strtolower', array_map('trim', array_shift($rows)));
-
-            $records = [];
-            foreach ($rows as $row) {
-                if (empty(array_filter($row, fn ($v) => $v !== null && $v !== ''))) {
-                    continue;
-                }
-
-                $row = array_pad($row, count($headers), null);
-                $record = array_combine($headers, $row);
-
-                if ($record !== false) {
-                    $records[] = array_map(fn ($v) => is_string($v) ? trim($v) : $v, $record);
-                }
-            }
-
-            return $records;
-        } catch (Exception $e) {
-            throw new \InvalidArgumentException('Unable to parse Excel file: '.$e->getMessage());
-        }
-    }
-
-    /**
-     * Parse CSV file into array of records.
-     *
-     * @return array<int, array<string, mixed>>
-     */
-    public function parseCsv(string $path): array
-    {
-        $handle = fopen($path, 'r');
-        if ($handle === false) {
-            throw new \RuntimeException('Unable to read uploaded file.');
-        }
-
-        $headers = array_map('strtolower', array_map('trim', fgetcsv($handle)));
-        $this->validateHeaders($headers);
-
-        $records = [];
-        while (($row = fgetcsv($handle)) !== false) {
-            $record = array_combine($headers, $row);
-            if ($record !== false) {
-                $records[] = array_map('trim', $record);
-            }
-        }
-
-        fclose($handle);
 
         return $records;
     }

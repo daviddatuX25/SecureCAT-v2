@@ -120,7 +120,7 @@
         {#snippet cards()}
           <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {#each grading_sessions as gs (gs.id)}
-              <div class="rounded-lg border bg-card text-card-foreground shadow-sm">
+              <div class="rounded-xl border bg-card text-card-foreground shadow-sm hover:shadow-md transition-all">
                 <div class="p-5 space-y-3">
                   <div class="flex items-start justify-between gap-2">
                     <div>

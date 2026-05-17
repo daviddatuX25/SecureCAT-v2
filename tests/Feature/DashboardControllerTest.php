@@ -28,6 +28,7 @@ class DashboardControllerTest extends TestCase
             ->assertInertia(fn (AssertableInertia $page) => $page
                 ->component('Dashboard')
                 ->has('applicationStats')
+                ->has('pipelineDistribution')
                 ->has('sessionStats')
                 ->has('gradingStats')
             );
@@ -49,6 +50,7 @@ class DashboardControllerTest extends TestCase
             ->assertInertia(fn (AssertableInertia $page) => $page
                 ->component('Dashboard')
                 ->has('applicationStats')
+                ->has('pipelineDistribution')
                 ->has('sessionStats')
                 ->has('gradingStats')
             );

@@ -14,7 +14,42 @@ use Illuminate\Support\Facades\Schema;
 class DashboardService
 {
     /**
-     * Application-level KPI stats (admin / super_admin only).
+     * All 11 pipeline statuses in order.
+     *
+     * @var string[]
+     */
+    public const PIPELINE_STATUSES = [
+        'pending', 'accepted', 'draft_scheduled', 'scheduled', 'printed',
+        'attended', 'submitted', 'scored', 'graded', 'released', 'dismissed',
+    ];
+
+    /**
+     * Pipeline status → human label.
+     *
+     * @var array<string, string>
+     */
+    public const PIPELINE_LABELS = [
+        'pending' => 'Pending',
+        'accepted' => 'Accepted',
+        'draft_scheduled' => 'Draft Scheduled',
+        'scheduled' => 'Scheduled',
+        'printed' => 'Printed',
+        'attended' => 'Attended',
+        'submitted' => 'Submitted',
+        'scored' => 'Scored',
+        'graded' => 'Graded',
+        'released' => 'Released',
+        'dismissed' => 'Dismissed',
+    ];
+
+    /**
+     * Pipeline-based KPI stats using pipeline_status column.
+     *
+     * Returns grouped KPI cards:
+     * - Total applications
+     * - Active pipeline (pending → scored)
+     * - Completed (graded + released)
+     * - Dismissed
      *
      * @return array<int, array{key: string, label: string, value: int|string, href?: string}>
      */
@@ -31,26 +66,84 @@ class DashboardService
             $base->forAcademicYear($activeAcademicYear);
         }
 
+        // Count by pipeline_status (COALESCE null to 'pending')
+        $counts = (clone $base)
+            ->select(DB::raw("COALESCE(pipeline_status, 'pending') as status"), DB::raw('COUNT(*) as count'))
+            ->groupBy(DB::raw("COALESCE(pipeline_status, 'pending')"))
+            ->pluck('count', 'status')
+            ->toArray();
+
+        $total = array_sum($counts);
+
+        $activeStatuses = ['pending', 'accepted', 'draft_scheduled', 'scheduled', 'printed', 'attended', 'submitted', 'scored'];
+        $inPipeline = 0;
+        foreach ($activeStatuses as $s) {
+            $inPipeline += $counts[$s] ?? 0;
+        }
+
+        $completed = ($counts['graded'] ?? 0) + ($counts['released'] ?? 0);
+        $dismissed = $counts['dismissed'] ?? 0;
+
         return [
             [
-                'key' => 'applications_pending',
-                'label' => 'Pending',
-                'value' => (clone $base)->where('status', 'pending')->count(),
-                'href' => '/applications',
+                'key' => 'total_applications',
+                'label' => 'Total Applications',
+                'value' => $total,
+                'href' => '/admin/applications',
             ],
             [
-                'key' => 'applications_accepted',
-                'label' => 'Accepted',
-                'value' => (clone $base)->where('status', 'accepted')->count(),
-                'href' => '/applications',
+                'key' => 'in_pipeline',
+                'label' => 'In Pipeline',
+                'value' => $inPipeline,
+                'href' => '/admin/applications',
             ],
             [
-                'key' => 'applications_dismissed',
+                'key' => 'completed',
+                'label' => 'Completed',
+                'value' => $completed,
+                'href' => '/admin/applications',
+            ],
+            [
+                'key' => 'dismissed',
                 'label' => 'Dismissed',
-                'value' => (clone $base)->where('status', 'dismissed')->count(),
-                'href' => '/applications',
+                'value' => $dismissed,
+                'href' => '/admin/applications',
             ],
         ];
+    }
+
+    /**
+     * Pipeline status distribution for funnel chart (all 11 statuses).
+     *
+     * @return array<int, array{status: string, label: string, count: int, percentage: float}>
+     */
+    public function getPipelineDistribution(User $user): array
+    {
+        if (! $user->hasAnyRole(['super_admin', 'registrar_administrator'])) {
+            return [];
+        }
+
+        $activeAcademicYear = AcademicYear::active();
+
+        $base = Application::query();
+        if ($activeAcademicYear !== null) {
+            $base->forAcademicYear($activeAcademicYear);
+        }
+
+        $counts = $base
+            ->select(DB::raw("COALESCE(pipeline_status, 'pending') as status"), DB::raw('COUNT(*) as count'))
+            ->groupBy(DB::raw("COALESCE(pipeline_status, 'pending')"))
+            ->pluck('count', 'status')
+            ->toArray();
+
+        $total = array_sum($counts);
+
+        return array_map(fn (string $status) => [
+            'status' => $status,
+            'label' => self::PIPELINE_LABELS[$status] ?? ucfirst($status),
+            'count' => $counts[$status] ?? 0,
+            'percentage' => $total > 0 ? round((($counts[$status] ?? 0) / $total) * 100, 1) : 0,
+        ], self::PIPELINE_STATUSES);
     }
 
     /**

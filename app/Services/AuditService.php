@@ -70,10 +70,8 @@ class AuditService
         'score.updated' => ['label' => 'Score updated', 'action' => 'updated a score'],
         'grading_session.finalized' => ['label' => 'Grading finalized', 'action' => 'finalized grading'],
 
-        // Consultation events
-        'consultation.scheduled' => ['label' => 'Consultation scheduled', 'action' => 'scheduled a consultation'],
-        'consultation.cancelled' => ['label' => 'Consultation cancelled', 'action' => 'cancelled a consultation'],
-        'consultation.completed' => ['label' => 'Consultation completed', 'action' => 'completed a consultation'],
+        // Release events
+        'consultation.released' => ['label' => 'Results released', 'action' => 'released consultation results'],
 
         // Role management events
         'role.created' => ['label' => 'Role created', 'action' => 'created a role'],
@@ -94,7 +92,7 @@ class AuditService
         'application' => 'Applications',
         'exam_session' => 'Exam Sessions',
         'grading' => 'Grading',
-        'consultation' => 'Consultations',
+        'consultation' => 'Release',
         'user_management' => 'User Management',
         'system' => 'System',
         'other' => 'Other',

@@ -3,7 +3,7 @@
   import { Link, useForm, page } from '@inertiajs/svelte';
   import { Button } from '@/Components/ui/button';
   import { Checkbox } from '@/Components/ui/checkbox';
-  import { FileSpreadsheet, Check, X, AlertTriangle, ArrowLeft, Save } from 'lucide-svelte';
+  import { FileSpreadsheet, Check, X, AlertTriangle, Save } from 'lucide-svelte';
 
   let {
     records = [],
@@ -77,13 +77,6 @@
 <AuthenticatedLayout {breadcrumbs}>
   <div class="space-y-6">
     <div>
-      <Link href="/admin/grading/import" class="text-sm text-muted-foreground hover:text-foreground inline-flex items-center gap-1">
-        <ArrowLeft class="size-4" />
-        Back to Import
-      </Link>
-    </div>
-
-    <div>
       <h1 class="text-2xl font-semibold">Preview Score Import</h1>
       <p class="text-sm text-muted-foreground mt-1">
         Review parsed data before importing. Invalid rows are highlighted.
@@ -91,13 +84,13 @@
     </div>
 
     {#if message}
-      <div class="rounded-md bg-green-50 border border-green-200 p-4 text-green-700">
+      <div class="rounded-md bg-green-50 dark:bg-green-950/30 border border-green-200 dark:border-green-800 p-4 text-green-700 dark:text-green-400">
         <pre class="whitespace-pre-wrap text-sm">{message}</pre>
       </div>
     {/if}
 
     {#if error}
-      <div class="rounded-md bg-red-50 border border-red-200 p-4 text-red-700">
+      <div class="rounded-md bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800 p-4 text-red-700 dark:text-red-400">
         <pre class="whitespace-pre-wrap text-sm">{error}</pre>
       </div>
     {/if}
@@ -106,11 +99,11 @@
       <div class="rounded bg-muted px-3 py-2">
         <span class="font-medium">{totalCount}</span> total rows
       </div>
-      <div class="rounded bg-green-50 px-3 py-2 text-green-700">
+      <div class="rounded bg-green-50 dark:bg-green-950/30 px-3 py-2 text-green-700 dark:text-green-400">
         <Check class="inline size-4 mr-1" />
         <span class="font-medium">{validCount}</span> valid
       </div>
-      <div class="rounded bg-red-50 px-3 py-2 text-red-700">
+      <div class="rounded bg-red-50 dark:bg-red-950/30 px-3 py-2 text-red-700 dark:text-red-400">
         <X class="inline size-4 mr-1" />
         <span class="font-medium">{invalidCount}</span> invalid
       </div>
@@ -136,7 +129,7 @@
           </thead>
           <tbody>
             {#each records.slice(0, 50) as record}
-              <tr class:bg-red-50={!record.is_valid} class:bg-white={record.is_valid}>
+              <tr class={!record.is_valid ? 'bg-red-50 dark:bg-red-950/20' : ''}>
                 <td class="px-3 py-2">
                   {#if record.is_valid}
                     <Checkbox checked={selectedIds.has(record.id)} onCheckedChange={() => toggleRow(record.id)} />
