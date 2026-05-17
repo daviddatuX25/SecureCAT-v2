@@ -9,6 +9,7 @@
   import * as Select from '@/Components/ui/select';
   import { error as toastError } from '@/lib/toast';
   import { FileText, Printer, Search, Filter, ChevronDown, Undo2 } from 'lucide-svelte';
+  import { createDebouncedWatch, createImmediateWatch } from '@/lib/auto-filter';
   import * as Popover from '@/Components/ui/popover';
   import * as Command from '@/Components/ui/command';
   import { Textarea } from '@/Components/ui/textarea';
@@ -16,7 +17,7 @@
 
   import SwitchableListView from '@/Components/SwitchableListView.svelte';
   import SimplePagination from '@/Components/SimplePagination.svelte';
-  import { Card, CardContent } from '@/Components/ui/card';
+  import { Pencil } from 'lucide-svelte';
 
   let viewMode = $state('responsive');
 
@@ -71,6 +72,12 @@
       page: 1,
     }, { preserveState: true });
   }
+
+  // Auto-apply: search debounced, dropdowns immediate
+  const searchWatch = createDebouncedWatch(() => applyFilters());
+  const filterWatch = createImmediateWatch(() => applyFilters());
+  $effect(() => { filterSearch; searchWatch(); });
+  $effect(() => { filterStatus; filterAcademicYearId; filterWatch(); });
 
   const isF2F = $derived(release_mode === 'f2f');
 
@@ -355,54 +362,63 @@
     <!-- Filters -->
     <div class="flex flex-col gap-3">
       <!-- Desktop -->
-      <div class="hidden md:flex flex-wrap items-center gap-3">
-        <div class="relative">
-          <Search class="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
-          <Input
-            type="search"
-            bind:value={filterSearch}
-            onkeydown={(e) => e.key === 'Enter' && applyFilters()}
-            class="pl-8 min-w-[160px] max-w-[220px] h-10"
-          />
+      <div class="hidden md:flex flex-wrap items-end gap-3">
+        <div>
+          <label class="text-xs font-medium text-muted-foreground block mb-1">Search</label>
+          <div class="relative">
+            <Search class="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
+            <Input
+              type="search"
+              placeholder="Search applicants..."
+              bind:value={filterSearch}
+              class="pl-8 min-w-[160px] max-w-[220px] h-10"
+            />
+          </div>
         </div>
-        <Select.Root type="single" bind:value={filterStatus}>
-          <Select.Trigger class="w-[150px] min-h-[40px]">
-            {#if filterStatus}
-              {filterStatus === 'released' ? 'Released' : filterStatus === 'draft' ? 'Draft' : 'All statuses'}
-            {:else}
-              <span class="text-muted-foreground">All statuses</span>
-            {/if}
-          </Select.Trigger>
-          <Select.Content>
-            <Select.Item value="" label="All statuses">All statuses</Select.Item>
-            <Select.Item value="draft" label="Draft">Draft</Select.Item>
-            <Select.Item value="released" label="Released">Released</Select.Item>
-          </Select.Content>
-        </Select.Root>
-        {#if seasons.length > 0}
-          <Select.Root type="single" bind:value={filterAcademicYearId}>
-            <Select.Trigger class="w-[200px] min-h-[40px]">
-              {#if filterAcademicYearId}
-                {@const sel = seasons.find((s) => String(s.id) === filterAcademicYearId)}
-                {sel ? seasonLabel(sel) : 'All years'}
+        <div>
+          <label class="text-xs font-medium text-muted-foreground block mb-1">Status</label>
+          <Select.Root type="single" bind:value={filterStatus}>
+            <Select.Trigger class="w-[150px] min-h-[40px]">
+              {#if filterStatus}
+                {filterStatus === 'released' ? 'Released' : filterStatus === 'draft' ? 'Draft' : 'All statuses'}
               {:else}
-                <span class="text-muted-foreground">All years</span>
+                <span class="text-muted-foreground">All statuses</span>
               {/if}
             </Select.Trigger>
             <Select.Content>
-              <Select.Item value="" label="All years">All years</Select.Item>
-              {#each seasons as s (s.id)}
-                <Select.Item value={String(s.id)} label={seasonLabel(s)}>
-                  {seasonLabel(s)}
-                  {#if s.is_active}
-                    <Badge variant="success" class="ml-2 text-[10px] px-1.5 py-0">Active</Badge>
-                  {/if}
-                </Select.Item>
-              {/each}
+              <Select.Item value="" label="All statuses">All statuses</Select.Item>
+              <Select.Item value="draft" label="Draft">Draft</Select.Item>
+              <Select.Item value="released" label="Released">Released</Select.Item>
             </Select.Content>
           </Select.Root>
+        </div>
+        {#if seasons.length > 0}
+          <div>
+            <label class="text-xs font-medium text-muted-foreground block mb-1">Season</label>
+            <Select.Root type="single" bind:value={filterAcademicYearId}>
+              <Select.Trigger class="w-[200px] min-h-[40px]">
+                {#if filterAcademicYearId}
+                  {@const sel = seasons.find((s) => String(s.id) === filterAcademicYearId)}
+                  {sel ? seasonLabel(sel) : 'All years'}
+                {:else}
+                  <span class="text-muted-foreground">All years</span>
+                {/if}
+              </Select.Trigger>
+              <Select.Content>
+                <Select.Item value="" label="All years">All years</Select.Item>
+                {#each seasons as s (s.id)}
+                  <Select.Item value={String(s.id)} label={seasonLabel(s)}>
+                    {seasonLabel(s)}
+                    {#if s.is_active}
+                      <Badge variant="success" class="ml-2 text-[10px] px-1.5 py-0">Active</Badge>
+                    {/if}
+                  </Select.Item>
+                {/each}
+              </Select.Content>
+            </Select.Root>
+          </div>
         {/if}
-        <Button onclick={applyFilters} class="min-h-[40px]">Apply</Button>
+
       </div>
       <!-- Mobile -->
       <div class="flex flex-wrap items-center gap-3 md:hidden">
@@ -410,8 +426,8 @@
           <Search class="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
           <Input
             type="search"
+            placeholder="Search applicants..."
             bind:value={filterSearch}
-            onkeydown={(e) => e.key === 'Enter' && applyFilters()}
             class="pl-8 min-h-[44px] w-full"
           />
         </div>
@@ -441,7 +457,7 @@
             </div>
             {#if seasons.length > 0}
               <div>
-                <label for="filter-ay-mob" class="text-sm font-medium block mb-1">Academic Year</label>
+                <label for="filter-ay-mob" class="text-sm font-medium block mb-1">Season</label>
                 <Select.Root type="single" bind:value={filterAcademicYearId}>
                   <Select.Trigger id="filter-ay-mob" class="w-full min-h-[44px]">
                     {#if filterAcademicYearId}
@@ -462,7 +478,7 @@
             {/if}
           </div>
         </details>
-        <Button onclick={applyFilters} class="min-h-[44px]">Apply</Button>
+
       </div>
     </div>
 
@@ -542,52 +558,61 @@
         {/snippet}
 
         {#snippet cards()}
-          <div class="space-y-4">
-            {#if summaries.data.length > 0}
-              <div class="flex items-center gap-3 px-1 mb-4">
-                <Checkbox
-                  checked={allSelected}
-                  onCheckedChange={toggleAll}
-                  aria-label="Select all unreleased"
-                  class="h-4 w-4"
-                />
-                <span class="text-sm font-medium text-muted-foreground">Select all unreleased</span>
-              </div>
-            {/if}
-            
+          {#if summaries.data.length > 0}
+            <div class="flex items-center gap-3 px-1 mb-4">
+              <Checkbox
+                checked={allSelected}
+                onCheckedChange={toggleAll}
+                aria-label="Select all unreleased"
+                class="h-4 w-4"
+              />
+              <span class="text-sm font-medium text-muted-foreground">Select all unreleased</span>
+            </div>
+          {/if}
+
+          <div class="grid gap-4 sm:grid-cols-2">
             {#each summaries.data as summary (summary.id)}
-              <Card class={summary.status === 'released' ? 'opacity-60' : ''}>
-                <CardContent class="p-4 space-y-4">
-                  <div class="flex justify-between items-start">
-                    <div class="flex gap-3">
-                      {#if summary.status !== 'released'}
-                        <div class="pt-1">
-                          <Checkbox
-                            checked={selectedIds.includes(summary.id)}
-                            onCheckedChange={() => toggleOne(summary.id)}
-                            aria-label="Select {summary.applicant?.full_name ?? summary.id}"
-                            class="h-4 w-4"
-                          />
-                        </div>
-                      {/if}
-                      <div>
-                        {@render applicantInfo(summary)}
+              <div class="flex flex-col rounded-xl border border-border bg-card shadow-sm transition-all {summary.status === 'released' ? 'opacity-60' : 'hover:shadow-md hover:border-border/80'}">
+                <!-- Header: Applicant + Status -->
+                <div class="flex items-start gap-3 p-4 pb-3">
+                  {#if summary.status !== 'released'}
+                    <div class="pt-1 shrink-0" onclick={(e) => e.stopPropagation()}>
+                      <Checkbox
+                        checked={selectedIds.includes(summary.id)}
+                        onCheckedChange={() => toggleOne(summary.id)}
+                        aria-label="Select {summary.applicant?.full_name ?? summary.id}"
+                        class="h-4 w-4"
+                      />
+                    </div>
+                  {/if}
+                  <div class="flex-1 min-w-0">
+                    <div class="flex items-start justify-between gap-2">
+                      <div class="min-w-0">
+                        <p class="font-bold tracking-tight truncate">{summary.applicant?.full_name || '—'}</p>
+                        {#if summary.applicant?.reference_number}
+                          <p class="text-xs text-muted-foreground font-mono mt-0.5">{summary.applicant.reference_number}</p>
+                        {/if}
+                        {#if summary.applicant?.email}
+                          <p class="text-xs text-muted-foreground truncate">{summary.applicant.email}</p>
+                        {/if}
+                      </div>
+                      <div class="flex flex-col items-end gap-1.5 shrink-0">
+                        {@render statusBadge(summary)}
+                        {@render printedBadge(summary)}
                       </div>
                     </div>
-                    {@render statusBadge(summary)}
                   </div>
-                  
-                  <div class="flex items-center gap-2 text-xs">
-                    <span class="text-muted-foreground">Print status:</span>
-                    {@render printedBadge(summary)}
-                  </div>
-                  <div class="grid grid-cols-1 gap-3 sm:grid-cols-2 text-sm bg-muted/30 p-3 rounded-md">
+                </div>
+
+                <!-- Course Info -->
+                <div class="px-4 pb-3 space-y-2.5">
+                  <div class="rounded-lg bg-muted/30 p-3 space-y-2.5">
                     <div>
-                      <p class="text-xs text-muted-foreground font-medium mb-1">Preferences</p>
+                      <p class="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider mb-1.5">Preferences</p>
                       {@render coursePreferences(summary)}
                     </div>
-                    <div>
-                      <p class="text-xs text-muted-foreground font-medium mb-1">Recommended</p>
+                    <div class="border-t border-border/40 pt-2">
+                      <p class="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider mb-1.5">Recommended</p>
                       {#if summary.recommended_course}
                         <div class="inline-flex items-center rounded-full border border-primary/20 bg-primary/10 px-2.5 py-0.5 text-xs font-medium text-primary shadow-sm" title={summary.recommended_course.name}>
                           <span class="truncate max-w-[150px] tracking-tight">{summary.recommended_course.code}</span>
@@ -597,14 +622,36 @@
                       {/if}
                     </div>
                   </div>
+                </div>
 
-                  <div class="flex items-center justify-end gap-2 pt-2 border-t border-border/50">
-                    {@render rowActions(summary)}
-                  </div>
-                </CardContent>
-              </Card>
+                <!-- Actions -->
+                <div class="mt-auto flex gap-2 px-4 pb-4 pt-1">
+                  {#if summary.status !== 'released'}
+                    <Button variant="outline" size="sm" class="flex-1 min-h-[40px] font-semibold" onclick={() => openPanel(summary)}>
+                      <Pencil class="h-3.5 w-3.5 mr-1.5" />
+                      Edit
+                    </Button>
+                    {#if isF2F && summary.grading_session_id}
+                      <Link href={`/admin/release/print/${summary.grading_session_id}/applicants/${summary.applicant.id}`} target="_blank" class="flex-1">
+                        <Button variant="outline" size="sm" class="w-full min-h-[40px] font-semibold">
+                          <Printer class="h-3.5 w-3.5 mr-1.5" />
+                          Print
+                        </Button>
+                      </Link>
+                    {/if}
+                    <Button size="sm" class="flex-1 min-h-[40px] font-semibold" onclick={() => releaseOne(summary.id)}>
+                      Release
+                    </Button>
+                  {:else}
+                    <Button variant="outline" size="sm" class="flex-1 min-h-[40px] font-semibold text-muted-foreground hover:text-foreground" onclick={() => confirmUnrelease(summary)}>
+                      <Undo2 class="h-3.5 w-3.5 mr-1.5" />
+                      Reverse
+                    </Button>
+                  {/if}
+                </div>
+              </div>
             {:else}
-              <div class="py-12 text-center text-muted-foreground bg-card rounded-lg border border-border">
+              <div class="col-span-full rounded-xl border border-dashed border-border bg-muted/20 py-12 text-center text-muted-foreground">
                 <p class="font-medium">No results ready for release yet.</p>
                 <p class="text-xs mt-1">Applicants appear here once all aptitude area scores are saved.</p>
               </div>

@@ -8,6 +8,7 @@
   import { Plus, Pencil, Pause, Play, Trash2, Search } from 'lucide-svelte';
   import SwitchableListView from '@/Components/SwitchableListView.svelte';
   import SimplePagination from '@/Components/SimplePagination.svelte';
+  import { createDebouncedWatch } from '@/lib/auto-filter';
 
   let { rooms, filters = {} } = $props();
 
@@ -22,6 +23,10 @@
       page: 1,
     }, { preserveState: true });
   }
+
+  // Auto-apply: search debounced
+  const searchWatch = createDebouncedWatch(() => applyFilters());
+  $effect(() => { filterSearch; searchWatch(); });
 
   let deleteId = $state(null);
 
@@ -91,12 +96,12 @@ const breadcrumbs = [{ label: 'Setup', href: '/admin/setup' }, { label: 'Rooms' 
           <Search class="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
           <Input
             type="search"
+            placeholder="Search rooms..."
             bind:value={filterSearch}
-            onkeydown={(e) => e.key === 'Enter' && applyFilters()}
             class="pl-8 min-h-[44px] md:min-h-[40px] h-10 w-full"
           />
         </div>
-        <Button onclick={applyFilters} class="min-h-[44px] md:min-h-[40px]">Apply</Button>
+
       </div>
     </div>
 

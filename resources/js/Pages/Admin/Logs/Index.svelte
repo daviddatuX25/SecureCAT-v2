@@ -8,6 +8,7 @@
   import SimplePagination from '@/Components/SimplePagination.svelte';
   import { ChevronDown, Filter, Download, ChevronRight, X } from 'lucide-svelte';
   import { formatDateTime } from '@/lib/date-utils';
+  import { createImmediateWatch } from '@/lib/auto-filter';
 
   let { logs, filters = {}, events = [], categories = [], scopeLabel = 'Activity log', showActorFilter = false } = $props();
 
@@ -42,6 +43,10 @@
       page: 1,
     }, { preserveState: true });
   }
+
+  // Auto-apply: all filters immediate (no text search on this page)
+  const filterWatch = createImmediateWatch(() => applyFilters());
+  $effect(() => { filterEvent; filterCategory; filterActorId; filterDateFrom; filterDateTo; filterWatch(); });
 
   function actorDisplay(log) {
     if (!log.actor) return '—';
@@ -159,7 +164,7 @@
         {/if}
         <Input type="date" bind:value={filterDateFrom} class="min-h-[40px]" />
         <Input type="date" bind:value={filterDateTo} class="min-h-[40px]" />
-        <Button onclick={applyFilters} class="min-h-[40px]">Apply</Button>
+
       </div>
 
       <div class="flex flex-col gap-2 md:hidden">
@@ -240,7 +245,7 @@
             </div>
           </details>
         </div>
-        <Button onclick={applyFilters} class="min-h-[44px] w-full">Apply</Button>
+
       </div>
     </div>
 

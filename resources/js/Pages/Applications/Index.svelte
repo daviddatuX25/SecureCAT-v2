@@ -4,14 +4,16 @@
   import { Button } from '@/Components/ui/button';
   import { Badge } from '@/Components/ui/badge';
   import { Input } from '@/Components/ui/input';
+  import { Checkbox } from '@/Components/ui/checkbox';
   import * as Select from '@/Components/ui/select';
   import * as Table from '@/Components/ui/table';
-  import { Filter, ChevronDown, CheckCircle, XCircle, UploadCloud, Plus, Pencil, Search, ShieldCheck } from 'lucide-svelte';
+  import { Filter, ChevronDown, CheckCircle, XCircle, UploadCloud, Plus, Pencil, Search, ShieldCheck, RotateCcw, ChevronsUpDown, X } from 'lucide-svelte';
   import SwitchableListView from '@/Components/SwitchableListView.svelte';
   import SimplePagination from '@/Components/SimplePagination.svelte';
   import { success as showSuccess, error as showError } from '@/lib/toast';
   import { pipelineBadgeVariant, pipelineStatusLabel, pipelineStatusOptions } from '@/lib/pipeline-helpers';
   import { formatDate } from '@/lib/date-utils';
+  import { createDebouncedWatch, createImmediateWatch } from '@/lib/auto-filter';
   import { onMount } from 'svelte';
 
   let { applications, filters = {}, seasons = [], active_season_id = null, statuses = [] } = $props();
@@ -92,7 +94,11 @@
     filtersOpen = false;
   }
 
-
+  // Auto-apply: search debounced, dropdowns/dates immediate
+  const searchWatch = createDebouncedWatch(() => applyFilters());
+  const filterWatch = createImmediateWatch(() => applyFilters());
+  $effect(() => { filterSearch; searchWatch(); });
+  $effect(() => { filterStatus; filterAcademicYearId; filterDateFrom; filterDateTo; filterWatch(); });
 
   function doAccept(id) {
     router.put(`/admin/applications/${id}/accept`, {}, {
@@ -115,6 +121,126 @@
 
   const list = $derived(applications?.data ?? []);
   let viewMode = $state('responsive');
+
+  // ── Bulk Selection ──
+  let selectedIds = $state(new Set());
+  let bulkProcessing = $state(false);
+
+  const selectedCount = $derived(selectedIds.size);
+  const hasSelection = $derived(selectedCount > 0);
+
+  // Determine unique statuses of selected items
+  const selectedStatuses = $derived(() => {
+    const statusSet = new Set();
+    for (const app of list) {
+      if (selectedIds.has(app.id)) {
+        statusSet.add(app.pipeline_status ?? app.status ?? 'pending');
+      }
+    }
+    return statusSet;
+  });
+
+  // Smart bulk action availability
+  const allPending = $derived(() => {
+    const s = selectedStatuses();
+    return s.size === 1 && s.has('pending');
+  });
+
+  const allAccepted = $derived(() => {
+    const s = selectedStatuses();
+    return s.size === 1 && s.has('accepted');
+  });
+
+  const allDismissed = $derived(() => {
+    const s = selectedStatuses();
+    return s.size === 1 && s.has('dismissed');
+  });
+
+  const allRevertable = $derived(() => {
+    const s = selectedStatuses();
+    return s.size > 0 && [...s].every(st => st === 'accepted' || st === 'dismissed');
+  });
+
+  const isMixed = $derived(() => {
+    const s = selectedStatuses();
+    return s.size > 1;
+  });
+
+  // Bulk action description
+  const bulkActionHint = $derived(() => {
+    if (!hasSelection) return '';
+    if (allPending()) return 'All selected are pending — you can Accept or Dismiss.';
+    if (allAccepted()) return 'All selected are accepted — you can Revert to Pending.';
+    if (allDismissed()) return 'All selected are dismissed — you can Revert to Pending.';
+    if (allRevertable()) return 'Selected are accepted/dismissed — you can Revert to Pending.';
+    return 'Mixed statuses selected — bulk actions are limited.';
+  });
+
+  // Header checkbox state
+  const allOnPageSelected = $derived(list.length > 0 && list.every(app => selectedIds.has(app.id)));
+  const someOnPageSelected = $derived(list.some(app => selectedIds.has(app.id)) && !allOnPageSelected);
+
+  function toggleSelectAll() {
+    if (allOnPageSelected) {
+      // Deselect all on current page
+      const next = new Set(selectedIds);
+      for (const app of list) next.delete(app.id);
+      selectedIds = next;
+    } else {
+      // Select all on current page
+      const next = new Set(selectedIds);
+      for (const app of list) next.add(app.id);
+      selectedIds = next;
+    }
+  }
+
+  function toggleSelect(id) {
+    const next = new Set(selectedIds);
+    if (next.has(id)) {
+      next.delete(id);
+    } else {
+      next.add(id);
+    }
+    selectedIds = next;
+  }
+
+  function clearSelection() {
+    selectedIds = new Set();
+  }
+
+  // Clear selection when navigating pages
+  $effect(() => {
+    const _ = applications?.current_page;
+    selectedIds = new Set();
+  });
+
+  // ── Bulk Actions ──
+  function doBulkAccept() {
+    if (!confirm(`Accept ${selectedCount} selected application(s)?`)) return;
+    bulkProcessing = true;
+    router.post('/admin/applications/bulk-accept', { ids: [...selectedIds] }, {
+      onSuccess: () => { clearSelection(); bulkProcessing = false; },
+      onError: () => { bulkProcessing = false; },
+    });
+  }
+
+  function doBulkDismiss() {
+    if (!confirm(`Dismiss ${selectedCount} selected application(s)?`)) return;
+    bulkProcessing = true;
+    router.post('/admin/applications/bulk-dismiss', { ids: [...selectedIds] }, {
+      onSuccess: () => { clearSelection(); bulkProcessing = false; },
+      onError: () => { bulkProcessing = false; },
+    });
+  }
+
+  function doBulkReopen() {
+    if (!confirm(`Revert ${selectedCount} selected application(s) to pending?`)) return;
+    bulkProcessing = true;
+    router.post('/admin/applications/bulk-reopen', { ids: [...selectedIds] }, {
+      onSuccess: () => { clearSelection(); bulkProcessing = false; },
+      onError: () => { bulkProcessing = false; },
+    });
+  }
 
   const breadcrumbs = $derived([{ label: 'Applications' }]);
 </script>
@@ -160,8 +286,8 @@
           <Search class="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
           <Input
             type="search"
+            placeholder="Search applicants..."
             bind:value={filterSearch}
-            onkeydown={(e) => e.key === 'Enter' && applyFilters()}
             class="pl-8 min-h-[44px] md:min-h-[40px] h-10 w-full"
           />
         </div>
@@ -219,52 +345,139 @@
             </div>
           </div>
         </details>
-        <div class="hidden md:flex md:items-center md:gap-3">
-          <Select.Root type="single" bind:value={filterStatus}>
-            <Select.Trigger class="w-[150px] min-h-[40px]">
-              {#if filterStatus}
-                {statuses.find(s => String(s.value) === String(filterStatus))?.label || 'All statuses'}
-              {:else}
-                <span class="text-muted-foreground">All statuses</span>
-              {/if}
-            </Select.Trigger>
-            <Select.Content>
-              <Select.Item value="" label="All statuses">All statuses</Select.Item>
-              {#each statuses as s}
-                <Select.Item value={String(s.value)} label={s.label}>{s.label}</Select.Item>
-              {/each}
-            </Select.Content>
-          </Select.Root>
+        <div class="hidden md:flex md:items-end md:gap-3">
+          <div>
+            <label class="text-xs font-medium text-muted-foreground block mb-1">Status</label>
+            <Select.Root type="single" bind:value={filterStatus}>
+              <Select.Trigger class="w-[150px] min-h-[40px]">
+                {#if filterStatus}
+                  {statuses.find(s => String(s.value) === String(filterStatus))?.label || 'All statuses'}
+                {:else}
+                  <span class="text-muted-foreground">All statuses</span>
+                {/if}
+              </Select.Trigger>
+              <Select.Content>
+                <Select.Item value="" label="All statuses">All statuses</Select.Item>
+                {#each statuses as s}
+                  <Select.Item value={String(s.value)} label={s.label}>{s.label}</Select.Item>
+                {/each}
+              </Select.Content>
+            </Select.Root>
+          </div>
           
-          <Select.Root type="single" bind:value={filterAcademicYearId}>
-            <Select.Trigger class="w-[150px] min-h-[40px]">
-              {#if filterAcademicYearId}
-                {seasonLabel(seasons.find(s => String(s.id) === String(filterAcademicYearId))) || 'Active season'}
-              {:else}
-                <span class="text-muted-foreground">Active season</span>
-              {/if}
-            </Select.Trigger>
-            <Select.Content>
-              <Select.Item value="" label="Active season">Active season</Select.Item>
-              {#each seasons as s}
-                <Select.Item value={String(s.id)} label={seasonLabel(s)}>{seasonLabel(s)}</Select.Item>
-              {/each}
-            </Select.Content>
-          </Select.Root>
-          <Input type="date" bind:value={filterDateFrom} class="min-h-[40px]" placeholder="From" />
-          <Input type="date" bind:value={filterDateTo} class="min-h-[40px]" placeholder="To" />
+          <div>
+            <label class="text-xs font-medium text-muted-foreground block mb-1">Season</label>
+            <Select.Root type="single" bind:value={filterAcademicYearId}>
+              <Select.Trigger class="w-[200px] min-h-[40px]">
+                {#if filterAcademicYearId}
+                  {@const sel = seasons.find(s => String(s.id) === String(filterAcademicYearId))}
+                  {sel ? seasonLabel(sel) : 'Active season'}
+                {:else}
+                  <span class="text-muted-foreground">Active season</span>
+                {/if}
+              </Select.Trigger>
+              <Select.Content>
+                <Select.Item value="" label="Active season">Active season</Select.Item>
+                {#each seasons as s}
+                  <Select.Item value={String(s.id)} label={seasonLabel(s)}>
+                    {seasonLabel(s)}
+                    {#if s.is_active}
+                      <Badge variant="success" class="ml-2 text-[10px] px-1.5 py-0">Active</Badge>
+                    {/if}
+                  </Select.Item>
+                {/each}
+              </Select.Content>
+            </Select.Root>
+          </div>
+          <div>
+            <label class="text-xs font-medium text-muted-foreground block mb-1">From</label>
+            <Input type="date" bind:value={filterDateFrom} class="min-h-[40px]" placeholder="From" />
+          </div>
+          <div>
+            <label class="text-xs font-medium text-muted-foreground block mb-1">To</label>
+            <Input type="date" bind:value={filterDateTo} class="min-h-[40px]" placeholder="To" />
+          </div>
         </div>
-        <Button class="min-h-[44px] md:min-h-[40px]" onclick={applyFilters}>
-          Apply
-        </Button>
+
       </div>
     </div>
+
+    <!-- Bulk Actions Bar -->
+    {#if hasSelection}
+      <div class="flex flex-wrap items-center gap-3 rounded-lg border border-primary/20 bg-primary/5 px-4 py-3 text-sm animate-in slide-in-from-top-2 duration-200">
+        <div class="flex items-center gap-2 font-medium">
+          <span class="inline-flex items-center justify-center min-w-[1.5rem] h-6 rounded-full bg-primary text-primary-foreground text-xs font-bold px-1.5">
+            {selectedCount}
+          </span>
+          <span>selected</span>
+        </div>
+
+        <span class="text-muted-foreground text-xs hidden sm:inline">·</span>
+        <span class="text-muted-foreground text-xs hidden sm:inline">{bulkActionHint()}</span>
+
+        <div class="flex items-center gap-2 ml-auto">
+          {#if allPending()}
+            <Button
+              size="sm"
+              variant="default"
+              class="gap-1.5 bg-green-600 hover:bg-green-700 text-white"
+              onclick={doBulkAccept}
+              disabled={bulkProcessing}
+            >
+              <CheckCircle class="h-3.5 w-3.5" />
+              Accept All
+            </Button>
+            <Button
+              size="sm"
+              variant="destructive"
+              class="gap-1.5"
+              onclick={doBulkDismiss}
+              disabled={bulkProcessing}
+            >
+              <XCircle class="h-3.5 w-3.5" />
+              Dismiss All
+            </Button>
+          {:else if allRevertable()}
+            <Button
+              size="sm"
+              variant="outline"
+              class="gap-1.5"
+              onclick={doBulkReopen}
+              disabled={bulkProcessing}
+            >
+              <RotateCcw class="h-3.5 w-3.5" />
+              Revert to Pending
+            </Button>
+          {:else}
+            <span class="text-xs text-muted-foreground italic">No bulk actions for mixed statuses</span>
+          {/if}
+
+          <Button
+            size="sm"
+            variant="ghost"
+            class="gap-1 text-muted-foreground"
+            onclick={clearSelection}
+          >
+            <X class="h-3.5 w-3.5" />
+            Clear
+          </Button>
+        </div>
+      </div>
+    {/if}
 
     <SwitchableListView bind:viewMode overflow="auto">
       {#snippet table()}
         <Table.Root class="w-full min-w-[640px] text-sm">
           <Table.Header class="bg-muted/50">
             <Table.Row>
+              <Table.Head class="px-2 py-3 w-10">
+                <Checkbox
+                  checked={allOnPageSelected}
+                  indeterminate={someOnPageSelected}
+                  onCheckedChange={toggleSelectAll}
+                  aria-label="Select all on page"
+                />
+              </Table.Head>
               <Table.Head class="px-4 py-3">Reference</Table.Head>
               <Table.Head class="px-4 py-3">Name</Table.Head>
               <Table.Head class="px-4 py-3">Email</Table.Head>
@@ -280,7 +493,14 @@
           </Table.Header>
           <Table.Body>
             {#each list as app}
-              <Table.Row class="border-t border-border hover:bg-muted/30">
+              <Table.Row class="border-t border-border hover:bg-muted/30 {selectedIds.has(app.id) ? 'bg-primary/5' : ''}">
+                <Table.Cell class="px-2 py-3" onclick={(e) => e.stopPropagation()}>
+                  <Checkbox
+                    checked={selectedIds.has(app.id)}
+                    onCheckedChange={() => toggleSelect(app.id)}
+                    aria-label="Select {app.reference_number}"
+                  />
+                </Table.Cell>
                 <Table.Cell class="px-4 py-3 font-mono text-xs cursor-pointer" onclick={() => router.visit(`/admin/applications/${app.id}`)}>{app.reference_number ?? '—'}</Table.Cell>
                 <Table.Cell class="px-4 py-3 cursor-pointer" onclick={() => router.visit(`/admin/applications/${app.id}`)}>{app.full_name ?? '—'}</Table.Cell>
                 <Table.Cell class="px-4 py-3 text-muted-foreground cursor-pointer" onclick={() => router.visit(`/admin/applications/${app.id}`)}>{app.email ?? '—'}</Table.Cell>
@@ -290,34 +510,40 @@
                 <Table.Cell class="px-4 py-3 text-muted-foreground cursor-pointer" onclick={() => router.visit(`/admin/applications/${app.id}`)}>
                   {formatDate(app.submitted_at, 'short')}
                 </Table.Cell>
-                <Table.Cell class="text-left" onclick={(e) => e.stopPropagation()}>
-                  <div class="flex justify-start gap-3" onclick={(e) => e.stopPropagation()}>
-                    <Link href={`/admin/applications/${app.id}/edit`} class="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground">
-                      <Pencil class="h-3.5 w-3.5" />
-                      Edit
+                <Table.Cell class="text-center" onclick={(e) => e.stopPropagation()}>
+                  <div class="inline-flex gap-2" onclick={(e) => e.stopPropagation()}>
+                    <Link href={`/admin/applications/${app.id}/edit`}>
+                      <Button variant="ghost" size="sm" class="h-8 px-2 text-xs font-semibold hover:bg-muted">
+                        <Pencil class="mr-1.5 h-3.5 w-3.5" />
+                        Edit
+                      </Button>
                     </Link>
                     {#if app.status === 'pending'}
-                      <button
-                        class="inline-flex items-center gap-1.5 text-xs text-green-600 hover:text-green-700 hover:underline"
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        class="h-8 px-2 text-xs font-semibold text-green-600 hover:text-green-700 hover:bg-green-50"
                         onclick={(e) => { e.stopPropagation(); doAccept(app.id); }}
                       >
-                        <CheckCircle class="h-3.5 w-3.5" />
+                        <CheckCircle class="mr-1.5 h-3.5 w-3.5" />
                         Accept
-                      </button>
-                      <button
-                        class="inline-flex items-center gap-1.5 text-xs text-red-600 hover:text-red-700 hover:underline"
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        class="h-8 px-2 text-xs font-semibold text-destructive hover:text-destructive hover:bg-destructive/5"
                         onclick={(e) => { e.stopPropagation(); doDismiss(app.id); }}
                       >
-                        <XCircle class="h-3.5 w-3.5" />
+                        <XCircle class="mr-1.5 h-3.5 w-3.5" />
                         Dismiss
-                      </button>
+                      </Button>
                     {/if}
                   </div>
                 </Table.Cell>
               </Table.Row>
             {:else}
               <Table.Row>
-                <Table.Cell colspan="6" class="px-4 py-12 text-center text-muted-foreground">
+                <Table.Cell colspan="7" class="px-4 py-12 text-center text-muted-foreground">
                   No applications match the filters. Try a different season or search.
                 </Table.Cell>
               </Table.Row>
@@ -328,45 +554,74 @@
       {/snippet}
 
       {#snippet cards()}
+        <!-- Card view: select all toggle -->
+        {#if list.length > 0}
+          <div class="flex items-center gap-2 mb-3 px-1">
+            <Checkbox
+              checked={allOnPageSelected}
+              indeterminate={someOnPageSelected}
+              onCheckedChange={toggleSelectAll}
+              aria-label="Select all on page"
+            />
+            <span class="text-sm text-muted-foreground">Select all on page</span>
+          </div>
+        {/if}
         <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {#each list as app}
             <div
-              class="rounded-xl border border-border bg-card p-4 shadow-sm cursor-pointer hover:bg-muted/30"
+              class="rounded-xl border bg-card p-4 shadow-sm cursor-pointer hover:bg-muted/30 transition-colors {selectedIds.has(app.id) ? 'border-primary/40 bg-primary/5' : 'border-border'}"
               onclick={(e) => e.stopPropagation()}
               onkeydown={(e) => e.key === 'Enter' && router.visit(`/admin/applications/${app.id}`)}
               role="button"
               tabindex="0"
             >
-              <p class="font-mono text-xs text-muted-foreground" onclick={() => router.visit(`/admin/applications/${app.id}`)}>{app.reference_number ?? '—'}</p>
-              <p class="mt-1 font-medium" onclick={() => router.visit(`/admin/applications/${app.id}`)}>{app.full_name ?? '—'}</p>
-              <p class="text-sm text-muted-foreground" onclick={() => router.visit(`/admin/applications/${app.id}`)}>{app.email ?? '—'}</p>
-              <p class="mt-2" onclick={() => router.visit(`/admin/applications/${app.id}`)}>
-                <Badge variant={pipelineBadgeVariant(app.pipeline_status)}>{pipelineStatusLabel(app.pipeline_status)}</Badge>
-              </p>
-              <p class="mt-1 text-xs text-muted-foreground" onclick={() => router.visit(`/admin/applications/${app.id}`)}>
-                {formatDate(app.submitted_at, 'short')}
-              </p>
-              <div class="mt-3 flex flex-wrap gap-3" onclick={(e) => e.stopPropagation()}>
-                <Link href={`/admin/applications/${app.id}/edit`} class="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground" onclick={(e) => e.stopPropagation()}>
-                  <Pencil class="h-4 w-4" />
-                  Edit
-                </Link>
-                {#if app.status === 'pending'}
-                  <button
-                    class="inline-flex items-center gap-1.5 text-sm text-green-600 hover:text-green-700 hover:underline"
-                    onclick={(e) => { e.stopPropagation(); doAccept(app.id); }}
-                  >
-                    <CheckCircle class="h-4 w-4" />
-                    Accept
-                  </button>
-                  <button
-                    class="inline-flex items-center gap-1.5 text-sm text-red-600 hover:text-red-700 hover:underline"
-                    onclick={(e) => { e.stopPropagation(); doDismiss(app.id); }}
-                  >
-                    <XCircle class="h-4 w-4" />
-                    Dismiss
-                  </button>
-                {/if}
+              <div class="flex items-start gap-3">
+                <div class="pt-0.5" onclick={(e) => e.stopPropagation()}>
+                  <Checkbox
+                    checked={selectedIds.has(app.id)}
+                    onCheckedChange={() => toggleSelect(app.id)}
+                    aria-label="Select {app.reference_number}"
+                  />
+                </div>
+                <div class="flex-1 min-w-0">
+                  <p class="font-mono text-xs text-muted-foreground" onclick={() => router.visit(`/admin/applications/${app.id}`)}>{app.reference_number ?? '—'}</p>
+                  <p class="mt-1 font-medium" onclick={() => router.visit(`/admin/applications/${app.id}`)}>{app.full_name ?? '—'}</p>
+                  <p class="text-sm text-muted-foreground" onclick={() => router.visit(`/admin/applications/${app.id}`)}>{app.email ?? '—'}</p>
+                  <p class="mt-2" onclick={() => router.visit(`/admin/applications/${app.id}`)}>
+                    <Badge variant={pipelineBadgeVariant(app.pipeline_status)}>{pipelineStatusLabel(app.pipeline_status)}</Badge>
+                  </p>
+                  <p class="mt-1 text-xs text-muted-foreground" onclick={() => router.visit(`/admin/applications/${app.id}`)}>
+                    {formatDate(app.submitted_at, 'short')}
+                  </p>
+                  <div class="mt-3 flex gap-2" onclick={(e) => e.stopPropagation()}>
+                    <Link href={`/admin/applications/${app.id}/edit`} class="flex-1" onclick={(e) => e.stopPropagation()}>
+                      <Button variant="outline" size="sm" class="w-full min-h-[40px] font-semibold">
+                        <Pencil class="h-3.5 w-3.5 mr-1.5" />
+                        Edit
+                      </Button>
+                    </Link>
+                    {#if app.status === 'pending'}
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        class="flex-1 min-h-[40px] font-semibold text-green-600 border-green-200 hover:bg-green-50 hover:text-green-700"
+                        onclick={(e) => { e.stopPropagation(); doAccept(app.id); }}
+                      >
+                        <CheckCircle class="h-3.5 w-3.5 mr-1.5" />
+                        Accept
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        class="flex-1 min-h-[40px] font-semibold text-destructive border-destructive/20 hover:bg-destructive/5"
+                        onclick={(e) => { e.stopPropagation(); doDismiss(app.id); }}
+                      >
+                        <XCircle class="h-3.5 w-3.5 mr-1.5" />
+                        Dismiss
+                      </Button>
+                    {/if}
+                  </div>
+                </div>
               </div>
             </div>
           {:else}

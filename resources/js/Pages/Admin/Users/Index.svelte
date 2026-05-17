@@ -9,6 +9,7 @@
   import { Plus, Pencil, Trash2, ChevronDown, Filter, Search } from 'lucide-svelte';
   import SwitchableListView from '@/Components/SwitchableListView.svelte';
   import SimplePagination from '@/Components/SimplePagination.svelte';
+  import { createDebouncedWatch, createImmediateWatch } from '@/lib/auto-filter';
 
   let { users, roles, filters = {} } = $props();
 
@@ -33,6 +34,12 @@
       page: 1,
     }, { preserveState: true });
   }
+
+  // Auto-apply: search debounced, role dropdown immediate
+  const searchWatch = createDebouncedWatch(() => applyFilters());
+  const filterWatch = createImmediateWatch(() => applyFilters());
+  $effect(() => { filterSearch; searchWatch(); });
+  $effect(() => { filterRole; filterWatch(); });
 
   function confirmDelete(id) {
     deleteId = id;
@@ -75,8 +82,8 @@
           <Search class="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
           <Input
             type="search"
+            placeholder="Search users..."
             bind:value={filterSearch}
-            onkeydown={(e) => e.key === 'Enter' && applyFilters()}
             class="pl-8 min-w-[160px] max-w-[220px] h-10"
           />
         </div>
@@ -95,15 +102,15 @@
             {/each}
           </Select.Content>
         </Select.Root>
-        <Button onclick={applyFilters} class="min-h-[40px]">Apply</Button>
+
       </div>
       <div class="flex flex-wrap items-center gap-3 md:hidden">
         <div class="relative flex-1 min-w-0">
           <Search class="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
           <Input
             type="search"
+            placeholder="Search users..."
             bind:value={filterSearch}
-            onkeydown={(e) => e.key === 'Enter' && applyFilters()}
             class="pl-8 min-h-[44px] w-full"
           />
         </div>
@@ -134,7 +141,7 @@
             </div>
           </div>
         </details>
-        <Button onclick={applyFilters} class="min-h-[44px]">Apply</Button>
+
       </div>
     </div>
 
@@ -166,12 +173,12 @@
                   <Table.Cell class="text-center">
                     <div class="flex justify-center gap-2">
                       <Link href={`/admin/users/${user.id}/edit`}>
-                        <Button variant="ghost" size="sm" class="h-8 px-2 text-xs">
+                        <Button variant="ghost" size="sm" class="h-8 px-2 text-xs font-semibold hover:bg-muted">
                           <Pencil class="mr-1.5 h-3.5 w-3.5" />
                           Edit
                         </Button>
                       </Link>
-                      <Button variant="ghost" size="sm" class="h-8 px-2 text-xs text-destructive" onclick={() => confirmDelete(user.id)}>
+                      <Button variant="ghost" size="sm" class="h-8 px-2 text-xs font-semibold text-destructive hover:text-destructive hover:bg-destructive/5" onclick={() => confirmDelete(user.id)}>
                         <Trash2 class="mr-1.5 h-3.5 w-3.5" />
                         Delete
                       </Button>

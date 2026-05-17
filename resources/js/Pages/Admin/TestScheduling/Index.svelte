@@ -13,8 +13,9 @@
   import SimplePagination from '@/Components/SimplePagination.svelte';
   import { Plus, Eye, Pencil, ChevronDown, Filter, ClipboardList, Sparkles, Send, Undo, X, Trash2, Search } from 'lucide-svelte';
   import { formatDate } from '@/lib/date-utils';
+  import { createDebouncedWatch, createImmediateWatch } from '@/lib/auto-filter';
 
-  let { sessions, filters = {}, statuses = [], view = 'admin', schedule_assistant = null, breadcrumbParent = { label: 'Exam Scheduling', href: '/admin/exam-scheduling' } } = $props();
+  let { sessions, filters = {}, statuses = [], seasons = [], active_season_id = null, view = 'admin', schedule_assistant = null, breadcrumbParent = { label: 'Exam Scheduling', href: '/admin/exam-scheduling' } } = $props();
 
   const isProctorView = $derived(view === 'proctor');
   const breadcrumbs = $derived([breadcrumbParent]);
@@ -40,6 +41,7 @@
 
   let filterSearch = $state('');
   let filterStatus = $state('');
+  let filterAcademicYearId = $state('');
   let filterDateFrom = $state('');
   let filterDateTo = $state('');
   $effect(() => {
@@ -47,7 +49,20 @@
     filterStatus = filters.status ?? '';
     filterDateFrom = filters.date_from ?? '';
     filterDateTo = filters.date_to ?? '';
+    const ayFromFilter = filters.academic_year_id;
+    if (ayFromFilter) {
+      filterAcademicYearId = String(ayFromFilter);
+    } else if (active_season_id != null) {
+      filterAcademicYearId = String(active_season_id);
+    } else {
+      filterAcademicYearId = '';
+    }
   });
+
+  function seasonLabel(season) {
+    if (!season) return '—';
+    return `${season.academic_year ?? ''} – ${season.semester ?? ''}`.trim() || '—';
+  }
 
   function statusVariant(status) {
     if (status === 'draft') return 'muted';
@@ -82,11 +97,18 @@
     router.get('/admin/exam-scheduling', {
       search: filterSearch || undefined,
       status: filterStatus || undefined,
+      academic_year_id: filterAcademicYearId || undefined,
       date_from: filterDateFrom || undefined,
       date_to: filterDateTo || undefined,
       page: 1,
     }, { preserveState: true });
   }
+
+  // Auto-apply: search debounced, dropdowns/dates immediate
+  const searchWatch = createDebouncedWatch(() => applyFilters());
+  const filterWatch = createImmediateWatch(() => applyFilters());
+  $effect(() => { filterSearch; searchWatch(); });
+  $effect(() => { filterStatus; filterAcademicYearId; filterDateFrom; filterDateTo; filterWatch(); });
 
   let viewMode = $state('responsive');
   let deleteId = $state(null);
@@ -157,45 +179,81 @@
 
     <!-- Filters: one row on desktop; on mobile search + collapsible "Filters" dropdown, dates always together, Apply always visible -->
     <div class="flex flex-col gap-3">
-      <!-- Desktop: single row -->
-      <div class="hidden md:flex flex-wrap items-center gap-3">
-        <div class="relative">
-          <Search class="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
-          <Input
-            type="search"
-            bind:value={filterSearch}
-            onkeydown={(e) => e.key === 'Enter' && applyFilters()}
-            class="pl-8 min-w-[160px] max-w-[220px] h-10"
-          />
+      <!-- Desktop -->
+      <div class="hidden md:flex flex-wrap items-end gap-3">
+        <div>
+          <label class="text-xs font-medium text-muted-foreground block mb-1">Search</label>
+          <div class="relative">
+            <Search class="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
+            <Input
+              type="search"
+              placeholder="Search sessions..."
+              bind:value={filterSearch}
+              class="pl-8 min-w-[160px] max-w-[220px] h-10"
+            />
+          </div>
         </div>
-        <Select.Root type="single" bind:value={filterStatus}>
-          <Select.Trigger class="w-[150px] min-h-[40px]">
-            {#if filterStatus}
-              {statuses.find(s => s.value === filterStatus)?.label || 'All statuses'}
-            {:else}
-              <span class="text-muted-foreground">All statuses</span>
-            {/if}
-          </Select.Trigger>
-          <Select.Content>
-            <Select.Item value="" label="All statuses">All statuses</Select.Item>
-            {#each statuses as s}
-              <Select.Item value={s.value} label={s.label}>{s.label}</Select.Item>
-            {/each}
-          </Select.Content>
-        </Select.Root>
-        <Input type="date" bind:value={filterDateFrom} class="min-h-[40px] max-w-[160px]" />
-        <Input type="date" bind:value={filterDateTo} class="min-h-[40px] max-w-[160px]" />
-        <Button onclick={applyFilters} class="min-h-[40px]">Apply</Button>
+        <div>
+          <label class="text-xs font-medium text-muted-foreground block mb-1">Status</label>
+          <Select.Root type="single" bind:value={filterStatus}>
+            <Select.Trigger class="w-[150px] min-h-[40px]">
+              {#if filterStatus}
+                {statuses.find(s => s.value === filterStatus)?.label || 'All statuses'}
+              {:else}
+                <span class="text-muted-foreground">All statuses</span>
+              {/if}
+            </Select.Trigger>
+            <Select.Content>
+              <Select.Item value="" label="All statuses">All statuses</Select.Item>
+              {#each statuses as s}
+                <Select.Item value={s.value} label={s.label}>{s.label}</Select.Item>
+              {/each}
+            </Select.Content>
+          </Select.Root>
+        </div>
+        <div>
+          <label class="text-xs font-medium text-muted-foreground block mb-1">Season</label>
+          <Select.Root type="single" bind:value={filterAcademicYearId}>
+            <Select.Trigger class="w-[200px] min-h-[40px]">
+              {#if filterAcademicYearId}
+                {@const sel = seasons.find(s => String(s.id) === filterAcademicYearId)}
+                {sel ? seasonLabel(sel) : 'Active season'}
+              {:else}
+                <span class="text-muted-foreground">Active season</span>
+              {/if}
+            </Select.Trigger>
+            <Select.Content>
+              <Select.Item value="" label="Active season">Active season</Select.Item>
+              {#each seasons as s}
+                <Select.Item value={String(s.id)} label={seasonLabel(s)}>
+                  {seasonLabel(s)}
+                  {#if s.is_active}
+                    <Badge variant="success" class="ml-2 text-[10px] px-1.5 py-0">Active</Badge>
+                  {/if}
+                </Select.Item>
+              {/each}
+            </Select.Content>
+          </Select.Root>
+        </div>
+        <div>
+          <label class="text-xs font-medium text-muted-foreground block mb-1">From</label>
+          <Input type="date" bind:value={filterDateFrom} class="min-h-[40px] max-w-[160px]" />
+        </div>
+        <div>
+          <label class="text-xs font-medium text-muted-foreground block mb-1">To</label>
+          <Input type="date" bind:value={filterDateTo} class="min-h-[40px] max-w-[160px]" />
+        </div>
+
       </div>
 
-      <!-- Mobile: search exposed, rest in collapsible dropdown, Apply always visible -->
+      <!-- Mobile -->
       <div class="flex flex-wrap items-center gap-3 md:hidden">
         <div class="relative flex-1 min-w-0">
           <Search class="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
           <Input
             type="search"
+            placeholder="Search sessions..."
             bind:value={filterSearch}
-            onkeydown={(e) => e.key === 'Enter' && applyFilters()}
             class="pl-8 min-h-[44px] w-full"
           />
         </div>
@@ -225,26 +283,35 @@
               </Select.Root>
             </div>
             <div>
+              <label for="filter-ay-mob" class="text-sm font-medium block mb-1">Season</label>
+              <Select.Root type="single" bind:value={filterAcademicYearId}>
+                <Select.Trigger id="filter-ay-mob" class="w-full min-h-[44px]">
+                  {#if filterAcademicYearId}
+                    {@const sel = seasons.find(s => String(s.id) === filterAcademicYearId)}
+                    {sel ? seasonLabel(sel) : 'Active season'}
+                  {:else}
+                    <span class="text-muted-foreground">Active season</span>
+                  {/if}
+                </Select.Trigger>
+                <Select.Content>
+                  <Select.Item value="" label="Active season">Active season</Select.Item>
+                  {#each seasons as s}
+                    <Select.Item value={String(s.id)} label={seasonLabel(s)}>{seasonLabel(s)}</Select.Item>
+                  {/each}
+                </Select.Content>
+              </Select.Root>
+            </div>
+            <div>
               <span class="text-sm font-medium block mb-1">Date range</span>
               <div class="flex items-center gap-2">
-                <Input
-                  id="filter-date-from-mob"
-                  type="date"
-                  bind:value={filterDateFrom}
-                  class="flex-1 min-w-0 min-h-[44px]"
-                />
+                <Input type="date" bind:value={filterDateFrom} class="flex-1 min-w-0 min-h-[44px]" />
                 <span class="text-muted-foreground">–</span>
-                <Input
-                  id="filter-date-to-mob"
-                  type="date"
-                  bind:value={filterDateTo}
-                  class="flex-1 min-w-0 min-h-[44px]"
-                />
+                <Input type="date" bind:value={filterDateTo} class="flex-1 min-w-0 min-h-[44px]" />
               </div>
             </div>
           </div>
         </details>
-        <Button onclick={applyFilters} class="min-h-[44px]">Apply</Button>
+
       </div>
     </div>
 
@@ -322,7 +389,7 @@
         {#if list.length > 0}
           <ul class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3" role="list">
             {#each list as session}
-              <li class="flex flex-col gap-3 rounded-lg border border-border bg-card p-4">
+              <li class="flex flex-col gap-3 rounded-xl border border-border bg-card p-4 shadow-sm hover:shadow-md transition-all">
                 <div class="flex items-start justify-between gap-2">
                   <h3 class="font-semibold">{formatDate(session.date)} {formatTime(session.start_time)}</h3>
                   <div class="flex items-center gap-1">
@@ -344,14 +411,14 @@
                 </dl>
                 <div class="mt-auto flex flex-wrap gap-2 pt-2">
                   <Link href={`/admin/exam-scheduling/${session.id}`} class="flex-1 min-w-0">
-                    <Button variant="outline" size="sm" class="w-full min-h-[44px]">
+                    <Button variant="outline" size="sm" class="w-full min-h-[40px] font-semibold">
                       <Eye class="h-4 w-4 mr-1.5" />
                       Manage
                     </Button>
                   </Link>
                   {#if isProctorView && (session.status === 'published' || session.status === 'in_progress')}
                     <Link href={`/proctor/sessions/${session.id}`}>
-                      <Button variant="outline" size="sm" class="min-h-[44px]">
+                      <Button variant="outline" size="sm" class="min-h-[40px] font-semibold">
                         <ClipboardList class="h-4 w-4 mr-1.5" />
                         View Session
                       </Button>

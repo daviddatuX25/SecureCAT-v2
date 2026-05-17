@@ -8,6 +8,7 @@
   import { Plus, Pencil, Trash2, FileText, Upload, RefreshCw, Search } from 'lucide-svelte';
   import ActionDropdown from '@/Components/ActionDropdown.svelte';
   import { formatDate } from '@/lib/date-utils';
+  import { createDebouncedWatch } from '@/lib/auto-filter';
 
   let { documents, filters = {} } = $props();
 
@@ -27,6 +28,10 @@
       page: 1,
     }, { preserveState: true });
   }
+
+  // Auto-apply: search debounced
+  const searchWatch = createDebouncedWatch(() => applyFilters());
+  $effect(() => { filterSearch; searchWatch(); });
 
   function confirmDelete(id) {
     deleteId = id;
@@ -80,12 +85,12 @@
         <Search class="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
         <Input
           type="search"
+          placeholder="Search documents..."
           bind:value={filterSearch}
-          onkeydown={(e) => e.key === 'Enter' && applyFilters()}
           class="pl-8 min-w-[200px] max-w-[280px] min-h-[44px]"
         />
       </div>
-      <Button onclick={applyFilters} class="min-h-[44px]">Apply</Button>
+
     </div>
 
     <div class="min-w-0">
