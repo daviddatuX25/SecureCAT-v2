@@ -19,6 +19,7 @@ use App\Notifications\ExamSessionCompleted;
 use App\Notifications\ExamSessionPostponed;
 use App\Notifications\ExamSessionPublished;
 use App\Notifications\ExamSessionStaffAssigned;
+use App\Notifications\ExamSessionStaffPostponed;
 use App\Notifications\ExamSessionStarted;
 use App\Services\ApplicationPipelineService;
 use Carbon\Carbon;
@@ -467,7 +468,7 @@ class ExamSessionController extends Controller
         if ($staffRecipients->merge($testAdmins)->unique('id')->isNotEmpty()) {
             Notification::send(
                 $staffRecipients->merge($testAdmins)->unique('id'),
-                new ExamSessionStaffAssigned($exam_session)
+                new ExamSessionStaffPostponed($exam_session)
             );
         }
 
