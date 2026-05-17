@@ -349,16 +349,27 @@ class ExamSessionController extends Controller
                 ? 'draft_scheduled'
                 : 'scheduled';
             $pipeline = app(ApplicationPipelineService::class);
-            Applicant::whereIn('id', $toAttach)
+            $newApplicants = Applicant::whereIn('id', $toAttach)
                 ->with('application')
-                ->get()
-                ->each(function (Applicant $applicant) use ($pipeline, $targetStatus, $exam_session) {
-                    if ($applicant->application) {
-                        $pipeline->transition($applicant->application, $targetStatus, [
-                            'session_id' => $exam_session->id,
-                        ]);
-                    }
-                });
+                ->get();
+
+            $newApplicants->each(function (Applicant $applicant) use ($pipeline, $targetStatus, $exam_session) {
+                if ($applicant->application) {
+                    $pipeline->transition($applicant->application, $targetStatus, [
+                        'session_id' => $exam_session->id,
+                    ]);
+                }
+            });
+
+            // Notify late-assigned applicants when session is already published or in-progress.
+            // Unlike bulk publish (gated by notifyOnPublish), late additions always need notification
+            // because the applicant must know their exam date, time, and room.
+            if (in_array($exam_session->status, [ExamSession::STATUS_PUBLISHED, ExamSession::STATUS_IN_PROGRESS], true)) {
+                $exam_session->load('room');
+                $newApplicants->each(
+                    fn (Applicant $applicant) => $applicant->notify(new ExamSessionPublished($exam_session))
+                );
+            }
         }
 
         $exam_session->loadCount('applicants');

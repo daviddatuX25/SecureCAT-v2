@@ -626,6 +626,7 @@ php artisan securecat:status
 |------|------|-------|
 | `install.ps1` | PowerShell bootstrap | Now |
 | `setup-securecat.bat` | Double-click wrapper for install.ps1 | Now |
+| `setup-scheduler.bat` | One-click task scheduler setup (run as admin) | Now |
 | `app/Console/Commands/SecurecatInstall.php` | Artisan first-boot command | Now |
 | `app/Console/Commands/SecurecatStatus.php` | Artisan diagnostic command | Now |
 | `INSTALL.md` | Root-level quick-start doc | Now |
@@ -697,9 +698,68 @@ php artisan tinker --execute '\Spatie\LaravelPdf\Facades\Pdf::html("<h1>ok</h1>"
 
 ---
 
-## 10. Out of Scope
+## 10. Background Task Scheduler (Required)
+
+SecureCAT uses Laravel's task scheduler for critical automated tasks:
+
+| Task | Schedule | What It Does |
+|------|----------|--------------|
+| `sessions:auto-close` | Every 15 minutes | Auto-closes exam sessions past their end time |
+| `notifications:exam-reminder` | Daily at 6:00 AM | Sends exam reminders (1-day and 3-day) |
+| `seasons:expire-applications` | Daily at 12:05 AM | Expires applications in ended academic years |
+| `app:cleanup-print-jobs` | Daily at 3:00 AM | Cleans up old print job files |
+
+### Why This Is Required
+
+Without the scheduler, exam sessions will remain "in progress" forever even after their time window has passed. The scheduler must run continuously in the background.
+
+### Setup: Windows Task Scheduler (one-time)
+
+Run the included batch script **as Administrator** (right-click → Run as administrator):
+
+```
+setup-scheduler.bat
+```
+
+This creates a Windows Scheduled Task that:
+- Runs `php artisan schedule:run` every minute
+- Starts automatically on system boot
+- Runs silently in the background (no console window)
+- Survives restarts — no manual intervention needed
+
+### Manual Setup (alternative)
+
+If you prefer to set it up manually:
+
+1. Open **Task Scheduler** (search "Task Scheduler" in Start menu)
+2. Click **Create Basic Task**
+3. Name: `SecureCAT Scheduler`
+4. Trigger: **Daily**, recur every 1 day
+5. Action: **Start a program**
+   - Program: `php`
+   - Arguments: `artisan schedule:run`
+   - Start in: `D:\Projects\SecureCAT-v2` (your project path)
+6. Check "Open Properties dialog" → under Triggers, edit to **Repeat every 1 minute**
+7. Under Settings, check "Run whether user is logged on or not"
+
+### Verify It Works
+
+```powershell
+php artisan schedule:list
+```
+
+To manually trigger all due tasks right now:
+
+```powershell
+php artisan schedule:run
+```
+
+---
+
+## 11. Out of Scope
 
 - **Licensing server setup** — separate project, separate installer
 - **Linux/macOS support** — Laragon is Windows-only; Docker path is a future option
 - **Auto-update mechanism** — `git pull` + `composer install` for now
 - **CI/CD pipeline** — not needed until multi-client distribution
+
