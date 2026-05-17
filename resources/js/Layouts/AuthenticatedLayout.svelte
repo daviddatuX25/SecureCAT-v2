@@ -1,7 +1,7 @@
 <script>
   import { Link, router } from '@inertiajs/svelte';
   import { usePage } from '@inertiajs/svelte';
-  import { ChevronDown, ChevronRight, Menu, LayoutDashboard, Users, FileText, Calendar, GraduationCap, Bot, Settings, ScrollText, Activity, CalendarRange, Layers, Sun, Moon, SendHorizonal } from 'lucide-svelte';
+  import { ChevronDown, ChevronRight, Menu, LayoutDashboard, Users, FileText, Calendar, GraduationCap, Settings, ScrollText, Activity, Sun, Moon, SendHorizonal, BarChart3, Wrench } from 'lucide-svelte';
   import NotificationDropdown from '@/Components/NotificationDropdown.svelte';
   import ToastManager from '@/Components/ToastManager.svelte';
   import { Button } from '@/Components/ui/button';
@@ -63,26 +63,26 @@
   }
 
   const navSections = $derived([
-    { label: null, items: [{ href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard, roles: ['*'], activeFor: ['/dashboard'] }] },
-    { label: 'Registrar Office', items: [
-      { href: '/admin/academic-years', label: 'Academic Years', icon: CalendarRange, roles: ['super_admin', 'registrar_administrator'], activeFor: ['/admin/academic-years'] },
-      { href: '/admin/applications', label: 'Applications', icon: FileText, roles: ['super_admin', 'registrar_administrator', 'staff'], activeFor: ['/admin/applications'] },
-      { href: '/admin/exam-scheduling', label: 'Exam Scheduling', icon: Calendar, roles: ['super_admin', 'registrar_administrator'], activeFor: ['/admin/exam-scheduling', '/admin/rooms'] },
+    { label: null, items: [
+      { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard, roles: ['*'], activeFor: ['/dashboard'] },
     ]},
-    { label: 'Guidance Office', items: [
+    { label: 'Admissions', items: [
+      { href: '/admin/applications', label: 'Applications', icon: FileText, roles: ['super_admin', 'registrar_administrator', 'staff'], activeFor: ['/admin/applications', '/admin/privacy-policies', '/admin/admission-slip-templates'] },
+      { href: '/admin/exam-scheduling', label: 'Exam Scheduling', icon: Calendar, roles: ['super_admin', 'registrar_administrator'], activeFor: ['/admin/exam-scheduling'] },
+    ]},
+    { label: 'Assessment', items: [
       { href: '/proctor/my-sessions', label: 'My Sessions', icon: Calendar, roles: ['proctor'], activeFor: ['/proctor/my-sessions', '/proctor/sessions'] },
       { href: '/admin/exam-monitoring', label: 'Exam Monitoring', icon: Activity, roles: ['super_admin', 'test_administrator'], activeFor: ['/admin/exam-monitoring', '/admin/test-admin'] },
       { href: '/admin/grading', label: 'Grading', icon: GraduationCap, roles: ['super_admin', 'test_administrator'], activeFor: ['/admin/grading'] },
-      { href: '/admin/release', label: 'Release', icon: SendHorizonal, roles: ['super_admin', 'test_administrator'], activeFor: ['/admin/release'], items: [
-        { href: '/admin/release', label: 'Release Management', icon: SendHorizonal },
-        { href: '/admin/release/result-templates', label: 'Result Templates', icon: FileText },
-      ]},
+      { href: '/admin/release', label: 'Release', icon: SendHorizonal, roles: ['super_admin', 'test_administrator'], activeFor: ['/admin/release'] },
     ]},
-    { label: 'Administration', collapsible: true, items: [
+    { label: 'Reports', items: [
+      { href: '/admin/reports', label: 'Reports', icon: BarChart3, roles: ['super_admin', 'registrar_administrator', 'test_administrator'], activeFor: ['/admin/reports'] },
+    ]},
+    { label: 'System', collapsible: true, items: [
+      { href: '/admin/setup', label: 'Setup', icon: Wrench, roles: ['super_admin', 'registrar_administrator', 'test_administrator'], activeFor: ['/admin/setup', '/admin/academic-years', '/admin/courses', '/admin/rooms', '/admin/aptitude-areas', '/admin/settings', '/admin/ai-companion', '/admin/admission-slip-templates', '/admin/privacy-policies'] },
       { href: '/admin/users', label: 'Users', icon: Users, roles: ['super_admin'], activeFor: ['/admin/users'] },
-      { href: '/admin/settings', label: 'Settings', icon: Settings, roles: ['super_admin'], activeFor: ['/admin/settings'] },
       { href: '/admin/logs', label: 'Audit Log', icon: ScrollText, roles: ['super_admin'], activeFor: ['/admin/logs'] },
-      { href: '/admin/ai-companion', label: 'AI Companion', icon: Bot, roles: ['super_admin'], featureFlag: 'ai_exam_companion_enabled', activeFor: ['/admin/ai-companion'] },
     ]},
   ].map((section) => ({
     ...section,
