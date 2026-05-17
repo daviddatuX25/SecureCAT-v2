@@ -5,7 +5,7 @@
   import { Badge } from '@/Components/ui/badge';
   import { Input } from '@/Components/ui/input';
   import * as Table from '@/Components/ui/table';
-  import { Plus, Pencil, Trash2, FileText, Upload, RefreshCw } from 'lucide-svelte';
+  import { Plus, Pencil, Trash2, FileText, Upload, RefreshCw, Search } from 'lucide-svelte';
   import ActionDropdown from '@/Components/ActionDropdown.svelte';
   import { formatDate } from '@/lib/date-utils';
 
@@ -76,13 +76,15 @@
 
 
     <div class="flex flex-wrap items-center gap-3">
-      <Input
-        type="search"
-        placeholder="Search title or content"
-        bind:value={filterSearch}
-        onkeydown={(e) => e.key === 'Enter' && applyFilters()}
-        class="min-w-[200px] max-w-[280px] min-h-[44px]"
-      />
+      <div class="relative">
+        <Search class="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
+        <Input
+          type="search"
+          bind:value={filterSearch}
+          onkeydown={(e) => e.key === 'Enter' && applyFilters()}
+          class="pl-8 min-w-[200px] max-w-[280px] min-h-[44px]"
+        />
+      </div>
       <Button onclick={applyFilters} class="min-h-[44px]">Apply</Button>
     </div>
 

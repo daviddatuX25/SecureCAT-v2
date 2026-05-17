@@ -4,8 +4,9 @@
   import { Button } from '@/Components/ui/button';
   import { Input } from '@/Components/ui/input';
   import { Badge } from '@/Components/ui/badge';
+  import * as Select from '@/Components/ui/select';
   import * as Table from '@/Components/ui/table';
-  import { Plus, Pencil, Trash2, ChevronDown, Filter } from 'lucide-svelte';
+  import { Plus, Pencil, Trash2, ChevronDown, Filter, Search } from 'lucide-svelte';
   import SwitchableListView from '@/Components/SwitchableListView.svelte';
   import SimplePagination from '@/Components/SimplePagination.svelte';
 
@@ -70,34 +71,42 @@
     <!-- Filters: one row on desktop; on mobile search + collapsible "Filters" dropdown, Apply always visible -->
     <div class="flex flex-col gap-3">
       <div class="hidden md:flex flex-wrap items-center gap-3">
-        <Input
-          type="search"
-          placeholder="Search name or email"
-          bind:value={filterSearch}
-          onkeydown={(e) => e.key === 'Enter' && applyFilters()}
-          class="min-w-[160px] max-w-[220px] h-10"
-        />
-        <label for="filter-role-desk" class="sr-only">Role</label>
-        <select
-          id="filter-role-desk"
-          class="flex h-10 rounded-md border border-input bg-background px-3 py-2 text-sm min-w-[140px]"
-          bind:value={filterRole}
-        >
-          <option value="">All roles</option>
-          {#each roles as r}
-            <option value={r.name}>{r.display_name}</option>
-          {/each}
-        </select>
+        <div class="relative">
+          <Search class="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
+          <Input
+            type="search"
+            bind:value={filterSearch}
+            onkeydown={(e) => e.key === 'Enter' && applyFilters()}
+            class="pl-8 min-w-[160px] max-w-[220px] h-10"
+          />
+        </div>
+        <Select.Root type="single" bind:value={filterRole}>
+          <Select.Trigger class="w-[150px] min-h-[40px]">
+            {#if filterRole}
+              {roles.find(r => r.name === filterRole)?.display_name || 'All roles'}
+            {:else}
+              <span class="text-muted-foreground">All roles</span>
+            {/if}
+          </Select.Trigger>
+          <Select.Content>
+            <Select.Item value="" label="All roles">All roles</Select.Item>
+            {#each roles as r}
+              <Select.Item value={r.name} label={r.display_name}>{r.display_name}</Select.Item>
+            {/each}
+          </Select.Content>
+        </Select.Root>
         <Button onclick={applyFilters} class="min-h-[40px]">Apply</Button>
       </div>
       <div class="flex flex-wrap items-center gap-3 md:hidden">
-        <Input
-          type="search"
-          placeholder="Search name or email"
-          bind:value={filterSearch}
-          onkeydown={(e) => e.key === 'Enter' && applyFilters()}
-          class="min-h-[44px] flex-1 min-w-0"
-        />
+        <div class="relative flex-1 min-w-0">
+          <Search class="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
+          <Input
+            type="search"
+            bind:value={filterSearch}
+            onkeydown={(e) => e.key === 'Enter' && applyFilters()}
+            class="pl-8 min-h-[44px] w-full"
+          />
+        </div>
         <details class="relative group" bind:this={mobileFiltersDetails}>
           <summary class="list-none flex items-center gap-2 min-h-[44px] px-4 rounded-md border border-input bg-background text-sm font-medium cursor-pointer hover:bg-muted/50">
             <Filter class="h-4 w-4" />
@@ -107,16 +116,21 @@
           <div class="absolute right-0 top-full z-10 mt-1 w-[min(320px,calc(100vw-2rem))] rounded-lg border border-border bg-card p-4 shadow-lg flex flex-col gap-3">
             <div>
               <label for="filter-role-mob" class="text-sm font-medium block mb-1">Role</label>
-              <select
-                id="filter-role-mob"
-                class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-                bind:value={filterRole}
-              >
-                <option value="">All roles</option>
-                {#each roles as r}
-                  <option value={r.name}>{r.display_name}</option>
-                {/each}
-              </select>
+              <Select.Root type="single" bind:value={filterRole}>
+                <Select.Trigger id="filter-role-mob" class="w-full min-h-[44px]">
+                  {#if filterRole}
+                    {roles.find(r => r.name === filterRole)?.display_name || 'All roles'}
+                  {:else}
+                    <span class="text-muted-foreground">All roles</span>
+                  {/if}
+                </Select.Trigger>
+                <Select.Content>
+                  <Select.Item value="" label="All roles">All roles</Select.Item>
+                  {#each roles as r}
+                    <Select.Item value={r.name} label={r.display_name}>{r.display_name}</Select.Item>
+                  {/each}
+                </Select.Content>
+              </Select.Root>
             </div>
           </div>
         </details>

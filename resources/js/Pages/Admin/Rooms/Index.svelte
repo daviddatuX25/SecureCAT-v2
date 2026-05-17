@@ -5,7 +5,7 @@
   import { Badge } from '@/Components/ui/badge';
   import { Input } from '@/Components/ui/input';
   import * as Table from '@/Components/ui/table';
-  import { Plus, Pencil, Pause, Play, Trash2 } from 'lucide-svelte';
+  import { Plus, Pencil, Pause, Play, Trash2, Search } from 'lucide-svelte';
   import SwitchableListView from '@/Components/SwitchableListView.svelte';
   import SimplePagination from '@/Components/SimplePagination.svelte';
 
@@ -87,13 +87,15 @@ const breadcrumbs = [{ label: 'Exam Scheduling', href: '/admin/exam-scheduling' 
     <!-- Filters: one row on desktop; same on mobile (search + Apply) -->
     <div class="flex flex-col gap-3">
       <div class="flex flex-wrap items-center gap-3">
-        <Input
-          type="search"
-          placeholder="Search name or building"
-          bind:value={filterSearch}
-          onkeydown={(e) => e.key === 'Enter' && applyFilters()}
-          class="min-w-[160px] max-w-[220px] md:max-w-[220px] flex-1 min-w-0 md:flex-none min-h-[44px] md:min-h-[40px] h-10"
-        />
+        <div class="relative min-w-[160px] max-w-[220px] md:max-w-[220px] flex-1 min-w-0 md:flex-none">
+          <Search class="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
+          <Input
+            type="search"
+            bind:value={filterSearch}
+            onkeydown={(e) => e.key === 'Enter' && applyFilters()}
+            class="pl-8 min-h-[44px] md:min-h-[40px] h-10 w-full"
+          />
+        </div>
         <Button onclick={applyFilters} class="min-h-[44px] md:min-h-[40px]">Apply</Button>
       </div>
     </div>

@@ -3,6 +3,7 @@
   import { Link, router } from '@inertiajs/svelte';
   import * as Table from '@/Components/ui/table';
   import * as Dialog from '@/Components/ui/dialog';
+  import * as Select from '@/Components/ui/select';
   import { Button } from '@/Components/ui/button';
   import { Badge } from '@/Components/ui/badge';
   import { Input } from '@/Components/ui/input';
@@ -10,7 +11,7 @@
   import InfoPopover from '@/Components/InfoPopover.svelte';
   import SwitchableListView from '@/Components/SwitchableListView.svelte';
   import SimplePagination from '@/Components/SimplePagination.svelte';
-  import { Plus, Eye, Pencil, ChevronDown, Filter, ClipboardList, Sparkles, DoorOpen, Send, Undo, X, Trash2 } from 'lucide-svelte';
+  import { Plus, Eye, Pencil, ChevronDown, Filter, ClipboardList, Sparkles, DoorOpen, Send, Undo, X, Trash2, Search } from 'lucide-svelte';
   import { formatDate } from '@/lib/date-utils';
 
   let { sessions, filters = {}, statuses = [], view = 'admin', schedule_assistant = null, breadcrumbParent = { label: 'Exam Scheduling', href: '/admin/exam-scheduling' } } = $props();
@@ -164,52 +165,46 @@
     <div class="flex flex-col gap-3">
       <!-- Desktop: single row -->
       <div class="hidden md:flex flex-wrap items-center gap-3">
-        <Input
-          type="search"
-          placeholder="Search room or building"
-          bind:value={filterSearch}
-          onkeydown={(e) => e.key === 'Enter' && applyFilters()}
-          class="min-w-[160px] max-w-[220px] h-10"
-        />
-        <label for="filter-status-desk" class="sr-only">Status</label>
-        <select
-          id="filter-status-desk"
-          class="flex h-10 rounded-md border border-input bg-background px-3 py-2 text-sm min-w-[140px]"
-          bind:value={filterStatus}
-        >
-          <option value="">All statuses</option>
-          {#each statuses as s}
-            <option value={s.value}>{s.label}</option>
-          {/each}
-        </select>
-        <div class="flex items-center gap-2">
-          <label for="filter-date-from-desk" class="text-sm text-muted-foreground whitespace-nowrap">From</label>
-          <input
-            id="filter-date-from-desk"
-            type="date"
-            bind:value={filterDateFrom}
-            class="flex h-10 rounded-md border border-input bg-background px-3 py-2 text-sm"
-          />
-          <label for="filter-date-to-desk" class="text-sm text-muted-foreground whitespace-nowrap">To</label>
-          <input
-            id="filter-date-to-desk"
-            type="date"
-            bind:value={filterDateTo}
-            class="flex h-10 rounded-md border border-input bg-background px-3 py-2 text-sm"
+        <div class="relative">
+          <Search class="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
+          <Input
+            type="search"
+            bind:value={filterSearch}
+            onkeydown={(e) => e.key === 'Enter' && applyFilters()}
+            class="pl-8 min-w-[160px] max-w-[220px] h-10"
           />
         </div>
+        <Select.Root type="single" bind:value={filterStatus}>
+          <Select.Trigger class="w-[150px] min-h-[40px]">
+            {#if filterStatus}
+              {statuses.find(s => s.value === filterStatus)?.label || 'All statuses'}
+            {:else}
+              <span class="text-muted-foreground">All statuses</span>
+            {/if}
+          </Select.Trigger>
+          <Select.Content>
+            <Select.Item value="" label="All statuses">All statuses</Select.Item>
+            {#each statuses as s}
+              <Select.Item value={s.value} label={s.label}>{s.label}</Select.Item>
+            {/each}
+          </Select.Content>
+        </Select.Root>
+        <Input type="date" bind:value={filterDateFrom} class="min-h-[40px]" />
+        <Input type="date" bind:value={filterDateTo} class="min-h-[40px]" />
         <Button onclick={applyFilters} class="min-h-[40px]">Apply</Button>
       </div>
 
       <!-- Mobile: search exposed, rest in collapsible dropdown, Apply always visible -->
       <div class="flex flex-wrap items-center gap-3 md:hidden">
-        <Input
-          type="search"
-          placeholder="Search room or building"
-          bind:value={filterSearch}
-          onkeydown={(e) => e.key === 'Enter' && applyFilters()}
-          class="min-h-[44px] flex-1 min-w-0"
-        />
+        <div class="relative flex-1 min-w-0">
+          <Search class="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
+          <Input
+            type="search"
+            bind:value={filterSearch}
+            onkeydown={(e) => e.key === 'Enter' && applyFilters()}
+            class="pl-8 min-h-[44px] w-full"
+          />
+        </div>
         <details class="relative group" bind:this={mobileFiltersDetails}>
           <summary class="list-none flex items-center gap-2 min-h-[44px] px-4 rounded-md border border-input bg-background text-sm font-medium cursor-pointer hover:bg-muted/50">
             <Filter class="h-4 w-4" />
@@ -219,32 +214,37 @@
           <div class="absolute right-0 top-full z-10 mt-1 w-[min(320px,calc(100vw-2rem))] rounded-lg border border-border bg-card p-4 shadow-lg flex flex-col gap-3">
             <div>
               <label for="filter-status-mob" class="text-sm font-medium block mb-1">Status</label>
-              <select
-                id="filter-status-mob"
-                class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-                bind:value={filterStatus}
-              >
-                <option value="">All statuses</option>
-                {#each statuses as s}
-                  <option value={s.value}>{s.label}</option>
-                {/each}
-              </select>
+              <Select.Root type="single" bind:value={filterStatus}>
+                <Select.Trigger id="filter-status-mob" class="w-full min-h-[44px]">
+                  {#if filterStatus}
+                    {statuses.find(s => s.value === filterStatus)?.label || 'All statuses'}
+                  {:else}
+                    <span class="text-muted-foreground">All statuses</span>
+                  {/if}
+                </Select.Trigger>
+                <Select.Content>
+                  <Select.Item value="" label="All statuses">All statuses</Select.Item>
+                  {#each statuses as s}
+                    <Select.Item value={s.value} label={s.label}>{s.label}</Select.Item>
+                  {/each}
+                </Select.Content>
+              </Select.Root>
             </div>
             <div>
               <span class="text-sm font-medium block mb-1">Date range</span>
               <div class="flex items-center gap-2">
-                <input
+                <Input
                   id="filter-date-from-mob"
                   type="date"
                   bind:value={filterDateFrom}
-                  class="flex h-10 flex-1 min-w-0 rounded-md border border-input bg-background px-3 py-2 text-sm"
+                  class="flex-1 min-w-0 min-h-[44px]"
                 />
                 <span class="text-muted-foreground">–</span>
-                <input
+                <Input
                   id="filter-date-to-mob"
                   type="date"
                   bind:value={filterDateTo}
-                  class="flex h-10 flex-1 min-w-0 rounded-md border border-input bg-background px-3 py-2 text-sm"
+                  class="flex-1 min-w-0 min-h-[44px]"
                 />
               </div>
             </div>

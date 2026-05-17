@@ -61,17 +61,18 @@ class ApplicationControllerTest extends TestCase
         ]);
     }
 
-    public function test_index_returns_statuses_including_dismissed(): void
+    public function test_index_returns_statuses_with_full_pipeline_values(): void
     {
         $response = $this->actingAs($this->staff())->get(route('admin.applications.index'));
 
         $response->assertStatus(200);
         $response->assertInertia(fn ($page) => $page
             ->component('Applications/Index')
-            ->has('statuses')
+            ->has('statuses', 11)
             ->where('statuses.0.value', 'pending')
             ->where('statuses.1.value', 'accepted')
-            ->where('statuses.2.value', 'dismissed')
+            ->where('statuses.2.value', 'draft_scheduled')
+            ->where('statuses.10.value', 'dismissed')
         );
     }
 

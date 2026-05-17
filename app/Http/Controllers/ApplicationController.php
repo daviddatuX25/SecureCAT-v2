@@ -61,12 +61,6 @@ class ApplicationController extends Controller
             });
         }
 
-        if ($status = $request->input('status')) {
-            if (in_array($status, ['pending', 'accepted', 'dismissed'], true)) {
-                $query->where('status', $status);
-            }
-        }
-
         if ($dateFrom = $request->input('date_from')) {
             $query->whereDate('submitted_at', '>=', $dateFrom);
         }
@@ -135,15 +129,10 @@ class ApplicationController extends Controller
 
         return Inertia::render('Applications/Index', [
             'applications' => $applications,
-            'filters' => $request->only(['search', 'status', 'pipeline_status', 'date_from', 'date_to', 'academic_year_id']),
+            'filters' => $request->only(['search', 'pipeline_status', 'date_from', 'date_to', 'academic_year_id']),
             'seasons' => $academicYears,
             'active_season_id' => $activeAcademicYear?->id,
             'statuses' => [
-                ['value' => 'pending', 'label' => 'Pending'],
-                ['value' => 'accepted', 'label' => 'Accepted'],
-                ['value' => 'dismissed', 'label' => 'Dismissed'],
-            ],
-            'pipeline_statuses' => [
                 ['value' => 'pending', 'label' => 'Pending'],
                 ['value' => 'accepted', 'label' => 'Accepted'],
                 ['value' => 'draft_scheduled', 'label' => 'Draft Scheduled'],

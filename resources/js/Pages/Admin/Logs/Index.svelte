@@ -2,6 +2,7 @@
   import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.svelte';
   import { Link, router } from '@inertiajs/svelte';
   import * as Table from '@/Components/ui/table';
+  import * as Select from '@/Components/ui/select';
   import { Button } from '@/Components/ui/button';
   import { Input } from '@/Components/ui/input';
   import SimplePagination from '@/Components/SimplePagination.svelte';
@@ -117,28 +118,36 @@
     <!-- Filters -->
     <div class="flex flex-col gap-3">
       <div class="hidden md:flex flex-wrap items-center gap-3">
-        <label for="filter-event-desk" class="sr-only">Event</label>
-        <select
-          id="filter-event-desk"
-          class="flex h-10 rounded-md border border-input bg-background px-3 py-2 text-sm min-w-[160px]"
-          bind:value={filterEvent}
-        >
-          <option value="">All events</option>
-          {#each events as e}
-            <option value={e.value}>{e.label}</option>
-          {/each}
-        </select>
-        <label for="filter-category-desk" class="sr-only">Category</label>
-        <select
-          id="filter-category-desk"
-          class="flex h-10 rounded-md border border-input bg-background px-3 py-2 text-sm min-w-[140px]"
-          bind:value={filterCategory}
-        >
-          <option value="">All categories</option>
-          {#each categories as c}
-            <option value={c.value}>{c.label}</option>
-          {/each}
-        </select>
+        <Select.Root type="single" bind:value={filterEvent}>
+          <Select.Trigger class="w-[170px] min-h-[40px]">
+            {#if filterEvent}
+              {events.find(e => e.value === filterEvent)?.label || 'All events'}
+            {:else}
+              <span class="text-muted-foreground">All events</span>
+            {/if}
+          </Select.Trigger>
+          <Select.Content>
+            <Select.Item value="" label="All events">All events</Select.Item>
+            {#each events as e}
+              <Select.Item value={e.value} label={e.label}>{e.label}</Select.Item>
+            {/each}
+          </Select.Content>
+        </Select.Root>
+        <Select.Root type="single" bind:value={filterCategory}>
+          <Select.Trigger class="w-[160px] min-h-[40px]">
+            {#if filterCategory}
+              {categories.find(c => c.value === filterCategory)?.label || 'All categories'}
+            {:else}
+              <span class="text-muted-foreground">All categories</span>
+            {/if}
+          </Select.Trigger>
+          <Select.Content>
+            <Select.Item value="" label="All categories">All categories</Select.Item>
+            {#each categories as c}
+              <Select.Item value={c.value} label={c.label}>{c.label}</Select.Item>
+            {/each}
+          </Select.Content>
+        </Select.Root>
         {#if showActorFilter}
           <Input
             type="number"
@@ -148,22 +157,8 @@
             min="1"
           />
         {/if}
-        <div class="flex items-center gap-2">
-          <label for="filter-date-from-desk" class="text-sm text-muted-foreground whitespace-nowrap">From</label>
-          <input
-            id="filter-date-from-desk"
-            type="date"
-            bind:value={filterDateFrom}
-            class="flex h-10 rounded-md border border-input bg-background px-3 py-2 text-sm"
-          />
-          <label for="filter-date-to-desk" class="text-sm text-muted-foreground whitespace-nowrap">To</label>
-          <input
-            id="filter-date-to-desk"
-            type="date"
-            bind:value={filterDateTo}
-            class="flex h-10 rounded-md border border-input bg-background px-3 py-2 text-sm"
-          />
-        </div>
+        <Input type="date" bind:value={filterDateFrom} class="min-h-[40px]" />
+        <Input type="date" bind:value={filterDateTo} class="min-h-[40px]" />
         <Button onclick={applyFilters} class="min-h-[40px]">Apply</Button>
       </div>
 
@@ -178,29 +173,39 @@
             <div class="absolute right-0 top-full z-10 mt-1 w-[min(320px,calc(100vw-2rem))] rounded-lg border border-border bg-card p-4 shadow-lg flex flex-col gap-3">
               <div>
                 <label for="filter-event-mob" class="text-sm font-medium block mb-1">Event</label>
-                <select
-                  id="filter-event-mob"
-                  class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-                  bind:value={filterEvent}
-                >
-                  <option value="">All events</option>
-                  {#each events as e}
-                    <option value={e.value}>{e.label}</option>
-                  {/each}
-                </select>
+                <Select.Root type="single" bind:value={filterEvent}>
+                  <Select.Trigger id="filter-event-mob" class="w-full min-h-[44px]">
+                    {#if filterEvent}
+                      {events.find(e => e.value === filterEvent)?.label || 'All events'}
+                    {:else}
+                      <span class="text-muted-foreground">All events</span>
+                    {/if}
+                  </Select.Trigger>
+                  <Select.Content>
+                    <Select.Item value="" label="All events">All events</Select.Item>
+                    {#each events as e}
+                      <Select.Item value={e.value} label={e.label}>{e.label}</Select.Item>
+                    {/each}
+                  </Select.Content>
+                </Select.Root>
               </div>
               <div>
                 <label for="filter-category-mob" class="text-sm font-medium block mb-1">Category</label>
-                <select
-                  id="filter-category-mob"
-                  class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-                  bind:value={filterCategory}
-                >
-                  <option value="">All categories</option>
-                  {#each categories as c}
-                    <option value={c.value}>{c.label}</option>
-                  {/each}
-                </select>
+                <Select.Root type="single" bind:value={filterCategory}>
+                  <Select.Trigger id="filter-category-mob" class="w-full min-h-[44px]">
+                    {#if filterCategory}
+                      {categories.find(c => c.value === filterCategory)?.label || 'All categories'}
+                    {:else}
+                      <span class="text-muted-foreground">All categories</span>
+                    {/if}
+                  </Select.Trigger>
+                  <Select.Content>
+                    <Select.Item value="" label="All categories">All categories</Select.Item>
+                    {#each categories as c}
+                      <Select.Item value={c.value} label={c.label}>{c.label}</Select.Item>
+                    {/each}
+                  </Select.Content>
+                </Select.Root>
               </div>
               {#if showActorFilter}
                 <div>
@@ -217,18 +222,18 @@
               <div>
                 <span class="text-sm font-medium block mb-1">Date range</span>
                 <div class="flex items-center gap-2">
-                  <input
+                  <Input
                     id="filter-date-from-mob"
                     type="date"
                     bind:value={filterDateFrom}
-                    class="flex h-10 flex-1 min-w-0 rounded-md border border-input bg-background px-3 py-2 text-sm"
+                    class="flex-1 min-w-0 min-h-[44px]"
                   />
                   <span class="text-muted-foreground">–</span>
-                  <input
+                  <Input
                     id="filter-date-to-mob"
                     type="date"
                     bind:value={filterDateTo}
-                    class="flex h-10 flex-1 min-w-0 rounded-md border border-input bg-background px-3 py-2 text-sm"
+                    class="flex-1 min-w-0 min-h-[44px]"
                   />
                 </div>
               </div>

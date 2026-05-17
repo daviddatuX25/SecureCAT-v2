@@ -6,7 +6,7 @@
   import { Input } from '@/Components/ui/input';
   import * as Select from '@/Components/ui/select';
   import * as Table from '@/Components/ui/table';
-  import { Filter, ChevronDown, CheckCircle, XCircle, UploadCloud, Plus, Pencil } from 'lucide-svelte';
+  import { Filter, ChevronDown, CheckCircle, XCircle, UploadCloud, Plus, Pencil, Search } from 'lucide-svelte';
   import SwitchableListView from '@/Components/SwitchableListView.svelte';
   import SimplePagination from '@/Components/SimplePagination.svelte';
   import { success as showSuccess, error as showError } from '@/lib/toast';
@@ -14,7 +14,7 @@
   import { formatDate } from '@/lib/date-utils';
   import { onMount } from 'svelte';
 
-  let { applications, filters = {}, seasons = [], active_season_id = null, statuses = [], pipeline_statuses = [] } = $props();
+  let { applications, filters = {}, seasons = [], active_season_id = null, statuses = [] } = $props();
 
   const page = usePage();
   const authUser = $derived($page.props.auth?.user ?? null);
@@ -33,7 +33,6 @@
 
   let filterSearch = $state('');
   let filterStatus = $state('');
-  let filterPipelineStatus = $state('');
   let filterAcademicYearId = $state('');
   let filterDateFrom = $state('');
   let filterDateTo = $state('');
@@ -44,8 +43,7 @@
   // Initialize filters - runs when props change
   function initFilters() {
     filterSearch = filters.search ?? '';
-    filterStatus = filters.status ?? '';
-    filterPipelineStatus = filters.pipeline_status ?? '';
+    filterStatus = filters.pipeline_status ?? '';
     sortField = filters.sort ?? '';
     sortDirection = filters.direction ?? 'asc';
 
@@ -68,8 +66,7 @@
   $effect(() => {
     // Track dependencies
     const _ = filters.search;
-    const __ = filters.status;
-    const ___ = filters.pipeline_status;
+    const __ = filters.pipeline_status;
     const ____ = filters.academic_year_id;
     const _____ = filters.date_from;
     const ______ = filters.date_to;
@@ -84,8 +81,7 @@
   function applyFilters() {
     router.get('/admin/applications', {
       search: filterSearch || undefined,
-      status: filterStatus || undefined,
-      pipeline_status: filterPipelineStatus || undefined,
+      pipeline_status: filterStatus || undefined,
       academic_year_id: filterAcademicYearId || undefined,
       date_from: filterDateFrom || undefined,
       date_to: filterDateTo || undefined,
@@ -96,17 +92,7 @@
     filtersOpen = false;
   }
 
-  function statusVariant(status) {
-    if (status === 'pending') return 'warning';
-    if (status === 'accepted') return 'success';
-    if (status === 'dismissed') return 'danger';
-    return 'muted';
-  }
 
-  function statusLabel(value) {
-    const s = statuses.find((x) => x.value === value);
-    return s?.label ?? value;
-  }
 
   function doAccept(id) {
     router.put(`/admin/applications/${id}/accept`, {}, {
@@ -162,13 +148,15 @@
     <!-- Filters -->
     <div class="flex flex-col gap-3">
       <div class="flex flex-wrap items-center gap-3">
-        <Input
-          type="search"
-          placeholder="Search reference, name, email"
-          bind:value={filterSearch}
-          onkeydown={(e) => e.key === 'Enter' && applyFilters()}
-          class="min-w-[160px] max-w-[220px] md:max-w-[220px] flex-1 min-w-0 md:flex-none min-h-[44px] md:min-h-[40px] h-10"
-        />
+        <div class="relative min-w-[160px] max-w-[220px] md:max-w-[220px] flex-1 min-w-0 md:flex-none">
+          <Search class="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
+          <Input
+            type="search"
+            bind:value={filterSearch}
+            onkeydown={(e) => e.key === 'Enter' && applyFilters()}
+            class="pl-8 min-h-[44px] md:min-h-[40px] h-10 w-full"
+          />
+        </div>
         <details class="relative md:hidden" bind:open={filtersOpen}>
           <summary class="flex cursor-pointer list-none items-center gap-2 rounded-lg border border-input bg-background px-3 py-2 text-sm min-h-[44px] min-w-[44px]">
             <Filter class="h-4 w-4" />
@@ -190,23 +178,6 @@
                   <Select.Item value="" label="All">All</Select.Item>
                   {#each statuses as s}
                     <Select.Item value={String(s.value)} label={s.label}>{s.label}</Select.Item>
-                  {/each}
-                </Select.Content>
-              </Select.Root>
-              
-              <label for="filter-pipeline-mobile" class="block text-sm font-medium">Pipeline</label>
-              <Select.Root type="single" bind:value={filterPipelineStatus}>
-                <Select.Trigger id="filter-pipeline-mobile" class="w-full min-h-[44px]">
-                  {#if filterPipelineStatus}
-                    {pipeline_statuses.find(p => String(p.value) === String(filterPipelineStatus))?.label || 'All'}
-                  {:else}
-                    <span class="text-muted-foreground">All</span>
-                  {/if}
-                </Select.Trigger>
-                <Select.Content>
-                  <Select.Item value="" label="All">All</Select.Item>
-                  {#each pipeline_statuses as p}
-                    <Select.Item value={String(p.value)} label={p.label}>{p.label}</Select.Item>
                   {/each}
                 </Select.Content>
               </Select.Root>
@@ -257,22 +228,6 @@
             </Select.Content>
           </Select.Root>
           
-          <Select.Root type="single" bind:value={filterPipelineStatus}>
-            <Select.Trigger class="w-[150px] min-h-[40px]">
-              {#if filterPipelineStatus}
-                {pipeline_statuses.find(p => String(p.value) === String(filterPipelineStatus))?.label || 'All pipelines'}
-              {:else}
-                <span class="text-muted-foreground">All pipelines</span>
-              {/if}
-            </Select.Trigger>
-            <Select.Content>
-              <Select.Item value="" label="All pipelines">All pipelines</Select.Item>
-              {#each pipeline_statuses as p}
-                <Select.Item value={String(p.value)} label={p.label}>{p.label}</Select.Item>
-              {/each}
-            </Select.Content>
-          </Select.Root>
-          
           <Select.Root type="single" bind:value={filterAcademicYearId}>
             <Select.Trigger class="w-[150px] min-h-[40px]">
               {#if filterAcademicYearId}
@@ -306,7 +261,7 @@
               <Table.Head class="px-4 py-3">Name</Table.Head>
               <Table.Head class="px-4 py-3">Email</Table.Head>
               <Table.Head class="px-4 py-3 cursor-pointer select-none" onclick={() => { sortField = 'pipeline_status'; sortDirection = sortDirection === 'asc' ? 'desc' : 'asc'; applyFilters(); }}>
-                Pipeline
+                Status
                 {#if sortField === 'pipeline_status'}
                   <span class="ml-1 text-xs">{sortDirection === 'asc' ? '↑' : '↓'}</span>
                 {/if}

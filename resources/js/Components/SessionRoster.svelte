@@ -6,7 +6,7 @@
   import QrScanner from '@/Components/QrScanner.svelte';
   import {
     ArrowLeft, UserCheck, UserX, FileCheck, Play, Square, QrCode,
-    UserMinus, BarChart2,
+    UserMinus, BarChart2, Search,
   } from 'lucide-svelte';
   import axios from 'axios';
   import { success as showSuccess, error as showError } from '@/lib/toast';
@@ -496,13 +496,15 @@
     <p class="mt-1 text-sm text-muted-foreground">Mark attendance and log submission.</p>
 
     <div class="mt-4 flex flex-wrap items-center gap-3">
-      <Input
-        type="search"
-        placeholder="Search by name or reference..."
-        class="max-w-xs"
-        bind:value={searchQuery}
-        aria-label="Search applicants"
-      />
+      <div class="relative max-w-xs">
+        <Search class="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
+        <Input
+          type="search"
+          class="pl-8 w-full"
+          bind:value={searchQuery}
+          aria-label="Search applicants"
+        />
+      </div>
       {#if canMarkAttendance}
         <Button variant="outline" class="min-h-[44px]" onclick={() => openScannerFor('attendance')}>
           <QrCode class="h-4 w-4 mr-2" /> Scan for attendance
