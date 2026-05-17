@@ -22,29 +22,45 @@ class ApplicationStatusChanged extends Notification implements ShouldQueue
 
     public function via(object $notifiable): array
     {
+        // Skip mail for 'accepted' — the account setup email covers the acceptance notification
+        if ($this->newStatus === 'accepted') {
+            return ['database'];
+        }
+
         return ['mail', 'database'];
     }
 
     public function toMail(object $notifiable): MailMessage
     {
-        $statusLabels = [
-            'pending' => 'Pending Review',
-            'accepted' => 'Accepted',
-            'dismissed' => 'Dismissed',
-        ];
+        $applicantName = $this->application->first_name ?? 'Applicant';
 
-        $oldLabel = $statusLabels[$this->oldStatus] ?? ucfirst($this->oldStatus);
-        $newLabel = $statusLabels[$this->newStatus] ?? ucfirst($this->newStatus);
+        $mail = (new MailMessage)
+            ->subject('SecureCAT — Application Update')
+            ->greeting("Hello, {$applicantName}.");
 
-        return (new MailMessage)
-            ->subject("Application Status Updated: {$newLabel}")
-            ->greeting('Hello, '.($notifiable->name ?? 'Applicant').'!')
-            ->line("Your application status has been updated from **{$oldLabel}** to **{$newLabel}**.")
-            ->when($this->newStatus === 'accepted', fn ($mail) => $mail
-                ->line('Congratulations! Your application has been accepted.'))
-            ->when($this->newStatus === 'dismissed', fn ($mail) => $mail
-                ->line('We regret to inform you that your application was not accepted at this time.'))
-            ->action('View Application', url('/portal/application'));
+        if ($this->application->reference_number) {
+            $mail->line("Regarding your application **{$this->application->reference_number}**:");
+        }
+
+        if ($this->newStatus === 'dismissed') {
+            $mail->line('After careful review, we regret to inform you that your application was not accepted at this time.');
+
+            if ($this->application->rejection_reason) {
+                $mail->line("**Reason:** {$this->application->rejection_reason}");
+            }
+
+            $mail->line('If you have any questions about this decision, please contact the admissions office.');
+        } else {
+            $statusLabels = [
+                'pending' => 'Pending Review',
+                'accepted' => 'Accepted',
+                'dismissed' => 'Dismissed',
+            ];
+            $newLabel = $statusLabels[$this->newStatus] ?? ucfirst($this->newStatus);
+            $mail->line("Your application status has been updated to **{$newLabel}**.");
+        }
+
+        return $mail;
     }
 
     public function toArray(object $notifiable): array
