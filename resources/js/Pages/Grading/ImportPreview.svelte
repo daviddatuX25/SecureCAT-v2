@@ -111,7 +111,8 @@
 
     <form onsubmit={submitForm} class="space-y-4">
       <div class="rounded-lg border border-border overflow-hidden">
-        <table class="w-full text-sm">
+        <div class="overflow-x-auto">
+        <table class="w-full text-sm min-w-[700px]">
           <thead class="bg-muted">
             <tr>
               <th class="px-3 py-2 text-left w-10">
@@ -124,7 +125,7 @@
               {#each aptitudeAreaCodes as code}
                 <th class="px-3 py-2 text-left">{code} <span class="text-muted-foreground font-normal">{scoreSuffix}</span></th>
               {/each}
-              <th class="px-3 py-2 text-left">Status</th>
+              <th class="px-3 py-2 text-left min-w-[200px]">Status</th>
             </tr>
           </thead>
           <tbody>
@@ -146,15 +147,15 @@
                     {record.scores.find(s => s.area_code === code)?.score || '—'}
                   </td>
                 {/each}
-                <td class="px-3 py-2">
+                <td class="px-3 py-2 min-w-[200px]">
                   {#if record.is_valid}
-                    <span class="inline-flex items-center rounded-full bg-success/15 px-2 py-1 text-xs font-semibold text-success">
+                    <span class="inline-flex items-center rounded-full bg-success/15 px-2 py-1 text-xs font-semibold text-success whitespace-nowrap">
                       <Check class="size-3 mr-1" /> Valid
                     </span>
                   {:else}
-                    <span class="inline-flex items-center rounded-full bg-red-100 px-2 py-1 text-xs font-medium text-red-700">
-                      <AlertTriangle class="size-3 mr-1" />
-                      {record.errors[0]}
+                    <span class="inline-flex items-start rounded-md bg-red-100 dark:bg-red-900/30 px-2 py-1.5 text-xs font-medium text-red-700 dark:text-red-400 max-w-[280px]">
+                      <AlertTriangle class="size-3 mr-1 mt-0.5 shrink-0" />
+                      <span class="break-words">{record.errors[0]}</span>
                     </span>
                   {/if}
                 </td>
@@ -162,6 +163,7 @@
             {/each}
           </tbody>
         </table>
+        </div>
         {#if records.length > 50}
           <div class="px-3 py-2 text-sm text-muted-foreground bg-muted">
             Showing 50 of {records.length} rows. Invalid rows will be skipped.
@@ -169,7 +171,7 @@
         {/if}
       </div>
 
-      <div class="flex gap-3">
+      <div class="flex justify-end gap-3">
         <Button type="submit" disabled={$form.processing || selectedIds.size === 0} class="min-h-[44px]">
           <Save class="mr-2 size-4" />
           {$form.processing ? 'Importing...' : `Import ${selectedIds.size} Selected`}

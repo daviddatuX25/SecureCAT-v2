@@ -118,7 +118,7 @@
         <Input id="tags" bind:value={tagsInput} placeholder="e.g. success_rates, engineering" class="min-h-[44px]" />
       </div>
 
-      <div class="flex gap-3 pt-2">
+      <div class="flex justify-end gap-3 pt-2">
         <Button type="submit" disabled={$form.processing} class="min-h-[44px]">
           <Upload class="mr-2 size-4" />
           {$form.processing ? 'Importing…' : 'Import CSV'}

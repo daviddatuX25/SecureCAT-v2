@@ -263,7 +263,7 @@
         {/if}
       </div>
 
-      <div class="flex items-center gap-3">
+      <div class="flex justify-end items-center gap-3">
         <Button type="submit" disabled={$form.processing || selectedIds.size === 0} class="min-h-[44px]">
           <Save class="mr-2 size-4" />
           {$form.processing ? 'Importing...' : `Import ${selectedIds.size} Selected`}
@@ -273,7 +273,7 @@
         </Link>
 
         {#if selectedIds.size > 0 && invalidCount > 0}
-          <p class="text-xs text-muted-foreground ml-auto">
+          <p class="text-xs text-muted-foreground order-first">
             {invalidCount} invalid row{invalidCount !== 1 ? 's' : ''} will be skipped
           </p>
         {/if}

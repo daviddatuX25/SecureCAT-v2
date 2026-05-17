@@ -142,7 +142,7 @@
         onanalysis={onAnalysis}
       />
 
-      <div class="flex gap-3 pt-2">
+      <div class="flex justify-end gap-3 pt-2">
         <Button
           type="submit"
           disabled={$form.processing || !fileReady}
