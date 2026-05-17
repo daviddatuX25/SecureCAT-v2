@@ -79,17 +79,27 @@ class DashboardService
 
         $upcoming = $upcomingQuery->count();
 
-        $attendanceDue = DB::table('exam_session_applicant')
+        $attendanceQuery = DB::table('exam_session_applicant')
             ->join('exam_sessions', 'exam_sessions.id', '=', 'exam_session_applicant.exam_session_id')
             ->whereIn('exam_sessions.status', [ExamSession::STATUS_IN_PROGRESS, ExamSession::STATUS_COMPLETED])
-            ->where('exam_session_applicant.attendance_status', 'pending')
-            ->count();
+            ->where('exam_session_applicant.attendance_status', 'pending');
 
-        $submissionsDue = DB::table('exam_session_applicant')
+        if ($activeAcademicYear !== null) {
+            $attendanceQuery->where('exam_sessions.academic_year_id', $activeAcademicYear->id);
+        }
+
+        $attendanceDue = $attendanceQuery->count();
+
+        $submissionsQuery = DB::table('exam_session_applicant')
             ->join('exam_sessions', 'exam_sessions.id', '=', 'exam_session_applicant.exam_session_id')
             ->whereIn('exam_sessions.status', [ExamSession::STATUS_IN_PROGRESS, ExamSession::STATUS_COMPLETED])
-            ->where('exam_session_applicant.submission_status', 'pending')
-            ->count();
+            ->where('exam_session_applicant.submission_status', 'pending');
+
+        if ($activeAcademicYear !== null) {
+            $submissionsQuery->where('exam_sessions.academic_year_id', $activeAcademicYear->id);
+        }
+
+        $submissionsDue = $submissionsQuery->count();
 
         return [
             [
@@ -124,13 +134,25 @@ class DashboardService
             return [];
         }
 
-        $pendingGrading = GradingSession::query()
-            ->whereIn('status', [GradingSession::STATUS_OPEN, GradingSession::STATUS_IN_PROGRESS, GradingSession::STATUS_REVIEW])
-            ->count();
+        $activeAcademicYear = AcademicYear::active();
 
-        $pendingRelease = ConsultationSummary::query()
-            ->where('status', ConsultationSummary::STATUS_DRAFT)
-            ->count();
+        $gradingQuery = GradingSession::query()
+            ->whereIn('status', [GradingSession::STATUS_OPEN, GradingSession::STATUS_IN_PROGRESS, GradingSession::STATUS_REVIEW]);
+
+        if ($activeAcademicYear !== null) {
+            $gradingQuery->whereHas('examSession', fn ($q) => $q->forAcademicYear($activeAcademicYear));
+        }
+
+        $pendingGrading = $gradingQuery->count();
+
+        $releaseQuery = ConsultationSummary::query()
+            ->where('status', ConsultationSummary::STATUS_DRAFT);
+
+        if ($activeAcademicYear !== null) {
+            $releaseQuery->whereHas('applicant.application', fn ($q) => $q->forAcademicYear($activeAcademicYear));
+        }
+
+        $pendingRelease = $releaseQuery->count();
 
         return [
             [

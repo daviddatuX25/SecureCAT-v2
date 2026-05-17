@@ -2,10 +2,12 @@
 
 namespace Tests\Feature;
 
+use App\Models\AcademicYear;
 use App\Models\Applicant;
 use App\Models\Application;
 use App\Models\ConsultationSummary;
 use App\Models\Course;
+use App\Models\ExamSession;
 use App\Models\GradingSession;
 use App\Models\Role;
 use App\Models\SystemSetting;
@@ -20,10 +22,14 @@ class ReleasePageTest extends TestCase
 {
     use RefreshDatabase;
 
+    protected AcademicYear $activeYear;
+
     protected function setUp(): void
     {
         parent::setUp();
         $this->seed(RoleSeeder::class);
+        AcademicYear::query()->update(['is_active' => false]);
+        $this->activeYear = AcademicYear::factory()->active()->create();
     }
 
     private function actingAdmin(): User
@@ -37,7 +43,8 @@ class ReleasePageTest extends TestCase
     private function createSummary(string $status = 'draft'): ConsultationSummary
     {
         $course = Course::factory()->create(['is_active' => true]);
-        $applicant = Applicant::factory()->create();
+        $application = Application::factory()->create(['academic_year_id' => $this->activeYear->id]);
+        $applicant = Applicant::factory()->create(['application_id' => $application->id]);
 
         return ConsultationSummary::factory()->create([
             'applicant_id' => $applicant->id,
@@ -168,9 +175,13 @@ class ReleasePageTest extends TestCase
     public function test_index_includes_printed_flag_in_summaries(): void
     {
         SystemSetting::set('release_mode', 'online');
-        $application = Application::factory()->create();
+        $application = Application::factory()->create(['academic_year_id' => $this->activeYear->id]);
         $applicant = Applicant::factory()->create(['application_id' => $application->id]);
-        $session = GradingSession::factory()->create(['status' => GradingSession::STATUS_FINALIZED]);
+        $examSession = ExamSession::factory()->create(['academic_year_id' => $this->activeYear->id]);
+        $session = GradingSession::factory()->create([
+            'status' => GradingSession::STATUS_FINALIZED,
+            'exam_session_id' => $examSession->id,
+        ]);
         $session->applicants()->attach($applicant->id, ['result_printed_at' => now()]);
 
         ConsultationSummary::factory()->create([
@@ -201,9 +212,13 @@ class ReleasePageTest extends TestCase
     public function test_index_includes_grading_session_id_when_applicant_has_sessions(): void
     {
         SystemSetting::set('release_mode', 'online');
-        $application = Application::factory()->create();
+        $application = Application::factory()->create(['academic_year_id' => $this->activeYear->id]);
         $applicant = Applicant::factory()->create(['application_id' => $application->id]);
-        $session = GradingSession::factory()->create(['status' => GradingSession::STATUS_FINALIZED]);
+        $examSession = ExamSession::factory()->create(['academic_year_id' => $this->activeYear->id]);
+        $session = GradingSession::factory()->create([
+            'status' => GradingSession::STATUS_FINALIZED,
+            'exam_session_id' => $examSession->id,
+        ]);
         $session->applicants()->attach($applicant->id);
 
         ConsultationSummary::factory()->create([
@@ -244,6 +259,7 @@ class ReleasePageTest extends TestCase
         $course3 = Course::factory()->create(['name' => 'BSIS', 'code' => 'CS103']);
 
         $application = Application::factory()->create([
+            'academic_year_id' => $this->activeYear->id,
             'course_preference_1' => $course1->id,
             'course_preference_2' => $course2->id,
             'course_preference_3' => $course3->id,
@@ -277,7 +293,8 @@ class ReleasePageTest extends TestCase
     {
         SystemSetting::set('release_mode', 'online');
         $course = Course::factory()->create(['name' => 'BSEE', 'code' => 'EN101']);
-        $applicant = Applicant::factory()->create();
+        $application = Application::factory()->create(['academic_year_id' => $this->activeYear->id]);
+        $applicant = Applicant::factory()->create(['application_id' => $application->id]);
         ConsultationSummary::factory()->create([
             'applicant_id' => $applicant->id,
             'status' => 'draft',
@@ -299,7 +316,11 @@ class ReleasePageTest extends TestCase
     public function test_index_includes_finalized_grading_sessions_prop(): void
     {
         SystemSetting::set('release_mode', 'online');
-        $session = GradingSession::factory()->create(['status' => GradingSession::STATUS_FINALIZED]);
+        $examSession = ExamSession::factory()->create(['academic_year_id' => $this->activeYear->id]);
+        $session = GradingSession::factory()->create([
+            'status' => GradingSession::STATUS_FINALIZED,
+            'exam_session_id' => $examSession->id,
+        ]);
         $this->createSummary('draft');
         $admin = $this->actingAdmin();
 

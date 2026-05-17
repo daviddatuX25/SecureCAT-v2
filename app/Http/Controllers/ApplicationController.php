@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Controllers\Concerns\ResolvesAcademicYear;
 use App\Http\Requests\DismissApplicationRequest;
 use App\Http\Requests\StoreApplicationRequest;
 use App\Http\Requests\UpdateApplicationRequest;
@@ -25,6 +26,8 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class ApplicationController extends Controller
 {
+    use ResolvesAcademicYear;
+
     /**
      * List applications with filters. Per 08-API-SPEC-PHASE1 and 09-UI-ROUTES-PHASE1.
      */
@@ -32,13 +35,7 @@ class ApplicationController extends Controller
     {
         $this->authorize('viewAny', Application::class);
 
-        $activeAcademicYear = AcademicYear::active();
-        $academicYearId = $request->input('academic_year_id');
-        if ($academicYearId !== null && $academicYearId !== '') {
-            $queryAcademicYearId = (int) $academicYearId;
-        } else {
-            $queryAcademicYearId = $activeAcademicYear?->id;
-        }
+        [$activeAcademicYear, $queryAcademicYearId] = $this->resolveAcademicYear($request);
 
         $query = Application::query()
             ->with([
@@ -122,15 +119,10 @@ class ApplicationController extends Controller
 
         $applications->getCollection()->transform($transformApp);
 
-        $academicYears = AcademicYear::query()
-            ->orderByDesc('academic_year')
-            ->orderBy('semester')
-            ->get(['id', 'academic_year', 'semester', 'is_active', 'application_start_date', 'application_end_date']);
-
         return Inertia::render('Applications/Index', [
             'applications' => $applications,
             'filters' => $request->only(['search', 'pipeline_status', 'date_from', 'date_to', 'academic_year_id']),
-            'seasons' => $academicYears,
+            'seasons' => $this->academicYearOptions(),
             'active_season_id' => $activeAcademicYear?->id,
             'statuses' => [
                 ['value' => 'pending', 'label' => 'Pending'],

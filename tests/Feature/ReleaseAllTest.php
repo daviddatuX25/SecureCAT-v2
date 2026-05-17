@@ -2,7 +2,9 @@
 
 namespace Tests\Feature;
 
+use App\Models\AcademicYear;
 use App\Models\Applicant;
+use App\Models\Application;
 use App\Models\ConsultationSummary;
 use App\Models\Course;
 use App\Models\Role;
@@ -16,10 +18,14 @@ class ReleaseAllTest extends TestCase
 {
     use RefreshDatabase;
 
+    protected AcademicYear $activeYear;
+
     protected function setUp(): void
     {
         parent::setUp();
         $this->seed(RoleSeeder::class);
+        AcademicYear::query()->update(['is_active' => false]);
+        $this->activeYear = AcademicYear::factory()->active()->create();
     }
 
     private function createAdmin(): User
@@ -33,7 +39,8 @@ class ReleaseAllTest extends TestCase
     private function createSummaryWithApplicant(string $status = 'draft'): ConsultationSummary
     {
         $course = Course::factory()->create(['is_active' => true]);
-        $applicant = Applicant::factory()->create();
+        $application = Application::factory()->create(['academic_year_id' => $this->activeYear->id]);
+        $applicant = Applicant::factory()->create(['application_id' => $application->id]);
 
         return ConsultationSummary::factory()->create([
             'applicant_id' => $applicant->id,

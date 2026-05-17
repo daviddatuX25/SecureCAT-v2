@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Controllers\Concerns\ResolvesAcademicYear;
+use App\Models\AcademicYear;
 use App\Models\ConsultationSummary;
 use App\Models\Course;
 use App\Models\GradingSession;
@@ -17,10 +19,14 @@ use Inertia\Response;
 
 class ReleaseController extends Controller
 {
+    use ResolvesAcademicYear;
+
     public function index(Request $request): Response
     {
         $mode = SystemSetting::releaseMode();
         $courses = Course::where('is_active', true)->orderBy('name')->get(['id', 'name', 'code']);
+
+        [$activeAcademicYear, $queryAcademicYearId] = $this->resolveAcademicYear($request);
 
         $query = ConsultationSummary::with([
             'applicant.application.coursePreference1:id,name,code',
@@ -30,6 +36,10 @@ class ReleaseController extends Controller
             'recommendedCourse:id,name,code',
         ])
             ->whereIn('status', ['draft', 'released']);
+
+        if ($queryAcademicYearId !== null) {
+            $query->whereHas('applicant.application', fn ($q) => $q->where('academic_year_id', $queryAcademicYearId));
+        }
 
         if ($request->filled('status')) {
             $query->where('status', $request->input('status'));
@@ -78,13 +88,21 @@ class ReleaseController extends Controller
                 return $summary;
             });
 
+        $gradingSessionsQuery = GradingSession::where('status', GradingSession::STATUS_FINALIZED)
+            ->with('examSession.room');
+
+        if ($queryAcademicYearId !== null) {
+            $gradingSessionsQuery->whereHas('examSession', fn ($q) => $q->where('academic_year_id', $queryAcademicYearId));
+        }
+
         return Inertia::render('Release/Index', [
             'summaries' => $summaries,
             'release_mode' => $mode,
             'courses' => $courses,
-            'filters' => $request->only(['search', 'status']),
-            'gradingSessions' => GradingSession::where('status', GradingSession::STATUS_FINALIZED)
-                ->with('examSession.room')
+            'filters' => $request->only(['search', 'status', 'academic_year_id']),
+            'seasons' => $this->academicYearOptions(),
+            'active_season_id' => $activeAcademicYear?->id,
+            'gradingSessions' => $gradingSessionsQuery
                 ->get()
                 ->map(fn ($s) => [
                     'id' => $s->id,
@@ -196,6 +214,30 @@ class ReleaseController extends Controller
         return back()->with('success', count($summaries).' result(s) released.');
     }
 
+    public function unrelease(ConsultationSummary $summary): RedirectResponse
+    {
+        if ($summary->status !== ConsultationSummary::STATUS_RELEASED) {
+            return back()->with('error', 'Only released results can be reversed.');
+        }
+
+        $summary->update([
+            'status' => ConsultationSummary::STATUS_DRAFT,
+            'released_at' => null,
+            'released_by' => null,
+        ]);
+
+        // Pipeline hook: revert back to graded
+        if ($summary->applicant?->application) {
+            app(ApplicationPipelineService::class)->transition(
+                $summary->applicant->application,
+                'graded',
+                ['unreleased_at' => now()->toIso8601String(), 'unreleased_by' => auth()->id()]
+            );
+        }
+
+        return back()->with('success', 'Release reversed — result moved back to draft.');
+    }
+
     public function releaseAll(Request $request): RedirectResponse
     {
         $mode = SystemSetting::releaseMode();
@@ -204,9 +246,16 @@ class ReleaseController extends Controller
             return back()->with('error', 'Release All is not available in F2F mode.');
         }
 
-        $summaries = ConsultationSummary::with('applicant')
-            ->where('status', '!=', ConsultationSummary::STATUS_RELEASED)
-            ->get();
+        $activeAcademicYear = AcademicYear::active();
+
+        $releaseAllQuery = ConsultationSummary::with('applicant')
+            ->where('status', '!=', ConsultationSummary::STATUS_RELEASED);
+
+        if ($activeAcademicYear !== null) {
+            $releaseAllQuery->whereHas('applicant.application', fn ($q) => $q->forAcademicYear($activeAcademicYear));
+        }
+
+        $summaries = $releaseAllQuery->get();
 
         $releasedCount = 0;
 

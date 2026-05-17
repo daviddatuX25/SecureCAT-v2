@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Models\AcademicYear;
 use App\Models\Applicant;
 use App\Models\SystemSetting;
 use App\Models\User;
@@ -57,6 +58,7 @@ class HandleInertiaRequests extends Middleware
             'ai_exam_companion_enabled' => SystemSetting::aiCompanionEnabled(),
             'googleOAuthEnabled' => GoogleOAuthConfig::isConfigured(),
             'release_mode' => SystemSetting::releaseMode(),
+            'activeAcademicYear' => fn () => $this->resolveActiveAcademicYear(),
             'pageTitle' => $this->defaultPageTitle($request),
             'notifications' => $user instanceof User
                 ? $user->notifications()
@@ -101,8 +103,25 @@ class HandleInertiaRequests extends Middleware
             'admin.release.index' => 'Release',
             'admin.release.result-templates.index' => 'Result templates',
             'applications.index' => 'Applications',
+            'profile.edit' => 'Profile',
         ];
 
         return $titles[$name] ?? str_replace(['-', '.'], ' ', ucwords(implode(' ', preg_split('/[.-]/', $name))));
+    }
+
+    /**
+     * Resolve the active academic year into a compact label for the layout.
+     */
+    private function resolveActiveAcademicYear(): ?array
+    {
+        $ay = AcademicYear::active();
+        if (! $ay) {
+            return null;
+        }
+
+        return [
+            'id' => $ay->id,
+            'label' => $ay->academic_year.' – '.$ay->semesterLabel(),
+        ];
     }
 }
