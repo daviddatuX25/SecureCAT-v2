@@ -19,6 +19,7 @@ class BulkPdfJobTest extends TestCase
     {
         parent::setUp();
         $this->admin = User::factory()->create();
+        $this->admin->assignRole('super_admin');
         Storage::fake('local');
     }
 

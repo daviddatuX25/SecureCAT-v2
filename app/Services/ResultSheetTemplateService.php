@@ -2,10 +2,14 @@
 
 namespace App\Services;
 
+use App\Models\Applicant;
+use App\Models\ApplicantScore;
 use App\Models\AptitudeArea;
+use App\Models\GradingSession;
 use App\Models\ResultSheetTemplate;
 use App\ValueObjects\DocxValidationResult;
 use App\ValueObjects\RenderResult;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
 
 class ResultSheetTemplateService
@@ -78,6 +82,22 @@ class ResultSheetTemplateService
             logicalUnit: $template->logical_unit ?? ResultSheetTemplate::LOGICAL_FULL,
             watermarkText: $template->watermark_text,
         );
+    }
+
+    /**
+     * Fetch applicants + scores for given IDs, render into sheet HTML blobs.
+     *
+     * @param  int[]  $applicantIds
+     * @return string[]
+     */
+    public function buildSheetsForApplicantIds(
+        array $applicantIds,
+        ResultSheetTemplate $template,
+        ?int $gradingSessionId = null,
+    ): array {
+        $applicantsWithScores = $this->fetchApplicantsWithScores($applicantIds, $gradingSessionId);
+
+        return $this->buildSheetsFromApplicantData($applicantsWithScores, $template);
     }
 
     /**
@@ -247,6 +267,126 @@ class ResultSheetTemplateService
                 $replacements[$slug.'_raw'.$suffix] = $raw;
             }
         }
+    }
+
+    /**
+     * @param  int[]  $applicantIds
+     * @return array<int, array<string, mixed>>
+     */
+    protected function fetchApplicantsWithScores(array $applicantIds, ?int $gradingSessionId = null): array
+    {
+        if ($gradingSessionId !== null) {
+            return $this->fetchApplicantsForSession($applicantIds, $gradingSessionId);
+        }
+
+        return $this->fetchApplicantsAgnostic($applicantIds);
+    }
+
+    /**
+     * @param  int[]  $applicantIds
+     * @return array<int, array<string, mixed>>
+     */
+    protected function fetchApplicantsForSession(array $applicantIds, int $gradingSessionId): array
+    {
+        $session = GradingSession::with('examSession.room')->findOrFail($gradingSessionId);
+        $applicants = $session->applicants()
+            ->whereIn('applicants.id', $applicantIds)
+            ->with('application')
+            ->get();
+
+        $scoresByApplicant = $session->applicantScores()
+            ->whereIn('applicant_id', $applicantIds)
+            ->with('aptitudeArea')
+            ->get()
+            ->groupBy('applicant_id');
+
+        return $applicants->map(function ($a) use ($scoresByApplicant) {
+            $scores = $this->mapScoresFromCollection($scoresByApplicant->get($a->id, collect()));
+
+            return $this->buildApplicantDataArray($a, null, $scores);
+        })->values()->all();
+    }
+
+    /**
+     * @param  int[]  $applicantIds
+     * @return array<int, array<string, mixed>>
+     */
+    protected function fetchApplicantsAgnostic(array $applicantIds): array
+    {
+        $applicants = Applicant::whereIn('id', $applicantIds)
+            ->with('application', 'gradingSessions.examSession.room')
+            ->get();
+
+        $applicantSessionMap = [];
+        foreach ($applicants as $applicant) {
+            $gs = $applicant->gradingSessions->where('status', GradingSession::STATUS_FINALIZED)->first()
+                ?? $applicant->gradingSessions->first();
+            if ($gs) {
+                $applicantSessionMap[$applicant->id] = $gs->id;
+            }
+        }
+
+        $allScores = ApplicantScore::whereIn('applicant_id', array_keys($applicantSessionMap))
+            ->whereIn('grading_session_id', array_unique(array_values($applicantSessionMap)))
+            ->with('aptitudeArea')
+            ->get()
+            ->groupBy('applicant_id');
+
+        return $applicants->map(function ($a) use ($allScores) {
+            $gs = $a->gradingSessions->where('status', GradingSession::STATUS_FINALIZED)->first()
+                ?? $a->gradingSessions->first();
+            $scores = $this->mapScoresFromCollection(
+                $allScores->get($a->id, collect())
+                    ->filter(fn ($s) => $gs && $s->grading_session_id === $gs->id)
+            );
+
+            return $this->buildApplicantDataArray($a, $gs, $scores);
+        })->values()->all();
+    }
+
+    /**
+     * @param  Collection<int, ApplicantScore>  $scores
+     * @return array<int, array{domain: string, raw: int|float|null, max: int|float|null, pct: int}>
+     */
+    protected function mapScoresFromCollection(Collection $scores): array
+    {
+        return $scores->map(fn ($s) => [
+            'domain' => $s->aptitudeArea?->name ?? '—',
+            'raw' => $s->raw_score,
+            'max' => $s->max_score,
+            'pct' => $s->max_score > 0 ? (int) round(($s->raw_score / $s->max_score) * 100) : 0,
+        ])->values()->all();
+    }
+
+    /**
+     * @param  array<int, array{domain: string, raw: int|float|null, max: int|float|null, pct: int}>  $scores
+     * @return array<string, mixed>
+     */
+    protected function buildApplicantDataArray(Applicant $applicant, ?GradingSession $session, array $scores): array
+    {
+        $overallPct = count($scores) > 0
+            ? (int) round(collect($scores)->avg('pct'))
+            : 0;
+
+        $name = '—';
+        if ($applicant->application) {
+            $name = trim(implode(' ', array_filter([
+                $applicant->application->first_name,
+                $applicant->application->middle_name,
+                $applicant->application->last_name,
+                $applicant->application->suffix,
+            ])));
+        }
+
+        return [
+            'id' => $applicant->id,
+            'name' => $name,
+            'reference' => $applicant->application?->reference_number ?? '—',
+            'exam_date' => $session?->examSession?->date?->format('F j, Y') ?? '—',
+            'room_name' => $session?->examSession?->room?->name ?? '—',
+            'scores' => $scores,
+            'overall_pct' => $overallPct,
+        ];
     }
 
     /**
