@@ -2,7 +2,6 @@
 
 namespace App\Services;
 
-use Illuminate\Support\Facades\Log;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Process\Process;
 
@@ -52,7 +51,7 @@ class DocxToPdfService
             $process->run();
 
             if (! $process->isSuccessful()) {
-                Log::error('LibreOffice conversion failed', [
+                $this->logger->error('LibreOffice conversion failed', [
                     'command' => $process->getCommandLine(),
                     'exitCode' => $process->getExitCode(),
                     'stdout' => $process->getOutput(),
@@ -85,6 +84,20 @@ class DocxToPdfService
      */
     public function convertBatch(array $docxPaths, int $copies = 1): string
     {
+        if (empty($docxPaths)) {
+            throw new \InvalidArgumentException('docxPaths must not be empty.');
+        }
+
+        if ($copies < 1) {
+            throw new \InvalidArgumentException('copies must be at least 1.');
+        }
+
+        foreach ($docxPaths as $docxPath) {
+            if (! file_exists($docxPath)) {
+                throw new \InvalidArgumentException("DOCX file not found: {$docxPath}");
+            }
+        }
+
         $pdfs = [];
 
         foreach ($docxPaths as $docxPath) {
@@ -135,7 +148,7 @@ class DocxToPdfService
             $process->run();
 
             if (! $process->isSuccessful()) {
-                Log::error('pdfunite merge failed', [
+                $this->logger->error('pdfunite merge failed', [
                     'command' => $process->getCommandLine(),
                     'exitCode' => $process->getExitCode(),
                     'stdout' => $process->getOutput(),
@@ -156,7 +169,11 @@ class DocxToPdfService
      */
     protected function mergeFallback(array $pdfContents): string
     {
-        return array_reduce($pdfContents, fn (string $carry, string $pdf) => $carry.$pdf, '');
+        if (count($pdfContents) === 1) {
+            return $pdfContents[0];
+        }
+
+        throw new \RuntimeException('pdfunite is required for multi-file PDF merge. Install poppler-utils.');
     }
 
     protected function createTempDir(string $prefix = 'lo_'): string
