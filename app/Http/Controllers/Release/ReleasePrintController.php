@@ -8,14 +8,18 @@ use App\Models\Applicant;
 use App\Models\ApplicantScore;
 use App\Models\GradingSession;
 use App\Models\ResultSheetTemplate;
+use App\Services\AuditService;
 use App\Services\PrintBatchService;
 use App\Services\ResultSheetPdfService;
 use App\Services\ResultSheetTemplateService;
 use App\ValueObjects\RenderResult;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 use Inertia\Inertia;
 use Inertia\Response;
+use PhpOffice\PhpWord\TemplateProcessor;
 use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 
 class ReleasePrintController extends Controller
@@ -150,6 +154,62 @@ class ReleasePrintController extends Controller
         return request()->boolean('download')
             ? $this->pdfService->download($result, $filename)
             : $this->pdfService->inline($result, $filename);
+    }
+
+    public function downloadDocx(GradingSession $grading_session, Applicant $applicant): SymfonyResponse
+    {
+        $template = ResultSheetTemplate::where('is_active', true)
+            ->where('mode', ResultSheetTemplate::MODE_DOCX)
+            ->first();
+
+        if (! $template || ! $template->docx_path) {
+            abort(404, 'No active DOCX template found.');
+        }
+
+        $fullPath = Storage::path($template->docx_path);
+        if (! is_file($fullPath)) {
+            abort(404, 'DOCX template file not found on disk.');
+        }
+
+        $applicantsWithScores = $this->templateService->fetchApplicantsWithScores(
+            [$applicant->id],
+            $grading_session->id,
+        );
+
+        if (empty($applicantsWithScores)) {
+            abort(404, 'Applicant data not found.');
+        }
+
+        $replacements = $this->templateService->buildReplacements($applicantsWithScores, false);
+
+        $tempDir = storage_path('app/temp/phpword');
+        if (! is_dir($tempDir)) {
+            mkdir($tempDir, 0755, true);
+        }
+
+        $processor = new TemplateProcessor($fullPath);
+        $processor->setMacroChars('{{', '}}');
+
+        $sanitized = array_map(fn ($v) => str_replace(['{{', '}}'], ['{ {', '} }'], (string) $v), $replacements);
+        foreach ($sanitized as $key => $value) {
+            $processor->setValue($key, $value);
+        }
+
+        $tempFile = tempnam($tempDir, 'docx_download_').'.docx';
+        $processor->saveAs($tempFile);
+
+        app(AuditService::class)->log('result_sheet.downloaded_docx', ResultSheetTemplate::class, $template->id, [], [
+            'applicant_id' => $applicant->id,
+            'grading_session' => $grading_session->id,
+        ]);
+
+        $filename = sprintf('Result-Sheet-%s.docx',
+            Str::slug($applicant->application?->last_name ?? $applicant->id)
+        );
+
+        return response()->download($tempFile, $filename, [
+            'Content-Type' => 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+        ])->deleteFileAfterSend(true);
     }
 
     public function printBulk(GradingSession $grading_session): Response

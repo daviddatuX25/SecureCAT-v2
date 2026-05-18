@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreAptitudeAreaRequest;
 use App\Http\Requests\UpdateAptitudeAreaRequest;
 use App\Models\AptitudeArea;
+use App\Services\AuditService;
 use App\Services\FormulaEvaluator;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
@@ -50,7 +51,7 @@ class AptitudeAreaController extends Controller
     {
         $data = $request->validated();
 
-        AptitudeArea::create([
+        $area = AptitudeArea::create([
             'name' => $data['name'],
             'code' => $data['code'],
             'description' => $data['description'] ?? null,
@@ -59,6 +60,8 @@ class AptitudeAreaController extends Controller
             'display_order' => isset($data['display_order']) ? (int) $data['display_order'] : 0,
             'is_active' => $data['is_active'] ?? true,
         ]);
+
+        app(AuditService::class)->log('aptitude_area.created', AptitudeArea::class, $area->id, [], $data);
 
         return redirect()->route('admin.aptitude-areas.index')
             ->with('success', 'Aptitude area created.');
@@ -95,6 +98,8 @@ class AptitudeAreaController extends Controller
             'display_order' => isset($data['display_order']) ? (int) $data['display_order'] : 0,
             'is_active' => $data['is_active'] ?? true,
         ]);
+
+        app(AuditService::class)->log('aptitude_area.updated', AptitudeArea::class, $aptitudeArea->id, [], $data);
 
         return redirect()->route('admin.aptitude-areas.index')
             ->with('success', 'Aptitude area updated.');
@@ -146,6 +151,8 @@ class AptitudeAreaController extends Controller
     public function destroy(AptitudeArea $aptitudeArea): RedirectResponse
     {
         $this->authorize('delete', $aptitudeArea);
+
+        app(AuditService::class)->log('aptitude_area.deleted', AptitudeArea::class, $aptitudeArea->id, [], ['name' => $aptitudeArea->name]);
 
         $aptitudeArea->delete();
 

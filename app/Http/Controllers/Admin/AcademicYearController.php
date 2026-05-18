@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreAcademicYearRequest;
 use App\Http\Requests\UpdateAcademicYearRequest;
 use App\Models\AcademicYear;
+use App\Services\AuditService;
 use Illuminate\Http\RedirectResponse;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -49,7 +50,9 @@ class AcademicYearController extends Controller
     public function store(StoreAcademicYearRequest $request): RedirectResponse
     {
         $this->authorize('create', AcademicYear::class);
-        AcademicYear::create($request->validated());
+        $ay = AcademicYear::create($request->validated());
+
+        app(AuditService::class)->log('academic_year.created', AcademicYear::class, $ay->id, [], $request->validated());
 
         return redirect()->route('admin.academic-years.index')->with('success', 'Academic year created.');
     }
@@ -75,6 +78,8 @@ class AcademicYearController extends Controller
         $this->authorize('update', $academic_year);
         $academic_year->update($request->validated());
 
+        app(AuditService::class)->log('academic_year.updated', AcademicYear::class, $academic_year->id, [], $request->validated());
+
         return redirect()->route('admin.academic-years.index')->with('success', 'Academic year updated.');
     }
 
@@ -84,6 +89,8 @@ class AcademicYearController extends Controller
 
         $academicYear->update(['is_active' => false]);
 
+        app(AuditService::class)->log('academic_year.deactivated', AcademicYear::class, $academicYear->id);
+
         return back()->with('success', 'Academic year deactivated. Applications are now closed.');
     }
 
@@ -91,6 +98,8 @@ class AcademicYearController extends Controller
     {
         $this->authorize('activate', $academic_year);
         $academic_year->activate();
+
+        app(AuditService::class)->log('academic_year.activated', AcademicYear::class, $academic_year->id);
 
         return redirect()->route('admin.academic-years.index')->with('success', 'Academic year set as active.');
     }

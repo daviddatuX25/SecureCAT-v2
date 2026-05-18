@@ -6,9 +6,12 @@ use App\Models\Applicant;
 use App\Models\ApplicantScore;
 use App\Models\AptitudeArea;
 use App\Models\GradingSession;
+use App\Models\RatingScale;
 use App\Models\ResultSheetTemplate;
+use App\Models\SystemSetting;
 use App\ValueObjects\DocxValidationResult;
 use App\ValueObjects\RenderResult;
+use Carbon\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
 
@@ -20,9 +23,21 @@ class ResultSheetTemplateService
     ) {}
 
     public const PLACEHOLDERS = [
-        'applicant_name', 'applicant_reference', 'exam_date', 'room_name',
+        'applicant_name', 'applicant_reference',
+        'family_name', 'first_name', 'middle_name', 'suffix',
+        'sex', 'gwa', 'course_applied', 'strand', 'applicant_type',
+        'exam_date', 'exam_time', 'room_name',
         'scores_rows', 'overall_pct',
-        'applicant_name_2', 'applicant_reference_2', 'scores_rows_2', 'overall_pct_2',
+        'recommended_course', 'counselor_comments', 'counselor_name',
+        'applicant_name_2', 'applicant_reference_2',
+        'family_name_2', 'first_name_2', 'middle_name_2', 'suffix_2',
+        'sex_2', 'gwa_2', 'course_applied_2', 'strand_2', 'applicant_type_2',
+        'exam_date_2', 'exam_time_2', 'room_name_2',
+        'scores_rows_2', 'overall_pct_2',
+        'recommended_course_2', 'counselor_comments_2', 'counselor_name_2',
+        'institution_name', 'institution_campus', 'institution_address',
+        'institution_contact', 'institution_email', 'institution_website',
+        'institution_exam_name', 'institution_exam_acronym',
     ];
 
     /**
@@ -106,6 +121,12 @@ class ResultSheetTemplateService
     ): array {
         $applicantsWithScores = $this->fetchApplicantsWithScores($applicantIds, $gradingSessionId);
 
+        app(AuditService::class)->log('result_sheet.rendered', ResultSheetTemplate::class, $template->id, [], [
+            'applicant_ids' => $applicantIds,
+            'mode' => $template->mode,
+            'count' => count($applicantIds),
+        ]);
+
         return $this->buildSheetsFromApplicantData($applicantsWithScores, $template);
     }
 
@@ -173,6 +194,12 @@ class ResultSheetTemplateService
         ?int $gradingSessionId = null,
     ): array {
         $applicantsWithScores = $this->fetchApplicantsWithScores($applicantIds, $gradingSessionId);
+
+        app(AuditService::class)->log('result_sheet.rendered', ResultSheetTemplate::class, $template->id, [], [
+            'applicant_ids' => $applicantIds,
+            'mode' => $template->mode,
+            'count' => count($applicantIds),
+        ]);
 
         return $this->buildRawSheetsFromApplicantData($applicantsWithScores, $template);
     }
@@ -268,8 +295,42 @@ class ResultSheetTemplateService
                 'room_name_2' => $sample['room_name_2'] ?? '—',
                 'scores_rows_2' => $this->buildScoresRows($sample['scores_2'] ?? []),
                 'overall_pct_2' => (string) ($sample['overall_pct_2'] ?? 0),
+                'family_name' => $sample['family_name'],
+                'first_name' => $sample['first_name'],
+                'middle_name' => $sample['middle_name'],
+                'suffix' => $sample['suffix'],
+                'sex' => $sample['sex'],
+                'gwa' => $sample['gwa'],
+                'course_applied' => $sample['course_applied'],
+                'strand' => $sample['strand'],
+                'applicant_type' => $sample['applicant_type'],
+                'exam_time' => $sample['exam_time'],
+                'recommended_course' => $sample['recommended_course'],
+                'counselor_comments' => $sample['counselor_comments'],
+                'counselor_name' => $sample['counselor_name'],
+                'family_name_2' => $sample['family_name_2'] ?? '—',
+                'first_name_2' => $sample['first_name_2'] ?? '—',
+                'middle_name_2' => $sample['middle_name_2'] ?? '—',
+                'suffix_2' => $sample['suffix_2'] ?? '',
+                'sex_2' => $sample['sex_2'] ?? '—',
+                'gwa_2' => $sample['gwa_2'] ?? '—',
+                'course_applied_2' => $sample['course_applied_2'] ?? '—',
+                'strand_2' => $sample['strand_2'] ?? '—',
+                'applicant_type_2' => $sample['applicant_type_2'] ?? '—',
+                'exam_time_2' => $sample['exam_time_2'] ?? '—',
+                'recommended_course_2' => $sample['recommended_course_2'] ?? '—',
+                'counselor_comments_2' => $sample['counselor_comments_2'] ?? '—',
+                'counselor_name_2' => $sample['counselor_name_2'] ?? '—',
+                'institution_name' => SystemSetting::institution('name', '—'),
+                'institution_campus' => SystemSetting::institution('campus', '—'),
+                'institution_address' => SystemSetting::institution('address', '—'),
+                'institution_contact' => SystemSetting::institution('contact_number', '—'),
+                'institution_email' => SystemSetting::institution('email', '—'),
+                'institution_website' => SystemSetting::institution('website', '—'),
+                'institution_exam_name' => SystemSetting::institution('exam_name', '—'),
+                'institution_exam_acronym' => SystemSetting::institution('exam_acronym', '—'),
             ];
-            $this->addPerDomainReplacements($replacements, [], $sample, true);
+            $this->addPerDomainReplacements($replacements, [], $sample, true, RatingScale::default());
         }
 
         $html = $this->docxService->renderDocxFromFullPath($path, $replacements);
@@ -298,7 +359,7 @@ class ResultSheetTemplateService
      * @param  array<int, array{name: string, reference: string, exam_date: string, room_name: string, scores: array<array{domain: string, raw: int, max: int, pct: int}>, overall_pct: int}>  $applicants
      * @return array<string, string>
      */
-    protected function buildReplacements(array $applicants, bool $useSampleData): array
+    public function buildReplacements(array $applicants, bool $useSampleData): array
     {
         $sample = $this->sampleApplicantData();
         $replacements = [];
@@ -314,6 +375,16 @@ class ResultSheetTemplateService
                 $replacements["room_name{$suffix}"] = $data['room_name'] ?? '—';
                 $replacements["scores_rows{$suffix}"] = $this->buildScoresRows($data['scores'] ?? []);
                 $replacements["overall_pct{$suffix}"] = (string) ($data['overall_pct'] ?? 0);
+
+                $newFields = [
+                    'family_name', 'first_name', 'middle_name', 'suffix',
+                    'sex', 'gwa', 'course_applied', 'strand', 'applicant_type',
+                    'exam_time',
+                    'recommended_course', 'counselor_comments', 'counselor_name',
+                ];
+                foreach ($newFields as $field) {
+                    $replacements["{$field}{$suffix}"] = (string) ($data[$field] ?? '—');
+                }
             } else {
                 $replacements["applicant_name{$suffix}"] = '—';
                 $replacements["applicant_reference{$suffix}"] = '—';
@@ -321,13 +392,35 @@ class ResultSheetTemplateService
                 $replacements["room_name{$suffix}"] = '—';
                 $replacements["scores_rows{$suffix}"] = '';
                 $replacements["overall_pct{$suffix}"] = '—';
+
+                foreach (['family_name', 'first_name', 'middle_name', 'suffix', 'sex', 'gwa', 'course_applied', 'strand', 'applicant_type', 'exam_time', 'recommended_course', 'counselor_comments', 'counselor_name'] as $field) {
+                    $replacements["{$field}{$suffix}"] = '—';
+                }
             }
         }
 
         $replacements['exam_date'] = $replacements['exam_date'] ?? $replacements['exam_date_2'] ?? '—';
         $replacements['room_name'] = $replacements['room_name'] ?? $replacements['room_name_2'] ?? '—';
 
-        $this->addPerDomainReplacements($replacements, $applicants, $sample, $useSampleData);
+        $replacements['institution_name'] = SystemSetting::institution('name', '—');
+        $replacements['institution_campus'] = SystemSetting::institution('campus', '—');
+        $replacements['institution_address'] = SystemSetting::institution('address', '—');
+        $replacements['institution_contact'] = SystemSetting::institution('contact_number', '—');
+        $replacements['institution_email'] = SystemSetting::institution('email', '—');
+        $replacements['institution_website'] = SystemSetting::institution('website', '—');
+        $replacements['institution_exam_name'] = SystemSetting::institution('exam_name', '—');
+        $replacements['institution_exam_acronym'] = SystemSetting::institution('exam_acronym', '—');
+
+        $personnel = config('institution.personnel', []);
+        foreach ($personnel as $role => $defaults) {
+            foreach (['name', 'title', 'credentials'] as $field) {
+                $dotKey = "personnel.{$role}.{$field}";
+                $val = SystemSetting::institution($dotKey) ?? ($defaults[$field] ?? '');
+                $replacements["personnel_{$role}_{$field}"] = $val ?: '—';
+            }
+        }
+
+        $this->addPerDomainReplacements($replacements, $applicants, $sample, $useSampleData, RatingScale::default());
 
         return $replacements;
     }
@@ -339,7 +432,7 @@ class ResultSheetTemplateService
      * @param  array<int, array{name?: string, reference?: string, scores?: array<array{domain: string, raw: int, max: int, pct: int}>}>  $applicants
      * @param  array{name?: string, reference?: string, scores?: array<array{domain: string, raw: int, max: int, pct: int}>}  $sample
      */
-    protected function addPerDomainReplacements(array &$replacements, array $applicants, array $sample, bool $useSampleData): void
+    protected function addPerDomainReplacements(array &$replacements, array $applicants, array $sample, bool $useSampleData, ?RatingScale $ratingScale = null): void
     {
         $domains = AptitudeArea::where('is_active', true)->orderBy('display_order')->get(['id', 'name']);
 
@@ -359,6 +452,9 @@ class ResultSheetTemplateService
                     : '—';
                 $replacements[$slug.$suffix] = $pct;
                 $replacements[$slug.'_raw'.$suffix] = $raw;
+
+                $rating = $this->percentileToRating((int) $pct, $ratingScale);
+                $replacements[$slug.'_rating'.$suffix] = $rating;
             }
         }
     }
@@ -367,7 +463,7 @@ class ResultSheetTemplateService
      * @param  int[]  $applicantIds
      * @return array<int, array<string, mixed>>
      */
-    protected function fetchApplicantsWithScores(array $applicantIds, ?int $gradingSessionId = null): array
+    public function fetchApplicantsWithScores(array $applicantIds, ?int $gradingSessionId = null): array
     {
         if ($gradingSessionId !== null) {
             return $this->fetchApplicantsForSession($applicantIds, $gradingSessionId);
@@ -385,7 +481,11 @@ class ResultSheetTemplateService
         $session = GradingSession::with('examSession.room')->findOrFail($gradingSessionId);
         $applicants = $session->applicants()
             ->whereIn('applicants.id', $applicantIds)
-            ->with('application')
+            ->with([
+                'application.coursePreference1',
+                'consultationSummary.recommendedCourse',
+                'consultationSummary.counselor',
+            ])
             ->get();
 
         $scoresByApplicant = $session->applicantScores()
@@ -408,7 +508,12 @@ class ResultSheetTemplateService
     protected function fetchApplicantsAgnostic(array $applicantIds): array
     {
         $applicants = Applicant::whereIn('id', $applicantIds)
-            ->with('application', 'gradingSessions.examSession.room')
+            ->with([
+                'application.coursePreference1',
+                'consultationSummary.recommendedCourse',
+                'consultationSummary.counselor',
+                'gradingSessions.examSession.room',
+            ])
             ->get();
 
         $applicantSessionMap = [];
@@ -472,14 +577,32 @@ class ResultSheetTemplateService
             ])));
         }
 
+        $app = $applicant->application;
+        $summary = $applicant->consultationSummary;
+
         return [
             'id' => $applicant->id,
             'name' => $name,
-            'reference' => $applicant->application?->reference_number ?? '—',
+            'family_name' => $app?->last_name ?? '—',
+            'first_name' => $app?->first_name ?? '—',
+            'middle_name' => $app?->middle_name ?? '—',
+            'suffix' => $app?->suffix ?? '',
+            'sex' => $app?->sex ?? '—',
+            'gwa' => $app?->gwa ?? '—',
+            'course_applied' => $app?->coursePreference1?->name ?? '—',
+            'strand' => $app?->strand ?? $app?->last_school_enrolled ?? '—',
+            'applicant_type' => $app?->applicant_type ?? '—',
+            'reference' => $app?->reference_number ?? '—',
             'exam_date' => $session?->examSession?->date?->format('F j, Y') ?? '—',
+            'exam_time' => $session?->examSession?->start_time
+                                     ? Carbon::parse($session->examSession->start_time)->format('g:i A')
+                                     : '—',
             'room_name' => $session?->examSession?->room?->name ?? '—',
             'scores' => $scores,
             'overall_pct' => $overallPct,
+            'recommended_course' => $summary?->recommendedCourse?->name ?? '—',
+            'counselor_comments' => $summary?->counselor_comments ?? '—',
+            'counselor_name' => $summary?->counselor?->name ?? '—',
         ];
     }
 
@@ -535,8 +658,17 @@ class ResultSheetTemplateService
             $slug = $this->aptitudeAreaSlug($domain->name);
             $placeholders[] = $slug;
             $placeholders[] = $slug.'_raw';
+            $placeholders[] = $slug.'_rating';
             $placeholders[] = $slug.'_2';
             $placeholders[] = $slug.'_raw_2';
+            $placeholders[] = $slug.'_rating_2';
+        }
+
+        $personnelRoles = array_keys(config('institution.personnel', []));
+        foreach ($personnelRoles as $role) {
+            foreach (['name', 'title', 'credentials'] as $field) {
+                $placeholders[] = "personnel_{$role}_{$field}";
+            }
         }
 
         return array_unique($placeholders);
@@ -565,9 +697,22 @@ class ResultSheetTemplateService
     {
         return [
             'name' => 'Juan M. Dela Cruz',
-            'reference' => 'EXAM-2026-00042',
+            'family_name' => 'Dela Cruz',
+            'first_name' => 'Juan',
+            'middle_name' => 'M.',
+            'suffix' => '',
+            'sex' => 'Male',
+            'gwa' => '1.50',
+            'course_applied' => 'BS Information Technology',
+            'strand' => 'STEM',
+            'applicant_type' => 'Freshman',
+            'reference' => 'ICAT-2026-00042',
             'exam_date' => now()->format('F j, Y'),
+            'exam_time' => '8:00 AM',
             'room_name' => 'Conference Hall A - Seat 12',
+            'recommended_course' => 'BS Information Technology',
+            'counselor_comments' => 'Strong aptitude in numerical and logical reasoning. Recommended for IT/CS programs.',
+            'counselor_name' => 'Maria Santos',
             'scores' => [
                 ['domain' => 'Spatial Awareness', 'raw' => 20, 'max' => 25, 'pct' => 80],
                 ['domain' => 'Numerical Ability', 'raw' => 22, 'max' => 25, 'pct' => 88],
@@ -578,8 +723,21 @@ class ResultSheetTemplateService
             ],
             'overall_pct' => 82,
             'name_2' => 'Maria L. Santos',
-            'reference_2' => 'EXAM-2026-00043',
+            'family_name_2' => 'Santos',
+            'first_name_2' => 'Maria',
+            'middle_name_2' => 'L.',
+            'suffix_2' => '',
+            'sex_2' => 'Female',
+            'gwa_2' => '1.75',
+            'course_applied_2' => 'BS Accountancy',
+            'strand_2' => 'ABM',
+            'applicant_type_2' => 'Freshman',
+            'reference_2' => 'ICAT-2026-00043',
+            'exam_time_2' => '8:00 AM',
             'room_name_2' => 'Conference Hall A - Seat 13',
+            'recommended_course_2' => 'BS Accountancy',
+            'counselor_comments_2' => 'Excellent numerical aptitude. Well-suited for business programs.',
+            'counselor_name_2' => 'Maria Santos',
             'scores_2' => [
                 ['domain' => 'Spatial Awareness', 'raw' => 18, 'max' => 25, 'pct' => 72],
                 ['domain' => 'Numerical Ability', 'raw' => 24, 'max' => 25, 'pct' => 96],
@@ -590,5 +748,20 @@ class ResultSheetTemplateService
             ],
             'overall_pct_2' => 79,
         ];
+    }
+
+    private function percentileToRating(int $pct, ?RatingScale $ratingScale = null): string
+    {
+        if ($ratingScale) {
+            return $ratingScale->ratingFor($pct);
+        }
+
+        return match (true) {
+            $pct >= 90 => 'Outstanding',
+            $pct >= 75 => 'Above Average',
+            $pct >= 50 => 'Average',
+            $pct >= 25 => 'Below Average',
+            default => 'Needs Improvement',
+        };
     }
 }

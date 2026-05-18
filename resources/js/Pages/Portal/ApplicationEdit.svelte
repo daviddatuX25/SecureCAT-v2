@@ -18,6 +18,7 @@
     sex: application.sex || '',
     applicant_type: application.applicant_type || 'new',
     last_school_enrolled: application.last_school_enrolled || '',
+    strand: application.strand || '',
     email: application.email || '',
     phone: application.phone || '',
     address_line: application.address_line || '',
@@ -190,6 +191,13 @@
                 <Input id="last_school_enrolled" name="last_school_enrolled" bind:value={$form.last_school_enrolled} class="mt-1 min-h-[44px]" placeholder="School of origin" />
                 {#if $form.errors?.last_school_enrolled}
                   <p class="mt-1 text-sm text-destructive">{$form.errors.last_school_enrolled}</p>
+                {/if}
+              </div>
+              <div>
+                <label for="strand" class="block text-sm font-medium">SHS Strand / Previous Course</label>
+                <Input id="strand" name="strand" bind:value={$form.strand} class="mt-1 min-h-[44px]" placeholder="e.g., STEM, ABM, HUMSS, GAS" />
+                {#if $form.errors?.strand}
+                  <p class="mt-1 text-sm text-destructive">{$form.errors.strand}</p>
                 {/if}
               </div>
             </div>

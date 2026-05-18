@@ -7,9 +7,11 @@ use App\Models\AdmissionSlipTemplate;
 use App\Models\AptitudeArea;
 use App\Models\Course;
 use App\Models\PrivacyPolicy;
+use App\Models\RatingScale;
 use App\Models\ResultSheetTemplate;
 use App\Models\Role;
 use App\Models\Room;
+use App\Models\SystemSetting;
 use App\Models\User;
 use Database\Seeders\RoleSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -350,11 +352,20 @@ class SetupHealthTest extends TestCase
         $testAdmin = User::factory()->create();
         $testAdmin->roles()->attach(Role::where('name', 'test_administrator')->first());
 
+        SystemSetting::set('institution.name', 'ISPSC');
+        SystemSetting::set('institution.exam_name', 'ISPSC College Admission Test');
+        SystemSetting::set('institution.personnel.guidance_counselor.name', 'Dr. Counselor');
+
+        RatingScale::create([
+            'name' => 'Standard',
+            'ranges' => [['min' => 0, 'max' => 100, 'label' => 'Pass']],
+            'is_default' => true,
+        ]);
+
         $response = $this->actingAs($this->superAdmin())->get(route('admin.setup.index'));
 
         $response->assertInertia(function ($page) {
             $health = $page->toArray()['props']['health'];
-            // With everything configured, percentage should be 100
             $this->assertSame(100, $health['overall']['percentage']);
         });
     }

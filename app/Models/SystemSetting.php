@@ -108,4 +108,16 @@ class SystemSetting extends Model
     {
         return (bool) self::get('enable_normalized_scores', false);
     }
+
+    /**
+     * Resolve an institution config value: admin override → .env default.
+     *
+     * Supports dot-notation for nested personnel keys:
+     *   SystemSetting::institution('name')
+     *   SystemSetting::institution('personnel.guidance_counselor.name')
+     */
+    public static function institution(string $key, mixed $default = null): mixed
+    {
+        return self::get("institution.{$key}") ?? config("institution.{$key}", $default);
+    }
 }

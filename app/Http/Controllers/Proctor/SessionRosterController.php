@@ -12,6 +12,7 @@ use App\Models\User;
 use App\Notifications\ExamSessionCompleted;
 use App\Notifications\ExamSessionStarted;
 use App\Services\ApplicationPipelineService;
+use App\Services\AuditService;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
@@ -163,6 +164,11 @@ class SessionRosterController extends Controller
             }
         }
 
+        app(AuditService::class)->log('attendance.recorded', ExamSession::class, $exam_session->id, [], [
+            'applicant_id' => $applicantId,
+            'status' => $status,
+        ]);
+
         return back()->with('success', 'Attendance marked.');
     }
 
@@ -223,6 +229,10 @@ class SessionRosterController extends Controller
                 ['session_id' => $exam_session->id, 'submitted_at' => now()->toIso8601String()]
             );
         }
+
+        app(AuditService::class)->log('submission.recorded', ExamSession::class, $exam_session->id, [], [
+            'applicant_id' => $applicantId,
+        ]);
 
         return back()->with('success', 'Submission recorded.');
     }
@@ -289,6 +299,10 @@ class SessionRosterController extends Controller
                 });
         }
 
+        app(AuditService::class)->log('submission.bulk_recorded', ExamSession::class, $exam_session->id, [], [
+            'count' => $count,
+        ], "Bulk recorded {$count} submissions");
+
         if ($request->wantsJson()) {
             return response()->json(['message' => $message, 'count' => $count], 200);
         }
@@ -344,6 +358,10 @@ class SessionRosterController extends Controller
             new ExamSessionStarted($exam_session)
         );
 
+        app(AuditService::class)->log('session.proctor_started', ExamSession::class, $exam_session->id, [], [
+            'session_id' => $exam_session->id,
+        ]);
+
         if (request()->wantsJson()) {
             return response()->json(['message' => 'Session started.'], 200);
         }
@@ -372,6 +390,10 @@ class SessionRosterController extends Controller
             $recipients->merge($testAdmins)->unique('id'),
             new ExamSessionCompleted($exam_session)
         );
+
+        app(AuditService::class)->log('session.proctor_closed', ExamSession::class, $exam_session->id, [], [
+            'session_id' => $exam_session->id,
+        ]);
 
         if (request()->wantsJson()) {
             return response()->json(['message' => 'Session closed.'], 200);
@@ -413,6 +435,11 @@ class SessionRosterController extends Controller
                 });
         }
 
+        app(AuditService::class)->log('attendance.bulk_recorded', ExamSession::class, $exam_session->id, [], [
+            'count' => count($data['applicant_ids']),
+            'status' => $data['status'],
+        ]);
+
         return back()->with('success', 'Bulk update applied.');
     }
 
@@ -437,6 +464,11 @@ class SessionRosterController extends Controller
 
         $exam_session->update([
             'extended_end_time' => $newEndTime,
+        ]);
+
+        app(AuditService::class)->log('session.extended', ExamSession::class, $exam_session->id, [], [
+            'minutes' => $minutes,
+            'new_end_time' => $newEndTime,
         ]);
 
         $message = "Session extended by {$minutes} minutes.";

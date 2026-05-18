@@ -22,6 +22,7 @@ use App\Notifications\ExamSessionStaffAssigned;
 use App\Notifications\ExamSessionStaffPostponed;
 use App\Notifications\ExamSessionStarted;
 use App\Services\ApplicationPipelineService;
+use App\Services\AuditService;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
@@ -229,6 +230,12 @@ class ExamSessionController extends Controller
             $session->proctors()->sync($validated['proctor_ids']);
         }
 
+        app(AuditService::class)->log('exam_session.created', ExamSession::class, $session->id, [], [
+            'room_id' => $session->room_id,
+            'date' => $validated['date'],
+            'type' => $type,
+        ]);
+
         return redirect()->route('admin.exam-scheduling.index')->with('success', 'Exam session created.');
     }
 
@@ -309,6 +316,8 @@ class ExamSessionController extends Controller
             $exam_session->proctors()->sync($validated['proctor_ids'] ?? []);
         }
 
+        app(AuditService::class)->log('exam_session.updated', ExamSession::class, $exam_session->id, [], $sessionData);
+
         return redirect()->route('admin.exam-scheduling.show', $exam_session)->with('success', 'Exam session updated.');
     }
 
@@ -318,6 +327,11 @@ class ExamSessionController extends Controller
     public function destroy(ExamSession $exam_session): RedirectResponse
     {
         $this->authorize('delete', $exam_session);
+
+        app(AuditService::class)->log('exam_session.deleted', ExamSession::class, $exam_session->id, [
+            'room_id' => $exam_session->room_id,
+            'date' => $exam_session->date?->format('Y-m-d'),
+        ]);
 
         $exam_session->delete();
 
@@ -375,6 +389,12 @@ class ExamSessionController extends Controller
             }
         }
 
+        if (! empty($toAttach)) {
+            app(AuditService::class)->log('exam_session.applicants_assigned', ExamSession::class, $exam_session->id, [], [
+                'applicant_count' => count($toAttach),
+            ]);
+        }
+
         $exam_session->loadCount('applicants');
         if ($request->wantsJson()) {
             return response()->json([
@@ -395,6 +415,10 @@ class ExamSessionController extends Controller
         $data = $request->validate(['session_applicant_id' => 'required|integer']);
         $pivotId = (int) $data['session_applicant_id'];
         DB::table('exam_session_applicant')->where('id', $pivotId)->where('exam_session_id', $exam_session->id)->delete();
+
+        app(AuditService::class)->log('exam_session.applicant_removed', ExamSession::class, $exam_session->id, [], [
+            'applicant_pivot_id' => $pivotId,
+        ]);
 
         return redirect()->route('admin.exam-scheduling.show', $exam_session)->with('success', 'Applicant removed.');
     }
@@ -437,6 +461,10 @@ class ExamSessionController extends Controller
             $recipients->merge($testAdmins)->unique('id'),
             new ExamSessionStaffAssigned($exam_session)
         );
+
+        app(AuditService::class)->log('exam_session.published', ExamSession::class, $exam_session->id, [], [
+            'applicant_count' => $exam_session->applicants->count(),
+        ]);
 
         return redirect()->route('admin.exam-scheduling.show', $exam_session)->with('success', 'Session published.');
     }
@@ -483,6 +511,8 @@ class ExamSessionController extends Controller
                 }
             });
 
+        app(AuditService::class)->log('exam_session.unpublished', ExamSession::class, $exam_session->id);
+
         return redirect()->route('admin.exam-scheduling.show', $exam_session)->with('success', 'Session unpublished. Applicants and staff have been notified.');
     }
 
@@ -511,6 +541,8 @@ class ExamSessionController extends Controller
             $recipients->merge($testAdmins)->unique('id'),
             new ExamSessionCancelled($exam_session)
         );
+
+        app(AuditService::class)->log('exam_session.cancelled', ExamSession::class, $exam_session->id);
 
         return redirect()->route('admin.exam-scheduling.index')->with('success', 'Session cancelled.');
     }
@@ -544,6 +576,8 @@ class ExamSessionController extends Controller
             new ExamSessionStarted($exam_session)
         );
 
+        app(AuditService::class)->log('exam_session.started', ExamSession::class, $exam_session->id);
+
         return back()->with('success', 'Session started.');
     }
 
@@ -563,6 +597,8 @@ class ExamSessionController extends Controller
             $recipients->merge($testAdmins)->unique('id'),
             new ExamSessionCompleted($exam_session)
         );
+
+        app(AuditService::class)->log('exam_session.completed', ExamSession::class, $exam_session->id);
 
         return back()->with('success', 'Session completed.');
     }
@@ -600,6 +636,8 @@ class ExamSessionController extends Controller
             $recipients->merge($testAdmins)->unique('id'),
             new ExamSessionStarted($exam_session)
         );
+
+        app(AuditService::class)->log('exam_session.reopened', ExamSession::class, $exam_session->id);
 
         return redirect()->route('admin.exam-scheduling.show', $exam_session)
             ->with('success', 'Session reopened. Proctors can continue marking attendance and submissions.');

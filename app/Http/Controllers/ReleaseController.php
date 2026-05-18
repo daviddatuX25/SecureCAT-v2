@@ -11,6 +11,7 @@ use App\Models\SystemSetting;
 use App\Notifications\ResultReleased;
 use App\Notifications\ResultReleasedF2F;
 use App\Services\ApplicationPipelineService;
+use App\Services\AuditService;
 use App\Services\ConsultationSummaryService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -137,6 +138,11 @@ class ReleaseController extends Controller
             'counselor_comments' => $validated['counselor_comments'] ?? null,
         ]);
 
+        app(AuditService::class)->log('release.saved', ConsultationSummary::class, $summary->id, [], [
+            'applicant_id' => $applicantId,
+            'recommended_course_id' => $validated['recommended_course_id'] ?? null,
+        ]);
+
         return back()->with('success', 'Summary updated.');
     }
 
@@ -169,6 +175,11 @@ class ReleaseController extends Controller
                 ['released_at' => now()->toIso8601String()]
             );
         }
+
+        app(AuditService::class)->log('release.released', ConsultationSummary::class, $summary->id, [], [
+            'applicant_id' => $summary->applicant_id,
+            'release_mode' => $context,
+        ]);
 
         return back()->with('success', 'Result released.');
     }
@@ -210,6 +221,11 @@ class ReleaseController extends Controller
             }
         }
 
+        app(AuditService::class)->log('release.bulk_released', null, null, [], [
+            'count' => count($summaries),
+            'mode' => $context,
+        ], 'Bulk released '.count($summaries).' results');
+
         return back()->with('success', count($summaries).' result(s) released.');
     }
 
@@ -233,6 +249,10 @@ class ReleaseController extends Controller
                 ['unreleased_at' => now()->toIso8601String(), 'unreleased_by' => auth()->id()]
             );
         }
+
+        app(AuditService::class)->log('release.unreleased', ConsultationSummary::class, $summary->id, [], [
+            'applicant_id' => $summary->applicant_id,
+        ]);
 
         return back()->with('success', 'Release reversed — result moved back to draft.');
     }
@@ -282,6 +302,10 @@ class ReleaseController extends Controller
         if ($releasedCount === 0) {
             return back()->with('info', 'All results have already been released.');
         }
+
+        app(AuditService::class)->log('release.all_released', null, null, [], [
+            'count' => $releasedCount,
+        ], "Released all {$releasedCount} results");
 
         return back()->with('success', "{$releasedCount} result(s) released.");
     }

@@ -10,6 +10,7 @@ use App\Models\AdmissionSlipTemplate;
 use App\Models\AptitudeArea;
 use App\Models\Course;
 use App\Models\PrivacyPolicy;
+use App\Models\RatingScale;
 use App\Models\ResultSheetTemplate;
 use App\Models\Role;
 use App\Models\Room;
@@ -58,6 +59,8 @@ class SetupController extends Controller
             $this->checkAdmissionSlipTemplates(),
             $this->checkPrivacyPolicies(),
             $this->checkStaffAccounts(),
+            $this->checkInstitution(),
+            $this->checkRatingScales(),
         ];
 
         $allChecks = collect($categories)->pluck('checks')->flatten(1);
@@ -468,6 +471,82 @@ class SetupController extends Controller
                     'message' => $testAdminCount > 0
                         ? "{$testAdminCount} test administrator(s)."
                         : 'No test administrator. Exams and grading cannot be managed.',
+                ],
+            ],
+        ];
+    }
+
+    private function checkInstitution(): array
+    {
+        $name = SystemSetting::institution('name');
+        $examName = SystemSetting::institution('exam_name');
+        $counselorName = SystemSetting::institution('personnel.guidance_counselor.name');
+
+        return [
+            'key' => 'institution',
+            'label' => 'Institution Profile',
+            'href' => '/admin/setup/institution',
+            'checks' => [
+                [
+                    'key' => 'institution_name',
+                    'label' => 'Institution name is configured',
+                    'passed' => ! empty($name) && $name !== 'My Institution',
+                    'severity' => 'important',
+                    'message' => ! empty($name) && $name !== 'My Institution'
+                        ? "Institution: {$name}"
+                        : 'Institution name is still the default. Update in Setup > Institution.',
+                ],
+                [
+                    'key' => 'institution_exam_name',
+                    'label' => 'Exam name is configured',
+                    'passed' => ! empty($examName) && $examName !== 'College Admission Test',
+                    'severity' => 'important',
+                    'message' => ! empty($examName) && $examName !== 'College Admission Test'
+                        ? "Exam: {$examName}"
+                        : 'Exam name is still the default. Update for result sheets.',
+                ],
+                [
+                    'key' => 'institution_counselor',
+                    'label' => 'Guidance counselor name is set',
+                    'passed' => ! empty($counselorName),
+                    'severity' => 'optional',
+                    'message' => ! empty($counselorName)
+                        ? "Counselor: {$counselorName}"
+                        : 'Guidance counselor name is blank. Needed for result sheet signatures.',
+                ],
+            ],
+        ];
+    }
+
+    private function checkRatingScales(): array
+    {
+        $count = RatingScale::count();
+        $hasDefault = RatingScale::where('is_default', true)->exists();
+
+        return [
+            'key' => 'rating_scales',
+            'label' => 'Rating Scales',
+            'href' => '/admin/setup/rating-scales',
+            'checks' => [
+                [
+                    'key' => 'rating_scale_exist',
+                    'label' => 'At least one rating scale created',
+                    'passed' => $count > 0,
+                    'severity' => 'important',
+                    'message' => $count > 0
+                        ? "{$count} rating scale(s) configured."
+                        : 'No rating scales. Needed for descriptive ratings on result sheets.',
+                ],
+                [
+                    'key' => 'rating_scale_default',
+                    'label' => 'A default rating scale is set',
+                    'passed' => $hasDefault,
+                    'severity' => 'optional',
+                    'message' => $hasDefault
+                        ? 'Default rating scale is assigned.'
+                        : ($count > 0
+                            ? 'Rating scales exist but none is marked as default.'
+                            : 'No scales to set as default.'),
                 ],
             ],
         ];

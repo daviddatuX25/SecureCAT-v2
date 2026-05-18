@@ -9,8 +9,10 @@ use App\Http\Controllers\Admin\AuditLogController;
 use App\Http\Controllers\Admin\CourseController;
 use App\Http\Controllers\Admin\ExamSchedulingAssistantController;
 use App\Http\Controllers\Admin\ExamSessionController;
+use App\Http\Controllers\Admin\InstitutionController;
 use App\Http\Controllers\Admin\KnowledgeDocumentController;
 use App\Http\Controllers\Admin\PrivacyPolicyController;
+use App\Http\Controllers\Admin\RatingScaleController;
 use App\Http\Controllers\Admin\ReportController;
 use App\Http\Controllers\Admin\ResultSheetTemplateController;
 use App\Http\Controllers\Admin\RoomController;
@@ -130,6 +132,12 @@ Route::middleware(['auth'])->group(function () {
     // Setup Hub — accessible to anyone who manages configuration
     Route::middleware('role:super_admin,registrar_administrator,test_administrator')->prefix('admin')->name('admin.')->group(function () {
         Route::get('setup', [SetupController::class, 'index'])->name('setup.index');
+        Route::get('setup/institution', [InstitutionController::class, 'index'])->name('setup.institution.index');
+        Route::put('setup/institution', [InstitutionController::class, 'update'])->name('setup.institution.update');
+        Route::post('setup/institution/reset', [InstitutionController::class, 'resetDefaults'])->name('setup.institution.reset');
+        Route::resource('setup/rating-scales', RatingScaleController::class)
+            ->except('show')
+            ->parameters(['rating-scales' => 'rating_scale']);
     });
 
     // Reports
@@ -300,6 +308,7 @@ Route::middleware(['auth'])->group(function () {
                 Route::post('{grading_session}/mark-printed', [ReleasePrintController::class, 'markPrinted'])->name('mark-printed');
                 Route::get('{grading_session}/applicants/{applicant}', [ReleasePrintController::class, 'resultSheet'])->name('result-sheet');
                 Route::get('{grading_session}/applicants/{applicant}/pdf', [ReleasePrintController::class, 'resultSheetPdf'])->name('result-sheet-pdf');
+                Route::get('{grading_session}/applicants/{applicant}/docx', [ReleasePrintController::class, 'downloadDocx'])->name('result-sheet-docx');
                 Route::get('{grading_session}/print-bulk', [ReleasePrintController::class, 'printBulk'])->name('print-bulk');
                 Route::get('{grading_session}/print-bulk-pdf', [ReleasePrintController::class, 'printBulkPdf'])->name('print-bulk-pdf');
             });

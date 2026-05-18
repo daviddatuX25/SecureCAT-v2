@@ -3,7 +3,7 @@
   import { usePage } from '@inertiajs/svelte';
   import { Link, router } from '@inertiajs/svelte';
   import { Button } from '@/Components/ui/button';
-  import { ArrowLeft, Printer, Download } from 'lucide-svelte';
+  import { ArrowLeft, Printer, Download, FileDown } from 'lucide-svelte';
 
   let { sessionId = '1', applicantId = '1001', applicant = {}, scores = [], printed = false, templateHtml = null, templateError = null, paperSize = 'a4', orientation = 'portrait', logicalUnit = 'full' } = $props();
 
@@ -22,6 +22,7 @@
   ]);
 
   const pdfBaseUrl = $derived(`/admin/release/print/${sid}/applicants/${applicant.id}/pdf`);
+  const docxUrl = $derived(`/admin/release/print/${sid}/applicants/${applicant.id}/docx`);
   const canUsePdf = $derived(!printDisabled && !templateError && templateHtml);
 
   let markedPrinted = $state(printed);
@@ -61,6 +62,12 @@
           <Button variant="secondary" class="min-h-[44px] gap-2">
             <Download class="h-4 w-4" />
             Download PDF
+          </Button>
+        </a>
+        <a href={docxUrl} rel="noopener">
+          <Button variant="secondary" class="min-h-[44px] gap-2">
+            <FileDown class="h-4 w-4" />
+            Download DOCX
           </Button>
         </a>
       {/if}

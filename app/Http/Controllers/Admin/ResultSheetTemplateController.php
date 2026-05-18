@@ -7,6 +7,7 @@ use App\Http\Requests\StoreResultSheetTemplateRequest;
 use App\Http\Requests\UpdateResultSheetTemplateRequest;
 use App\Models\AptitudeArea;
 use App\Models\ResultSheetTemplate;
+use App\Services\AuditService;
 use App\Services\ResultSheetTemplateService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
@@ -89,6 +90,8 @@ class ResultSheetTemplateController extends Controller
             $template->update(['docx_path' => $path]);
         }
 
+        app(AuditService::class)->log('template.result_sheet_created', ResultSheetTemplate::class, $template->id, [], ['name' => $data['name'], 'mode' => $mode]);
+
         return redirect()->route('admin.release.result-templates.index')->with('success', 'Template created.');
     }
 
@@ -158,11 +161,15 @@ class ResultSheetTemplateController extends Controller
 
         $result_template->update($data);
 
+        app(AuditService::class)->log('template.result_sheet_updated', ResultSheetTemplate::class, $result_template->id, [], ['name' => $data['name'] ?? $result_template->name]);
+
         return redirect()->route('admin.release.result-templates.index')->with('success', 'Template updated.');
     }
 
     public function destroy(ResultSheetTemplate $result_template): RedirectResponse
     {
+        app(AuditService::class)->log('template.result_sheet_deleted', ResultSheetTemplate::class, $result_template->id, [], ['name' => $result_template->name]);
+
         if ($result_template->docx_path) {
             Storage::disk('local')->delete($result_template->docx_path);
         }

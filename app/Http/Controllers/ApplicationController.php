@@ -15,11 +15,11 @@ use App\Models\Course;
 use App\Notifications\ApplicationStatusChanged;
 use App\Services\AdmissionSlipService;
 use App\Services\ApplicationPipelineService;
+use App\Services\AuditService;
 use Carbon\Carbon;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
 use Inertia\Inertia;
 use Inertia\Response;
 use Symfony\Component\HttpFoundation\StreamedResponse;
@@ -321,10 +321,8 @@ class ApplicationController extends Controller
             Appointment::where('id', $validated['appointment_id'])->increment('booked_count');
         }
 
-        Log::info('Application created by staff', [
-            'application_id' => $application->id,
+        app(AuditService::class)->log('application.created_by_staff', Application::class, $application->id, [], [
             'reference_number' => $application->reference_number,
-            'staff_id' => auth()->id(),
             'accept_immediately' => $acceptImmediately,
         ]);
 
@@ -434,10 +432,8 @@ class ApplicationController extends Controller
 
         $application->update($updateData);
 
-        Log::info('Application updated by staff', [
-            'application_id' => $application->id,
+        app(AuditService::class)->log('application.updated', Application::class, $application->id, [], [
             'reference_number' => $application->reference_number,
-            'staff_id' => auth()->id(),
             'changes' => array_keys($updateData),
         ]);
 
@@ -566,8 +562,7 @@ class ApplicationController extends Controller
             // Pipeline hook: advance to accepted
             app(ApplicationPipelineService::class)->transition($application->fresh(), 'accepted');
 
-            Log::info('Application accepted', [
-                'application_id' => $application->id,
+            app(AuditService::class)->log('application.accepted', Application::class, $application->id, [], [
                 'reference_number' => $application->reference_number,
                 'processed_by' => auth()->id(),
             ]);
@@ -611,10 +606,8 @@ class ApplicationController extends Controller
 
         SendApplicantSetupEmail::dispatch($applicant);
 
-        Log::info('Setup email resent', [
-            'application_id' => $application->id,
+        app(AuditService::class)->log('application.setup_email_resent', Application::class, $application->id, [], [
             'reference_number' => $application->reference_number,
-            'by' => auth()->id(),
         ]);
 
         return redirect()
@@ -659,10 +652,9 @@ class ApplicationController extends Controller
         // Pipeline hook: mark dismissed (always overrides)
         app(ApplicationPipelineService::class)->transition($application->fresh(), 'dismissed');
 
-        Log::info('Application dismissed', [
-            'application_id' => $application->id,
+        app(AuditService::class)->log('application.dismissed', Application::class, $application->id, [], [
             'reference_number' => $application->reference_number,
-            'processed_by' => auth()->id(),
+            'reason' => $request->validated('reason'),
         ]);
 
         return redirect()
@@ -726,6 +718,11 @@ class ApplicationController extends Controller
             app(ApplicationPipelineService::class)->transition($application->fresh(), 'accepted');
         }
 
+        app(AuditService::class)->log('application.bulk_accepted', null, null, [], [
+            'total' => count($ids),
+            'accepted' => $applications->count(),
+        ], "Bulk accepted {$applications->count()} applications");
+
         if ($emailFailures > 0) {
             return back()->with('warning', "Selected applications accepted. However, {$emailFailures} notification email(s) could not be sent — they will need to be resent.");
         }
@@ -759,6 +756,11 @@ class ApplicationController extends Controller
             app(ApplicationPipelineService::class)->transition($application->fresh(), 'dismissed');
         }
 
+        app(AuditService::class)->log('application.bulk_dismissed', null, null, [], [
+            'total' => count($ids),
+            'dismissed' => $applications->count(),
+        ], "Bulk dismissed {$applications->count()} applications");
+
         return back()->with('success', 'Selected applications dismissed.');
     }
 
@@ -788,6 +790,10 @@ class ApplicationController extends Controller
             app(ApplicationPipelineService::class)->forceSet($application->fresh(), 'pending');
             $count++;
         }
+
+        app(AuditService::class)->log('application.bulk_reopened', null, null, [], [
+            'count' => $count,
+        ], "Bulk reopened {$count} applications");
 
         return back()->with('success', "{$count} application(s) reverted to pending.");
     }
@@ -822,6 +828,12 @@ class ApplicationController extends Controller
         // Pipeline hook: force-reset pipeline status back to pending on reopen
         app(ApplicationPipelineService::class)->forceSet($application->fresh(), 'pending');
 
+        app(AuditService::class)->log('application.reopened', Application::class, $application->id, [
+            'old_status' => $oldStatus,
+        ], [
+            'reference_number' => $application->reference_number,
+        ]);
+
         return back()->with('success', 'Application reverted to pending.');
     }
 
@@ -831,6 +843,10 @@ class ApplicationController extends Controller
     public function destroy(Application $application): RedirectResponse
     {
         $this->authorize('delete', $application);
+
+        app(AuditService::class)->log('application.deleted', Application::class, $application->id, [], [
+            'reference_number' => $application->reference_number,
+        ]);
 
         $application->delete();
 
@@ -983,10 +999,8 @@ class ApplicationController extends Controller
 
         $application->update($updateData);
 
-        Log::info('Application updated by applicant', [
-            'application_id' => $application->id,
+        app(AuditService::class)->log('application.portal_updated', Application::class, $application->id, [], [
             'reference_number' => $application->reference_number,
-            'applicant_id' => $applicant->id,
         ]);
 
         return redirect()

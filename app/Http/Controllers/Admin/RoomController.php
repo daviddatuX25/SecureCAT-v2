@@ -7,6 +7,7 @@ use App\Http\Requests\StoreRoomRequest;
 use App\Http\Requests\UpdateRoomRequest;
 use App\Models\ExamSession;
 use App\Models\Room;
+use App\Services\AuditService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -43,12 +44,18 @@ class RoomController extends Controller
     {
         $validated = $request->validated();
 
-        Room::create([
+        $room = Room::create([
             'name' => $validated['name'],
             'building' => $validated['building'],
             'floor' => $validated['floor'] ?? null,
             'capacity' => $validated['capacity'],
             'is_active' => true,
+        ]);
+
+        app(AuditService::class)->log('room.created', Room::class, $room->id, [], [
+            'name' => $validated['name'],
+            'building' => $validated['building'],
+            'capacity' => $validated['capacity'],
         ]);
 
         return redirect()->route('admin.rooms.index')->with('success', 'Room created.');
@@ -64,6 +71,8 @@ class RoomController extends Controller
     public function update(UpdateRoomRequest $request, Room $room): RedirectResponse
     {
         $room->update($request->validated());
+
+        app(AuditService::class)->log('room.updated', Room::class, $room->id, [], $request->validated());
 
         return redirect()->route('admin.rooms.index')->with('success', 'Room updated.');
     }
@@ -83,6 +92,8 @@ class RoomController extends Controller
                 ->with('error', 'Cannot delete: this room has exam sessions scheduled in the future.');
         }
 
+        app(AuditService::class)->log('room.deleted', Room::class, $room->id, ['name' => $room->name]);
+
         $room->delete(); // soft delete
 
         return redirect()->route('admin.rooms.index')->with('success', 'Room deleted.');
@@ -91,6 +102,8 @@ class RoomController extends Controller
     public function activate(Room $room): RedirectResponse
     {
         $room->update(['is_active' => true]);
+
+        app(AuditService::class)->log('room.activated', Room::class, $room->id);
 
         return redirect()->route('admin.rooms.index')->with('success', 'Room activated.');
     }
@@ -112,6 +125,8 @@ class RoomController extends Controller
         }
 
         $room->update(['is_active' => false]);
+
+        app(AuditService::class)->log('room.deactivated', Room::class, $room->id);
 
         return redirect()->route('admin.rooms.index')->with('success', 'Room deactivated.');
     }
