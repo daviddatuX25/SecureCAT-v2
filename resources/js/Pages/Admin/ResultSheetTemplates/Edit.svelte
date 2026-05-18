@@ -24,6 +24,8 @@
     placeholdersApplicant1 = [],
     placeholdersApplicant2 = [],
     domainPlaceholders = [],
+    placeholderGroups = {},
+    exampleRating = '',
     htmlScoresNote = '',
     htmlTemplateRules = '',
     docxPlaceholderNote = '',
@@ -48,11 +50,21 @@
 
   const applicant1Items = $derived(placeholdersApplicant1.map((ph) => ({ value: ph })));
   const applicant2Items = $derived(placeholdersApplicant2.map((ph) => ({ value: ph })));
+  const institutionItems = $derived(
+    placeholderGroups?.institution?.map((p) => ({ value: p.placeholder, label: p.description })) ?? [],
+  );
+  const personnelItems = $derived(
+    placeholderGroups?.personnel?.map((p) => ({ value: p.placeholder, label: p.description })) ?? [],
+  );
   const domainItems = $derived(
     domainPlaceholders.flatMap((dp) => {
-      const items = [{ value: dp.example, label: dp.slug }];
+      const items = [
+        { value: dp.example, label: dp.slug },
+        { value: dp.example.replace('}}', '_rating}}'), label: `${dp.slug}_rating` },
+      ];
       if (isCrosswise) {
         items.push({ value: dp.example.replace('}}', '_2}}'), label: `${dp.slug}_2` });
+        items.push({ value: dp.example.replace('}}', '_rating_2}}'), label: `${dp.slug}_rating_2` });
       }
       return items;
     }),
@@ -211,8 +223,20 @@
       <GuideSection title="Domain Tags" visible={domainPlaceholders.length > 0}>
         <CopyableGroup
           items={domainItems}
-          subtitle={isCrosswise ? 'Click to copy. Both applicant 1 and applicant 2 variants are shown.' : 'Click to copy'}
+          subtitle={
+            isCrosswise
+              ? `Click to copy. Both applicant 1 and applicant 2 variants are shown.${exampleRating ? ` Rating: ${exampleRating}` : ''}`
+              : exampleRating ? `Rating: ${exampleRating}` : 'Click to copy'
+          }
         />
+      </GuideSection>
+
+      <GuideSection title="Institution Placeholders" visible={(placeholderGroups?.institution?.length ?? 0) > 0}>
+        <CopyableGroup items={institutionItems} />
+      </GuideSection>
+
+      <GuideSection title="Personnel Placeholders" visible={(placeholderGroups?.personnel?.length ?? 0) > 0}>
+        <CopyableGroup items={personnelItems} />
       </GuideSection>
 
       {#if $form.mode === 'html'}
