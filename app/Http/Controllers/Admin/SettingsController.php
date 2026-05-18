@@ -8,6 +8,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\UpdateSystemSettingsRequest;
 use App\Models\AptitudeArea;
 use App\Models\SystemSetting;
+use App\Services\AuditService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -73,6 +74,8 @@ class SettingsController extends Controller
             }
             SystemSetting::set('enable_normalized_scores', (bool) $validated['enable_normalized_scores']);
         }
+
+        app(AuditService::class)->log('settings.updated', SystemSetting::class, 0, [], $validated);
 
         return redirect()->route('admin.settings.index')->with('success', 'Settings saved.');
     }

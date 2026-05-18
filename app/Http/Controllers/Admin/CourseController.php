@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreCourseRequest;
 use App\Http\Requests\UpdateCourseRequest;
 use App\Models\Course;
+use App\Services\AuditService;
 use Illuminate\Http\RedirectResponse;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -33,10 +34,15 @@ class CourseController extends Controller
     {
         $validated = $request->validated();
 
-        Course::create([
-            'name'      => $validated['name'],
-            'code'      => $validated['code'],
+        $course = Course::create([
+            'name' => $validated['name'],
+            'code' => $validated['code'],
             'is_active' => true,
+        ]);
+
+        app(AuditService::class)->log('course.created', Course::class, $course->id, [], [
+            'name' => $validated['name'],
+            'code' => $validated['code'],
         ]);
 
         return redirect()->route('admin.courses.index')->with('success', 'Course created.');
@@ -53,11 +59,15 @@ class CourseController extends Controller
     {
         $course->update($request->validated());
 
+        app(AuditService::class)->log('course.updated', Course::class, $course->id, [], $request->validated());
+
         return redirect()->route('admin.courses.index')->with('success', 'Course updated.');
     }
 
     public function destroy(Course $course): RedirectResponse
     {
+        app(AuditService::class)->log('course.deleted', Course::class, $course->id, ['name' => $course->name]);
+
         $course->delete(); // soft delete
 
         return redirect()->route('admin.courses.index')->with('success', 'Course deleted.');
@@ -67,12 +77,16 @@ class CourseController extends Controller
     {
         $course->update(['is_active' => true]);
 
+        app(AuditService::class)->log('course.activated', Course::class, $course->id);
+
         return redirect()->route('admin.courses.index')->with('success', 'Course activated.');
     }
 
     public function deactivate(Course $course): RedirectResponse
     {
         $course->update(['is_active' => false]);
+
+        app(AuditService::class)->log('course.deactivated', Course::class, $course->id);
 
         return redirect()->route('admin.courses.index')->with('success', 'Course deactivated.');
     }

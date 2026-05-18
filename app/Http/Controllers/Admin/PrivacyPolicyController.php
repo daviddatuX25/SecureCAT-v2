@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\PrivacyPolicy;
+use App\Services\AuditService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -43,6 +44,8 @@ class PrivacyPolicyController extends Controller
 
         PrivacyPolicy::create($validated);
 
+        app(AuditService::class)->log('privacy_policy.created', PrivacyPolicy::class, PrivacyPolicy::latest()->first()?->id, [], ['title' => $validated['title']]);
+
         return redirect()->route('admin.applications.privacy-policies.index')
             ->with('success', 'Privacy policy created.');
     }
@@ -75,6 +78,8 @@ class PrivacyPolicyController extends Controller
 
         $privacyPolicy->update($validated);
 
+        app(AuditService::class)->log('privacy_policy.updated', PrivacyPolicy::class, $privacyPolicy->id, [], ['title' => $validated['title']]);
+
         return redirect()->route('admin.applications.privacy-policies.index')
             ->with('success', 'Privacy policy updated.');
     }
@@ -82,6 +87,8 @@ class PrivacyPolicyController extends Controller
     public function destroy(PrivacyPolicy $privacyPolicy): RedirectResponse
     {
         $this->authorizeActivePolicy($privacyPolicy);
+
+        app(AuditService::class)->log('privacy_policy.deleted', PrivacyPolicy::class, $privacyPolicy->id, [], ['title' => $privacyPolicy->title]);
 
         $privacyPolicy->delete();
 
@@ -113,6 +120,8 @@ class PrivacyPolicyController extends Controller
 
         $privacyPolicy->update(['is_active' => true]);
 
+        app(AuditService::class)->log('privacy_policy.activated', PrivacyPolicy::class, $privacyPolicy->id, [], []);
+
         return redirect()->route('admin.applications.privacy-policies.index')
             ->with('success', 'Privacy policy activated.');
     }
@@ -120,6 +129,8 @@ class PrivacyPolicyController extends Controller
     public function deactivate(PrivacyPolicy $privacyPolicy): RedirectResponse
     {
         $privacyPolicy->update(['is_active' => false]);
+
+        app(AuditService::class)->log('privacy_policy.deactivated', PrivacyPolicy::class, $privacyPolicy->id, [], []);
 
         return redirect()->route('admin.applications.privacy-policies.index')
             ->with('success', 'Privacy policy deactivated.');

@@ -26,6 +26,7 @@ class StoreApplicationRequest extends FormRequest
             'sex' => ['required', 'string', 'in:male,female'],
             'applicant_type' => ['required', 'string', 'in:new,transferee'],
             'last_school_enrolled' => ['nullable', 'string', 'max:255'],
+            'strand' => ['nullable', 'string', 'max:100'],
             'email' => [
                 'required',
                 'email',

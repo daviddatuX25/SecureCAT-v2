@@ -24,6 +24,7 @@ class Application extends Model
         'sex',
         'applicant_type',
         'last_school_enrolled',
+        'strand',
         'email',
         'phone',
         'address_line',

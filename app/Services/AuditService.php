@@ -27,15 +27,17 @@ class AuditService
      * Format: 'event_prefix.action' => ['label' => 'User-friendly label', 'action' => 'past tense verb']
      */
     protected static array $eventLabels = [
-        // Authentication events
+        // ── Authentication events ────────────────────────────────────────
         'user.login' => ['label' => 'Staff login', 'action' => 'logged in'],
         'user.login_failed' => ['label' => 'Failed staff login', 'action' => 'failed to log in'],
         'user.logout' => ['label' => 'Staff logout', 'action' => 'logged out'],
         'user.created' => ['label' => 'User created', 'action' => 'created a user account'],
         'user.updated' => ['label' => 'User updated', 'action' => 'updated a user account'],
         'user.deleted' => ['label' => 'User deleted', 'action' => 'deleted a user account'],
+        'user.profile_updated' => ['label' => 'Profile updated', 'action' => 'updated their profile'],
+        'user.password_changed' => ['label' => 'Password changed', 'action' => 'changed their password'],
 
-        // Applicant authentication events
+        // ── Applicant authentication events ──────────────────────────────
         'applicant.login' => ['label' => 'Applicant login', 'action' => 'logged in'],
         'applicant.login_failed' => ['label' => 'Failed applicant login', 'action' => 'failed to log in'],
         'applicant.logout' => ['label' => 'Applicant logout', 'action' => 'logged out'],
@@ -43,43 +45,146 @@ class AuditService
         'applicant.password_reset' => ['label' => 'Password reset', 'action' => 'reset their password'],
         'applicant.registered' => ['label' => 'Applicant registered', 'action' => 'registered an account'],
 
-        // Application events
+        // ── Application events ───────────────────────────────────────────
         'application.created' => ['label' => 'Application created', 'action' => 'submitted an application'],
+        'application.created_by_staff' => ['label' => 'Application created by staff', 'action' => 'created an application on behalf of applicant'],
         'application.updated' => ['label' => 'Application updated', 'action' => 'updated an application'],
         'application.deleted' => ['label' => 'Application deleted', 'action' => 'deleted an application'],
+        'application.accepted' => ['label' => 'Application accepted', 'action' => 'accepted an application'],
+        'application.dismissed' => ['label' => 'Application dismissed', 'action' => 'dismissed an application'],
+        'application.reopened' => ['label' => 'Application reopened', 'action' => 'reopened an application'],
+        'application.bulk_accepted' => ['label' => 'Applications bulk accepted', 'action' => 'bulk-accepted applications'],
+        'application.bulk_dismissed' => ['label' => 'Applications bulk dismissed', 'action' => 'bulk-dismissed applications'],
+        'application.bulk_reopened' => ['label' => 'Applications bulk reopened', 'action' => 'bulk-reopened applications'],
+        'application.setup_email_resent' => ['label' => 'Setup email resent', 'action' => 'resent setup email'],
         'application.status_changed' => ['label' => 'Application status changed', 'action' => 'changed application status'],
+        'application.created_by_staff' => ['label' => 'Application created by staff', 'action' => 'created an application on behalf of applicant'],
+        'application.portal_updated' => ['label' => 'Application updated by applicant', 'action' => 'updated their application via portal'],
 
-        // Exam session events
+        // ── Application import events ────────────────────────────────────
+        'import.applicants_uploaded' => ['label' => 'Applicant import uploaded', 'action' => 'uploaded applicant import file'],
+        'import.applicants_confirmed' => ['label' => 'Applicant import confirmed', 'action' => 'confirmed applicant import'],
+        'import.scores_uploaded' => ['label' => 'Score import uploaded', 'action' => 'uploaded score import file'],
+        'import.scores_confirmed' => ['label' => 'Score import confirmed', 'action' => 'confirmed score import'],
+        'import.scores' => ['label' => 'Scores imported', 'action' => 'imported scores'],
+        'knowledge.imported' => ['label' => 'Knowledge docs imported', 'action' => 'imported knowledge documents'],
+
+        // ── Exam session events ──────────────────────────────────────────
         'exam_session.created' => ['label' => 'Exam session created', 'action' => 'created an exam session'],
         'exam_session.updated' => ['label' => 'Exam session updated', 'action' => 'updated an exam session'],
         'exam_session.deleted' => ['label' => 'Exam session deleted', 'action' => 'deleted an exam session'],
-        'exam_session.started' => ['label' => 'Exam started', 'action' => 'started an exam'],
-        'exam_session.completed' => ['label' => 'Exam completed', 'action' => 'completed an exam'],
+        'exam_session.published' => ['label' => 'Exam session published', 'action' => 'published an exam session'],
+        'exam_session.unpublished' => ['label' => 'Exam session unpublished', 'action' => 'unpublished an exam session'],
+        'exam_session.started' => ['label' => 'Exam started', 'action' => 'started an exam session'],
+        'exam_session.completed' => ['label' => 'Exam completed', 'action' => 'completed an exam session'],
+        'exam_session.cancelled' => ['label' => 'Exam cancelled', 'action' => 'cancelled an exam session'],
+        'exam_session.reopened' => ['label' => 'Exam session reopened', 'action' => 'reopened an exam session'],
+        'exam_session.applicants_assigned' => ['label' => 'Applicants assigned to exam', 'action' => 'assigned applicants to exam session'],
+        'exam_session.applicant_removed' => ['label' => 'Applicant removed from exam', 'action' => 'removed an applicant from exam session'],
         'exam_session.archived' => ['label' => 'Exam archived', 'action' => 'archived an exam'],
 
-        // Attendance events
+        // ── Attendance & submission events ───────────────────────────────
         'attendance.recorded' => ['label' => 'Attendance recorded', 'action' => 'recorded attendance'],
+        'attendance.bulk_recorded' => ['label' => 'Bulk attendance recorded', 'action' => 'recorded bulk attendance'],
         'attendance.updated' => ['label' => 'Attendance updated', 'action' => 'updated attendance'],
-
-        // Submission events
         'submission.created' => ['label' => 'Answer submitted', 'action' => 'submitted an answer'],
+        'submission.bulk_created' => ['label' => 'Bulk submissions recorded', 'action' => 'recorded bulk submissions'],
         'submission.updated' => ['label' => 'Answer updated', 'action' => 'updated an answer'],
+        'submission.bulk_recorded' => ['label' => 'Bulk submissions recorded', 'action' => 'recorded submissions in bulk'],
 
-        // Grading events
+        // ── Proctor session events ─────────────────────────────────────
+        'session.proctor_started' => ['label' => 'Session started by proctor', 'action' => 'started a session (proctor)'],
+        'session.proctor_closed' => ['label' => 'Session closed by proctor', 'action' => 'closed a session (proctor)'],
+        'session.extended' => ['label' => 'Session extended', 'action' => 'extended a session'],
+
+        // ── Grading events ───────────────────────────────────────────────
         'score.entered' => ['label' => 'Score entered', 'action' => 'entered a score'],
         'score.updated' => ['label' => 'Score updated', 'action' => 'updated a score'],
+        'score.cleared' => ['label' => 'Scores cleared', 'action' => 'cleared scores'],
+        'grading_session.created' => ['label' => 'Grading session created', 'action' => 'created a grading session'],
         'grading_session.finalized' => ['label' => 'Grading finalized', 'action' => 'finalized grading'],
 
-        // Release events
-        'consultation.released' => ['label' => 'Results released', 'action' => 'released consultation results'],
+        // ── Direct assessment events ─────────────────────────────────────
+        'direct_assessment.created' => ['label' => 'Direct assessment created', 'action' => 'created a direct assessment'],
 
-        // Role management events
+        // ── Release events ───────────────────────────────────────────────
+        'release.updated' => ['label' => 'Release summary updated', 'action' => 'updated release summary'],
+        'release.released' => ['label' => 'Result released', 'action' => 'released a result'],
+        'release.bulk_released' => ['label' => 'Results bulk released', 'action' => 'bulk-released results'],
+        'release.unreleased' => ['label' => 'Result unreleased', 'action' => 'reversed a release'],
+        'release.all_released' => ['label' => 'All results released', 'action' => 'released all results'],
+        'release.saved' => ['label' => 'Release data saved', 'action' => 'saved release data'],
+        'release.bulk_completed' => ['label' => 'Bulk release completed', 'action' => 'completed a bulk release'],
+        'release.reverted' => ['label' => 'Release reverted', 'action' => 'reverted a release'],
+        'release.all_completed' => ['label' => 'All results released', 'action' => 'released all results'],
+        'consultation.released' => ['label' => 'Results released', 'action' => 'released consultation results'],
+        'result_sheet.rendered' => ['label' => 'Result sheet rendered', 'action' => 'rendered result sheets'],
+        'result_sheet.downloaded_docx' => ['label' => 'Result sheet DOCX downloaded', 'action' => 'downloaded a DOCX result sheet'],
+
+        // ── Setup / reference data events ────────────────────────────────
+        'academic_year.created' => ['label' => 'Academic year created', 'action' => 'created an academic year'],
+        'academic_year.updated' => ['label' => 'Academic year updated', 'action' => 'updated an academic year'],
+        'academic_year.activated' => ['label' => 'Academic year activated', 'action' => 'activated an academic year'],
+        'academic_year.deactivated' => ['label' => 'Academic year deactivated', 'action' => 'deactivated an academic year'],
+
+        'course.created' => ['label' => 'Course created', 'action' => 'created a course'],
+        'course.updated' => ['label' => 'Course updated', 'action' => 'updated a course'],
+        'course.deleted' => ['label' => 'Course deleted', 'action' => 'deleted a course'],
+        'course.activated' => ['label' => 'Course activated', 'action' => 'activated a course'],
+        'course.deactivated' => ['label' => 'Course deactivated', 'action' => 'deactivated a course'],
+
+        'room.created' => ['label' => 'Room created', 'action' => 'created a room'],
+        'room.updated' => ['label' => 'Room updated', 'action' => 'updated a room'],
+        'room.deleted' => ['label' => 'Room deleted', 'action' => 'deleted a room'],
+        'room.activated' => ['label' => 'Room activated', 'action' => 'activated a room'],
+        'room.deactivated' => ['label' => 'Room deactivated', 'action' => 'deactivated a room'],
+
+        'aptitude_area.created' => ['label' => 'Aptitude area created', 'action' => 'created an aptitude area'],
+        'aptitude_area.updated' => ['label' => 'Aptitude area updated', 'action' => 'updated an aptitude area'],
+        'aptitude_area.deleted' => ['label' => 'Aptitude area deleted', 'action' => 'deleted an aptitude area'],
+
+        'rating_scale.created' => ['label' => 'Rating scale created', 'action' => 'created a rating scale'],
+        'rating_scale.updated' => ['label' => 'Rating scale updated', 'action' => 'updated a rating scale'],
+        'rating_scale.deleted' => ['label' => 'Rating scale deleted', 'action' => 'deleted a rating scale'],
+
+        'privacy_policy.created' => ['label' => 'Privacy policy created', 'action' => 'created a privacy policy'],
+        'privacy_policy.updated' => ['label' => 'Privacy policy updated', 'action' => 'updated a privacy policy'],
+        'privacy_policy.deleted' => ['label' => 'Privacy policy deleted', 'action' => 'deleted a privacy policy'],
+        'privacy_policy.activated' => ['label' => 'Privacy policy activated', 'action' => 'activated a privacy policy'],
+        'privacy_policy.deactivated' => ['label' => 'Privacy policy deactivated', 'action' => 'deactivated a privacy policy'],
+
+        'template.created' => ['label' => 'Template created', 'action' => 'created a template'],
+        'template.updated' => ['label' => 'Template updated', 'action' => 'updated a template'],
+        'template.deleted' => ['label' => 'Template deleted', 'action' => 'deleted a template'],
+        'template.admission_slip_created' => ['label' => 'Admission slip template created', 'action' => 'created an admission slip template'],
+        'template.admission_slip_updated' => ['label' => 'Admission slip template updated', 'action' => 'updated an admission slip template'],
+        'template.admission_slip_deleted' => ['label' => 'Admission slip template deleted', 'action' => 'deleted an admission slip template'],
+        'template.result_sheet_created' => ['label' => 'Result sheet template created', 'action' => 'created a result sheet template'],
+        'template.result_sheet_updated' => ['label' => 'Result sheet template updated', 'action' => 'updated a result sheet template'],
+        'template.result_sheet_deleted' => ['label' => 'Result sheet template deleted', 'action' => 'deleted a result sheet template'],
+
+        'settings.updated' => ['label' => 'System settings updated', 'action' => 'updated system settings'],
+
+        'institution.updated' => ['label' => 'Institution settings updated', 'action' => 'updated institution settings'],
+        'institution.reset' => ['label' => 'Institution settings reset', 'action' => 'reset institution settings to defaults'],
+
+        // ── Knowledge document events ────────────────────────────────────
+        'knowledge.created' => ['label' => 'Knowledge doc created', 'action' => 'created a knowledge document'],
+        'knowledge.updated' => ['label' => 'Knowledge doc updated', 'action' => 'updated a knowledge document'],
+        'knowledge.deleted' => ['label' => 'Knowledge doc deleted', 'action' => 'deleted a knowledge document'],
+        'knowledge.imported' => ['label' => 'Knowledge docs imported', 'action' => 'imported knowledge documents'],
+
+        // ── AI companion events ──────────────────────────────────────────
+        'ai_companion.persona_updated' => ['label' => 'AI persona updated', 'action' => 'updated AI companion persona'],
+        'ai_companion.history_cleared' => ['label' => 'AI history cleared', 'action' => 'cleared AI companion history'],
+
+        // ── Role management events ───────────────────────────────────────
         'role.created' => ['label' => 'Role created', 'action' => 'created a role'],
         'role.updated' => ['label' => 'Role updated', 'action' => 'updated a role'],
         'role.deleted' => ['label' => 'Role deleted', 'action' => 'deleted a role'],
         'role.assigned' => ['label' => 'Role assigned', 'action' => 'assigned a role'],
 
-        // Audit log events
+        // ── Audit log events ─────────────────────────────────────────────
         'audit_log.viewed' => ['label' => 'Audit log viewed', 'action' => 'viewed audit log'],
         'audit_log.exported' => ['label' => 'Audit log exported', 'action' => 'exported audit log'],
     ];
@@ -94,6 +199,8 @@ class AuditService
         'grading' => 'Grading',
         'consultation' => 'Release',
         'user_management' => 'User Management',
+        'setup' => 'Setup & Configuration',
+        'import' => 'Data Import',
         'system' => 'System',
         'other' => 'Other',
     ];
@@ -244,10 +351,25 @@ class AuditService
             'session' => 'exam_session',
             'score' => 'grading',
             'grading_session' => 'grading',
+            'direct_assessment' => 'grading',
             'consultation' => 'consultation',
+            'release' => 'consultation',
+            'result_sheet' => 'consultation',
+            'import' => 'import',
+            'knowledge' => 'system',
+            'ai_companion' => 'system',
+            'template' => 'setup',
+            'privacy_policy' => 'setup',
+            'academic_year' => 'setup',
+            'course' => 'setup',
+            'room' => 'setup',
+            'aptitude_area' => 'setup',
+            'rating_scale' => 'setup',
+            'settings' => 'system',
             'role' => 'user_management',
             'audit_log' => 'system',
             'exam_session' => 'exam_session',
+            'institution' => 'setup',
         ];
 
         return $map[$prefix] ?? 'other';

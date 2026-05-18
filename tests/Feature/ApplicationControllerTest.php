@@ -175,4 +175,42 @@ class ApplicationControllerTest extends TestCase
 
         $response->assertStatus(404);
     }
+
+    public function test_store_application_with_strand(): void
+    {
+        $application = Application::create([
+            'academic_year_id' => $this->createApplicationWithAcademicYear(true)->academic_year_id,
+            'reference_number' => Application::nextReferenceNumber(),
+            'first_name' => 'Test',
+            'last_name' => 'User',
+            'birthdate' => '2005-01-15',
+            'age' => 20,
+            'sex' => 'female',
+            'email' => 'strand_test@example.com',
+            'course_preference_1' => Course::first()->id,
+            'course_preference_2' => Course::first()->id,
+            'course_preference_3' => Course::first()->id,
+            'strand' => 'STEM',
+            'status' => 'pending',
+            'submitted_at' => now()->subDay(),
+        ]);
+
+        $this->assertSame('STEM', $application->strand);
+    }
+
+    public function test_update_application_strand(): void
+    {
+        $application = $this->createApplicationWithAcademicYear(true);
+        $application->update(['strand' => 'ABM']);
+
+        $application->refresh();
+        $this->assertSame('ABM', $application->strand);
+    }
+
+    public function test_strand_nullable(): void
+    {
+        $application = $this->createApplicationWithAcademicYear(true);
+
+        $this->assertNull($application->strand);
+    }
 }

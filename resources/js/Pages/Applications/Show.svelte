@@ -198,6 +198,9 @@
           {#if application?.last_school_enrolled}
             <p><span class="text-muted-foreground">Last school enrolled:</span> {application.last_school_enrolled}</p>
           {/if}
+          {#if application?.strand}
+            <p><span class="text-muted-foreground">SHS Strand / Previous Course:</span> {application.strand}</p>
+          {/if}
           <p><span class="text-muted-foreground">Email:</span> {application?.email ?? '—'}</p>
           <p><span class="text-muted-foreground">Phone:</span> {application?.phone ?? '—'}</p>
           {#if application?.gwa != null}

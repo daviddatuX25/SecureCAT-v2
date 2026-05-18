@@ -8,6 +8,7 @@ use App\Http\Requests\StoreKnowledgeDocumentRequest;
 use App\Http\Requests\UpdateKnowledgeDocumentRequest;
 use App\Models\KnowledgeDocument;
 use App\Models\SystemSetting;
+use App\Services\AuditService;
 use App\Services\CsvToNarrativeService;
 use App\Services\MixedbreadService;
 use Illuminate\Http\RedirectResponse;
@@ -142,6 +143,8 @@ class KnowledgeDocumentController extends Controller
 
         $this->syncToMixedbread($doc);
 
+        app(AuditService::class)->log('knowledge.created', KnowledgeDocument::class, $doc->id, [], ['title' => $doc->title]);
+
         return redirect()->route('admin.knowledge-documents.index')->with('success', 'Knowledge document created.');
     }
 
@@ -179,6 +182,8 @@ class KnowledgeDocumentController extends Controller
         $knowledgeDocument->refresh();
         $this->syncToMixedbread($knowledgeDocument);
 
+        app(AuditService::class)->log('knowledge.updated', KnowledgeDocument::class, $knowledgeDocument->id, [], ['title' => $knowledgeDocument->title]);
+
         return redirect()->route('admin.knowledge-documents.index')->with('success', 'Knowledge document updated.');
     }
 
@@ -200,6 +205,8 @@ class KnowledgeDocumentController extends Controller
     public function destroy(KnowledgeDocument $knowledgeDocument): RedirectResponse
     {
         $this->authorize('delete', $knowledgeDocument);
+
+        app(AuditService::class)->log('knowledge.deleted', KnowledgeDocument::class, $knowledgeDocument->id, [], ['title' => $knowledgeDocument->title]);
 
         $this->deleteFromMixedbread($knowledgeDocument);
         $knowledgeDocument->delete();
@@ -249,6 +256,8 @@ class KnowledgeDocumentController extends Controller
         ]);
 
         $this->syncToMixedbread($doc);
+
+        app(AuditService::class)->log('knowledge.imported', null, null, [], ['title' => $doc->title], 'Imported knowledge document from CSV');
 
         return redirect()->route('admin.knowledge-documents.index')
             ->with('success', "CSV imported: {$result['row_count']} rows converted to narrative.");

@@ -7,6 +7,7 @@ use App\Http\Requests\StoreScoreImportRequest;
 use App\Models\AptitudeArea;
 use App\Models\GradingSession;
 use App\Models\SystemSetting;
+use App\Services\AuditService;
 use App\Services\ScoreImportService;
 use App\Services\SpreadsheetParser;
 use Illuminate\Http\RedirectResponse;
@@ -63,6 +64,11 @@ class ScoreImportController extends Controller
         try {
             $records = $this->importService->parseSpreadsheet($request->file('file'));
             $result = $this->importService->importScores($records, $request->user()->id);
+
+            app(AuditService::class)->log('import.scores', null, null, [], [
+                'imported' => $result['imported'],
+                'skipped' => $result['skipped'],
+            ]);
 
             $message = "Successfully imported {$result['imported']} scores.";
             if ($result['skipped'] > 0) {
@@ -186,10 +192,10 @@ class ScoreImportController extends Controller
                 $message .= "\nErrors:\n".implode("\n", $result['errors']);
             }
 
-            Log::info('Bulk score import confirmed', [
-                'user_id' => $request->user()->id,
+            app(AuditService::class)->log('import.scores_confirmed', null, null, [], [
                 'imported' => $result['imported'],
                 'skipped' => $result['skipped'],
+                'selected_count' => count($selectedIds),
             ]);
 
             return redirect()->route('admin.grading.import')->with('message', $message);

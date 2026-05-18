@@ -3,7 +3,9 @@
 namespace App\Services;
 
 use App\ValueObjects\DocxValidationResult;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
+use PhpOffice\PhpWord\Exception\Exception;
 use PhpOffice\PhpWord\IOFactory;
 use PhpOffice\PhpWord\Settings;
 use PhpOffice\PhpWord\TemplateProcessor;
@@ -38,29 +40,50 @@ class ResultSheetDocxService
             Settings::setTempDir($tempDir);
         }
 
-        $processor = new TemplateProcessor($fullPath);
-        $processor->setMacroChars('{{', '}}');
-        foreach ($replacements as $key => $value) {
-            $processor->setValue($key, $value);
-        }
-
-        $tempDocx = tempnam($tempDir, 'rst_').'.docx';
-        $processor->saveAs($tempDocx);
+        $tempDocx = null;
+        $tempHtml = null;
 
         try {
+            $processor = new TemplateProcessor($fullPath);
+            $processor->setMacroChars('{{', '}}');
+
+            $sanitized = array_map(function ($value) {
+                $v = (string) $value;
+
+                return str_replace(['{{', '}}'], ['{ {', '} }'], $v);
+            }, $replacements);
+
+            foreach ($sanitized as $key => $value) {
+                $processor->setValue($key, $value);
+            }
+
+            $tempDocx = tempnam($tempDir, 'rst_').'.docx';
+            $processor->saveAs($tempDocx);
+
             $phpWord = IOFactory::load($tempDocx);
             $tempHtml = tempnam($tempDir, 'rst_').'.html';
             $writer = IOFactory::createWriter($phpWord, 'HTML');
             $writer->save($tempHtml);
             $html = file_get_contents($tempHtml);
+
+            return $html ?: '<p class="text-muted-foreground">Failed to convert DOCX to HTML.</p>';
+        } catch (Exception $e) {
+            Log::error('DOCX render failed', ['path' => $fullPath, 'error' => $e->getMessage()]);
+
+            return '<p class="text-destructive">Failed to process DOCX template: '
+                   .htmlspecialchars($e->getMessage()).'</p>';
+        } catch (\Throwable $e) {
+            Log::error('DOCX render unexpected error', ['path' => $fullPath, 'error' => $e->getMessage()]);
+
+            return '<p class="text-destructive">Unexpected error rendering template.</p>';
         } finally {
-            @unlink($tempDocx);
-            if (isset($tempHtml) && is_file($tempHtml)) {
+            if ($tempDocx && is_file($tempDocx)) {
+                @unlink($tempDocx);
+            }
+            if ($tempHtml && is_file($tempHtml)) {
                 @unlink($tempHtml);
             }
         }
-
-        return $html ?: '<p class="text-muted-foreground">Failed to convert DOCX to HTML.</p>';
     }
 
     /**

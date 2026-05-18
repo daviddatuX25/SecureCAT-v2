@@ -7,14 +7,15 @@ use App\Http\Requests\StoreAdmissionSlipTemplateRequest;
 use App\Http\Requests\UpdateAdmissionSlipTemplateRequest;
 use App\Models\AdmissionSlipTemplate;
 use App\Services\AdmissionSlipTemplateService;
+use App\Services\AuditService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
-use Mews\Purifier\Facades\Purifier;
 use Inertia\Inertia;
 use Inertia\Response;
+use Mews\Purifier\Facades\Purifier;
 
 class AdmissionSlipTemplateController extends Controller
 {
@@ -73,6 +74,8 @@ class AdmissionSlipTemplateController extends Controller
             $template->update(['docx_path' => $path]);
         }
 
+        app(AuditService::class)->log('template.admission_slip_created', AdmissionSlipTemplate::class, $template->id, [], ['name' => $data['name'], 'mode' => $mode]);
+
         return redirect()->route('admin.admission-slip-templates.index')->with('success', 'Template created.');
     }
 
@@ -127,11 +130,15 @@ class AdmissionSlipTemplateController extends Controller
 
         $admission_slip_template->update($data);
 
+        app(AuditService::class)->log('template.admission_slip_updated', AdmissionSlipTemplate::class, $admission_slip_template->id, [], ['name' => $data['name'] ?? $admission_slip_template->name]);
+
         return redirect()->route('admin.admission-slip-templates.index')->with('success', 'Template updated.');
     }
 
     public function destroy(AdmissionSlipTemplate $admission_slip_template): RedirectResponse
     {
+        app(AuditService::class)->log('template.admission_slip_deleted', AdmissionSlipTemplate::class, $admission_slip_template->id, [], ['name' => $admission_slip_template->name]);
+
         if ($admission_slip_template->docx_path) {
             Storage::disk('local')->delete($admission_slip_template->docx_path);
         }

@@ -12,6 +12,7 @@
     Settings,
     Ticket,
     Users,
+    BarChart3,
     CheckCircle2,
     AlertTriangle,
     XCircle,
@@ -19,6 +20,7 @@
     ChevronUp,
     Activity,
     ArrowRight,
+    Building2,
   } from 'lucide-svelte';
 
   let { allowDirectAssessment = false, aiCompanionEnabled = false, health = { categories: [], overall: { score: 0, total: 0, percentage: 0 } } } = $props();
@@ -138,6 +140,20 @@
         icon: Brain,
         roles: ['super_admin', 'test_administrator'],
         healthKey: 'aptitude_areas',
+      },
+      {
+        href: '/admin/setup/rating-scales',
+        label: 'Rating Scales',
+        description: 'Percentile-to-rating mappings for result sheets.',
+        icon: BarChart3,
+        roles: ['super_admin', 'test_administrator'],
+      },
+      {
+        href: '/admin/setup/institution',
+        label: 'Institution',
+        description: 'Institution profile, exam branding, and key personnel for documents.',
+        icon: Building2,
+        roles: ['super_admin', 'registrar_administrator', 'test_administrator'],
       },
       {
         href: '/admin/release/result-templates',

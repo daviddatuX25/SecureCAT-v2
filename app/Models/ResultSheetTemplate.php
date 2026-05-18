@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class ResultSheetTemplate extends Model
 {
@@ -19,6 +20,7 @@ class ResultSheetTemplate extends Model
         'docx_path',
         'watermark_text',
         'is_active',
+        'rating_scale_id',
     ];
 
     public const MODE_HTML = 'html';
@@ -48,5 +50,10 @@ class ResultSheetTemplate extends Model
         return [
             'is_active' => 'boolean',
         ];
+    }
+
+    public function ratingScale(): BelongsTo
+    {
+        return $this->belongsTo(RatingScale::class);
     }
 }
