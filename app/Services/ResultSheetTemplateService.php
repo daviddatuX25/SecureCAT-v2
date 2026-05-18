@@ -282,55 +282,7 @@ class ResultSheetTemplateService
         string $logicalUnit = ResultSheetTemplate::LOGICAL_FULL
     ): RenderResult {
         if (empty($replacements) && $useSampleIfEmpty) {
-            $sample = $this->sampleApplicantData();
-            $replacements = [
-                'applicant_name' => $sample['name'],
-                'applicant_reference' => $sample['reference'],
-                'exam_date' => $sample['exam_date'],
-                'room_name' => $sample['room_name'],
-                'scores_rows' => $this->buildScoresRows($sample['scores']),
-                'overall_pct' => (string) $sample['overall_pct'],
-                'applicant_name_2' => $sample['name_2'] ?? '—',
-                'applicant_reference_2' => $sample['reference_2'] ?? '—',
-                'room_name_2' => $sample['room_name_2'] ?? '—',
-                'scores_rows_2' => $this->buildScoresRows($sample['scores_2'] ?? []),
-                'overall_pct_2' => (string) ($sample['overall_pct_2'] ?? 0),
-                'family_name' => $sample['family_name'],
-                'first_name' => $sample['first_name'],
-                'middle_name' => $sample['middle_name'],
-                'suffix' => $sample['suffix'],
-                'sex' => $sample['sex'],
-                'gwa' => $sample['gwa'],
-                'course_applied' => $sample['course_applied'],
-                'strand' => $sample['strand'],
-                'applicant_type' => $sample['applicant_type'],
-                'exam_time' => $sample['exam_time'],
-                'recommended_course' => $sample['recommended_course'],
-                'counselor_comments' => $sample['counselor_comments'],
-                'counselor_name' => $sample['counselor_name'],
-                'family_name_2' => $sample['family_name_2'] ?? '—',
-                'first_name_2' => $sample['first_name_2'] ?? '—',
-                'middle_name_2' => $sample['middle_name_2'] ?? '—',
-                'suffix_2' => $sample['suffix_2'] ?? '',
-                'sex_2' => $sample['sex_2'] ?? '—',
-                'gwa_2' => $sample['gwa_2'] ?? '—',
-                'course_applied_2' => $sample['course_applied_2'] ?? '—',
-                'strand_2' => $sample['strand_2'] ?? '—',
-                'applicant_type_2' => $sample['applicant_type_2'] ?? '—',
-                'exam_time_2' => $sample['exam_time_2'] ?? '—',
-                'recommended_course_2' => $sample['recommended_course_2'] ?? '—',
-                'counselor_comments_2' => $sample['counselor_comments_2'] ?? '—',
-                'counselor_name_2' => $sample['counselor_name_2'] ?? '—',
-                'institution_name' => SystemSetting::institution('name', '—'),
-                'institution_campus' => SystemSetting::institution('campus', '—'),
-                'institution_address' => SystemSetting::institution('address', '—'),
-                'institution_contact' => SystemSetting::institution('contact_number', '—'),
-                'institution_email' => SystemSetting::institution('email', '—'),
-                'institution_website' => SystemSetting::institution('website', '—'),
-                'institution_exam_name' => SystemSetting::institution('exam_name', '—'),
-                'institution_exam_acronym' => SystemSetting::institution('exam_acronym', '—'),
-            ];
-            $this->addPerDomainReplacements($replacements, [], $sample, true, RatingScale::default());
+            $replacements = $this->buildSampleReplacements();
         }
 
         $html = $this->docxService->renderDocxFromFullPath($path, $replacements);
@@ -351,6 +303,134 @@ class ResultSheetTemplateService
     public function aptitudeAreaSlug(string $name): string
     {
         return str_replace('-', '_', Str::slug($name, '_'));
+    }
+
+    public function getPlaceholderGroups(): array
+    {
+        $descriptions = [
+            'applicant_name' => 'Full name of applicant',
+            'applicant_reference' => 'Reference number',
+            'family_name' => 'Family/last name',
+            'first_name' => 'First name',
+            'middle_name' => 'Middle name',
+            'suffix' => 'Name suffix (Jr., Sr., etc.)',
+            'sex' => 'Sex',
+            'gwa' => 'General Weighted Average',
+            'course_applied' => 'Course applied for',
+            'strand' => 'Senior high school strand',
+            'applicant_type' => 'Applicant type (Freshman, Transferee, etc.)',
+            'exam_date' => 'Examination date',
+            'exam_time' => 'Examination time',
+            'room_name' => 'Examination room',
+            'scores_rows' => 'HTML scores table rows (HTML mode)',
+            'overall_pct' => 'Overall percentage score',
+            'recommended_course' => 'Recommended course from counseling',
+            'counselor_comments' => 'Counselor comments',
+            'counselor_name' => 'Counselor name',
+            'institution_name' => 'Institution name',
+            'institution_campus' => 'Institution campus',
+            'institution_address' => 'Institution address',
+            'institution_contact' => 'Institution contact number',
+            'institution_email' => 'Institution email',
+            'institution_website' => 'Institution website',
+            'institution_exam_name' => 'Examination name',
+            'institution_exam_acronym' => 'Examination acronym',
+        ];
+
+        $slot1Fields = [
+            'applicant_name', 'applicant_reference',
+            'family_name', 'first_name', 'middle_name', 'suffix',
+            'sex', 'gwa', 'course_applied', 'strand', 'applicant_type',
+            'exam_date', 'exam_time', 'room_name',
+            'scores_rows', 'overall_pct',
+            'recommended_course', 'counselor_comments', 'counselor_name',
+        ];
+
+        $applicant1 = [];
+        foreach ($slot1Fields as $key) {
+            $applicant1[] = [
+                'placeholder' => '{{'.$key.'}}',
+                'description' => $descriptions[$key] ?? str_replace('_', ' ', Str::title($key)),
+            ];
+        }
+
+        $applicant2 = [];
+        foreach ($slot1Fields as $key) {
+            $key2 = $key.'_2';
+            $applicant2[] = [
+                'placeholder' => '{{'.$key2.'}}',
+                'description' => $descriptions[$key] ?? str_replace('_', ' ', Str::title($key)),
+            ];
+        }
+
+        $institutionKeys = [
+            'institution_name', 'institution_campus', 'institution_address',
+            'institution_contact', 'institution_email', 'institution_website',
+            'institution_exam_name', 'institution_exam_acronym',
+        ];
+        $institution = [];
+        foreach ($institutionKeys as $key) {
+            $institution[] = [
+                'placeholder' => '{{'.$key.'}}',
+                'description' => $descriptions[$key] ?? str_replace('_', ' ', Str::title($key)),
+            ];
+        }
+
+        $personnel = [];
+        $personnelConfig = config('institution.personnel', []);
+        foreach ($personnelConfig as $role => $defaults) {
+            $roleTitle = Str::title(str_replace('_', ' ', $role));
+            foreach (['name', 'title', 'credentials'] as $field) {
+                $key = "personnel_{$role}_{$field}";
+                $personnel[] = [
+                    'placeholder' => '{{'.$key.'}}',
+                    'description' => "{$roleTitle} {$field}",
+                ];
+            }
+        }
+
+        $domains = AptitudeArea::where('is_active', true)->orderBy('display_order')->get(['name']);
+        $domainsGroup = [];
+        foreach ($domains as $domain) {
+            $slug = $this->aptitudeAreaSlug($domain->name);
+            $domainsGroup[] = [
+                'placeholder' => '{{'.$slug.'}}',
+                'description' => $domain->name.' percentage',
+            ];
+            $domainsGroup[] = [
+                'placeholder' => '{{'.$slug.'_raw}}',
+                'description' => $domain->name.' raw score',
+            ];
+            $domainsGroup[] = [
+                'placeholder' => '{{'.$slug.'_rating'.'}}',
+                'description' => $domain->name.' rating',
+            ];
+            $domainsGroup[] = [
+                'placeholder' => '{{'.$slug.'_2}}',
+                'description' => $domain->name.' percentage (applicant 2)',
+            ];
+            $domainsGroup[] = [
+                'placeholder' => '{{'.$slug.'_raw_2}}',
+                'description' => $domain->name.' raw score (applicant 2)',
+            ];
+            $domainsGroup[] = [
+                'placeholder' => '{{'.$slug.'_rating_2'.'}}',
+                'description' => $domain->name.' rating (applicant 2)',
+            ];
+        }
+
+        return [
+            'applicant1' => $applicant1,
+            'applicant2' => $applicant2,
+            'institution' => $institution,
+            'personnel' => $personnel,
+            'domains' => $domainsGroup,
+        ];
+    }
+
+    protected function buildSampleReplacements(): array
+    {
+        return $this->buildReplacements([], true);
     }
 
     /**

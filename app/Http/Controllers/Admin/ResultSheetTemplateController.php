@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreResultSheetTemplateRequest;
 use App\Http\Requests\UpdateResultSheetTemplateRequest;
 use App\Models\AptitudeArea;
+use App\Models\RatingScale;
 use App\Models\ResultSheetTemplate;
 use App\Services\AuditService;
 use App\Services\ResultSheetTemplateService;
@@ -46,9 +47,13 @@ class ResultSheetTemplateController extends Controller
             'exampleRaw' => '{{'.$this->templateService->aptitudeAreaSlug($d->name).'_raw}}',
         ])->values()->all();
 
+        $placeholderGroups = $this->templateService->getPlaceholderGroups();
+
         return Inertia::render('Admin/ResultSheetTemplates/Create', [
-            'placeholdersApplicant1' => ['{{applicant_name}}', '{{applicant_reference}}', '{{exam_date}}', '{{room_name}}', '{{scores_rows}}', '{{overall_pct}}'],
-            'placeholdersApplicant2' => ['{{applicant_name_2}}', '{{applicant_reference_2}}', '{{scores_rows_2}}', '{{overall_pct_2}}'],
+            'placeholderGroups' => $placeholderGroups,
+            'placeholdersApplicant1' => array_column($placeholderGroups['applicant1'], 'placeholder'),
+            'placeholdersApplicant2' => array_column($placeholderGroups['applicant2'], 'placeholder'),
+            'exampleRating' => $this->buildExampleRating(),
             'domainPlaceholders' => $domainPlaceholders,
             'htmlScoresNote' => 'For the scores table in HTML mode, put this inside tbody: <code>&lt;tr class="scores-rows-placeholder"&gt;&lt;td colspan="3"&gt;&lt;/td&gt;&lt;/tr&gt;</code> (Do not use {{scores_rows}}; it is stripped by the sanitizer.)',
             'htmlTemplateRules' => 'Single root div. Placeholders: {{applicant_name}}, {{applicant_reference}}, {{exam_date}}, {{room_name}}, {{overall_pct}}. Half-crosswise: keep content under ~148mm height per sheet (use p-4, text-sm, space-y-3). Full page: ~297mm. No scripts.',
@@ -106,10 +111,14 @@ class ResultSheetTemplateController extends Controller
             'exampleRaw' => '{{'.$this->templateService->aptitudeAreaSlug($d->name).'_raw}}',
         ])->values()->all();
 
+        $placeholderGroups = $this->templateService->getPlaceholderGroups();
+
         return Inertia::render('Admin/ResultSheetTemplates/Edit', [
             'template' => $result_template,
-            'placeholdersApplicant1' => ['{{applicant_name}}', '{{applicant_reference}}', '{{exam_date}}', '{{room_name}}', '{{scores_rows}}', '{{overall_pct}}'],
-            'placeholdersApplicant2' => ['{{applicant_name_2}}', '{{applicant_reference_2}}', '{{scores_rows_2}}', '{{overall_pct_2}}'],
+            'placeholderGroups' => $placeholderGroups,
+            'placeholdersApplicant1' => array_column($placeholderGroups['applicant1'], 'placeholder'),
+            'placeholdersApplicant2' => array_column($placeholderGroups['applicant2'], 'placeholder'),
+            'exampleRating' => $this->buildExampleRating(),
             'domainPlaceholders' => $domainPlaceholders,
             'htmlScoresNote' => 'For the scores table in HTML mode, put this inside tbody: <code>&lt;tr class="scores-rows-placeholder"&gt;&lt;td colspan="3"&gt;&lt;/td&gt;&lt;/tr&gt;</code> (Do not use {{scores_rows}}; it is stripped by the sanitizer.)',
             'htmlTemplateRules' => 'Single root div. Placeholders: {{applicant_name}}, {{applicant_reference}}, {{exam_date}}, {{room_name}}, {{overall_pct}}. Half-crosswise: keep content under ~148mm height per sheet (use p-4, text-sm, space-y-3). Full page: ~297mm. No scripts.',
@@ -249,5 +258,17 @@ class ResultSheetTemplateController extends Controller
         return response()->json(
             $this->templateService->getDocxValidation($fullPath, $isCrosswise)->toArray()
         );
+    }
+
+    protected function buildExampleRating(): array
+    {
+        $ratingScale = RatingScale::default();
+        $domains = AptitudeArea::where('is_active', true)->orderBy('display_order')->first();
+        $slug = $domains ? $this->templateService->aptitudeAreaSlug($domains->name) : 'spatial_awareness';
+
+        return [
+            'placeholder' => '{{'.$slug.'_rating}}',
+            'value' => $ratingScale ? $ratingScale->ratingFor(85) : 'Above Average',
+        ];
     }
 }
