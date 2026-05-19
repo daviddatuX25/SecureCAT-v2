@@ -11,7 +11,7 @@
   import { success } from '@/lib/toast';
   import { FileCode, FileText } from 'lucide-svelte';
   import { GuidePanel, GuideSection, CopyableGroup, GuideNote } from '@/Components/Guide';
-  import { Badge } from '@/Components/ui/badge';
+  import DocxTemplateAnalyzer from '@/Components/DocxTemplateAnalyzer.svelte';
 
   const breadcrumbs = [
     { label: 'Setup', href: '/admin/setup' },
@@ -55,18 +55,17 @@
   const personnelItems = $derived(
     placeholderGroups?.personnel?.map((p) => ({ value: p.placeholder, label: p.description })) ?? [],
   );
-  const domainItems = $derived(
-    domainPlaceholders.flatMap((dp) => {
-      const items = [
-        { value: dp.example, label: dp.slug },
-        { value: dp.example.replace('}}', '_rating}}'), label: `${dp.slug}_rating` },
-      ];
-      if (isCrosswise) {
-        items.push({ value: dp.example.replace('}}', '_2}}'), label: `${dp.slug}_2` });
-        items.push({ value: dp.example.replace('}}', '_rating_2}}'), label: `${dp.slug}_rating_2` });
-      }
-      return items;
-    }),
+  const domainItems1 = $derived(
+    domainPlaceholders.flatMap((dp) => [
+      { value: dp.example, label: `${dp.slug} — Percentile` },
+      { value: dp.example.replace('}}', '_rating}}'), label: `${dp.slug} — Rating` },
+    ]),
+  );
+  const domainItems2 = $derived(
+    domainPlaceholders.flatMap((dp) => [
+      { value: dp.example.replace('}}', '_2}}'), label: `${dp.slug} — Percentile` },
+      { value: dp.example.replace('}}', '_rating_2}}'), label: `${dp.slug} — Rating` },
+    ]),
   );
 
   // $state for reactivity tracking only — Svelte 5 wraps objects in Proxy,
@@ -111,7 +110,10 @@
       },
     })
       .then((r) => r.ok ? r.json() : null)
-      .then((data) => { if (data) validationResult = data; })
+      .then((data) => {
+        if (data) validationResult = data;
+        else validationResult = null;
+      })
       .catch(() => { validationResult = null; })
       .finally(() => (validationLoading = false));
   }
@@ -203,30 +205,33 @@
 <AuthenticatedLayout {breadcrumbs}>
   <div class="max-w-6xl space-y-6">
     <GuidePanel title="Placeholder Reference & Templates Guide">
-      <GuideSection title="Applicant 1 Placeholders">
-        <CopyableGroup items={applicant1Items} />
+      <GuideSection title={isCrosswise ? 'Applicant 1 — Single print / odd in crosswise bulk' : 'Applicant Placeholders'}>
+        <CopyableGroup items={applicant1Items} subtitle="Identity & Info" />
+        {#if domainPlaceholders.length > 0}
+          <CopyableGroup
+            items={domainItems1}
+            subtitle={`Score Domains — Percentile & Descriptive Rating${exampleRating ? ` (e.g. ${exampleRating})` : ''}`}
+            class="mt-3"
+          />
+        {/if}
       </GuideSection>
 
-      <GuideSection title="Applicant 2 Placeholders" visible={isCrosswise}>
-        <CopyableGroup items={applicant2Items} />
+      <GuideSection title="Applicant 2 — Even in crosswise bulk" visible={isCrosswise}>
+        <CopyableGroup items={applicant2Items} subtitle="Identity & Info" />
+        {#if domainPlaceholders.length > 0}
+          <CopyableGroup
+            items={domainItems2}
+            subtitle={`Score Domains — Percentile & Descriptive Rating${exampleRating ? ` (e.g. ${exampleRating})` : ''}`}
+            class="mt-3"
+          />
+        {/if}
       </GuideSection>
 
-      <GuideSection title="Domain Tags" visible={domainPlaceholders.length > 0}>
-        <CopyableGroup
-          items={domainItems}
-          subtitle={
-            isCrosswise
-              ? `Click to copy. Both applicant 1 and applicant 2 variants are shown.${exampleRating ? ` Rating: ${exampleRating}` : ''}`
-              : exampleRating ? `Rating: ${exampleRating}` : 'Click to copy'
-          }
-        />
-      </GuideSection>
-
-      <GuideSection title="Institution Placeholders" visible={(placeholderGroups?.institution?.length ?? 0) > 0}>
+      <GuideSection title="Institution" visible={(placeholderGroups?.institution?.length ?? 0) > 0}>
         <CopyableGroup items={institutionItems} />
       </GuideSection>
 
-      <GuideSection title="Personnel Placeholders" visible={(placeholderGroups?.personnel?.length ?? 0) > 0}>
+      <GuideSection title="Personnel" visible={(placeholderGroups?.personnel?.length ?? 0) > 0}>
         <CopyableGroup items={personnelItems} />
       </GuideSection>
 
@@ -310,26 +315,7 @@
             {#if validationLoading}
               <p class="text-xs text-muted-foreground mt-1">Checking placeholders…</p>
             {:else if validationResult}
-              {#if validationResult.valid}
-                <Badge variant="success" class="mt-1">All required placeholders found ({validationResult.found.length})</Badge>
-              {:else}
-                <Badge variant="warning" class="mt-1">{validationResult.missing.length} missing placeholder(s)</Badge>
-                <div class="flex flex-wrap gap-1 mt-1">
-                  {#each validationResult.missing as ph}
-                    <Badge variant="outline" class="text-xs text-amber-600">{ph}</Badge>
-                  {/each}
-                </div>
-              {/if}
-              {#if validationResult.extra?.length}
-                <details class="mt-1 text-xs text-muted-foreground">
-                  <summary class="cursor-pointer">{validationResult.extra.length} unknown placeholder(s)</summary>
-                  <div class="flex flex-wrap gap-1 mt-1">
-                    {#each validationResult.extra as ph}
-                      <Badge variant="muted" class="text-xs">{ph}</Badge>
-                    {/each}
-                  </div>
-                </details>
-              {/if}
+              <DocxTemplateAnalyzer result={validationResult} loading={validationLoading} />
             {/if}
           </div>
         {/if}
@@ -374,9 +360,17 @@
         {:else if previewError}
           <p class="text-sm text-destructive p-4">{previewError}</p>
         {:else if previewHtml}
-          <div class="overflow-auto rounded border bg-white p-4 text-sm" style="max-height: 600px;">
-            {@html previewHtml}
-          </div>
+          <iframe
+            srcdoc={previewHtml}
+            class="w-full rounded border bg-white"
+            style="min-height: 400px; max-height: 600px;"
+            sandbox="allow-same-origin"
+            title="DOCX Preview"
+            onload={(e) => {
+              const h = e.target.contentDocument?.body?.scrollHeight;
+              if (h) e.target.style.height = `${h + 32}px`;
+            }}
+          ></iframe>
         {:else}
           <p class="text-sm text-muted-foreground p-4">Edit content or upload DOCX to see preview.</p>
         {/if}

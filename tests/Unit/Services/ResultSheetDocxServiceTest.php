@@ -80,6 +80,19 @@ class ResultSheetDocxServiceTest extends TestCase
         $this->assertStringContainsString('No DOCX template', $html);
     }
 
+    private function makeCategorized(array $required = [], array $recommended = [], array $optional = [], array $domain = [], array $personnel = [], array $institution = [], array $applicant2 = []): array
+    {
+        return [
+            'required' => $required,
+            'recommended' => $recommended,
+            'optional' => $optional,
+            'domain' => $domain,
+            'personnel' => $personnel,
+            'institution' => $institution,
+            'applicant2' => $applicant2,
+        ];
+    }
+
     #[Test]
     public function validate_returns_valid_for_complete_file(): void
     {
@@ -88,8 +101,9 @@ class ResultSheetDocxServiceTest extends TestCase
         }
         $required = ['applicant_name', 'applicant_reference'];
         $path = $this->createDocxWithPlaceholders($required);
+        $categorized = $this->makeCategorized(required: $required);
 
-        $result = $this->service->validateDocxTemplate($path, $required, true);
+        $result = $this->service->validateDocxTemplate($path, $categorized, true);
 
         $this->assertTrue($result->valid);
         $this->assertEmpty($result->missing);
@@ -103,8 +117,9 @@ class ResultSheetDocxServiceTest extends TestCase
         }
         $required = ['applicant_name', 'applicant_reference', 'exam_date'];
         $path = $this->createDocxWithPlaceholders(['applicant_name']);
+        $categorized = $this->makeCategorized(required: $required);
 
-        $result = $this->service->validateDocxTemplate($path, $required, true);
+        $result = $this->service->validateDocxTemplate($path, $categorized, true);
 
         $this->assertFalse($result->valid);
         $this->assertContains('applicant_reference', $result->missing);
@@ -118,10 +133,13 @@ class ResultSheetDocxServiceTest extends TestCase
         if (! self::zipAvailable()) {
             $this->markTestSkipped('ZipArchive extension not loaded');
         }
-        $required = ['applicant_name', 'applicant_name_2'];
         $path = $this->createDocxWithPlaceholders(['applicant_name']);
+        $categorized = $this->makeCategorized(
+            required: ['applicant_name'],
+            applicant2: ['applicant_name_2'],
+        );
 
-        $result = $this->service->validateDocxTemplate($path, $required, false);
+        $result = $this->service->validateDocxTemplate($path, $categorized, false);
 
         $this->assertTrue($result->valid);
     }
@@ -132,10 +150,12 @@ class ResultSheetDocxServiceTest extends TestCase
         if (! self::zipAvailable()) {
             $this->markTestSkipped('ZipArchive extension not loaded');
         }
-        $required = ['applicant_name', 'applicant_name_2'];
         $path = $this->createDocxWithPlaceholders(['applicant_name']);
+        $categorized = $this->makeCategorized(
+            required: ['applicant_name', 'applicant_name_2'],
+        );
 
-        $result = $this->service->validateDocxTemplate($path, $required, true);
+        $result = $this->service->validateDocxTemplate($path, $categorized, true);
 
         $this->assertFalse($result->valid);
         $this->assertContains('applicant_name_2', $result->missing);
@@ -147,12 +167,43 @@ class ResultSheetDocxServiceTest extends TestCase
         if (! self::zipAvailable()) {
             $this->markTestSkipped('ZipArchive extension not loaded');
         }
-        $required = ['applicant_name'];
         $path = $this->createDocxWithPlaceholders(['applicant_name', 'applcant_name']);
+        $categorized = $this->makeCategorized(required: ['applicant_name']);
 
-        $result = $this->service->validateDocxTemplate($path, $required, true);
+        $result = $this->service->validateDocxTemplate($path, $categorized, true);
 
         $this->assertTrue($result->valid);
         $this->assertContains('applcant_name', $result->extra);
+    }
+
+    #[Test]
+    public function validate_includes_checks_array(): void
+    {
+        if (! self::zipAvailable()) {
+            $this->markTestSkipped('ZipArchive extension not loaded');
+        }
+        $path = $this->createDocxWithPlaceholders(['applicant_name']);
+        $categorized = $this->makeCategorized(required: ['applicant_name']);
+
+        $result = $this->service->validateDocxTemplate($path, $categorized, true);
+
+        $this->assertIsArray($result->checks);
+        $this->assertNotEmpty($result->checks);
+        $this->assertArrayHasKey('label', $result->checks[0]);
+        $this->assertArrayHasKey('detail', $result->checks[0]);
+        $this->assertArrayHasKey('status', $result->checks[0]);
+    }
+
+    #[Test]
+    public function validate_returns_checks_for_missing_file(): void
+    {
+        $categorized = $this->makeCategorized(required: ['applicant_name']);
+
+        $result = $this->service->validateDocxTemplate('/nonexistent/file.docx', $categorized, true);
+
+        $this->assertFalse($result->valid);
+        $this->assertNotEmpty($result->checks);
+        $fileCheck = collect($result->checks)->firstWhere('label', 'DOCX file readable');
+        $this->assertEquals('fail', $fileCheck['status']);
     }
 }

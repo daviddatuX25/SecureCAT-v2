@@ -242,7 +242,11 @@ class ResultSheetTemplateController extends Controller
         ]);
 
         if ($request->hasFile('docx')) {
-            $fullPath = $request->file('docx')->getRealPath();
+            $uploaded = $request->file('docx');
+            if (! $uploaded->isValid()) {
+                return response()->json(['error' => 'File upload failed: '.$uploaded->getErrorMessage()], 422);
+            }
+            $fullPath = $uploaded->getRealPath() ?: $uploaded->getPathname();
         } elseif ($request->input('template_id')) {
             $template = ResultSheetTemplate::findOrFail($request->input('template_id'));
             if (! $template->docx_path) {

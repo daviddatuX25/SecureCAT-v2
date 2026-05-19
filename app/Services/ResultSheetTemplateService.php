@@ -40,6 +40,7 @@ class ResultSheetTemplateService
         'institution_name', 'institution_campus', 'institution_address',
         'institution_contact', 'institution_email', 'institution_website',
         'institution_exam_name', 'institution_exam_acronym',
+        'institution_contact_number', 'examination_name', 'examination_acronym',
     ];
 
     /**
@@ -426,6 +427,18 @@ class ResultSheetTemplateService
                 'description' => $descriptions[$key] ?? str_replace('_', ' ', Str::title($key)),
             ];
         }
+        $institution[] = [
+            'placeholder' => '{{institution_contact_number}}',
+            'description' => 'Alias: institution_contact',
+        ];
+        $institution[] = [
+            'placeholder' => '{{examination_name}}',
+            'description' => 'Alias: institution_exam_name',
+        ];
+        $institution[] = [
+            'placeholder' => '{{examination_acronym}}',
+            'description' => 'Alias: institution_exam_acronym',
+        ];
 
         $personnel = [];
         $personnelConfig = config('institution.personnel', []);
@@ -436,6 +449,10 @@ class ResultSheetTemplateService
                 $personnel[] = [
                     'placeholder' => '{{'.$key.'}}',
                     'description' => "{$roleTitle} {$field}",
+                ];
+                $personnel[] = [
+                    'placeholder' => '{{'."{$role}_{$field}".'}}',
+                    'description' => "Alias: {$key}",
                 ];
             }
         }
@@ -542,12 +559,17 @@ class ResultSheetTemplateService
         $replacements['institution_exam_name'] = SystemSetting::institution('exam_name', '—');
         $replacements['institution_exam_acronym'] = SystemSetting::institution('exam_acronym', '—');
 
+        $replacements['institution_contact_number'] = $replacements['institution_contact'];
+        $replacements['examination_name'] = $replacements['institution_exam_name'];
+        $replacements['examination_acronym'] = $replacements['institution_exam_acronym'];
+
         $personnel = config('institution.personnel', []);
         foreach ($personnel as $role => $defaults) {
             foreach (['name', 'title', 'credentials'] as $field) {
                 $dotKey = "personnel.{$role}.{$field}";
                 $val = SystemSetting::institution($dotKey) ?? ($defaults[$field] ?? '');
                 $replacements["personnel_{$role}_{$field}"] = $val ?: '—';
+                $replacements["{$role}_{$field}"] = $val ?: '—';
             }
         }
 
@@ -776,33 +798,65 @@ class ResultSheetTemplateService
     {
         return $this->docxService->validateDocxTemplate(
             $fullPath,
-            $this->buildAllKnownPlaceholders(),
+            $this->buildCategorizedPlaceholders(),
             $isCrosswise,
         );
     }
 
-    protected function buildAllKnownPlaceholders(): array
+    /**
+     * @return array{required: string[], recommended: string[], optional: string[], domain: string[], personnel: string[], institution: string[], applicant2: string[]}
+     */
+    protected function buildCategorizedPlaceholders(): array
     {
-        $placeholders = self::PLACEHOLDERS;
+        $categorized = [
+            'required' => ['applicant_name', 'applicant_reference'],
+            'recommended' => [
+                'family_name', 'first_name', 'middle_name', 'suffix',
+                'sex', 'course_applied', 'applicant_type',
+                'exam_date', 'exam_time', 'room_name', 'overall_pct',
+            ],
+            'optional' => [
+                'scores_rows', 'gwa', 'strand',
+                'recommended_course', 'counselor_comments', 'counselor_name',
+            ],
+            'applicant2' => [
+                'applicant_name_2', 'applicant_reference_2',
+                'family_name_2', 'first_name_2', 'middle_name_2', 'suffix_2',
+                'sex_2', 'gwa_2', 'course_applied_2', 'strand_2', 'applicant_type_2',
+                'exam_date_2', 'exam_time_2', 'room_name_2',
+                'scores_rows_2', 'overall_pct_2',
+                'recommended_course_2', 'counselor_comments_2', 'counselor_name_2',
+            ],
+            'institution' => [
+                'institution_name', 'institution_campus', 'institution_address',
+                'institution_contact', 'institution_email', 'institution_website',
+                'institution_exam_name', 'institution_exam_acronym',
+                'institution_contact_number', 'examination_name', 'examination_acronym',
+            ],
+            'personnel' => [],
+            'domain' => [],
+        ];
+
         $domains = AptitudeArea::where('is_active', true)->orderBy('display_order')->get(['name']);
         foreach ($domains as $domain) {
             $slug = $this->aptitudeAreaSlug($domain->name);
-            $placeholders[] = $slug;
-            $placeholders[] = $slug.'_raw';
-            $placeholders[] = $slug.'_rating';
-            $placeholders[] = $slug.'_2';
-            $placeholders[] = $slug.'_raw_2';
-            $placeholders[] = $slug.'_rating_2';
+            $categorized['domain'][] = $slug;
+            $categorized['domain'][] = $slug.'_raw';
+            $categorized['domain'][] = $slug.'_rating';
+            $categorized['applicant2'][] = $slug.'_2';
+            $categorized['applicant2'][] = $slug.'_raw_2';
+            $categorized['applicant2'][] = $slug.'_rating_2';
         }
 
         $personnelRoles = array_keys(config('institution.personnel', []));
         foreach ($personnelRoles as $role) {
             foreach (['name', 'title', 'credentials'] as $field) {
-                $placeholders[] = "personnel_{$role}_{$field}";
+                $categorized['personnel'][] = "personnel_{$role}_{$field}";
+                $categorized['personnel'][] = "{$role}_{$field}";
             }
         }
 
-        return array_unique($placeholders);
+        return $categorized;
     }
 
     protected function buildScoresRows(array $scores): string
