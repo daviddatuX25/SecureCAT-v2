@@ -13,7 +13,9 @@ use App\ValueObjects\DocxValidationResult;
 use App\ValueObjects\RenderResult;
 use Carbon\Carbon;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use PhpOffice\PhpWord\TemplateProcessor;
 
 class ResultSheetTemplateService
 {
@@ -180,6 +182,55 @@ class ResultSheetTemplateService
         }
 
         return $sheetsHtml;
+    }
+
+    /**
+     * Build filled DOCX temp files for each applicant (for LibreOffice PDF conversion).
+     * Caller MUST clean up temp files after use.
+     *
+     * @param  array<int, array<string, mixed>>  $applicantsWithScores
+     * @return string[] Array of temp file paths to filled DOCX files
+     */
+    public function buildFilledDocxFiles(array $applicantsWithScores, ResultSheetTemplate $template): array
+    {
+        if (! $template->docx_path) {
+            throw new \RuntimeException('Template has no DOCX file.');
+        }
+
+        $fullPath = Storage::path($template->docx_path);
+
+        if (! is_file($fullPath)) {
+            throw new \RuntimeException('DOCX template file not found on disk.');
+        }
+
+        $logicalUnit = $template->logical_unit ?? ResultSheetTemplate::LOGICAL_FULL;
+        $chunkSize = in_array($logicalUnit, [ResultSheetTemplate::LOGICAL_HALF_A4, ResultSheetTemplate::LOGICAL_HALF_LEGAL, ResultSheetTemplate::LOGICAL_HALF_LETTER], true) ? 2 : 1;
+
+        $tempDir = storage_path('app/temp/phpword');
+        if (! is_dir($tempDir)) {
+            mkdir($tempDir, 0755, true);
+        }
+
+        $tempFiles = [];
+
+        foreach (array_chunk($applicantsWithScores, $chunkSize) as $chunk) {
+            $chunk = array_values($chunk);
+            $replacements = $this->buildReplacements($chunk, false);
+
+            $processor = new TemplateProcessor($fullPath);
+            $processor->setMacroChars('{{', '}}');
+
+            $sanitized = array_map(fn ($v) => str_replace(['{{', '}}'], ['{ {', '} }'], (string) $v), $replacements);
+            foreach ($sanitized as $key => $value) {
+                $processor->setValue($key, $value);
+            }
+
+            $tempFile = tempnam($tempDir, 'docx_filled_').'.docx';
+            $processor->saveAs($tempFile);
+            $tempFiles[] = $tempFile;
+        }
+
+        return $tempFiles;
     }
 
     /**

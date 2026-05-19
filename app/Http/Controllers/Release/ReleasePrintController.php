@@ -9,6 +9,7 @@ use App\Models\ApplicantScore;
 use App\Models\GradingSession;
 use App\Models\ResultSheetTemplate;
 use App\Services\AuditService;
+use App\Services\DocxToPdfService;
 use App\Services\PrintBatchService;
 use App\Services\ResultSheetPdfService;
 use App\Services\ResultSheetTemplateService;
@@ -28,6 +29,7 @@ class ReleasePrintController extends Controller
         private PrintBatchService $printService,
         private ResultSheetTemplateService $templateService,
         private ResultSheetPdfService $pdfService,
+        private DocxToPdfService $docxToPdfService,
     ) {}
 
     public function index(GradingSession $grading_session): Response
@@ -139,6 +141,33 @@ class ReleasePrintController extends Controller
         $template = ResultSheetTemplate::where('is_active', true)->first();
         abort_if(! $template, 404, 'No active result sheet template.');
 
+        $filename = str_replace(' ', '_', $this->formatName($applicant)).'_result_sheet.pdf';
+
+        if ($template->mode === ResultSheetTemplate::MODE_DOCX && $this->docxToPdfService->isAvailable()) {
+            $applicantsWithScores = $this->templateService->fetchApplicantsWithScores(
+                [$applicant->id],
+                $grading_session->id,
+            );
+
+            if (empty($applicantsWithScores)) {
+                abort(404, 'Applicant data not found.');
+            }
+
+            $docxFiles = $this->templateService->buildFilledDocxFiles($applicantsWithScores, $template);
+
+            try {
+                $pdfContent = $this->docxToPdfService->convert($docxFiles[0]);
+
+                return request()->boolean('download')
+                    ? response()->streamDownload(fn () => print ($pdfContent), $filename, ['Content-Type' => 'application/pdf'])
+                    : response()->make($pdfContent, 200, ['Content-Type' => 'application/pdf']);
+            } finally {
+                foreach ($docxFiles as $f) {
+                    @unlink($f);
+                }
+            }
+        }
+
         $session = $grading_session->load(['examSession.room']);
         $applicant->load('application');
         $scores = $grading_session->applicantScores()
@@ -148,8 +177,6 @@ class ReleasePrintController extends Controller
 
         $applicantData = $this->buildApplicantData($applicant, $session, $scores);
         $result = $this->templateService->render($template, [$applicantData], false, true);
-
-        $filename = str_replace(' ', '_', $applicantData['name']).'_result_sheet.pdf';
 
         return request()->boolean('download')
             ? $this->pdfService->download($result, $filename)
@@ -219,23 +246,8 @@ class ReleasePrintController extends Controller
             return Inertia::render('Release/ResultSheetBulk', $this->noTemplatePayload());
         }
 
-        $grading_session->load('examSession.room');
         $ids = array_slice(array_filter(array_map('intval', explode(',', request()->query('ids', '')))), 0, 200);
-        $applicants = $grading_session->applicants()
-            ->whereIn('applicants.id', $ids)
-            ->with('application')
-            ->get();
-        $scoresByApplicant = $grading_session->applicantScores()
-            ->whereIn('applicant_id', $ids)
-            ->with('aptitudeArea')
-            ->get()
-            ->groupBy('applicant_id');
-
-        $applicantsWithScores = $applicants->map(function ($a) use ($scoresByApplicant, $grading_session) {
-            $scores = $this->mapScores($scoresByApplicant->get($a->id, collect()));
-
-            return $this->buildApplicantData($a, $grading_session, null, $scores);
-        })->values()->all();
+        $applicantsWithScores = $this->templateService->fetchApplicantsWithScores($ids, $grading_session->id);
 
         $sheetsHtml = $this->templateService->buildSheetsFromApplicantData($applicantsWithScores, $template);
 
@@ -260,29 +272,30 @@ class ReleasePrintController extends Controller
         $copies = (int) request()->query('copies', 1);
         abort_if($copies < 1 || $copies > 10, 422, 'Copies must be between 1 and 10.');
 
-        $grading_session->load('examSession.room');
         $ids = array_slice(array_filter(array_map('intval', explode(',', request()->query('ids', '')))), 0, 200);
-        $applicants = $grading_session->applicants()
-            ->whereIn('applicants.id', $ids)
-            ->with('application')
-            ->get();
-        $scoresByApplicant = $grading_session->applicantScores()
-            ->whereIn('applicant_id', $ids)
-            ->with('aptitudeArea')
-            ->get()
-            ->groupBy('applicant_id');
+        $applicantsWithScores = $this->templateService->fetchApplicantsWithScores($ids, $grading_session->id);
 
-        $applicantsWithScores = $applicants->map(function ($a) use ($scoresByApplicant, $grading_session) {
-            $scores = $this->mapScores($scoresByApplicant->get($a->id, collect()));
+        $filename = "session_{$grading_session->id}_result_sheets.pdf";
 
-            return $this->buildApplicantData($a, $grading_session, null, $scores);
-        })->values()->all();
+        if ($template->mode === ResultSheetTemplate::MODE_DOCX && $this->docxToPdfService->isAvailable()) {
+            $docxFiles = $this->templateService->buildFilledDocxFiles($applicantsWithScores, $template);
+
+            try {
+                $pdfContent = $this->docxToPdfService->convertBatch($docxFiles, $copies);
+
+                return request()->boolean('download')
+                    ? response()->streamDownload(fn () => print ($pdfContent), $filename, ['Content-Type' => 'application/pdf'])
+                    : response()->make($pdfContent, 200, ['Content-Type' => 'application/pdf']);
+            } finally {
+                foreach ($docxFiles as $f) {
+                    @unlink($f);
+                }
+            }
+        }
 
         $sheetsHtml = $this->templateService->buildRawSheetsFromApplicantData($applicantsWithScores, $template);
 
         $meta = RenderResult::fromTemplate($template);
-
-        $filename = "session_{$grading_session->id}_result_sheets.pdf";
 
         return request()->boolean('download')
             ? $this->pdfService->bulkDownload($sheetsHtml, $meta, $filename, $copies)
@@ -298,33 +311,7 @@ class ReleasePrintController extends Controller
             return Inertia::render('Release/ResultSheetBulk', $this->noTemplatePayload($ids));
         }
 
-        $applicants = Applicant::whereIn('id', $ids)
-            ->with('application', 'gradingSessions.examSession.room')
-            ->get();
-
-        $applicantSessionMap = [];
-        foreach ($applicants as $applicant) {
-            $gs = $applicant->gradingSessions->where('status', GradingSession::STATUS_FINALIZED)->first() ?? $applicant->gradingSessions->first();
-            if ($gs) {
-                $applicantSessionMap[$applicant->id] = $gs->id;
-            }
-        }
-
-        $allScores = ApplicantScore::whereIn('applicant_id', array_keys($applicantSessionMap))
-            ->whereIn('grading_session_id', array_unique(array_values($applicantSessionMap)))
-            ->with('aptitudeArea')
-            ->get()
-            ->groupBy('applicant_id');
-
-        $applicantsWithScores = $applicants->map(function ($a) use ($allScores) {
-            $gs = $a->gradingSessions->where('status', GradingSession::STATUS_FINALIZED)->first() ?? $a->gradingSessions->first();
-            $scores = $this->mapScores(
-                $allScores->get($a->id, collect())
-                    ->filter(fn ($s) => $gs && $s->grading_session_id === $gs->id)
-            );
-
-            return $this->buildApplicantData($a, $gs, null, $scores);
-        })->values()->all();
+        $applicantsWithScores = $this->templateService->fetchApplicantsWithScores($ids);
 
         $sheetsHtml = $this->templateService->buildSheetsFromApplicantData($applicantsWithScores, $template);
 
@@ -350,33 +337,23 @@ class ReleasePrintController extends Controller
         abort_if($copies < 1 || $copies > 10, 422, 'Copies must be between 1 and 10.');
 
         $ids = array_slice(array_filter(array_map('intval', explode(',', request()->query('ids', '')))), 0, 200);
-        $applicants = Applicant::whereIn('id', $ids)
-            ->with('application', 'gradingSessions.examSession.room')
-            ->get();
+        $applicantsWithScores = $this->templateService->fetchApplicantsWithScores($ids);
 
-        $applicantSessionMap = [];
-        foreach ($applicants as $applicant) {
-            $gs = $applicant->gradingSessions->where('status', GradingSession::STATUS_FINALIZED)->first() ?? $applicant->gradingSessions->first();
-            if ($gs) {
-                $applicantSessionMap[$applicant->id] = $gs->id;
+        if ($template->mode === ResultSheetTemplate::MODE_DOCX && $this->docxToPdfService->isAvailable()) {
+            $docxFiles = $this->templateService->buildFilledDocxFiles($applicantsWithScores, $template);
+
+            try {
+                $pdfContent = $this->docxToPdfService->convertBatch($docxFiles, $copies);
+
+                return request()->boolean('download')
+                    ? response()->streamDownload(fn () => print ($pdfContent), 'result_sheets.pdf', ['Content-Type' => 'application/pdf'])
+                    : response()->make($pdfContent, 200, ['Content-Type' => 'application/pdf']);
+            } finally {
+                foreach ($docxFiles as $f) {
+                    @unlink($f);
+                }
             }
         }
-
-        $allScores = ApplicantScore::whereIn('applicant_id', array_keys($applicantSessionMap))
-            ->whereIn('grading_session_id', array_unique(array_values($applicantSessionMap)))
-            ->with('aptitudeArea')
-            ->get()
-            ->groupBy('applicant_id');
-
-        $applicantsWithScores = $applicants->map(function ($a) use ($allScores) {
-            $gs = $a->gradingSessions->where('status', GradingSession::STATUS_FINALIZED)->first() ?? $a->gradingSessions->first();
-            $scores = $this->mapScores(
-                $allScores->get($a->id, collect())
-                    ->filter(fn ($s) => $gs && $s->grading_session_id === $gs->id)
-            );
-
-            return $this->buildApplicantData($a, $gs, null, $scores);
-        })->values()->all();
 
         $sheetsHtml = $this->templateService->buildRawSheetsFromApplicantData($applicantsWithScores, $template);
 
