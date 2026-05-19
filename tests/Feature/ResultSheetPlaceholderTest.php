@@ -93,4 +93,54 @@ class ResultSheetPlaceholderTest extends TestCase
             $this->assertContains($key, $placeholders, "PLACEHOLDERS constant missing: {$key}");
         }
     }
+
+    public function test_build_replacements_includes_institution_aliases(): void
+    {
+        $service = app(ResultSheetTemplateService::class);
+        $replacements = $service->buildReplacements([], true);
+
+        $this->assertArrayHasKey('institution_contact_number', $replacements);
+        $this->assertArrayHasKey('examination_name', $replacements);
+        $this->assertArrayHasKey('examination_acronym', $replacements);
+        $this->assertEquals($replacements['institution_contact'], $replacements['institution_contact_number']);
+        $this->assertEquals($replacements['institution_exam_name'], $replacements['examination_name']);
+        $this->assertEquals($replacements['institution_exam_acronym'], $replacements['examination_acronym']);
+    }
+
+    public function test_build_replacements_includes_personnel_aliases(): void
+    {
+        $service = app(ResultSheetTemplateService::class);
+        $replacements = $service->buildReplacements([], true);
+
+        $personnelRoles = array_keys(config('institution.personnel', []));
+        foreach ($personnelRoles as $role) {
+            foreach (['name', 'title', 'credentials'] as $field) {
+                $prefixed = "personnel_{$role}_{$field}";
+                $short = "{$role}_{$field}";
+                $this->assertArrayHasKey($prefixed, $replacements, "Missing prefixed key: {$prefixed}");
+                $this->assertArrayHasKey($short, $replacements, "Missing short alias: {$short}");
+                $this->assertEquals($replacements[$prefixed], $replacements[$short], "Alias mismatch: {$prefixed} vs {$short}");
+            }
+        }
+    }
+
+    public function test_categorized_placeholders_includes_aliases(): void
+    {
+        $service = app(ResultSheetTemplateService::class);
+        $method = new \ReflectionMethod($service, 'buildCategorizedPlaceholders');
+        $method->setAccessible(true);
+        $categorized = $method->invoke($service);
+
+        $this->assertContains('institution_contact_number', $categorized['institution']);
+        $this->assertContains('examination_name', $categorized['institution']);
+        $this->assertContains('examination_acronym', $categorized['institution']);
+
+        $personnelRoles = array_keys(config('institution.personnel', []));
+        foreach ($personnelRoles as $role) {
+            foreach (['name', 'title', 'credentials'] as $field) {
+                $this->assertContains("personnel_{$role}_{$field}", $categorized['personnel']);
+                $this->assertContains("{$role}_{$field}", $categorized['personnel']);
+            }
+        }
+    }
 }
