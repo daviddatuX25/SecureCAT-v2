@@ -114,7 +114,7 @@
                     {#if area.scoring_method === 'conversion_table'}
                       <Badge variant="secondary" class="gap-1">
                         <Table2 class="h-3 w-3" />
-                        Conversion Table
+                        Table ({area.percentile_conversions_count ?? 0} rows)
                       </Badge>
                     {:else}
                       <Badge variant="outline" class="gap-1">

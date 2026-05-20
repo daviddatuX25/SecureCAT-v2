@@ -1,4 +1,5 @@
 <script>
+  import { untrack } from 'svelte';
   import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.svelte';
   import { Link, useForm, usePage } from '@inertiajs/svelte';
   import { Button } from '@/Components/ui/button';
@@ -6,7 +7,7 @@
   import { Textarea } from '@/Components/ui/textarea';
   import { Switch } from '@/Components/ui/switch';
   import { success } from '@/lib/toast';
-  import { Calculator, Table, Plus, Trash2, ClipboardPaste, Wand2, X } from 'lucide-svelte';
+  import { Calculator, Table, Plus, Trash2, ClipboardPaste, Wand2, X, Copy } from 'lucide-svelte';
 
   let { aptitude_area } = $props();
   const page = usePage();
@@ -32,9 +33,12 @@
   let testError = $state('');
 
   $effect(() => {
-    if ($form.scoring_method === 'formula') {
-      $form.conversion_table = [];
-    }
+    const method = $form.scoring_method;
+    untrack(() => {
+      if (method === 'formula' && $form.conversion_table.length > 0) {
+        $form.conversion_table = [];
+      }
+    });
   });
 
   function addRow() {
@@ -85,17 +89,31 @@
     const lines = pasteText.trim().split(/\r?\n/).filter(l => l.trim());
     const rows = [];
     for (const line of lines) {
-      const parts = line.split(/\t/);
+      const parts = line.split(/[\t:=]/);
       if (parts.length >= 2) {
-        const raw = parseInt(parts[0]?.trim(), 10);
+        const scorePart = parts[0]?.trim() ?? '';
         const out = parts[1]?.trim() ?? '';
-        if (!isNaN(raw) && out) {
-          rows.push({ raw_score: raw, percentile_output: out });
+        if (scorePart && out) {
+          const rangeMatch = scorePart.match(/^(\d+)\s*-\s*(\d+)$/);
+          if (rangeMatch) {
+            const start = parseInt(rangeMatch[1], 10);
+            const end = parseInt(rangeMatch[2], 10);
+            if (!isNaN(start) && !isNaN(end) && start <= end) {
+              for (let score = start; score <= end; score++) {
+                rows.push({ raw_score: score, percentile_output: out });
+              }
+            }
+          } else {
+            const raw = parseInt(scorePart, 10);
+            if (!isNaN(raw)) {
+              rows.push({ raw_score: raw, percentile_output: out });
+            }
+          }
         }
       }
     }
     if (rows.length === 0) {
-      pasteError = 'No valid rows found. Use tab-separated format: raw_score \t percentile_output';
+      pasteError = 'No valid rows found. Supported format:\n- raw_score [tab] percentile_output\n- range (e.g. 0-10) [tab] percentile_output\n- raw_score: percentile_output';
       return;
     }
     // Merge with existing rows, overwrite duplicates
@@ -108,6 +126,25 @@
     }
     $form.conversion_table = Array.from(map.values()).sort((a, b) => a.raw_score - b.raw_score);
     closePaste();
+  }
+
+  function copyTable() {
+    if ($form.conversion_table.length === 0) {
+      success('The conversion table is empty.');
+      return;
+    }
+    const text = $form.conversion_table
+      .map(r => `${r.raw_score}\t${r.percentile_output}`)
+      .join('\n');
+    
+    navigator.clipboard.writeText(text)
+      .then(() => {
+        success('Conversion table copied to clipboard.');
+      })
+      .catch((err) => {
+        console.error('Failed to copy text: ', err);
+        alert('Failed to copy to clipboard.');
+      });
   }
 
   async function testFormula() {
@@ -280,6 +317,12 @@
                   Generate 0–{$form.max_items}
                 </Button>
               {/if}
+              {#if $form.conversion_table.length > 0}
+                <Button type="button" variant="outline" size="sm" onclick={copyTable}>
+                  <Copy class="mr-1.5 h-3.5 w-3.5" />
+                  Copy
+                </Button>
+              {/if}
               <Button type="button" variant="outline" size="sm" onclick={openPaste}>
                 <ClipboardPaste class="mr-1.5 h-3.5 w-3.5" />
                 Paste
@@ -288,35 +331,34 @@
           </div>
 
           {#if $form.conversion_table.length > 0}
-            <div class="space-y-1">
+            <div class="flex gap-2 text-xs font-medium text-muted-foreground px-2">
+              <span class="w-24">Raw Score</span>
+              <span class="flex-1">Percentile Output</span>
+              <span class="w-8"></span>
+            </div>
+            <div class="max-h-72 overflow-y-auto space-y-2 pr-1 p-2 bg-background/50 border border-border/50 rounded-md">
               {#each $form.conversion_table as row, i}
                 <div class="flex items-center gap-2">
-                  <div class="flex-1">
-                    <label class="text-xs text-muted-foreground">Raw Score</label>
-                    <Input
-                      type="number"
-                      min="0"
-                      value={row.raw_score}
-                      oninput={(e) => updateRow(i, 'raw_score', parseInt(e.currentTarget.value, 10) || 0)}
-                      class="w-24"
-                    />
-                  </div>
-                  <div class="flex-[2]">
-                    <label class="text-xs text-muted-foreground">Percentile Output</label>
-                    <Input
-                      type="text"
-                      maxlength="20"
-                      value={row.percentile_output}
-                      oninput={(e) => updateRow(i, 'percentile_output', e.currentTarget.value)}
-                      placeholder="e.g., 85th, 99+, N/A"
-                      class="w-full"
-                    />
-                  </div>
+                  <Input
+                    type="number"
+                    min="0"
+                    value={row.raw_score}
+                    oninput={(e) => updateRow(i, 'raw_score', parseInt(e.currentTarget.value, 10) || 0)}
+                    class="w-24"
+                  />
+                  <Input
+                    type="text"
+                    maxlength="20"
+                    value={row.percentile_output}
+                    oninput={(e) => updateRow(i, 'percentile_output', e.currentTarget.value)}
+                    placeholder="e.g., 85th, 99+, N/A"
+                    class="flex-1"
+                  />
                   <Button
                     type="button"
                     variant="ghost"
                     size="sm"
-                    class="h-8 w-8 p-0 text-destructive"
+                    class="h-9 w-8 p-0 text-destructive hover:bg-destructive/10"
                     onclick={() => removeRow(i)}
                   >
                     <Trash2 class="h-4 w-4" />
@@ -379,11 +421,13 @@
             <X class="h-4 w-4" />
           </Button>
         </div>
-        <p class="text-sm text-muted-foreground">Paste tab-separated data. Each line: raw_score [tab] percentile_output</p>
+        <p class="text-sm text-muted-foreground">
+          Paste tab/colon separated data. Ranges are supported (e.g. 0-10). Each line: raw_score_or_range [tab/colon] percentile_output
+        </p>
         <Textarea
           bind:value={pasteText}
           rows="8"
-          placeholder="0\t85th\n1\t85th\n2\t86th\n..."
+          placeholder={"0-10\t50th\n11-20\t80th\n21: 90th"}
           class="w-full"
         />
         {#if pasteError}

@@ -21,6 +21,7 @@ class AptitudeAreaController extends Controller
         $this->authorize('viewAny', AptitudeArea::class);
 
         $aptitudeAreas = AptitudeArea::query()
+            ->withCount('percentileConversions')
             ->orderBy('display_order')
             ->orderBy('id')
             ->get()
@@ -34,6 +35,7 @@ class AptitudeAreaController extends Controller
                 'scoring_method' => $a->scoring_method,
                 'display_order' => $a->display_order,
                 'is_active' => $a->is_active,
+                'percentile_conversions_count' => $a->percentile_conversions_count,
             ]);
 
         return Inertia::render('Admin/AptitudeAreas/Index', [
@@ -122,14 +124,18 @@ class AptitudeAreaController extends Controller
             'is_active' => $data['is_active'] ?? true,
         ]);
 
-        if (($data['scoring_method'] ?? 'formula') === 'conversion_table' && ! empty($data['conversion_table'])) {
+        if (($data['scoring_method'] ?? 'formula') === 'conversion_table') {
             $aptitudeArea->percentileConversions()->delete();
-            foreach ($data['conversion_table'] as $row) {
-                $aptitudeArea->percentileConversions()->create([
-                    'raw_score' => $row['raw_score'],
-                    'percentile_output' => $row['percentile_output'],
-                ]);
+            if (! empty($data['conversion_table'])) {
+                foreach ($data['conversion_table'] as $row) {
+                    $aptitudeArea->percentileConversions()->create([
+                        'raw_score' => $row['raw_score'],
+                        'percentile_output' => $row['percentile_output'],
+                    ]);
+                }
             }
+        } else {
+            $aptitudeArea->percentileConversions()->delete();
         }
 
         app(AuditService::class)->log('aptitude_area.updated', AptitudeArea::class, $aptitudeArea->id, [], $data);
