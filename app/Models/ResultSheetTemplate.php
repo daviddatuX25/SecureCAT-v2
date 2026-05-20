@@ -17,7 +17,7 @@ class ResultSheetTemplate extends Model
         'orientation',
         'logical_unit',
         'content',
-        'docx_path',
+        'document_path',
         'watermark_text',
         'is_active',
         'rating_scale_id',

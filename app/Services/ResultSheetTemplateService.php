@@ -23,6 +23,7 @@ class ResultSheetTemplateService
     public function __construct(
         protected PrintTemplateCssService $cssService,
         protected ResultSheetDocxService $docxService,
+        protected ResultSheetOdtService $odtService,
     ) {}
 
     public const PLACEHOLDERS = [
