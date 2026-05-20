@@ -37,7 +37,7 @@
     name: '',
     mode: 'html',
     content: '',
-    docx: null,
+    document: null,
     paper_size: 'a4',
     orientation: 'portrait',
     logical_unit: 'full',
@@ -84,8 +84,8 @@
 
   // $state for reactivity tracking only — Svelte 5 wraps objects in Proxy,
   // which breaks FormData.append (internal slots require a real File).
-  let docxFile = $state(null);
-  let rawDocxFile = null; // plain var holds the actual File object
+  let documentFile = $state(null);
+  let rawDocumentFile = null; // plain var holds the actual File object
 
   $form.onFinish = () => {
     if (!$form.errors || Object.keys($form.errors).length === 0) {
@@ -93,10 +93,10 @@
     }
   };
 
-  function handleDocxFile(e) {
+  function handleDocumentFile(e) {
     const file = e?.files?.[0];
-    rawDocxFile = file;  // raw File for FormData / Inertia
-    docxFile = file;     // triggers $effect reactivity
+    rawDocumentFile = file;  // raw File for FormData / Inertia
+    documentFile = file;     // triggers $effect reactivity
   }
 
   let previewHtml = $state('');
@@ -109,12 +109,12 @@
 
   function fetchValidation() {
     if ($form.mode !== 'docx') { validationResult = null; return; }
-    if (!rawDocxFile) { validationResult = null; return; }
+    if (!rawDocumentFile) { validationResult = null; return; }
     validationLoading = true;
     const fd = new FormData();
     fd.append('logical_unit', $form.logical_unit);
-    fd.append('docx', rawDocxFile);
-    fetch('/admin/release/result-templates/validate-docx', {
+    fd.append('document', rawDocumentFile);
+    fetch('/admin/release/result-templates/validate-document', {
       method: 'POST',
       body: fd,
       headers: {
@@ -134,7 +134,7 @@
 
   function submitForm(e) {
     e.preventDefault();
-    $form.transform((data) => ({ ...data, docx: rawDocxFile }));
+    $form.transform((data) => ({ ...data, document: rawDocumentFile }));
     $form.post('/admin/release/result-templates', { forceFormData: true });
   }
 
@@ -151,11 +151,11 @@
 
       if ($form.mode === 'html' && $form.content?.trim()) {
         fd.append('content', $form.content);
-      } else if (rawDocxFile) {
-        fd.append('docx', rawDocxFile);
+      } else if (rawDocumentFile) {
+        fd.append('document', rawDocumentFile);
       } else {
         previewLoading = false;
-        previewHtml = '<p class="text-muted-foreground p-4">Upload a DOCX file to preview.</p>';
+        previewHtml = '<p class="text-muted-foreground p-4">Upload a document file to preview.</p>';
         return;
       }
 
@@ -192,11 +192,11 @@
 
   $effect(() => {
     $form.mode;
-    docxFile;
+    documentFile;
     $form.content;
     if ($form.mode === 'html' && $form.content) fetchPreview();
-    else if ($form.mode === 'docx' && docxFile) fetchPreview();
-    else if ($form.mode === 'docx') previewHtml = '<p class="text-muted-foreground p-4">Upload a DOCX file to preview.</p>';
+    else if ($form.mode === 'docx' && documentFile) fetchPreview();
+    else if ($form.mode === 'docx') previewHtml = '<p class="text-muted-foreground p-4">Upload a document file to preview.</p>';
     else previewHtml = '';
   });
 
@@ -205,11 +205,11 @@
     $form.paper_size;
     $form.orientation;
     if ($form.mode === 'html' && $form.content) fetchPreview();
-    else if ($form.mode === 'docx' && docxFile) fetchPreview();
+    else if ($form.mode === 'docx' && documentFile) fetchPreview();
   });
 
   $effect(() => {
-    docxFile;
+    documentFile;
     $form.mode;
     $form.logical_unit;
     fetchValidation();
@@ -271,7 +271,7 @@
           <p class="text-xs text-muted-foreground">{@html htmlScoresNote}</p>
         </GuideSection>
       {:else}
-        <GuideSection title="DOCX Notes" visible={!!docxPlaceholderNote}>
+        <GuideSection title="Document Notes" visible={!!docxPlaceholderNote}>
           <p class="text-xs text-muted-foreground">{docxPlaceholderNote}</p>
         </GuideSection>
       {/if}
@@ -295,7 +295,7 @@
             </ToggleGroupItem>
             <ToggleGroupItem value="docx" class="gap-1.5 px-3 py-1.5">
               <FileText class="size-4" />
-              <span class="text-sm">DOCX</span>
+              <span class="text-sm">DOCX / ODT</span>
             </ToggleGroupItem>
           </ToggleGroup>
         </div>
@@ -332,14 +332,14 @@
           </div>
         {:else}
           <div>
-            <label for="docx" class="text-sm font-medium">DOCX file</label>
+            <label for="document" class="text-sm font-medium">Document file (DOCX or ODT)</label>
             <FileUpload
-              label="Upload DOCX template"
-              accept=".docx"
+              label="Upload document template"
+              accept=".docx,.odt"
               maxSize="5MB"
-              onfiles={handleDocxFile}
+              onfiles={handleDocumentFile}
             />
-            {#if $form.errors?.docx}<p class="text-sm text-destructive mt-1">{$form.errors.docx}</p>{/if}
+            {#if $form.errors?.document}<p class="text-sm text-destructive mt-1">{$form.errors.document}</p>{/if}
             {#if validationLoading}
               <p class="text-xs text-muted-foreground mt-1">Checking placeholders…</p>
             {:else if validationResult}
@@ -379,7 +379,7 @@
         <h3 class="text-sm font-medium mb-2">Live preview</h3>
         {#if $form.mode === 'docx'}
           <GuideNote variant="warning" title="Preview is approximate">
-            The DOCX preview is converted to HTML, which may differ from the final PDF output.
+            The document preview is converted to HTML, which may differ from the final PDF output.
             Always verify the printed result.
           </GuideNote>
         {/if}
@@ -393,7 +393,7 @@
             class="w-full rounded border bg-white"
             style="min-height: 400px; max-height: 600px;"
             sandbox="allow-same-origin"
-            title="DOCX Preview"
+            title="Document Preview"
             onload={(e) => {
               const h = e.target.contentDocument?.body?.scrollHeight;
               if (h) e.target.style.height = `${h + 32}px`;

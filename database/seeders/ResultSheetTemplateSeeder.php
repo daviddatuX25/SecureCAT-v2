@@ -99,7 +99,7 @@ HTML;
                 'orientation' => 'portrait',
                 'logical_unit' => 'half_a4',
                 'content' => $content,
-                'docx_path' => null,
+                'document_path' => null,
                 'is_active' => true,
             ]
         );

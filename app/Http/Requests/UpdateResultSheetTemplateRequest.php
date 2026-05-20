@@ -34,7 +34,7 @@ class UpdateResultSheetTemplateRequest extends FormRequest
                 ResultSheetTemplate::LOGICAL_HALF_LETTER,
             ])],
             'content' => ['nullable', 'string'],
-            'docx' => ['nullable', 'file', 'mimes:docx', 'max:5120'],
+            'document' => ['nullable', 'file', 'mimes:docx,odt', 'max:5120'],
             'is_active' => ['sometimes', 'boolean'],
             'watermark_text' => ['nullable', 'string', 'max:50'],
         ];

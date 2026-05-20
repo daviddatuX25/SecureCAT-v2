@@ -26,6 +26,13 @@ class ResultSheetTemplateService
         protected ResultSheetOdtService $odtService,
     ) {}
 
+    protected function documentService(ResultSheetTemplate $template): ResultSheetDocxService|ResultSheetOdtService
+    {
+        $ext = strtolower(pathinfo($template->document_path ?? '', PATHINFO_EXTENSION));
+
+        return $ext === 'odt' ? $this->odtService : $this->docxService;
+    }
+
     public const PLACEHOLDERS = [
         'applicant_name', 'applicant_reference',
         'family_name', 'first_name', 'middle_name', 'suffix',
@@ -64,7 +71,7 @@ class ResultSheetTemplateService
                 : $this->cssService->wrap($rawHtml);
         } else {
             $docxReplacements = $this->buildDocxReplacements($applicants, $useSampleData);
-            $html = $this->docxService->renderDocxFromStoragePath($template->docx_path, $docxReplacements);
+            $html = $this->documentService($template)->renderFromStoragePath($template->document_path, $docxReplacements);
         }
 
         return new RenderResult(
@@ -99,8 +106,8 @@ class ResultSheetTemplateService
         } else {
             $docxReplacements1 = $this->buildDocxReplacements([$applicant1], $useSampleData);
             $docxReplacements2 = $this->buildDocxReplacements([$applicant2], $useSampleData);
-            $html1 = $this->docxService->renderDocxFromStoragePath($template->docx_path, $docxReplacements1);
-            $html2 = $this->docxService->renderDocxFromStoragePath($template->docx_path, $docxReplacements2);
+            $html1 = $this->documentService($template)->renderFromStoragePath($template->document_path, $docxReplacements1);
+            $html2 = $this->documentService($template)->renderFromStoragePath($template->document_path, $docxReplacements2);
             $html = $forPdf
                 ? $this->cssService->wrapDualForPdf($html1, $html2, $paperSize, $orientation)
                 : $this->cssService->wrapDual($html1, $html2);
@@ -197,16 +204,16 @@ class ResultSheetTemplateService
      * @param  array<int, array<string, mixed>>  $applicantsWithScores
      * @return string[] Array of temp file paths to filled DOCX files
      */
-    public function buildFilledDocxFiles(array $applicantsWithScores, ResultSheetTemplate $template): array
+    public function buildFilledDocumentFiles(array $applicantsWithScores, ResultSheetTemplate $template): array
     {
-        if (! $template->docx_path) {
-            throw new \RuntimeException('Template has no DOCX file.');
+        if (! $template->document_path) {
+            throw new \RuntimeException('Template has no document file.');
         }
 
-        $fullPath = Storage::path($template->docx_path);
+        $fullPath = Storage::path($template->document_path);
 
         if (! is_file($fullPath)) {
-            throw new \RuntimeException('DOCX template file not found on disk.');
+            throw new \RuntimeException('Document template file not found on disk.');
         }
 
         $logicalUnit = $template->logical_unit ?? ResultSheetTemplate::LOGICAL_FULL;
@@ -217,7 +224,13 @@ class ResultSheetTemplateService
             mkdir($tempDir, 0755, true);
         }
 
-        $repairedPath = $this->docxService->getRepairedDocx($fullPath) ?: $fullPath;
+        $ext = strtolower(pathinfo($template->document_path, PATHINFO_EXTENSION));
+
+        if ($ext === 'odt') {
+            return $this->buildFilledOdtFiles($applicantsWithScores, $template, $fullPath, $chunkSize, $tempDir);
+        }
+
+        $repairedPath = $this->docxService->getRepairedTemplate($fullPath) ?: $fullPath;
 
         $tempFiles = [];
 
@@ -236,6 +249,42 @@ class ResultSheetTemplateService
                 $tempFile = tempnam($tempDir, 'docx_filled_').'.docx';
                 $processor->saveAs($tempFile);
                 $tempFiles[] = $tempFile;
+            }
+        } finally {
+            if ($repairedPath !== $fullPath && is_file($repairedPath)) {
+                @unlink($repairedPath);
+            }
+        }
+
+        return $tempFiles;
+    }
+
+    protected function buildFilledOdtFiles(array $applicantsWithScores, ResultSheetTemplate $template, string $fullPath, int $chunkSize, string $tempDir): array
+    {
+        $repairedPath = $this->odtService->getRepairedTemplate($fullPath) ?: $fullPath;
+        $tempFiles = [];
+
+        try {
+            foreach (array_chunk($applicantsWithScores, $chunkSize) as $chunk) {
+                $chunk = array_values($chunk);
+                $replacements = $this->buildDocxReplacements($chunk);
+
+                $zip = new \ZipArchive;
+                $tmpCopy = tempnam($tempDir, 'odt_filled_').'.odt';
+                copy($repairedPath, $tmpCopy);
+
+                if ($zip->open($tmpCopy) === true) {
+                    $contentXml = $zip->getFromName('content.xml');
+                    if ($contentXml !== false) {
+                        foreach ($replacements as $key => $value) {
+                            $contentXml = str_replace('{{'.$key.'}}', $value, $contentXml);
+                        }
+                        $zip->addFromString('content.xml', $contentXml);
+                    }
+                    $zip->close();
+                }
+
+                $tempFiles[] = $tmpCopy;
             }
         } finally {
             if ($repairedPath !== $fullPath && is_file($repairedPath)) {
@@ -280,7 +329,7 @@ class ResultSheetTemplateService
             $html = $this->renderRaw($template->content ?: '', $replacements);
         } else {
             $docxReplacements = $this->buildDocxReplacements($applicants, $useSampleData);
-            $html = $this->docxService->renderDocxFromStoragePath($template->docx_path, $docxReplacements);
+            $html = $this->documentService($template)->renderFromStoragePath($template->document_path, $docxReplacements);
         }
 
         return "<div class=\"print-template\">{$html}</div>";
@@ -300,8 +349,8 @@ class ResultSheetTemplateService
         } else {
             $docxReplacements1 = $this->buildDocxReplacements([$applicant1], $useSampleData);
             $docxReplacements2 = $this->buildDocxReplacements([$applicant2], $useSampleData);
-            $html1 = $this->docxService->renderDocxFromStoragePath($template->docx_path, $docxReplacements1);
-            $html2 = $this->docxService->renderDocxFromStoragePath($template->docx_path, $docxReplacements2);
+            $html1 = $this->documentService($template)->renderFromStoragePath($template->document_path, $docxReplacements1);
+            $html2 = $this->documentService($template)->renderFromStoragePath($template->document_path, $docxReplacements2);
         }
 
         return "<div class=\"print-template print-template--dual\">\n"
@@ -339,7 +388,7 @@ class ResultSheetTemplateService
      *
      * @param  array<string, string>  $replacements
      */
-    public function renderDocxFile(
+    public function renderDocumentFile(
         string $path,
         array $replacements = [],
         bool $useSampleIfEmpty = true,
@@ -351,7 +400,9 @@ class ResultSheetTemplateService
             $replacements = $this->buildSampleReplacements();
         }
 
-        $html = $this->docxService->renderDocxFromFullPath($path, $replacements);
+        $ext = strtolower(pathinfo($path, PATHINFO_EXTENSION));
+        $service = $ext === 'odt' ? $this->odtService : $this->docxService;
+        $html = $service->renderFromFullPath($path, $replacements);
 
         return new RenderResult(
             html: $html,
@@ -959,9 +1010,12 @@ class ResultSheetTemplateService
         return $content;
     }
 
-    public function getDocxValidation(string $fullPath, bool $isCrosswise): DocxValidationResult
+    public function getDocumentValidation(string $fullPath, bool $isCrosswise): DocxValidationResult
     {
-        return $this->docxService->validateDocxTemplate(
+        $ext = strtolower(pathinfo($fullPath, PATHINFO_EXTENSION));
+        $service = $ext === 'odt' ? $this->odtService : $this->docxService;
+
+        return $service->validateTemplate(
             $fullPath,
             $this->buildCategorizedPlaceholders(),
             $isCrosswise,

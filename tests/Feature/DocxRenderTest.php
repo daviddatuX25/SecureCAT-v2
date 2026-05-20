@@ -16,7 +16,7 @@ class DocxRenderTest extends TestCase
     public function test_render_returns_error_for_missing_file(): void
     {
         $service = app(ResultSheetDocxService::class);
-        $html = $service->renderDocxFromFullPath('/nonexistent/file.docx', []);
+        $html = $service->renderFromFullPath('/nonexistent/file.docx', []);
 
         $this->assertStringContainsString('not found', $html);
     }
@@ -34,7 +34,7 @@ class DocxRenderTest extends TestCase
 
         try {
             $service = app(ResultSheetDocxService::class);
-            $html = $service->renderDocxFromFullPath($tempFile, [
+            $html = $service->renderFromFullPath($tempFile, [
                 'safe_placeholder' => 'value with {{evil}} injection',
             ]);
 
@@ -59,7 +59,7 @@ class DocxRenderTest extends TestCase
 
         try {
             $service = app(ResultSheetDocxService::class);
-            $service->renderDocxFromFullPath($tempFile, []);
+            $service->renderFromFullPath($tempFile, []);
         } finally {
             @unlink($tempFile);
         }

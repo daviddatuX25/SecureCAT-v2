@@ -297,7 +297,7 @@ Route::middleware(['auth'])->group(function () {
             Route::put('/summaries/by-applicant/{applicantId}', [ReleaseController::class, 'storeOrUpdateByApplicant'])->name('summaries.storeOrUpdate');
             // Result Sheet Templates
             Route::post('result-templates/preview', [ResultSheetTemplateController::class, 'preview'])->name('result-templates.preview');
-            Route::post('result-templates/validate-docx', [ResultSheetTemplateController::class, 'validateDocx'])->name('result-templates.validate-docx');
+            Route::post('result-templates/validate-document', [ResultSheetTemplateController::class, 'validateDocument'])->name('result-templates.validate-document');
             Route::post('result-templates/{result_template}/activate', [ResultSheetTemplateController::class, 'activate'])->name('result-templates.activate');
             Route::post('result-templates/{result_template}/deactivate', [ResultSheetTemplateController::class, 'deactivate'])->name('result-templates.deactivate');
             Route::resource('result-templates', ResultSheetTemplateController::class)->except('show');

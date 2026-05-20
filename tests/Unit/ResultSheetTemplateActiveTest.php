@@ -11,47 +11,47 @@ class ResultSheetTemplateActiveTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_build_filled_docx_files_throws_on_null_docx_path(): void
+    public function test_build_filled_document_files_throws_on_null_document_path(): void
     {
         $template = ResultSheetTemplate::factory()->create([
             'mode' => ResultSheetTemplate::MODE_DOCX,
-            'docx_path' => null,
+            'document_path' => null,
             'is_active' => true,
         ]);
 
         $service = app(ResultSheetTemplateService::class);
 
         $this->expectException(\RuntimeException::class);
-        $this->expectExceptionMessage('Template has no DOCX file');
+        $this->expectExceptionMessage('Template has no document file');
 
-        $service->buildFilledDocxFiles([], $template);
+        $service->buildFilledDocumentFiles([], $template);
     }
 
-    public function test_build_filled_docx_files_throws_on_missing_disk_file(): void
+    public function test_build_filled_document_files_throws_on_missing_disk_file(): void
     {
         $template = ResultSheetTemplate::factory()->create([
             'mode' => ResultSheetTemplate::MODE_DOCX,
-            'docx_path' => 'result-sheet-templates/99999.docx',
+            'document_path' => 'result-sheet-templates/99999.docx',
             'is_active' => true,
         ]);
 
         $service = app(ResultSheetTemplateService::class);
 
         $this->expectException(\RuntimeException::class);
-        $this->expectExceptionMessage('DOCX template file not found on disk');
+        $this->expectExceptionMessage('Document template file not found on disk');
 
-        $service->buildFilledDocxFiles([], $template);
+        $service->buildFilledDocumentFiles([], $template);
     }
 
     public function test_docx_mode_template_with_null_path_exists_without_crash(): void
     {
         $template = ResultSheetTemplate::factory()->create([
             'mode' => ResultSheetTemplate::MODE_DOCX,
-            'docx_path' => null,
+            'document_path' => null,
             'is_active' => true,
         ]);
 
-        $this->assertNull($template->docx_path);
+        $this->assertNull($template->document_path);
         $this->assertEquals(ResultSheetTemplate::MODE_DOCX, $template->mode);
     }
 }
