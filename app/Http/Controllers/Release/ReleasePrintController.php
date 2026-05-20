@@ -11,6 +11,7 @@ use App\Models\ResultSheetTemplate;
 use App\Services\AuditService;
 use App\Services\DocxToPdfService;
 use App\Services\PrintBatchService;
+use App\Services\ResultSheetDocxService;
 use App\Services\ResultSheetPdfService;
 use App\Services\ResultSheetTemplateService;
 use App\ValueObjects\RenderResult;
@@ -30,6 +31,7 @@ class ReleasePrintController extends Controller
         private ResultSheetTemplateService $templateService,
         private ResultSheetPdfService $pdfService,
         private DocxToPdfService $docxToPdfService,
+        private ResultSheetDocxService $docxService,
     ) {}
 
     public function index(GradingSession $grading_session): Response
@@ -143,7 +145,7 @@ class ReleasePrintController extends Controller
 
         $filename = str_replace(' ', '_', $this->formatName($applicant)).'_result_sheet.pdf';
 
-        if ($template->mode === ResultSheetTemplate::MODE_DOCX && $this->docxToPdfService->isAvailable()) {
+        if ($template->mode === ResultSheetTemplate::MODE_DOCX && $template->docx_path && $this->docxToPdfService->isAvailable()) {
             $applicantsWithScores = $this->templateService->fetchApplicantsWithScores(
                 [$applicant->id],
                 $grading_session->id,
@@ -207,23 +209,28 @@ class ReleasePrintController extends Controller
             abort(404, 'Applicant data not found.');
         }
 
-        $replacements = $this->templateService->buildReplacements($applicantsWithScores, false);
+        $replacements = $this->templateService->buildDocxReplacements($applicantsWithScores);
 
         $tempDir = storage_path('app/temp/phpword');
         if (! is_dir($tempDir)) {
             mkdir($tempDir, 0755, true);
         }
 
-        $processor = new TemplateProcessor($fullPath);
+        $repairedPath = $this->docxService->getRepairedDocx($fullPath) ?: $fullPath;
+
+        $processor = new TemplateProcessor($repairedPath);
         $processor->setMacroChars('{{', '}}');
 
-        $sanitized = array_map(fn ($v) => str_replace(['{{', '}}'], ['{ {', '} }'], (string) $v), $replacements);
-        foreach ($sanitized as $key => $value) {
+        foreach ($replacements as $key => $value) {
             $processor->setValue($key, $value);
         }
 
         $tempFile = tempnam($tempDir, 'docx_download_').'.docx';
         $processor->saveAs($tempFile);
+
+        if ($repairedPath !== $fullPath && is_file($repairedPath)) {
+            @unlink($repairedPath);
+        }
 
         app(AuditService::class)->log('result_sheet.downloaded_docx', ResultSheetTemplate::class, $template->id, [], [
             'applicant_id' => $applicant->id,
@@ -277,7 +284,7 @@ class ReleasePrintController extends Controller
 
         $filename = "session_{$grading_session->id}_result_sheets.pdf";
 
-        if ($template->mode === ResultSheetTemplate::MODE_DOCX && $this->docxToPdfService->isAvailable()) {
+        if ($template->mode === ResultSheetTemplate::MODE_DOCX && $template->docx_path && $this->docxToPdfService->isAvailable()) {
             $docxFiles = $this->templateService->buildFilledDocxFiles($applicantsWithScores, $template);
 
             try {
@@ -339,7 +346,7 @@ class ReleasePrintController extends Controller
         $ids = array_slice(array_filter(array_map('intval', explode(',', request()->query('ids', '')))), 0, 200);
         $applicantsWithScores = $this->templateService->fetchApplicantsWithScores($ids);
 
-        if ($template->mode === ResultSheetTemplate::MODE_DOCX && $this->docxToPdfService->isAvailable()) {
+        if ($template->mode === ResultSheetTemplate::MODE_DOCX && $template->docx_path && $this->docxToPdfService->isAvailable()) {
             $docxFiles = $this->templateService->buildFilledDocxFiles($applicantsWithScores, $template);
 
             try {
@@ -362,6 +369,78 @@ class ReleasePrintController extends Controller
         return request()->boolean('download')
             ? $this->pdfService->bulkDownload($sheetsHtml, $meta, 'result_sheets.pdf', $copies)
             : $this->pdfService->bulkInline($sheetsHtml, $meta, 'result_sheets.pdf', $copies);
+    }
+
+    public function downloadBulkDocx(GradingSession $grading_session): SymfonyResponse
+    {
+        $template = ResultSheetTemplate::where('is_active', true)
+            ->where('mode', ResultSheetTemplate::MODE_DOCX)
+            ->first();
+
+        if (! $template || ! $template->docx_path) {
+            abort(404, 'No active DOCX template found.');
+        }
+
+        $ids = array_slice(array_filter(array_map('intval', explode(',', request()->query('ids', '')))), 0, 200);
+        $applicantsWithScores = $this->templateService->fetchApplicantsWithScores($ids, $grading_session->id);
+
+        return $this->buildBulkDocxZip($applicantsWithScores, $template, "session_{$grading_session->id}_result_sheets.zip");
+    }
+
+    public function downloadBulkAgnosticDocx(): SymfonyResponse
+    {
+        $template = ResultSheetTemplate::where('is_active', true)
+            ->where('mode', ResultSheetTemplate::MODE_DOCX)
+            ->first();
+
+        if (! $template || ! $template->docx_path) {
+            abort(404, 'No active DOCX template found.');
+        }
+
+        $ids = array_slice(array_filter(array_map('intval', explode(',', request()->query('ids', '')))), 0, 200);
+        $applicantsWithScores = $this->templateService->fetchApplicantsWithScores($ids);
+
+        return $this->buildBulkDocxZip($applicantsWithScores, $template, 'result_sheets.zip');
+    }
+
+    /**
+     * Build a ZIP archive containing filled DOCX files for each applicant.
+     */
+    private function buildBulkDocxZip(array $applicantsWithScores, ResultSheetTemplate $template, string $zipFilename): SymfonyResponse
+    {
+        $docxFiles = $this->templateService->buildFilledDocxFiles($applicantsWithScores, $template);
+
+        $tempDir = storage_path('app/temp/phpword');
+        if (! is_dir($tempDir)) {
+            mkdir($tempDir, 0755, true);
+        }
+
+        $zipPath = tempnam($tempDir, 'docx_bulk_').'.zip';
+
+        try {
+            $zip = new \ZipArchive;
+            $zip->open($zipPath, \ZipArchive::CREATE | \ZipArchive::OVERWRITE);
+
+            foreach ($docxFiles as $i => $docxFile) {
+                $applicantName = $applicantsWithScores[$i]['name'] ?? "applicant_{$i}";
+                $entryName = sprintf('Result-Sheet-%s.docx', Str::slug($applicantName));
+                $zip->addFile($docxFile, $entryName);
+            }
+
+            $zip->close();
+
+            app(AuditService::class)->log('result_sheet.downloaded_bulk_docx', ResultSheetTemplate::class, $template->id, [], [
+                'count' => count($applicantsWithScores),
+            ]);
+
+            return response()->download($zipPath, $zipFilename, [
+                'Content-Type' => 'application/zip',
+            ])->deleteFileAfterSend(true);
+        } finally {
+            foreach ($docxFiles as $f) {
+                @unlink($f);
+            }
+        }
     }
 
     // -- Private Helpers ---------------------------------------------------
@@ -391,7 +470,7 @@ class ReleasePrintController extends Controller
     {
         $scores = $mappedScores ?? $this->mapScores($rawScores ?? collect());
         $overallPct = count($scores) > 0
-            ? (int) round(collect($scores)->avg('pct'))
+            ? (int) round(collect($scores)->avg('pct_numeric'))
             : 0;
 
         return [
@@ -407,16 +486,37 @@ class ReleasePrintController extends Controller
 
     /**
      * @param  Collection<int, ApplicantScore>  $scores
-     * @return array<int, array{domain: string, raw: int|float|null, max: int|float|null, pct: int}>
+     * @return array<int, array{domain: string, raw: int|float|null, max: int|float|null, pct: int, pct_string: string|null, pct_numeric: int}>
      */
     private function mapScores(Collection $scores): array
     {
-        return $scores->map(fn ($s) => [
-            'domain' => $s->aptitudeArea?->name ?? '—',
-            'raw' => $s->raw_score,
-            'max' => $s->max_score,
-            'pct' => $s->max_score > 0 ? (int) round(($s->raw_score / $s->max_score) * 100) : 0,
-        ])->values()->all();
+        return $scores->map(function ($s) {
+            if ($s->percentile_string !== null) {
+                $numeric = preg_match('/(\d+)/', $s->percentile_string, $matches)
+                    ? (int) ($matches[1] ?? 0)
+                    : 0;
+
+                return [
+                    'domain' => $s->aptitudeArea?->name ?? '—',
+                    'raw' => $s->raw_score,
+                    'max' => $s->max_score,
+                    'pct' => $numeric,
+                    'pct_string' => $s->percentile_string,
+                    'pct_numeric' => $numeric,
+                ];
+            }
+
+            $pctVal = $s->max_score > 0 ? (int) round(($s->raw_score / $s->max_score) * 100) : 0;
+
+            return [
+                'domain' => $s->aptitudeArea?->name ?? '—',
+                'raw' => $s->raw_score,
+                'max' => $s->max_score,
+                'pct' => $pctVal,
+                'pct_string' => null,
+                'pct_numeric' => $pctVal,
+            ];
+        })->values()->all();
     }
 
     /**

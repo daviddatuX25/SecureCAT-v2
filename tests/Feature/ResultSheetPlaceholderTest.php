@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\AptitudeArea;
+use App\Models\Course;
 use App\Models\RatingScale;
 use App\Services\ResultSheetTemplateService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -142,5 +143,69 @@ class ResultSheetPlaceholderTest extends TestCase
                 $this->assertContains("{$role}_{$field}", $categorized['personnel']);
             }
         }
+    }
+
+    public function test_course_checkmark_placeholders_included_and_resolved(): void
+    {
+        // 1. Create test courses
+        Course::factory()->create(['code' => 'BSIT', 'name' => 'BS Information Technology', 'is_active' => true]);
+        Course::factory()->create(['code' => 'BSCS', 'name' => 'BS Computer Science', 'is_active' => true]);
+        // inactive course should NOT be included
+        Course::factory()->create(['code' => 'BSDS', 'name' => 'BS Data Science', 'is_active' => false]);
+
+        $service = app(ResultSheetTemplateService::class);
+
+        // 2. Assert getPlaceholderGroups includes the checks
+        $groups = $service->getPlaceholderGroups();
+
+        $applicant1Placeholders = array_column($groups['applicant1'], 'placeholder');
+        $applicant2Placeholders = array_column($groups['applicant2'], 'placeholder');
+
+        $this->assertContains('{{BSIT_check}}', $applicant1Placeholders);
+        $this->assertContains('{{BSCS_check}}', $applicant1Placeholders);
+        $this->assertNotContains('{{BSDS_check}}', $applicant1Placeholders);
+
+        $this->assertContains('{{BSIT_check_2}}', $applicant2Placeholders);
+        $this->assertContains('{{BSCS_check_2}}', $applicant2Placeholders);
+        $this->assertNotContains('{{BSDS_check_2}}', $applicant2Placeholders);
+
+        // 3. Assert categorized placeholders includes the checks
+        $method = new \ReflectionMethod($service, 'buildCategorizedPlaceholders');
+        $method->setAccessible(true);
+        $categorized = $method->invoke($service);
+
+        $this->assertContains('BSIT_check', $categorized['optional']);
+        $this->assertContains('BSCS_check', $categorized['optional']);
+        $this->assertNotContains('BSDS_check', $categorized['optional']);
+
+        $this->assertContains('BSIT_check_2', $categorized['applicant2']);
+        $this->assertContains('BSCS_check_2', $categorized['applicant2']);
+        $this->assertNotContains('BSDS_check_2', $categorized['applicant2']);
+
+        // 4. Assert buildReplacements resolves them correctly for actual applicants
+        $applicants = [
+            [
+                'name' => 'John',
+                'reference' => 'REF-01',
+                'recommended_course_code' => 'BSIT',
+                'scores' => [],
+                'overall_pct' => 80,
+            ],
+            [
+                'name' => 'Jane',
+                'reference' => 'REF-02',
+                'recommended_course_code' => 'BSCS',
+                'scores' => [],
+                'overall_pct' => 85,
+            ],
+        ];
+
+        $replacements = $service->buildReplacements($applicants, false);
+
+        $this->assertEquals('✔', $replacements['BSIT_check']);
+        $this->assertEquals('', $replacements['BSCS_check']);
+
+        $this->assertEquals('', $replacements['BSIT_check_2']);
+        $this->assertEquals('✔', $replacements['BSCS_check_2']);
     }
 }

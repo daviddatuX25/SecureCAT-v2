@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\Applicant;
 use App\Models\ApplicantScore;
 use App\Models\AptitudeArea;
+use App\Models\Course;
 use App\Models\GradingSession;
 use App\Models\RatingScale;
 use App\Models\ResultSheetTemplate;
@@ -61,7 +62,8 @@ class ResultSheetTemplateService
                 ? $this->cssService->wrapForPdf($rawHtml, $paperSize, $orientation)
                 : $this->cssService->wrap($rawHtml);
         } else {
-            $html = $this->docxService->renderDocxFromStoragePath($template->docx_path, $replacements);
+            $docxReplacements = $this->buildDocxReplacements($applicants, $useSampleData);
+            $html = $this->docxService->renderDocxFromStoragePath($template->docx_path, $docxReplacements);
         }
 
         return new RenderResult(
@@ -94,8 +96,10 @@ class ResultSheetTemplateService
                 ? $this->cssService->wrapDualForPdf($html1, $html2, $paperSize, $orientation)
                 : $this->cssService->wrapDual($html1, $html2);
         } else {
-            $html1 = $this->docxService->renderDocxFromStoragePath($template->docx_path, $replacements1);
-            $html2 = $this->docxService->renderDocxFromStoragePath($template->docx_path, $replacements2);
+            $docxReplacements1 = $this->buildDocxReplacements([$applicant1], $useSampleData);
+            $docxReplacements2 = $this->buildDocxReplacements([$applicant2], $useSampleData);
+            $html1 = $this->docxService->renderDocxFromStoragePath($template->docx_path, $docxReplacements1);
+            $html2 = $this->docxService->renderDocxFromStoragePath($template->docx_path, $docxReplacements2);
             $html = $forPdf
                 ? $this->cssService->wrapDualForPdf($html1, $html2, $paperSize, $orientation)
                 : $this->cssService->wrapDual($html1, $html2);
@@ -212,23 +216,30 @@ class ResultSheetTemplateService
             mkdir($tempDir, 0755, true);
         }
 
+        $repairedPath = $this->docxService->getRepairedDocx($fullPath) ?: $fullPath;
+
         $tempFiles = [];
 
-        foreach (array_chunk($applicantsWithScores, $chunkSize) as $chunk) {
-            $chunk = array_values($chunk);
-            $replacements = $this->buildReplacements($chunk, false);
+        try {
+            foreach (array_chunk($applicantsWithScores, $chunkSize) as $chunk) {
+                $chunk = array_values($chunk);
+                $replacements = $this->buildDocxReplacements($chunk);
 
-            $processor = new TemplateProcessor($fullPath);
-            $processor->setMacroChars('{{', '}}');
+                $processor = new TemplateProcessor($repairedPath);
+                $processor->setMacroChars('{{', '}}');
 
-            $sanitized = array_map(fn ($v) => str_replace(['{{', '}}'], ['{ {', '} }'], (string) $v), $replacements);
-            foreach ($sanitized as $key => $value) {
-                $processor->setValue($key, $value);
+                foreach ($replacements as $key => $value) {
+                    $processor->setValue($key, $value);
+                }
+
+                $tempFile = tempnam($tempDir, 'docx_filled_').'.docx';
+                $processor->saveAs($tempFile);
+                $tempFiles[] = $tempFile;
             }
-
-            $tempFile = tempnam($tempDir, 'docx_filled_').'.docx';
-            $processor->saveAs($tempFile);
-            $tempFiles[] = $tempFile;
+        } finally {
+            if ($repairedPath !== $fullPath && is_file($repairedPath)) {
+                @unlink($repairedPath);
+            }
         }
 
         return $tempFiles;
@@ -262,12 +273,13 @@ class ResultSheetTemplateService
     public function buildRawFragment(ResultSheetTemplate $template, array $applicants, bool $useSampleData = false): string
     {
         $applicants = array_values($applicants);
-        $replacements = $this->buildReplacements($applicants, $useSampleData);
 
         if ($template->mode === ResultSheetTemplate::MODE_HTML) {
+            $replacements = $this->buildReplacements($applicants, $useSampleData);
             $html = $this->renderRaw($template->content ?: '', $replacements);
         } else {
-            $html = $this->docxService->renderDocxFromStoragePath($template->docx_path, $replacements);
+            $docxReplacements = $this->buildDocxReplacements($applicants, $useSampleData);
+            $html = $this->docxService->renderDocxFromStoragePath($template->docx_path, $docxReplacements);
         }
 
         return "<div class=\"print-template\">{$html}</div>";
@@ -279,15 +291,16 @@ class ResultSheetTemplateService
      */
     public function buildRawDualFragment(ResultSheetTemplate $template, array $applicant1, array $applicant2, bool $useSampleData = false): string
     {
-        $replacements1 = $this->buildReplacements([$applicant1], $useSampleData);
-        $replacements2 = $this->buildReplacements([$applicant2], $useSampleData);
-
         if ($template->mode === ResultSheetTemplate::MODE_HTML) {
+            $replacements1 = $this->buildReplacements([$applicant1], $useSampleData);
+            $replacements2 = $this->buildReplacements([$applicant2], $useSampleData);
             $html1 = $this->renderRaw($template->content ?: '', $replacements1);
             $html2 = $this->renderRaw($template->content ?: '', $replacements2);
         } else {
-            $html1 = $this->docxService->renderDocxFromStoragePath($template->docx_path, $replacements1);
-            $html2 = $this->docxService->renderDocxFromStoragePath($template->docx_path, $replacements2);
+            $docxReplacements1 = $this->buildDocxReplacements([$applicant1], $useSampleData);
+            $docxReplacements2 = $this->buildDocxReplacements([$applicant2], $useSampleData);
+            $html1 = $this->docxService->renderDocxFromStoragePath($template->docx_path, $docxReplacements1);
+            $html2 = $this->docxService->renderDocxFromStoragePath($template->docx_path, $docxReplacements2);
         }
 
         return "<div class=\"print-template print-template--dual\">\n"
@@ -398,12 +411,23 @@ class ResultSheetTemplateService
             'recommended_course', 'counselor_comments', 'counselor_name',
         ];
 
+        $activeCourses = Course::where('is_active', true)->orderBy('code')->get(['code', 'name']);
+
         $applicant1 = [];
         foreach ($slot1Fields as $key) {
             $applicant1[] = [
                 'placeholder' => '{{'.$key.'}}',
                 'description' => $descriptions[$key] ?? str_replace('_', ' ', Str::title($key)),
             ];
+        }
+        $courseChecks = [];
+        foreach ($activeCourses as $course) {
+            $ph = [
+                'placeholder' => '{{'.$course->code.'_check}}',
+                'description' => 'Checkmark if recommended course is '.$course->name.', empty otherwise',
+            ];
+            $applicant1[] = $ph;
+            $courseChecks[] = $ph;
         }
 
         $applicant2 = [];
@@ -413,6 +437,15 @@ class ResultSheetTemplateService
                 'placeholder' => '{{'.$key2.'}}',
                 'description' => $descriptions[$key] ?? str_replace('_', ' ', Str::title($key)),
             ];
+        }
+        $courseChecks2 = [];
+        foreach ($activeCourses as $course) {
+            $ph = [
+                'placeholder' => '{{'.$course->code.'_check_2}}',
+                'description' => 'Checkmark if recommended course is '.$course->name.' (applicant 2), empty otherwise',
+            ];
+            $applicant2[] = $ph;
+            $courseChecks2[] = $ph;
         }
 
         $institutionKeys = [
@@ -470,6 +503,10 @@ class ResultSheetTemplateService
                 'description' => $domain->name.' raw score',
             ];
             $domainsGroup[] = [
+                'placeholder' => '{{'.$slug.'_wunit}}',
+                'description' => $domain->name.' percentage with ordinal',
+            ];
+            $domainsGroup[] = [
                 'placeholder' => '{{'.$slug.'_rating'.'}}',
                 'description' => $domain->name.' rating',
             ];
@@ -480,6 +517,10 @@ class ResultSheetTemplateService
             $domainsGroup[] = [
                 'placeholder' => '{{'.$slug.'_raw_2}}',
                 'description' => $domain->name.' raw score (applicant 2)',
+            ];
+            $domainsGroup[] = [
+                'placeholder' => '{{'.$slug.'_wunit_2}}',
+                'description' => $domain->name.' percentage with ordinal (applicant 2)',
             ];
             $domainsGroup[] = [
                 'placeholder' => '{{'.$slug.'_rating_2'.'}}',
@@ -493,6 +534,8 @@ class ResultSheetTemplateService
             'institution' => $institution,
             'personnel' => $personnel,
             'domains' => $domainsGroup,
+            'course_checks' => $courseChecks,
+            'course_checks_2' => $courseChecks2,
         ];
     }
 
@@ -504,17 +547,48 @@ class ResultSheetTemplateService
     /**
      * Build replacement map for applicant data (slot 1 and slot 2).
      *
-     * @param  array<int, array{name: string, reference: string, exam_date: string, room_name: string, scores: array<array{domain: string, raw: int, max: int, pct: int}>, overall_pct: int}>  $applicants
-     * @return array<string, string>
+     * @param  array<int, array{name: string, reference: string, exam_date: string, room_name: string, scores: array<array{domain: string, raw: int, max: int, pct: int}>, overall_pct: int}>  $applicant  * @return array<string, string>
      */
     public function buildReplacements(array $applicants, bool $useSampleData): array
     {
         $sample = $this->sampleApplicantData();
         $replacements = [];
+        $activeCourses = Course::where('is_active', true)->get(['code']);
 
         foreach ([1 => 0, 2 => 1] as $slot => $idx) {
             $app = $applicants[$idx] ?? null;
-            $data = $app ?? ($useSampleData ? $sample : null);
+            $data = null;
+            if ($app) {
+                $data = $app;
+            } elseif ($useSampleData) {
+                if ($slot === 1) {
+                    $data = $sample;
+                } else {
+                    $data = [
+                        'name' => $sample['name_2'] ?? '—',
+                        'family_name' => $sample['family_name_2'] ?? '—',
+                        'first_name' => $sample['first_name_2'] ?? '—',
+                        'middle_name' => $sample['middle_name_2'] ?? '—',
+                        'suffix' => $sample['suffix_2'] ?? '',
+                        'sex' => $sample['sex_2'] ?? '—',
+                        'gwa' => $sample['gwa_2'] ?? '—',
+                        'course_applied' => $sample['course_applied_2'] ?? '—',
+                        'strand' => $sample['strand_2'] ?? '—',
+                        'applicant_type' => $sample['applicant_type_2'] ?? '—',
+                        'reference' => $sample['reference_2'] ?? '—',
+                        'exam_date' => $sample['exam_date_2'] ?? $sample['exam_date'] ?? '—',
+                        'exam_time' => $sample['exam_time_2'] ?? '—',
+                        'room_name' => $sample['room_name_2'] ?? '—',
+                        'scores' => $sample['scores_2'] ?? [],
+                        'overall_pct' => $sample['overall_pct_2'] ?? 0,
+                        'recommended_course' => $sample['recommended_course_2'] ?? '—',
+                        'recommended_course_code' => $sample['recommended_course_code_2'] ?? '',
+                        'counselor_comments' => $sample['counselor_comments_2'] ?? '—',
+                        'counselor_name' => $sample['counselor_name_2'] ?? '—',
+                    ];
+                }
+            }
+
             $suffix = $slot === 1 ? '' : '_2';
             if ($data) {
                 $replacements["applicant_name{$suffix}"] = $data['name'] ?? '—';
@@ -528,7 +602,7 @@ class ResultSheetTemplateService
                     'family_name', 'first_name', 'middle_name', 'suffix',
                     'sex', 'gwa', 'course_applied', 'strand', 'applicant_type',
                     'exam_time',
-                    'recommended_course', 'counselor_comments', 'counselor_name',
+                    'recommended_course', 'recommended_course_code', 'counselor_comments', 'counselor_name',
                 ];
                 foreach ($newFields as $field) {
                     $replacements["{$field}{$suffix}"] = (string) ($data[$field] ?? '—');
@@ -541,9 +615,16 @@ class ResultSheetTemplateService
                 $replacements["scores_rows{$suffix}"] = '';
                 $replacements["overall_pct{$suffix}"] = '—';
 
-                foreach (['family_name', 'first_name', 'middle_name', 'suffix', 'sex', 'gwa', 'course_applied', 'strand', 'applicant_type', 'exam_time', 'recommended_course', 'counselor_comments', 'counselor_name'] as $field) {
+                foreach (['family_name', 'first_name', 'middle_name', 'suffix', 'sex', 'gwa', 'course_applied', 'strand', 'applicant_type', 'exam_time', 'recommended_course', 'recommended_course_code', 'counselor_comments', 'counselor_name'] as $field) {
                     $replacements["{$field}{$suffix}"] = '—';
                 }
+            }
+
+            // Fill course recommendation checkmarks for this slot
+            $recommendedCode = $data ? ($data['recommended_course_code'] ?? '') : '';
+            foreach ($activeCourses as $course) {
+                $courseCode = $course->code;
+                $replacements["{$courseCode}_check{$suffix}"] = ($recommendedCode === $courseCode) ? '✔' : '';
             }
         }
 
@@ -579,11 +660,69 @@ class ResultSheetTemplateService
     }
 
     /**
+     * Build replacements suitable for DOCX TemplateProcessor (setValue).
+     *
+     * Unlike buildReplacements() which produces HTML for scores_rows,
+     * this method produces plain-text values safe for DOCX injection:
+     * - scores_rows / scores_rows_2 are set to empty string (use per-domain
+     *   placeholders like {{spatial_awareness}} instead for DOCX tables)
+     * - All values have {{ and }} escaped to prevent TemplateProcessor conflicts
+     * - HTML tags are stripped from any value that might contain them
+     *
+     * @param  array<int, array{name: string, reference: string, exam_date: string, room_name: string, scores: array<array{domain: string, raw: int, max: int, pct: int}>, overall_pct: int}>  $applicants
+     * @return array<string, string>
+     */
+    public function buildDocxReplacements(array $applicants, bool $useSampleData = false): array
+    {
+        $html = $this->buildReplacements($applicants, $useSampleData);
+
+        $docx = [];
+        foreach ($html as $key => $value) {
+            if (Str::startsWith($key, 'scores_rows')) {
+                $docx[$key] = '';
+
+                continue;
+            }
+
+            $clean = strip_tags($value);
+            $clean = str_replace(['{{', '}}'], ['{ {', '} }'], $clean);
+            $docx[$key] = $clean;
+        }
+
+        return $docx;
+    }
+
+    /**
+     * Extract numeric value from a percentile string (e.g., "85th" → 85, "99+" → 99).
+     */
+    private function extractNumeric(string $percentileStr): int
+    {
+        preg_match('/(\d+)/', $percentileStr, $matches);
+
+        return (int) ($matches[1] ?? 0);
+    }
+
+    /**
+     * Format a number as an ordinal string (e.g., 1 → "1st", 11 → "11th", 22 → "22nd").
+     */
+    private function formatOrdinal(int $n): string
+    {
+        $suffix = match ($n % 10) {
+            1 => $n % 100 === 11 ? 'th' : 'st',
+            2 => $n % 100 === 12 ? 'th' : 'nd',
+            3 => $n % 100 === 13 ? 'th' : 'rd',
+            default => 'th',
+        };
+
+        return $n.$suffix;
+    }
+
+    /**
      * Add per-domain replacements (e.g. {{spatial_awareness}}, {{spatial_awareness_raw}}) for DOCX strict binding.
      *
      * @param  array<string, string>  $replacements
-     * @param  array<int, array{name?: string, reference?: string, scores?: array<array{domain: string, raw: int, max: int, pct: int}>}>  $applicants
-     * @param  array{name?: string, reference?: string, scores?: array<array{domain: string, raw: int, max: int, pct: int}>}  $sample
+     * @param  array<int, array{name?: string, reference?: string, scores?: array<array{domain: string, raw: int|float|null, max: int|float|null, pct: int, pct_string: string|null, pct_numeric: int}>>>  $applicants
+     * @param  array{name?: string, reference?: string, scores?: array<array{domain: string, raw: int|float|null, max: int|float|null, pct: int, pct_string: string|null, pct_numeric: int}>}  $sample
      */
     protected function addPerDomainReplacements(array &$replacements, array $applicants, array $sample, bool $useSampleData, ?RatingScale $ratingScale = null): void
     {
@@ -606,7 +745,11 @@ class ResultSheetTemplateService
                 $replacements[$slug.$suffix] = $pct;
                 $replacements[$slug.'_raw'.$suffix] = $raw;
 
-                $rating = $this->percentileToRating((int) $pct, $ratingScale);
+                // _wunit variant: use stored percentile_string or auto-format ordinal
+                $pctWithUnit = $score['pct_string'] ?? ($score !== null ? $this->formatOrdinal((int) ($score['pct_numeric'] ?? 0)) : '—');
+                $replacements[$slug.'_wunit'.$suffix] = $pctWithUnit;
+
+                $rating = $this->percentileToRating((int) ($score['pct_numeric'] ?? 0), $ratingScale);
                 $replacements[$slug.'_rating'.$suffix] = $rating;
             }
         }
@@ -698,16 +841,36 @@ class ResultSheetTemplateService
 
     /**
      * @param  Collection<int, ApplicantScore>  $scores
-     * @return array<int, array{domain: string, raw: int|float|null, max: int|float|null, pct: int}>
+     * @return array<int, array{domain: string, raw: int|float|null, max: int|float|null, pct: int, pct_string: string|null, pct_numeric: int}>
      */
     protected function mapScoresFromCollection(Collection $scores): array
     {
-        return $scores->map(fn ($s) => [
-            'domain' => $s->aptitudeArea?->name ?? '—',
-            'raw' => $s->normalized_score ?? $s->raw_score,
-            'max' => $s->max_score,
-            'pct' => $s->normalized_score ?? ($s->max_score > 0 ? (int) round(($s->raw_score / $s->max_score) * 100) : 0),
-        ])->values()->all();
+        return $scores->map(function ($s) {
+            if ($s->percentile_string !== null) {
+                $numeric = $this->extractNumeric($s->percentile_string);
+
+                return [
+                    'domain' => $s->aptitudeArea?->name ?? '—',
+                    'raw' => $s->raw_score,
+                    'max' => $s->max_score,
+                    'pct' => $numeric,
+                    'pct_string' => $s->percentile_string,
+                    'pct_numeric' => $numeric,
+                ];
+            }
+
+            $pctVal = $s->normalized_score
+                ?? ($s->max_score > 0 ? (int) round(($s->raw_score / $s->max_score) * 100) : 0);
+
+            return [
+                'domain' => $s->aptitudeArea?->name ?? '—',
+                'raw' => $s->normalized_score ?? $s->raw_score,
+                'max' => $s->max_score,
+                'pct' => (int) $pctVal,
+                'pct_string' => null,
+                'pct_numeric' => (int) $pctVal,
+            ];
+        })->values()->all();
     }
 
     /**
@@ -717,7 +880,7 @@ class ResultSheetTemplateService
     protected function buildApplicantDataArray(Applicant $applicant, ?GradingSession $session, array $scores): array
     {
         $overallPct = count($scores) > 0
-            ? (int) round(collect($scores)->avg('pct'))
+            ? (int) round(collect($scores)->avg('pct_numeric'))
             : 0;
 
         $name = '—';
@@ -754,6 +917,7 @@ class ResultSheetTemplateService
             'scores' => $scores,
             'overall_pct' => $overallPct,
             'recommended_course' => $summary?->recommendedCourse?->name ?? '—',
+            'recommended_course_code' => $summary?->recommendedCourse?->code ?? '',
             'counselor_comments' => $summary?->counselor_comments ?? '—',
             'counselor_name' => $summary?->counselor?->name ?? '—',
         ];
@@ -804,7 +968,7 @@ class ResultSheetTemplateService
     }
 
     /**
-     * @return array{required: string[], recommended: string[], optional: string[], domain: string[], personnel: string[], institution: string[], applicant2: string[]}
+     * @return array{required: string[], recommended: string[], optional: string[], html_only: string[], domain: string[], personnel: string[], institution: string[], applicant2: string[]}
      */
     protected function buildCategorizedPlaceholders(): array
     {
@@ -816,15 +980,19 @@ class ResultSheetTemplateService
                 'exam_date', 'exam_time', 'room_name', 'overall_pct',
             ],
             'optional' => [
-                'scores_rows', 'gwa', 'strand',
+                'gwa', 'strand',
                 'recommended_course', 'counselor_comments', 'counselor_name',
+            ],
+            'html_only' => [
+                'scores_rows',
+                'scores_rows_2',
             ],
             'applicant2' => [
                 'applicant_name_2', 'applicant_reference_2',
                 'family_name_2', 'first_name_2', 'middle_name_2', 'suffix_2',
                 'sex_2', 'gwa_2', 'course_applied_2', 'strand_2', 'applicant_type_2',
                 'exam_date_2', 'exam_time_2', 'room_name_2',
-                'scores_rows_2', 'overall_pct_2',
+                'overall_pct_2',
                 'recommended_course_2', 'counselor_comments_2', 'counselor_name_2',
             ],
             'institution' => [
@@ -842,9 +1010,11 @@ class ResultSheetTemplateService
             $slug = $this->aptitudeAreaSlug($domain->name);
             $categorized['domain'][] = $slug;
             $categorized['domain'][] = $slug.'_raw';
+            $categorized['domain'][] = $slug.'_wunit';
             $categorized['domain'][] = $slug.'_rating';
             $categorized['applicant2'][] = $slug.'_2';
             $categorized['applicant2'][] = $slug.'_raw_2';
+            $categorized['applicant2'][] = $slug.'_wunit_2';
             $categorized['applicant2'][] = $slug.'_rating_2';
         }
 
@@ -855,6 +1025,15 @@ class ResultSheetTemplateService
                 $categorized['personnel'][] = "{$role}_{$field}";
             }
         }
+
+        $activeCourses = Course::where('is_active', true)->get(['code']);
+        foreach ($activeCourses as $course) {
+            $categorized['optional'][] = "{$course->code}_check";
+            $categorized['applicant2'][] = "{$course->code}_check_2";
+        }
+
+        $categorized['optional'][] = 'recommended_course_code';
+        $categorized['applicant2'][] = 'recommended_course_code_2';
 
         return $categorized;
     }
@@ -896,15 +1075,16 @@ class ResultSheetTemplateService
             'exam_time' => '8:00 AM',
             'room_name' => 'Conference Hall A - Seat 12',
             'recommended_course' => 'BS Information Technology',
+            'recommended_course_code' => 'BSIT',
             'counselor_comments' => 'Strong aptitude in numerical and logical reasoning. Recommended for IT/CS programs.',
             'counselor_name' => 'Maria Santos',
             'scores' => [
-                ['domain' => 'Spatial Awareness', 'raw' => 20, 'max' => 25, 'pct' => 80],
-                ['domain' => 'Numerical Ability', 'raw' => 22, 'max' => 25, 'pct' => 88],
-                ['domain' => 'Verbal Reasoning', 'raw' => 19, 'max' => 25, 'pct' => 76],
-                ['domain' => 'Abstract Reasoning', 'raw' => 16, 'max' => 20, 'pct' => 80],
-                ['domain' => 'Logical Reasoning', 'raw' => 21, 'max' => 25, 'pct' => 84],
-                ['domain' => 'Perceptual Speed & Accuracy', 'raw' => 17, 'max' => 20, 'pct' => 85],
+                ['domain' => 'Spatial Awareness', 'raw' => 20, 'max' => 25, 'pct' => 80, 'pct_string' => null, 'pct_numeric' => 80],
+                ['domain' => 'Numerical Ability', 'raw' => 22, 'max' => 25, 'pct' => 88, 'pct_string' => null, 'pct_numeric' => 88],
+                ['domain' => 'Verbal Reasoning', 'raw' => 19, 'max' => 25, 'pct' => 76, 'pct_string' => null, 'pct_numeric' => 76],
+                ['domain' => 'Abstract Reasoning', 'raw' => 16, 'max' => 20, 'pct' => 80, 'pct_string' => null, 'pct_numeric' => 80],
+                ['domain' => 'Logical Reasoning', 'raw' => 21, 'max' => 25, 'pct' => 84, 'pct_string' => null, 'pct_numeric' => 84],
+                ['domain' => 'Perceptual Speed & Accuracy', 'raw' => 17, 'max' => 20, 'pct' => 85, 'pct_string' => null, 'pct_numeric' => 85],
             ],
             'overall_pct' => 82,
             'name_2' => 'Maria L. Santos',
@@ -920,16 +1100,17 @@ class ResultSheetTemplateService
             'reference_2' => 'ICAT-2026-00043',
             'exam_time_2' => '8:00 AM',
             'room_name_2' => 'Conference Hall A - Seat 13',
-            'recommended_course_2' => 'BS Accountancy',
+            'recommended_course_2' => 'BS Computer Science',
+            'recommended_course_code_2' => 'BSCS',
             'counselor_comments_2' => 'Excellent numerical aptitude. Well-suited for business programs.',
             'counselor_name_2' => 'Maria Santos',
             'scores_2' => [
-                ['domain' => 'Spatial Awareness', 'raw' => 18, 'max' => 25, 'pct' => 72],
-                ['domain' => 'Numerical Ability', 'raw' => 24, 'max' => 25, 'pct' => 96],
-                ['domain' => 'Verbal Reasoning', 'raw' => 21, 'max' => 25, 'pct' => 84],
-                ['domain' => 'Abstract Reasoning', 'raw' => 14, 'max' => 20, 'pct' => 70],
-                ['domain' => 'Logical Reasoning', 'raw' => 19, 'max' => 25, 'pct' => 76],
-                ['domain' => 'Perceptual Speed & Accuracy', 'raw' => 15, 'max' => 20, 'pct' => 75],
+                ['domain' => 'Spatial Awareness', 'raw' => 18, 'max' => 25, 'pct' => 72, 'pct_string' => null, 'pct_numeric' => 72],
+                ['domain' => 'Numerical Ability', 'raw' => 24, 'max' => 25, 'pct' => 96, 'pct_string' => null, 'pct_numeric' => 96],
+                ['domain' => 'Verbal Reasoning', 'raw' => 21, 'max' => 25, 'pct' => 84, 'pct_string' => null, 'pct_numeric' => 84],
+                ['domain' => 'Abstract Reasoning', 'raw' => 14, 'max' => 20, 'pct' => 70, 'pct_string' => null, 'pct_numeric' => 70],
+                ['domain' => 'Logical Reasoning', 'raw' => 19, 'max' => 25, 'pct' => 76, 'pct_string' => null, 'pct_numeric' => 76],
+                ['domain' => 'Perceptual Speed & Accuracy', 'raw' => 15, 'max' => 20, 'pct' => 75, 'pct_string' => null, 'pct_numeric' => 75],
             ],
             'overall_pct_2' => 79,
         ];

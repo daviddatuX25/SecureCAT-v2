@@ -614,12 +614,13 @@ class ReportExportService
 
     private function buildScoresReport(int $academicYearId): Spreadsheet
     {
-        $aptitudeAreas = AptitudeArea::orderBy('name')->get();
+        $aptitudeAreas = AptitudeArea::orderBy('display_order')->get();
+        $hasAnyConversionTable = $aptitudeAreas->some(fn ($a) => $a->scoring_method === 'conversion_table');
 
         $applicants = Applicant::whereHas('application', fn ($q) => $q->where('academic_year_id', $academicYearId))
             ->with([
                 'application:id,reference_number,last_name,first_name,middle_name',
-                'applicantScores' => fn ($q) => $q->select('id', 'applicant_id', 'aptitude_area_id', 'raw_score', 'max_score', 'normalized_score'),
+                'applicantScores' => fn ($q) => $q->select('id', 'applicant_id', 'aptitude_area_id', 'raw_score', 'max_score', 'normalized_score', 'percentile_string'),
             ])
             ->get();
 
@@ -629,6 +630,9 @@ class ReportExportService
             $headers[] = "{$area->name} (Raw)";
             $headers[] = "{$area->name} (Max)";
             $headers[] = "{$area->name} (Normalized)";
+            if ($hasAnyConversionTable) {
+                $headers[] = "{$area->name} (Percentile)";
+            }
         }
 
         $rows = [];
@@ -643,6 +647,9 @@ class ReportExportService
                 $row[] = $score?->raw_score ?? '';
                 $row[] = $score?->max_score ?? '';
                 $row[] = $score?->normalized_score !== null ? round($score->normalized_score, 2) : '';
+                if ($hasAnyConversionTable) {
+                    $row[] = $score?->percentile_string ?? '';
+                }
             }
             $rows[] = $row;
         }

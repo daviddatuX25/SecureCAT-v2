@@ -6,11 +6,11 @@
   import { Badge } from '@/Components/ui/badge';
   import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/Components/ui/card';
   import * as Table from '@/Components/ui/table';
-  import { ArrowLeft, Printer, Download, CheckSquare, Square } from 'lucide-svelte';
+  import { ArrowLeft, Printer, Download, CheckSquare, Square, FileText } from 'lucide-svelte';
   import { formatDate } from '@/lib/date-utils';
 
   let { sessionId = '1', session = {}, applicants = [] } = $props();
-  const sid = $derived(String(sessionId));
+  const sid = $derived(sessionId != null ? String(sessionId) : null);
 
   const _page = usePage();
   const printDisabled = $derived(($_page?.props?.release_mode ?? 'online') === 'online');
@@ -119,6 +119,12 @@
               <Button variant="secondary" class="min-h-[44px] gap-2">
                 <Download class="h-4 w-4" />
                 Download PDF
+              </Button>
+            </a>
+            <a href={`/admin/release/print/${sid}/print-bulk-docx?ids=${Array.from(selected).join(',')}`} rel="noopener">
+              <Button variant="outline" class="min-h-[44px] gap-2">
+                <FileText class="h-4 w-4" />
+                Download Word
               </Button>
             </a>
           {/if}

@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use Psr\Log\LoggerInterface;
+use setasign\Fpdi\Fpdi;
 use Symfony\Component\Process\Process;
 
 class DocxToPdfService
@@ -173,7 +174,40 @@ class DocxToPdfService
             return $pdfContents[0];
         }
 
-        throw new \RuntimeException('pdfunite is required for multi-file PDF merge. Install poppler-utils.');
+        $tempDir = $this->createTempDir('fpdi_merge_');
+
+        try {
+            $pdf = new Fpdi;
+            $pdf->SetAutoPageBreak(false);
+
+            foreach ($pdfContents as $i => $content) {
+                $tempPath = $tempDir.DIRECTORY_SEPARATOR."input_{$i}.pdf";
+                file_put_contents($tempPath, $content);
+
+                $pageCount = $pdf->setSourceFile($tempPath);
+
+                for ($page = 1; $page <= $pageCount; $page++) {
+                    $templateId = $pdf->importPage($page);
+                    $size = $pdf->getTemplateSize($templateId);
+                    $pdf->AddPage($size['orientation'], [$size['width'], $size['height']]);
+                    $pdf->useTemplate($templateId);
+                }
+            }
+
+            $outputPath = $tempDir.DIRECTORY_SEPARATOR.'merged.pdf';
+            $pdf->Output('F', $outputPath);
+
+            return file_get_contents($outputPath);
+        } catch (\Throwable $e) {
+            $this->logger->error('FPDI PDF merge failed', [
+                'error' => $e->getMessage(),
+                'pdfCount' => count($pdfContents),
+            ]);
+
+            throw new \RuntimeException('PDF merge failed: '.$e->getMessage(), 0, $e);
+        } finally {
+            $this->removeDir($tempDir);
+        }
     }
 
     protected function createTempDir(string $prefix = 'lo_'): string

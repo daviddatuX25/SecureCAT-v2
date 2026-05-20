@@ -70,7 +70,7 @@ class AdmissionSlipTemplateController extends Controller
             $data['docx_path'] = null;
             $template = AdmissionSlipTemplate::create($data);
             $file = $request->file('docx');
-            $path = $file->storeAs('admission-slip-templates', $template->id.'.docx', 'local');
+            $path = Storage::disk('local')->putFileAs('admission-slip-templates', $file->getPathname(), $template->id.'.docx');
             $template->update(['docx_path' => $path]);
         }
 
@@ -121,7 +121,8 @@ class AdmissionSlipTemplateController extends Controller
                 if ($admission_slip_template->docx_path) {
                     Storage::disk('local')->delete($admission_slip_template->docx_path);
                 }
-                $path = $request->file('docx')->storeAs('admission-slip-templates', $admission_slip_template->id.'.docx', 'local');
+                $file = $request->file('docx');
+                $path = Storage::disk('local')->putFileAs('admission-slip-templates', $file->getPathname(), $admission_slip_template->id.'.docx');
                 $data['docx_path'] = $path;
             } elseif (! $admission_slip_template->docx_path) {
                 return redirect()->back()->withErrors(['docx' => 'DOCX file is required for DOCX mode.']);
@@ -170,7 +171,8 @@ class AdmissionSlipTemplateController extends Controller
                 $html = $this->templateService->renderHtmlContent($content, [], true);
             } else {
                 if ($request->hasFile('docx')) {
-                    $path = $request->file('docx')->getRealPath();
+                    $uploaded = $request->file('docx');
+                    $path = $uploaded->getRealPath() ?: $uploaded->getPathname();
                     $html = $this->templateService->renderDocxFile($path, [], true);
                 } else {
                     $template = AdmissionSlipTemplate::findOrFail($request->input('template_id'));
