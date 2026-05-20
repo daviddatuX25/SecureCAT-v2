@@ -171,31 +171,53 @@
               <label for="score-{domain.id}" class="text-sm font-medium leading-none">
                 {domain.name} ({domain.code})
               </label>
-              {#if autoCompute}
-                {@const raw = getScore(domain.id)}
-                {@const computedNorm = computeNormalized(domain.id, raw)}
-                <div class="flex items-center gap-3">
-                  <Input
-                    id="score-{domain.id}"
-                    type="number"
-                    min="0"
-                    max={max}
-                    value={raw}
-                    oninput={(e) => !isReadOnly && setScore(domain.id, e.currentTarget.value)}
-                    disabled={isReadOnly}
-                    class="w-20"
-                  />
-                  <span class="text-muted-foreground">/ {max}</span>
-                  {#if computedNorm !== null}
-                    <span class="text-sm font-medium tabular-nums text-muted-foreground">
-                      ({computedNorm} pts)
-                    </span>
+                {#if autoCompute}
+                  {@const raw = getScore(domain.id)}
+                  {#if domain.scoring_method === 'conversion_table'}
+                    {@const match = domain.conversion_table?.find(r => r.raw_score === raw)}
+                    <div class="flex items-center gap-3">
+                      <Input
+                        id="score-{domain.id}"
+                        type="number"
+                        min="0"
+                        max={max}
+                        value={raw}
+                        oninput={(e) => !isReadOnly && setScore(domain.id, e.currentTarget.value)}
+                        disabled={isReadOnly}
+                        class="w-20"
+                      />
+                      <span class="text-muted-foreground">/ {max}</span>
+                      <span class="text-sm font-medium tabular-nums"
+                        class:text-green-700={match}
+                        class:text-amber-600={!match}>
+                        {match ? match.percentile_output : 'Out of Range'}
+                      </span>
+                    </div>
+                  {:else}
+                    {@const computedNorm = computeNormalized(domain.id, raw)}
+                    <div class="flex items-center gap-3">
+                      <Input
+                        id="score-{domain.id}"
+                        type="number"
+                        min="0"
+                        max={max}
+                        value={raw}
+                        oninput={(e) => !isReadOnly && setScore(domain.id, e.currentTarget.value)}
+                        disabled={isReadOnly}
+                        class="w-20"
+                      />
+                      <span class="text-muted-foreground">/ {max}</span>
+                      {#if computedNorm !== null}
+                        <span class="text-sm font-medium tabular-nums text-muted-foreground">
+                          ({computedNorm} pts)
+                        </span>
+                      {/if}
+                    </div>
+                    {#if !domain.has_formula}
+                      <p class="text-xs text-muted-foreground">No formula configured — normalized score will not be computed.</p>
+                    {/if}
                   {/if}
-                </div>
-                {#if !domain.has_formula}
-                  <p class="text-xs text-muted-foreground">No formula configured — normalized score will not be computed.</p>
-                {/if}
-              {:else}
+                {:else}
                 {@const normScore = getNormalizedScore(domain.id)}
                 <div class="flex items-center gap-3">
                   <Input
