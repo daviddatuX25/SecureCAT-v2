@@ -259,4 +259,98 @@ class ExamSchedulingAssistantTest extends TestCase
             'status' => ExamSession::STATUS_DRAFT,
         ]);
     }
+
+    public function test_apply_schedule_can_edit_existing_draft_session(): void
+    {
+        $user = User::factory()->create();
+        $user->assignRole('registrar_administrator');
+
+        $year = AcademicYear::factory()->create(['academic_year' => '2025-2026', 'semester' => '1', 'is_active' => true]);
+        $room1 = Room::factory()->create(['is_active' => true]);
+        $room2 = Room::factory()->create(['is_active' => true]);
+
+        $session = ExamSession::create([
+            'academic_year_id' => $year->id,
+            'room_id' => $room1->id,
+            'date' => '2026-05-25',
+            'start_time' => '09:00',
+            'status' => ExamSession::STATUS_DRAFT,
+            'created_by' => $user->id,
+        ]);
+
+        $payload = [
+            'sessions' => [
+                [
+                    'action' => 'edit',
+                    'exam_session_id' => $session->id,
+                    'room_id' => $room2->id,
+                    'date' => '2026-05-26',
+                    'start_time' => '10:00',
+                    'end_time' => '13:00',
+                    'applicant_ids' => [],
+                ],
+            ],
+        ];
+
+        $this->actingAs($user)
+            ->postJson('/admin/exam-scheduling/schedule-assistant/apply-schedule', $payload)
+            ->assertOk();
+
+        $this->assertDatabaseHas('exam_sessions', [
+            'id' => $session->id,
+            'room_id' => $room2->id,
+            'date' => '2026-05-26 00:00:00',
+            'start_time' => '10:00',
+            'end_time' => '13:00',
+        ]);
+    }
+
+    public function test_apply_schedule_prevents_conflict_on_edit(): void
+    {
+        $user = User::factory()->create();
+        $user->assignRole('registrar_administrator');
+
+        $year = AcademicYear::factory()->create(['academic_year' => '2025-2026', 'semester' => '1', 'is_active' => true]);
+        $room = Room::factory()->create(['is_active' => true]);
+
+        // Existing session that occupies the room at 2026-05-25 09:00 to 12:00
+        $existingSession = ExamSession::create([
+            'academic_year_id' => $year->id,
+            'room_id' => $room->id,
+            'date' => '2026-05-25',
+            'start_time' => '09:00',
+            'end_time' => '12:00',
+            'status' => ExamSession::STATUS_DRAFT,
+            'created_by' => $user->id,
+        ]);
+
+        // Another draft session that we want to edit and change to the same slot
+        $targetSession = ExamSession::create([
+            'academic_year_id' => $year->id,
+            'room_id' => $room->id,
+            'date' => '2026-05-26',
+            'start_time' => '09:00',
+            'status' => ExamSession::STATUS_DRAFT,
+            'created_by' => $user->id,
+        ]);
+
+        $payload = [
+            'sessions' => [
+                [
+                    'action' => 'edit',
+                    'exam_session_id' => $targetSession->id,
+                    'date' => '2026-05-25',
+                    'start_time' => '10:00', // overlaps with 09:00 - 12:00
+                    'end_time' => '11:00',
+                ],
+            ],
+        ];
+
+        $this->actingAs($user)
+            ->postJson('/admin/exam-scheduling/schedule-assistant/apply-schedule', $payload)
+            ->assertStatus(422)
+            ->assertJsonFragment([
+                'message' => "Room {$room->id} has a conflict on 2026-05-25 at 10:00.",
+            ]);
+    }
 }

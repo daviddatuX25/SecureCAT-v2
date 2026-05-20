@@ -109,6 +109,7 @@
    */
   function normalizeSession(s) {
     return {
+      action:          s.action    ?? null,
       exam_session_id: s.exam_session_id ?? s.session_id ?? null,
       room_id:        s.room_id   ?? s.roomId   ?? s.room?.id   ?? null,
       room_name:      s.room_name ?? s.room?.name ?? null,
@@ -123,16 +124,38 @@
     if (!schedule?.sessions?.length) return [];
     return schedule.sessions.map((raw) => {
       const s = normalizeSession(raw);
-      if (s.exam_session_id) {
+      let action = s.action;
+      if (!action) {
+        action = s.exam_session_id ? ((s.room_id || s.date || s.start_time) ? 'edit' : 'assign') : 'create';
+      }
+
+      if (action === 'edit') {
+        const draft = draftMap[s.exam_session_id];
+        const roomName = roomMap[s.room_id]?.name ?? s.room_name ?? draft?.room?.name ?? '—';
+        const dateStr = s.date ?? draft?.date ?? '—';
+        const startTime = s.start_time ?? draft?.start_time;
+        const endTime = s.end_time ?? draft?.end_time;
+        const timeStr = [startTime, endTime].filter(Boolean).join('–') || '—';
+        return {
+          type: 'Edit draft',
+          room: roomName,
+          date: dateStr,
+          time: timeStr,
+          applicant_count: (s.applicant_ids ?? []).length > 0 ? (s.applicant_ids ?? []).length : 'No change',
+        };
+      }
+
+      if (action === 'assign') {
         const draft = draftMap[s.exam_session_id];
         return {
-          type: 'Existing draft',
+          type: 'Assign only',
           room: draft?.room?.name ?? '—',
           date: draft?.date ?? '—',
           time: draft ? [draft.start_time, draft.end_time].filter(Boolean).join('–') : '—',
           applicant_count: (s.applicant_ids ?? []).length,
         };
       }
+
       return {
         type: 'New',
         room: roomMap[s.room_id]?.name ?? s.room_name ?? `Room ${s.room_id ?? '?'}`,
