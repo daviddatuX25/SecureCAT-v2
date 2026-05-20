@@ -7,7 +7,7 @@
   import { Checkbox } from '@/Components/ui/checkbox';
   import * as Select from '@/Components/ui/select';
   import * as Table from '@/Components/ui/table';
-  import { Filter, ChevronDown, CheckCircle, XCircle, UploadCloud, Plus, Pencil, Search, ShieldCheck, RotateCcw, ChevronsUpDown, X } from 'lucide-svelte';
+  import { Filter, ChevronDown, CheckCircle, XCircle, UploadCloud, Plus, Pencil, Search, ShieldCheck, RotateCcw, ChevronsUpDown, X, Printer, Download } from 'lucide-svelte';
   import SwitchableListView from '@/Components/SwitchableListView.svelte';
   import SimplePagination from '@/Components/SimplePagination.svelte';
   import { success as showSuccess, error as showError } from '@/lib/toast';
@@ -16,7 +16,7 @@
   import { createDebouncedWatch, createImmediateWatch } from '@/lib/auto-filter';
   import { onMount } from 'svelte';
 
-  let { applications, filters = {}, seasons = [], active_season_id = null, statuses = [] } = $props();
+  let { applications, filters = {}, seasons = [], active_season_id = null, statuses = [], admission_slip_enabled = false } = $props();
 
   const page = usePage();
   const authUser = $derived($page.props.auth?.user ?? null);
@@ -242,6 +242,41 @@
     });
   }
 
+  function doBulkPrintSlips() {
+    const ids = [...selectedIds];
+    if (ids.length === 1) {
+      window.open(`/admin/applications/${ids[0]}/admission-slip/print`, '_blank', 'noopener');
+    } else {
+      router.visit('/admin/applications/admission-slips/bulk-print', {
+        method: 'post',
+        data: { ids },
+        preserveState: false,
+      });
+    }
+  }
+
+  function doBulkDownloadSlipsPdf() {
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = '/admin/applications/admission-slips/bulk-pdf';
+    form.style.display = 'none';
+    const csrfInput = document.createElement('input');
+    csrfInput.type = 'hidden';
+    csrfInput.name = '_token';
+    csrfInput.value = $page.props.csrf_token ?? '';
+    form.appendChild(csrfInput);
+    [...selectedIds].forEach((id) => {
+      const input = document.createElement('input');
+      input.type = 'hidden';
+      input.name = 'ids[]';
+      input.value = id;
+      form.appendChild(input);
+    });
+    document.body.appendChild(form);
+    form.submit();
+    document.body.removeChild(form);
+  }
+
   const breadcrumbs = $derived([{ label: 'Applications' }]);
 </script>
 
@@ -452,6 +487,27 @@
             <span class="text-xs text-muted-foreground italic">No bulk actions for mixed statuses</span>
           {/if}
 
+          {#if admission_slip_enabled && allAccepted()}
+            <Button
+              size="sm"
+              variant="outline"
+              class="gap-1.5"
+              onclick={doBulkPrintSlips}
+            >
+              <Printer class="h-3.5 w-3.5" />
+              Print Slips
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              class="gap-1.5"
+              onclick={doBulkDownloadSlipsPdf}
+            >
+              <Download class="h-3.5 w-3.5" />
+              Download PDFs
+            </Button>
+          {/if}
+
           <Button
             size="sm"
             variant="ghost"
@@ -538,6 +594,14 @@
                         Dismiss
                       </Button>
                     {/if}
+                    {#if admission_slip_enabled && (app.pipeline_status === 'accepted' || app.status === 'accepted')}
+                      <Link href={`/admin/applications/${app.id}/admission-slip/print`} target="_blank">
+                        <Button variant="ghost" size="sm" class="h-8 px-2 text-xs font-semibold hover:bg-muted">
+                          <Printer class="mr-1.5 h-3.5 w-3.5" />
+                          Slip
+                        </Button>
+                      </Link>
+                    {/if}
                   </div>
                 </Table.Cell>
               </Table.Row>
@@ -619,6 +683,14 @@
                         <XCircle class="h-3.5 w-3.5 mr-1.5" />
                         Dismiss
                       </Button>
+                    {/if}
+                    {#if admission_slip_enabled && (app.pipeline_status === 'accepted' || app.status === 'accepted')}
+                      <Link href={`/admin/applications/${app.id}/admission-slip/print`} target="_blank" onclick={(e) => e.stopPropagation()}>
+                        <Button variant="outline" size="sm" class="min-h-[40px] font-semibold">
+                          <Printer class="h-3.5 w-3.5 mr-1.5" />
+                          Slip
+                        </Button>
+                      </Link>
                     {/if}
                   </div>
                 </div>

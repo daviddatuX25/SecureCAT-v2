@@ -16,6 +16,7 @@ use App\Notifications\ApplicationStatusChanged;
 use App\Services\AdmissionSlipService;
 use App\Services\ApplicationPipelineService;
 use App\Services\AuditService;
+use App\Services\PrintTemplateCssService;
 use Carbon\Carbon;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -124,6 +125,7 @@ class ApplicationController extends Controller
             'filters' => $request->only(['search', 'pipeline_status', 'date_from', 'date_to', 'academic_year_id']),
             'seasons' => $this->academicYearOptions(),
             'active_season_id' => $activeAcademicYear?->id,
+            'admission_slip_enabled' => AdmissionSlipService::isEnabled(),
             'statuses' => [
                 ['value' => 'pending', 'label' => 'Pending'],
                 ['value' => 'accepted', 'label' => 'Accepted'],
@@ -679,6 +681,111 @@ class ApplicationController extends Controller
         return $pdf->download($filename);
     }
 
+    public function admissionSlipPrint(Application $application): Response
+    {
+        $this->authorize('admissionSlip', $application);
+
+        if (! AdmissionSlipService::isEnabled()) {
+            abort(403, 'Admission slip distribution is not enabled.');
+        }
+
+        if ($application->status !== 'accepted') {
+            abort(403, 'Admission slip is only available for accepted applications.');
+        }
+
+        $service = app(AdmissionSlipService::class);
+        $templateHtml = $service->renderHtml($application);
+
+        $application->load(['applicant', 'coursePreference1', 'coursePreference2', 'coursePreference3']);
+
+        return Inertia::render('Applications/AdmissionSlipSingle', [
+            'applicationId' => (string) $application->id,
+            'printed' => (bool) $application->admission_slip_printed_at,
+            'applicant' => [
+                'id' => $application->applicant?->id ?? null,
+                'name' => trim(implode(' ', array_filter([$application->first_name, $application->middle_name, $application->last_name, $application->suffix]))),
+                'reference' => $application->reference_number,
+            ],
+            'templateHtml' => $templateHtml,
+            'templateError' => null,
+            'paperSize' => 'a4',
+            'orientation' => 'portrait',
+            'logicalUnit' => 'full',
+            'paperOptions' => [],
+        ]);
+    }
+
+    public function admissionSlipBulkPrint(Request $request): Response
+    {
+        if (! AdmissionSlipService::isEnabled()) {
+            abort(403, 'Admission slip distribution is not enabled.');
+        }
+
+        $ids = $request->validate(['ids' => 'required|array', 'ids.*' => 'integer'])['ids'];
+
+        $applications = Application::query()
+            ->whereIn('id', $ids)
+            ->where('status', 'accepted')
+            ->whereHas('applicant')
+            ->with(['applicant', 'coursePreference1', 'coursePreference2', 'coursePreference3'])
+            ->orderBy('reference_number')
+            ->get();
+
+        $service = app(AdmissionSlipService::class);
+        $sheetsHtml = [];
+        $applicantsData = [];
+
+        foreach ($applications as $app) {
+            $sheetsHtml[] = $service->renderHtml($app);
+            $applicantsData[] = [
+                'id' => $app->id,
+                'name' => trim(implode(' ', array_filter([$app->first_name, $app->middle_name, $app->last_name, $app->suffix]))) ?: '—',
+                'reference' => $app->reference_number ?? '—',
+            ];
+        }
+
+        $flatPaperOptions = ['a4' => 'A4', 'legal' => 'Legal', 'letter' => 'Letter'];
+
+        return Inertia::render('Applications/AdmissionSlipBulk', [
+            'applicationIds' => $ids,
+            'applicants' => $applicantsData,
+            'sheetsHtml' => $sheetsHtml,
+            'templateError' => null,
+            'paperSize' => 'a4',
+            'orientation' => 'portrait',
+            'logicalUnit' => 'full',
+            'paperOptions' => $flatPaperOptions,
+        ]);
+    }
+
+    public function admissionSlipBulkPdf(Request $request): StreamedResponse
+    {
+        if (! AdmissionSlipService::isEnabled()) {
+            abort(403, 'Admission slip distribution is not enabled.');
+        }
+
+        $ids = $request->validate(['ids' => 'required|array', 'ids.*' => 'integer'])['ids'];
+
+        $applications = Application::query()
+            ->whereIn('id', $ids)
+            ->where('status', 'accepted')
+            ->whereHas('applicant')
+            ->orderBy('reference_number')
+            ->get();
+
+        $service = app(AdmissionSlipService::class);
+        $pdfHtml = '';
+
+        foreach ($applications as $app) {
+            $pdfHtml .= $service->renderHtml($app);
+            $pdfHtml .= '<div style="page-break-after: always;"></div>';
+        }
+
+        $pdf = \Pdf::loadHTML(app(PrintTemplateCssService::class)->wrapForPdf(rtrim($pdfHtml, '<div style="page-break-after: always;"></div>')));
+
+        return $pdf->download('admission-slips-bulk.pdf');
+    }
+
     /**
      * Bulk accept pending applications. Non-pending rows are silently skipped.
      */
@@ -906,6 +1013,7 @@ class ApplicationController extends Controller
         return Inertia::render('Portal/ApplicationShow', [
             'application' => $applicationData,
             'courses' => $courses,
+            'admission_slip_enabled' => AdmissionSlipService::isEnabled(),
         ]);
     }
 

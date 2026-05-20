@@ -364,7 +364,8 @@ class SetupHealthTest extends TestCase
         Room::create(['name' => 'Room 101', 'building' => 'Main', 'floor' => '1', 'capacity' => 30, 'is_active' => true]);
         AptitudeArea::create(['name' => 'Verbal', 'code' => 'VRB', 'max_items' => 50, 'formula' => '(x/max_items)*100', 'is_active' => true, 'display_order' => 1]);
         ResultSheetTemplate::create(['name' => 'Default', 'mode' => 'html', 'paper_size' => 'a4', 'orientation' => 'portrait', 'logical_unit' => 'full', 'content' => '<p>Result</p>', 'is_active' => true]);
-        AdmissionSlipTemplate::create(['name' => 'Default', 'mode' => 'html', 'paper_size' => 'a4', 'orientation' => 'portrait', 'logical_unit' => 'full', 'content' => '<p>Slip</p>', 'is_active' => true]);
+        SystemSetting::set('admission_slip_enabled', true);
+        SystemSetting::set('admission_slip_html_template', '<p>Slip</p>');
         PrivacyPolicy::create(['title' => 'Privacy v1', 'content' => 'Content', 'is_active' => true]);
 
         // Also create required staff roles

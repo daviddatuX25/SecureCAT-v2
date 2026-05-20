@@ -52,6 +52,17 @@
                                 <tr><td style="padding: 4px 0; font-size: 13px; color: #64748b;">&#8226;&nbsp; Access important announcements</td></tr>
                             </table>
 
+                            @if($admissionSlipAttached)
+                            <table role="presentation" cellspacing="0" cellpadding="0" width="100%" style="margin: 0 0 24px;">
+                                <tr>
+                                    <td style="background-color: #eff6ff; border: 1px solid #bfdbfe; border-radius: 8px; padding: 12px 20px;">
+                                        <p style="margin: 0 0 4px; font-size: 13px; font-weight: 600; color: #1e40af;">Admission Slip Attached</p>
+                                        <p style="margin: 0; font-size: 13px; color: #475569; line-height: 1.5;">Your admission slip is attached to this email as a PDF. You can also download it from the portal after setting up your account.</p>
+                                    </td>
+                                </tr>
+                            </table>
+                            @endif
+
                             <p style="margin: 0; font-size: 13px; color: #94a3b8; line-height: 1.5;">
                                 This setup link expires in {{ $tokenExpiryHours }} hours. If you did not apply, you can safely ignore this email.
                             </p>

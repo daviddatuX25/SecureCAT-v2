@@ -234,8 +234,16 @@
                 {/if}
               </div>
               <div>
-                <label for="strand" class="block text-sm font-medium">SHS Strand / Previous Course</label>
-                <Input id="strand" name="strand" bind:value={$form.strand} class="mt-1 min-h-[44px]" placeholder="e.g., STEM, ABM, HUMSS, GAS" />
+                <label for="strand" class="block text-sm font-medium">
+                  {$form.applicant_type === 'transferee' ? 'Previous Course' : 'SHS Strand'}
+                </label>
+                <Input
+                  id="strand"
+                  name="strand"
+                  bind:value={$form.strand}
+                  class="mt-1 min-h-[44px]"
+                  placeholder={$form.applicant_type === 'transferee' ? 'e.g., BS Computer Science, BS Nursing' : 'e.g., STEM, ABM, HUMSS, GAS'}
+                />
                 {#if $form.errors?.strand}
                   <p class="mt-1 text-sm text-destructive">{$form.errors.strand}</p>
                 {/if}

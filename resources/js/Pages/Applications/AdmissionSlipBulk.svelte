@@ -146,7 +146,7 @@
   {#if templateError}
     <div class="rounded-lg border border-destructive/50 bg-destructive/10 p-6 text-destructive">
       <p>{templateError}</p>
-      <Link href="/admin/admission-slip-templates" class="mt-4 inline-block text-sm underline">Go to Admission slip templates</Link>
+      <Link href="/admin/settings" class="mt-4 inline-block text-sm underline">Go to Settings to configure admission slip template</Link>
     </div>
   {:else if sheetsHtml.length > 0}
     {#each sheetsHtml as html}

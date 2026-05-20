@@ -9,3 +9,6 @@
 | Task 5 | Top-level KPI Panels Render | done | Render overall monitoring stats using 4 KpiCards |
 | Task 6 | Svelte List View Row & Card Enhancements | done | Implement dual progress bars, capacity details, and proctor tags |
 | Task 7 | Empty/No Active Session State Polish | done | Create modern glassmorphic illustration placeholder |
+| Task 8 | Sidebar Highlight Update | done | Update AuthenticatedLayout.svelte sidebar items and logic |
+| Task 9 | Make Placeholders Optional | done | Update ResultSheetTemplateService.php with optional placeholders |
+| Task 10 | Fix PHPUnit Tests for Templates | done | Align tests with new validation placeholders |
