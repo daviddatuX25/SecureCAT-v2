@@ -118,4 +118,71 @@ class InstitutionControllerTest extends TestCase
 
         $this->assertSame($default, SystemSetting::institution('name'));
     }
+
+    public function test_institution_page_loads_for_test_administrator_with_filtered_data(): void
+    {
+        $user = User::factory()->create();
+        $user->roles()->attach(Role::where('name', 'test_administrator')->first());
+
+        $response = $this->actingAs($user)->get(route('admin.setup.institution.index'));
+
+        $response->assertStatus(200);
+        $response->assertInertia(fn ($page) => $page
+            ->component('Admin/Institution/Index')
+            ->where('profile', [])
+            ->has('personnel.guidance_counselor')
+            ->has('personnel.testing_coordinator')
+            ->missing('personnel.registrar')
+            ->where('personnelRoles', ['guidance_counselor', 'testing_coordinator'])
+        );
+    }
+
+    public function test_test_administrator_cannot_update_profile_or_unauthorized_personnel(): void
+    {
+        $user = User::factory()->create();
+        $user->roles()->attach(Role::where('name', 'test_administrator')->first());
+
+        // Setup some overrides first
+        SystemSetting::set('institution.name', 'Initial Name');
+        SystemSetting::set('institution.personnel.registrar.name', 'Initial Registrar');
+        SystemSetting::set('institution.personnel.guidance_counselor.name', 'Initial Guidance');
+
+        $this->actingAs($user)->put(route('admin.setup.institution.update'), [
+            'profile' => [
+                'name' => 'Attempted Change',
+            ],
+            'personnel' => [
+                'registrar' => [
+                    'name' => 'Attempted Registrar Change',
+                ],
+                'guidance_counselor' => [
+                    'name' => 'Changed Guidance Counselor',
+                ],
+            ],
+        ]);
+
+        // Assert guidance counselor was updated
+        $this->assertSame('Changed Guidance Counselor', SystemSetting::institution('personnel.guidance_counselor.name'));
+        // Assert other values remain unchanged
+        $this->assertSame('Initial Name', SystemSetting::institution('name'));
+        $this->assertSame('Initial Registrar', SystemSetting::institution('personnel.registrar.name'));
+    }
+
+    public function test_test_administrator_reset_only_clears_allowed_personnel(): void
+    {
+        $user = User::factory()->create();
+        $user->roles()->attach(Role::where('name', 'test_administrator')->first());
+
+        SystemSetting::set('institution.name', 'Override Name');
+        SystemSetting::set('institution.personnel.registrar.name', 'Override Registrar');
+        SystemSetting::set('institution.personnel.guidance_counselor.name', 'Override Guidance');
+
+        $this->actingAs($user)->post(route('admin.setup.institution.reset'));
+
+        // Guidance counselor should be reset
+        $this->assertNull(SystemSetting::get('institution.personnel.guidance_counselor.name'));
+        // Name and registrar should NOT be reset
+        $this->assertSame('Override Name', SystemSetting::get('institution.name'));
+        $this->assertSame('Override Registrar', SystemSetting::get('institution.personnel.registrar.name'));
+    }
 }
