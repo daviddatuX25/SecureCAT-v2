@@ -113,6 +113,7 @@ Route::middleware(['auth'])->group(function () {
         Route::put('settings', [SettingsController::class, 'update'])->name('settings.update');
         Route::get('logs', [AuditLogController::class, 'index'])->name('logs.index');
         Route::get('logs/export', [AuditLogController::class, 'export'])->name('logs.export');
+        Route::post('admission-slip-templates/preview', [AdmissionSlipTemplateController::class, 'preview'])->name('admission-slip-templates.preview');
         Route::resource('admission-slip-templates', AdmissionSlipTemplateController::class)->except('show')->parameters(['admission_slip_templates' => 'admission_slip_template']);
         // AI Companion hub (replaces knowledge-documents index)
         Route::get('ai-companion', [AiCompanionAdminController::class, 'index'])->name('ai-companion.index');

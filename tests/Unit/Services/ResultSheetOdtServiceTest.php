@@ -176,4 +176,21 @@ class ResultSheetOdtServiceTest extends TestCase
 
         @unlink($repairedPath);
     }
+
+    #[Test]
+    public function it_merges_split_spans_in_headings_and_handles_spaces(): void
+    {
+        $reflection = new \ReflectionMethod(ResultSheetOdtService::class, 'repairOdtXml');
+        $reflection->setAccessible(true);
+
+        // Test with split braces inside a heading
+        $xmlHeading = '<text:h><text:span text:style-name="T1">{</text:span><text:span text:style-name="T1">{applicant_name}</text:span><text:span text:style-name="T1">}</text:span><text:span text:style-name="T1">}</text:span></text:h>';
+        $repaired = $reflection->invoke($this->service, $xmlHeading);
+        $this->assertStringContainsString('<text:span text:style-name="T1">{{applicant_name}}}</text:span>', $repaired);
+
+        // Test with text:s space tags
+        $xmlSpaces = '<text:p><text:span text:style-name="T1">hello</text:span><text:span text:style-name="T1"><text:s text:c="3"/></text:span><text:span text:style-name="T1">world</text:span></text:p>';
+        $repairedSpaces = $reflection->invoke($this->service, $xmlSpaces);
+        $this->assertStringContainsString('hello   world', $repairedSpaces);
+    }
 }

@@ -141,6 +141,15 @@
 
   function submitForm(e) {
     e.preventDefault();
+    if ($form.mode === 'docx' && validationResult && !validationResult.valid && validationResult.missing?.length > 0) {
+      const missingList = validationResult.missing.map(m => `{{${m}}}`).join(', ');
+      const confirmSave = confirm(
+        `Are you sure you want to save? The template is missing the following required placeholders: ${missingList}`
+      );
+      if (!confirmSave) {
+        return;
+      }
+    }
     $form.transform((data) => ({ ...data, document: rawDocumentFile }));
     $form.put(`/admin/release/result-templates/${template.id}`, { forceFormData: true });
   }

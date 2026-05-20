@@ -205,7 +205,7 @@ class ResultSheetOdtService
     protected function mergeOdtTextSpans(string $content): string
     {
         return preg_replace_callback(
-            '/<text:p[ >].*?<\/text:p>/s',
+            '/<text:(p|h)[ >].*?<\/text:\1>/s',
             function ($paragraphMatch) {
                 $paragraph = $paragraphMatch[0];
 
@@ -315,9 +315,25 @@ class ResultSheetOdtService
 
     protected function extractOdtTextFromSpan(string $spanXml): string
     {
-        preg_match_all('/<text:[st]\b[^>]*>(.*?)<\/text:[st]>/s', $spanXml, $textMatches);
+        if (! preg_match('/^<text:span\b[^>]*>(.*)<\/text:span>$/s', $spanXml, $match)) {
+            return '';
+        }
+        $innerXml = $match[1];
 
-        return implode('', $textMatches[1] ?? []);
+        // Replace text:s with spaces
+        $innerXml = preg_replace_callback('/<text:s\b[^>]*>/i', function ($sMatch) {
+            if (preg_match('/text:c="(\d+)"/i', $sMatch[0], $cMatch)) {
+                return str_repeat(' ', (int) $cMatch[1]);
+            }
+
+            return ' ';
+        }, $innerXml);
+
+        // Replace tab and line break
+        $innerXml = preg_replace('/<text:tab\b[^>]*\/?>/i', "\t", $innerXml);
+        $innerXml = preg_replace('/<text:line-break\b[^>]*\/?>/i', "\n", $innerXml);
+
+        return strip_tags($innerXml);
     }
 
     protected function buildMergedOdtSpan(string $originalXml, string $style, string $text): string

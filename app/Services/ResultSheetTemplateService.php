@@ -394,13 +394,14 @@ class ResultSheetTemplateService
         bool $useSampleIfEmpty = true,
         string $paperSize = ResultSheetTemplate::PAPER_A4,
         string $orientation = ResultSheetTemplate::ORIENTATION_PORTRAIT,
-        string $logicalUnit = ResultSheetTemplate::LOGICAL_FULL
+        string $logicalUnit = ResultSheetTemplate::LOGICAL_FULL,
+        ?string $originalName = null
     ): RenderResult {
         if (empty($replacements) && $useSampleIfEmpty) {
             $replacements = $this->buildSampleReplacements();
         }
 
-        $ext = strtolower(pathinfo($path, PATHINFO_EXTENSION));
+        $ext = strtolower(pathinfo($originalName ?? $path, PATHINFO_EXTENSION));
         $service = $ext === 'odt' ? $this->odtService : $this->docxService;
         $html = $service->renderFromFullPath($path, $replacements);
 
@@ -1010,9 +1011,9 @@ class ResultSheetTemplateService
         return $content;
     }
 
-    public function getDocumentValidation(string $fullPath, bool $isCrosswise): DocxValidationResult
+    public function getDocumentValidation(string $fullPath, bool $isCrosswise, ?string $originalName = null): DocxValidationResult
     {
-        $ext = strtolower(pathinfo($fullPath, PATHINFO_EXTENSION));
+        $ext = strtolower(pathinfo($originalName ?? $fullPath, PATHINFO_EXTENSION));
         $service = $ext === 'odt' ? $this->odtService : $this->docxService;
 
         return $service->validateTemplate(
