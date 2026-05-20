@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Requests;
 
+use App\Rules\NoRoomConflict;
 use Illuminate\Foundation\Http\FormRequest;
 
 class StoreExamSessionRequest extends FormRequest
@@ -17,7 +18,7 @@ class StoreExamSessionRequest extends FormRequest
     {
         return [
             'academic_year_id' => ['sometimes', 'nullable', 'integer', 'exists:academic_years,id'],
-            'room_id' => ['required_unless:type,direct', 'nullable', 'integer', 'exists:rooms,id'],
+            'room_id' => ['required_unless:type,direct', 'nullable', 'integer', 'exists:rooms,id', new NoRoomConflict],
             'date' => ['required', 'date', 'after_or_equal:today'],
             'start_time' => ['required', 'string', 'date_format:H:i'],
             'end_time' => ['nullable', 'string', 'date_format:H:i'],
