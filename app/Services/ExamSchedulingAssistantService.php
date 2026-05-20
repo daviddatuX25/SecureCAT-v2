@@ -114,8 +114,8 @@ class ExamSchedulingAssistantService
             .'Ask clarifying questions (e.g. preferred dates, morning/afternoon slots) and only output the final schedule when the user confirms. '
             ."NEVER make absolute factual claims (e.g. 'there are no applicants', 'all rooms are full', 'no draft sessions') unless the data above explicitly shows zero. "
             ."If you are unsure, say 'The records show...' or 'Based on the data I have...' rather than making absolute statements. "
-            .'In the chat, always reply in plain conversational language: no code blocks, no JSON. When the user asks to generate the schedule, the structured output is captured separately—do not repeat the full JSON in your reply. '
-            .'When the user asks to generate or output the schedule, respond with valid JSON: sessions array where each item has applicant_ids and either exam_session_id (existing draft) or room_id, date, start_time, end_time (new session).';
+            .'CRITICAL FORMATTING REQUIREMENT: In the chat conversation, you MUST reply in plain conversational language. When outputting the schedule, you MUST append the valid JSON block at the very end of your response, wrapped inside a standard markdown code block: ```json\n...\n```. Do NOT put raw braces or brackets in the conversational text itself. '
+            .'The JSON block must contain a "sessions" array where each item has applicant_ids and either exam_session_id (for assigning to an existing draft session) or room_id, date, start_time, end_time (for creating a new session).';
     }
 
     /**
@@ -264,7 +264,7 @@ class ExamSchedulingAssistantService
         }
 
         // 2. Try extracting from ```json ... ``` code fences
-        if (preg_match('/```json\s*(\{.*?\}|\[.*?\])\s*```/s', $text, $m)) {
+        if (preg_match('/```json\s*([\s\S]+?)\s*```/is', $text, $m)) {
             $decoded = $this->tryJsonDecode($m[1]);
             if ($decoded !== null) {
                 $wrapped = $this->wrapAsSchedule($decoded);

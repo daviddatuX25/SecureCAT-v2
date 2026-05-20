@@ -123,6 +123,7 @@ class ExamSessionController extends Controller
         $applicantCount = Applicant::query()
             ->whereHas('application', fn ($q) => $q->where('status', 'accepted'))
             ->whereDoesntHave('examSessions', fn ($q) => $q->whereNotIn('status', [ExamSession::STATUS_CANCELLED]))
+            ->when($academicYearId, fn ($q) => $q->whereHas('application', fn ($aq) => $aq->where('academic_year_id', $academicYearId)))
             ->count();
 
         $rooms = Room::query()
@@ -140,6 +141,7 @@ class ExamSessionController extends Controller
             ->all();
 
         $draftSessions = [];
+        $existingSessions = [];
         if ($academicYearId !== null) {
             $draftSessions = ExamSession::query()
                 ->where('status', ExamSession::STATUS_DRAFT)
@@ -163,6 +165,27 @@ class ExamSessionController extends Controller
                 ])
                 ->values()
                 ->all();
+
+            $existingSessions = ExamSession::query()
+                ->whereNotIn('status', [ExamSession::STATUS_DRAFT, ExamSession::STATUS_CANCELLED])
+                ->forAcademicYear($academicYearId)
+                ->with('room:id,name,building,capacity')
+                ->get()
+                ->map(fn ($s) => [
+                    'id' => $s->id,
+                    'room_id' => $s->room_id,
+                    'room' => $s->room ? [
+                        'name' => $s->room->name,
+                        'capacity' => $s->room->capacity,
+                    ] : ['name' => '?', 'capacity' => 0],
+                    'date' => $s->date?->format('Y-m-d'),
+                    'start_time' => $s->start_time,
+                    'end_time' => $s->end_time,
+                    'current_count' => $s->applicants()->count(),
+                    'capacity' => $s->room?->capacity ?? 0,
+                ])
+                ->values()
+                ->all();
         }
 
         $conversation = ExamSchedulingConversation::query()
@@ -173,6 +196,7 @@ class ExamSessionController extends Controller
             'applicant_count' => $applicantCount,
             'rooms' => $rooms,
             'draft_sessions' => $draftSessions,
+            'existing_sessions' => $existingSessions,
             'messages' => $conversation?->messages ?? [],
             'openrouter_configured' => (bool) config('services.openrouter.key'),
             'csrf_token' => csrf_token(),

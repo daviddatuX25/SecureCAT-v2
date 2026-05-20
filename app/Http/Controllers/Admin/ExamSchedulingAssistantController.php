@@ -114,7 +114,7 @@ class ExamSchedulingAssistantController extends Controller
         $existingSessions = [];
         if ($activeAcademicYear) {
             $existingSessions = ExamSession::query()
-                ->where('status', '!=', ExamSession::STATUS_DRAFT)
+                ->whereNotIn('status', [ExamSession::STATUS_DRAFT, ExamSession::STATUS_CANCELLED])
                 ->forAcademicYear($activeAcademicYear)
                 ->with('room:id,name,building,capacity')
                 ->get()
@@ -329,6 +329,8 @@ class ExamSchedulingAssistantController extends Controller
 
             return response()->json(['message' => 'Failed to apply schedule. Please try again.'], 500);
         }
+
+        $request->session()->flash('success', 'Schedule applied successfully.');
 
         return response()->json([
             'message' => 'Schedule applied successfully.',
