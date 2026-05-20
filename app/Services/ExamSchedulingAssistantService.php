@@ -34,18 +34,19 @@ class ExamSchedulingAssistantService
                         'items' => [
                             'type' => 'object',
                             'properties' => [
-                                'exam_session_id' => ['type' => 'integer', 'description' => 'Existing draft exam session ID (use this OR room_id+date+start_time for new)'],
-                                'room_id' => ['type' => 'integer', 'description' => 'Room ID for new session'],
-                                'date' => ['type' => 'string', 'description' => 'Date YYYY-MM-DD for new session'],
-                                'start_time' => ['type' => 'string', 'description' => 'Start time HH:MM for new session'],
-                                'end_time' => ['type' => 'string', 'description' => 'End time HH:MM or null for new session'],
+                                'action' => ['type' => 'string', 'description' => 'Action: "create" for new session, "assign" to add applicants to existing draft, "edit" to change room/date/time of existing draft'],
+                                'exam_session_id' => ['type' => 'integer', 'description' => 'Required for assign/edit: existing draft exam session ID'],
+                                'room_id' => ['type' => 'integer', 'description' => 'Room ID — required for create, optional for edit (to change room)'],
+                                'date' => ['type' => 'string', 'description' => 'Date YYYY-MM-DD — required for create, optional for edit'],
+                                'start_time' => ['type' => 'string', 'description' => 'Start time HH:MM — required for create, optional for edit'],
+                                'end_time' => ['type' => 'string', 'description' => 'End time HH:MM — optional for create/edit'],
                                 'applicant_ids' => [
                                     'type' => 'array',
                                     'items' => ['type' => 'integer'],
-                                    'description' => 'Applicant IDs to assign to this session',
+                                    'description' => 'Applicant IDs to assign (required for create/assign, optional for edit)',
                                 ],
                             ],
-                            'required' => ['applicant_ids'],
+                            'required' => ['action'],
                             'additionalProperties' => false,
                         ],
                     ],
@@ -110,12 +111,16 @@ class ExamSchedulingAssistantService
             ."Available rooms: {$roomList}.{$draftList}{$existingList} "
             .'Constraints: each applicant must be assigned to exactly one session; each session cannot exceed room capacity; the same room cannot be double-booked (no overlapping date/time). '
             .'IMPORTANT — Assigned means confirmed placement: applicants assigned only to DRAFT sessions are still awaiting scheduling (draft sessions are not confirmed placements). Only applicants in non-draft sessions are considered fully assigned. '
-            .'You may assign applicants to EXISTING DRAFT sessions (use exam_session_id + applicant_ids) or create NEW sessions (use room_id, date, start_time, end_time, applicant_ids). '
+            .'You support THREE actions, each identified by an "action" field in the JSON: '
+            .'1) "create" — Create a NEW session. Required fields: action, room_id, date, start_time, applicant_ids. Optional: end_time. '
+            .'2) "assign" — Add applicants to an EXISTING DRAFT session. Required fields: action, exam_session_id, applicant_ids. '
+            .'3) "edit" — Modify an EXISTING DRAFT session (change its room, date, or time). Required fields: action, exam_session_id, plus whichever fields to change (room_id, date, start_time, end_time). Optional: applicant_ids (to also assign applicants during the edit). '
+            .'CRITICAL: You NEVER apply changes yourself. You ONLY propose changes via JSON. The admin clicks "Apply" to execute them. NEVER say "I have applied", "Done", "Changes saved", or similar — say "Here is the proposed change" or "Review the changes below". '
             .'Ask clarifying questions (e.g. preferred dates, morning/afternoon slots) and only output the final schedule when the user confirms. '
             ."NEVER make absolute factual claims (e.g. 'there are no applicants', 'all rooms are full', 'no draft sessions') unless the data above explicitly shows zero. "
             ."If you are unsure, say 'The records show...' or 'Based on the data I have...' rather than making absolute statements. "
             .'CRITICAL FORMATTING REQUIREMENT: In the chat conversation, you MUST reply in plain conversational language. When outputting the schedule, you MUST append the valid JSON block at the very end of your response, wrapped inside a standard markdown code block: ```json\n...\n```. Do NOT put raw braces or brackets in the conversational text itself. '
-            .'The JSON block must contain a "sessions" array where each item has applicant_ids and either exam_session_id (for assigning to an existing draft session) or room_id, date, start_time, end_time (for creating a new session).';
+            .'The JSON block must contain a "sessions" array. Each item MUST have an "action" field ("create", "assign", or "edit") and the corresponding required fields as described above.';
     }
 
     /**
