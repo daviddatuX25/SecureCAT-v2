@@ -344,24 +344,18 @@ class ResultSheetOdtService
         $doc = new \DOMDocument;
         $doc->loadXML($contentXml, LIBXML_NOERROR | LIBXML_NOWARNING);
 
-        $body = $doc->getElementsByTagNameNS('urn:oasis:names:tc:opendocument:xmlns:office:1.0', 'body')->item(0);
+        // Find the text body — could be office:text or a direct child of office:body
+        $allTextContainers = $doc->getElementsByTagNameNS('urn:oasis:names:tc:opendocument:xmlns:text:1.0', 'text');
 
-        if (! $body) {
-            $body = $doc->getElementsByTagName('office:body')->item(0);
-        }
-
-        if (! $body) {
-            return '<p class="text-muted-foreground">Could not parse ODT content.</p>';
-        }
-
-        $text = $body->getElementsByTagNameNS('urn:oasis:names:tc:opendocument:xmlns:text:1.0', 'text')->item(0);
-
-        if (! $text) {
-            $text = $body->getElementsByTagName('office:text')->item(0);
-        }
-
-        if (! $text) {
-            return '<p class="text-muted-foreground">No text content in ODT file.</p>';
+        if ($allTextContainers->length > 0) {
+            $text = $allTextContainers->item(0);
+        } else {
+            // Fallback: find office:body and use its children
+            $bodies = $doc->getElementsByTagNameNS('urn:oasis:names:tc:opendocument:xmlns:office:1.0', 'body');
+            if ($bodies->length === 0) {
+                return '<p class="text-muted-foreground">Could not parse ODT content.</p>';
+            }
+            $text = $bodies->item(0);
         }
 
         $html = $this->renderOdtNode($text);
