@@ -14,19 +14,30 @@ use Inertia\Response;
 
 class InstitutionController extends Controller
 {
-    public function index(): Response
+    public function index(Request $request): Response
     {
+        $user = $request->user();
+        $isSuperOrRegistrar = $user->hasAnyRole(['super_admin', 'registrar_administrator']);
+
         $profileKeys = ['name', 'campus', 'address', 'contact_number', 'email', 'website', 'exam_name', 'exam_acronym'];
         $profile = [];
-        foreach ($profileKeys as $key) {
-            $profile[$key] = [
-                'value' => SystemSetting::institution($key, ''),
-                'env_default' => config("institution.{$key}", ''),
-                'overridden' => SystemSetting::get("institution.{$key}") !== null,
-            ];
+        if ($isSuperOrRegistrar) {
+            foreach ($profileKeys as $key) {
+                $profile[$key] = [
+                    'value' => SystemSetting::institution($key, ''),
+                    'env_default' => config("institution.{$key}", ''),
+                    'overridden' => SystemSetting::get("institution.{$key}") !== null,
+                ];
+            }
         }
 
         $personnelRoles = array_keys(config('institution.personnel', []));
+        if (! $isSuperOrRegistrar) {
+            $personnelRoles = array_intersect($personnelRoles, ['guidance_counselor', 'testing_coordinator']);
+            // Convert to a zero-indexed array to serialize correctly as list in JSON
+            $personnelRoles = array_values($personnelRoles);
+        }
+
         $personnel = [];
         foreach ($personnelRoles as $role) {
             foreach (['name', 'title', 'credentials'] as $field) {
@@ -56,19 +67,31 @@ class InstitutionController extends Controller
         ]);
 
         $changed = 0;
+        $user = $request->user();
+        $isSuperOrRegistrar = $user->hasAnyRole(['super_admin', 'registrar_administrator']);
 
-        foreach ($request->input('profile', []) as $key => $value) {
-            $settingKey = "institution.{$key}";
-            $envDefault = config("institution.{$key}", '');
-            if ((string) $value !== (string) $envDefault) {
-                SystemSetting::set($settingKey, $value);
-                $changed++;
-            } else {
-                SystemSetting::where('key', $settingKey)->delete();
+        if ($isSuperOrRegistrar) {
+            foreach ($request->input('profile', []) as $key => $value) {
+                $settingKey = "institution.{$key}";
+                $envDefault = config("institution.{$key}", '');
+                if ((string) $value !== (string) $envDefault) {
+                    SystemSetting::set($settingKey, $value);
+                    $changed++;
+                } else {
+                    SystemSetting::where('key', $settingKey)->delete();
+                }
             }
         }
 
+        $allowedPersonnelRoles = array_keys(config('institution.personnel', []));
+        if (! $isSuperOrRegistrar) {
+            $allowedPersonnelRoles = array_intersect($allowedPersonnelRoles, ['guidance_counselor', 'testing_coordinator']);
+        }
+
         foreach ($request->input('personnel', []) as $role => $fields) {
+            if (! in_array($role, $allowedPersonnelRoles, true)) {
+                continue;
+            }
             foreach ($fields as $field => $value) {
                 $settingKey = "institution.personnel.{$role}.{$field}";
                 $envDefault = config("institution.personnel.{$role}.{$field}", '');
@@ -88,9 +111,22 @@ class InstitutionController extends Controller
         return back()->with('success', "Institution settings saved ({$changed} override(s) updated).");
     }
 
-    public function resetDefaults(): RedirectResponse
+    public function resetDefaults(Request $request): RedirectResponse
     {
-        $deleted = SystemSetting::where('key', 'like', 'institution.%')->delete();
+        $user = $request->user();
+        $isSuperOrRegistrar = $user->hasAnyRole(['super_admin', 'registrar_administrator']);
+
+        if ($isSuperOrRegistrar) {
+            $deleted = SystemSetting::where('key', 'like', 'institution.%')->delete();
+        } else {
+            $keysToDelete = [];
+            foreach (['guidance_counselor', 'testing_coordinator'] as $role) {
+                foreach (['name', 'title', 'credentials'] as $field) {
+                    $keysToDelete[] = "institution.personnel.{$role}.{$field}";
+                }
+            }
+            $deleted = SystemSetting::whereIn('key', $keysToDelete)->delete();
+        }
 
         app(AuditService::class)->log('institution.reset', SystemSetting::class, null, [], [
             'overrides_deleted' => $deleted,
