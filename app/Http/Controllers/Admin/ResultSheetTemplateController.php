@@ -13,6 +13,7 @@ use App\Services\ResultSheetTemplateService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
 use Inertia\Inertia;
@@ -81,18 +82,25 @@ class ResultSheetTemplateController extends Controller
         if ($mode === ResultSheetTemplate::MODE_HTML) {
             $data['content'] = Purifier::clean($request->validated('content'), 'result_sheet');
             $data['docx_path'] = null;
+        }
+
+        if ($data['is_active'] ?? false) {
+            ResultSheetTemplate::where('is_active', true)->update(['is_active' => false]);
+        }
+
+        if ($mode === ResultSheetTemplate::MODE_HTML) {
             $template = ResultSheetTemplate::create($data);
         } else {
             $data['content'] = '';
-            $data['docx_path'] = null;
-            $template = ResultSheetTemplate::create($data);
             $file = $request->file('docx');
-            $path = $file->storeAs(
-                'result-sheet-templates',
-                $template->id.'.docx',
-                'local'
-            );
-            $template->update(['docx_path' => $path]);
+
+            DB::transaction(function () use (&$template, $data, $file) {
+                $template = ResultSheetTemplate::create([...$data, 'docx_path' => null]);
+                $destPath = 'result-sheet-templates/'.$template->id.'.docx';
+                $filePath = $file->getRealPath() ?: $file->getPathname();
+                Storage::disk('local')->put($destPath, file_get_contents($filePath));
+                $template->update(['docx_path' => $destPath]);
+            });
         }
 
         app(AuditService::class)->log('template.result_sheet_created', ResultSheetTemplate::class, $template->id, [], ['name' => $data['name'], 'mode' => $mode]);
@@ -143,6 +151,12 @@ class ResultSheetTemplateController extends Controller
             'watermark_text' => $request->validated('watermark_text'),
         ], fn ($v) => $v !== null);
 
+        if ($data['is_active'] ?? false) {
+            ResultSheetTemplate::where('is_active', true)
+                ->where('id', '!=', $result_template->id)
+                ->update(['is_active' => false]);
+        }
+
         if ($mode === ResultSheetTemplate::MODE_HTML) {
             if ($request->has('content')) {
                 $data['content'] = Purifier::clean($request->validated('content'), 'result_sheet');
@@ -157,12 +171,11 @@ class ResultSheetTemplateController extends Controller
                 if ($result_template->docx_path) {
                     Storage::disk('local')->delete($result_template->docx_path);
                 }
-                $path = $request->file('docx')->storeAs(
-                    'result-sheet-templates',
-                    $result_template->id.'.docx',
-                    'local'
-                );
-                $data['docx_path'] = $path;
+                $file = $request->file('docx');
+                $destPath = 'result-sheet-templates/'.$result_template->id.'.docx';
+                $filePath = $file->getRealPath() ?: $file->getPathname();
+                Storage::disk('local')->put($destPath, file_get_contents($filePath));
+                $data['docx_path'] = $destPath;
             } elseif (! $result_template->docx_path) {
                 return redirect()->back()->withErrors(['docx' => 'DOCX file is required for DOCX mode.']);
             }
@@ -185,6 +198,27 @@ class ResultSheetTemplateController extends Controller
         $result_template->delete();
 
         return redirect()->route('admin.release.result-templates.index')->with('success', 'Template deleted.');
+    }
+
+    public function activate(ResultSheetTemplate $result_template): RedirectResponse
+    {
+        DB::transaction(function () use ($result_template) {
+            ResultSheetTemplate::where('is_active', true)->update(['is_active' => false]);
+            $result_template->update(['is_active' => true]);
+        });
+
+        app(AuditService::class)->log('template.result_sheet_activated', ResultSheetTemplate::class, $result_template->id, [], ['name' => $result_template->name]);
+
+        return redirect()->route('admin.release.result-templates.index')->with('success', 'Template activated.');
+    }
+
+    public function deactivate(ResultSheetTemplate $result_template): RedirectResponse
+    {
+        $result_template->update(['is_active' => false]);
+
+        app(AuditService::class)->log('template.result_sheet_deactivated', ResultSheetTemplate::class, $result_template->id, [], ['name' => $result_template->name]);
+
+        return redirect()->route('admin.release.result-templates.index')->with('success', 'Template deactivated.');
     }
 
     public function preview(Request $request): JsonResponse

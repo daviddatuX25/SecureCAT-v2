@@ -4,7 +4,7 @@
   import { Button } from '@/Components/ui/button';
   import { Badge } from '@/Components/ui/badge';
   import * as Table from '@/Components/ui/table';
-  import { Plus, Pencil, Trash2 } from 'lucide-svelte';
+  import { Plus, Pencil, Trash2, Play, Pause } from 'lucide-svelte';
 
   let { templates = [] } = $props();
 
@@ -71,6 +71,22 @@
                 </Table.Cell>
                 <Table.Cell class="text-center">
                   <div class="flex justify-center gap-2">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      class="h-8 px-2 text-xs font-semibold {t.is_active
+                        ? 'text-amber-600 hover:text-amber-700 hover:bg-amber-50'
+                        : 'text-primary hover:text-primary-700 hover:bg-primary/5'}"
+                      onclick={() => t.is_active ? router.post(`/admin/release/result-templates/${t.id}/deactivate`) : router.post(`/admin/release/result-templates/${t.id}/activate`)}
+                    >
+                      {#if t.is_active}
+                        <Pause class="mr-1.5 h-3.5 w-3.5" />
+                        Deactivate
+                      {:else}
+                        <Play class="mr-1.5 h-3.5 w-3.5" />
+                        Activate
+                      {/if}
+                    </Button>
                     <Link href={`/admin/release/result-templates/${t.id}/edit`}>
                       <Button variant="ghost" size="sm" class="h-8 px-2 text-xs font-semibold hover:bg-muted">
                         <Pencil class="mr-1.5 h-3.5 w-3.5" />
