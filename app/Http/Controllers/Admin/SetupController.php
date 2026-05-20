@@ -266,11 +266,18 @@ class SetupController extends Controller
     {
         $total = AptitudeArea::count();
         $active = AptitudeArea::where('is_active', true)->count();
-        $withFormula = AptitudeArea::where('is_active', true)
-            ->whereNotNull('formula')
-            ->where('formula', '!=', '')
-            ->count();
-        $withoutFormula = $active - $withFormula;
+        $withScoring = AptitudeArea::where('is_active', true)
+            ->where(function ($q) {
+                $q->where(function ($q2) {
+                    $q2->where('scoring_method', 'formula')
+                        ->whereNotNull('formula')
+                        ->where('formula', '!=', '');
+                })->orWhere(function ($q2) {
+                    $q2->where('scoring_method', 'conversion_table')
+                        ->whereHas('percentileConversions');
+                });
+            })->count();
+        $withoutScoring = $active - $withScoring;
 
         return [
             'key' => 'aptitude_areas',
@@ -298,14 +305,14 @@ class SetupController extends Controller
                             : 'No areas to activate.'),
                 ],
                 [
-                    'key' => 'aptitude_formulas',
-                    'label' => 'Active areas have scoring formulas',
-                    'passed' => $active > 0 && $withFormula === $active,
+                    'key' => 'aptitude_scoring',
+                    'label' => 'Active areas have scoring configured',
+                    'passed' => $active > 0 && $withScoring === $active,
                     'severity' => 'optional',
                     'message' => match (true) {
-                        $active === 0 => 'No active areas to check formulas on.',
-                        $withoutFormula === 0 => "All {$active} active area(s) have formulas configured.",
-                        default => "{$withoutFormula} active area(s) missing scoring formulas — normalized scores won't compute for them.",
+                        $active === 0 => 'No active areas to check scoring on.',
+                        $withoutScoring === 0 => "All {$active} active area(s) have scoring configured.",
+                        default => "{$withoutScoring} active area(s) missing scoring — normalized scores won't compute for them.",
                     },
                 ],
             ],

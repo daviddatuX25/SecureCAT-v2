@@ -62,13 +62,21 @@ class SettingsController extends Controller
 
         if (array_key_exists('enable_normalized_scores', $validated)) {
             if ($validated['enable_normalized_scores']) {
-                $areasWithoutFormula = AptitudeArea::where('is_active', true)
-                    ->whereNull('formula')
+                $areasWithoutScoring = AptitudeArea::where('is_active', true)
+                    ->where(function ($q) {
+                        $q->where(function ($q2) {
+                            $q2->where('scoring_method', 'formula')
+                                ->whereNull('formula');
+                        })->orWhere(function ($q2) {
+                            $q2->where('scoring_method', 'conversion_table')
+                                ->whereDoesntHave('percentileConversions');
+                        });
+                    })
                     ->count();
 
-                if ($areasWithoutFormula > 0) {
+                if ($areasWithoutScoring > 0) {
                     return redirect()->back()->withErrors([
-                        'enable_normalized_scores' => 'Cannot enable auto-compute: All active aptitude areas must have a formula configured first.',
+                        'enable_normalized_scores' => 'Cannot enable auto-compute: All active aptitude areas must have either a formula or a populated conversion table.',
                     ]);
                 }
             }
