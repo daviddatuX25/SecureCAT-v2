@@ -1,7 +1,6 @@
 <?php
 
 use App\Http\Controllers\Admin\AcademicYearController;
-use App\Http\Controllers\Admin\AdmissionSlipTemplateController;
 use App\Http\Controllers\Admin\AiCompanionAdminController;
 use App\Http\Controllers\Admin\ApplicationImportController;
 use App\Http\Controllers\Admin\AptitudeAreaController;
@@ -91,6 +90,8 @@ Route::middleware(['web', 'auth:applicant'])->prefix('portal')->name('portal.')-
     Route::get('application', [ApplicationController::class, 'portalShow'])->name('application.show');
     Route::get('application/edit', [ApplicationController::class, 'portalEdit'])->name('application.edit');
     Route::put('application', [ApplicationController::class, 'portalUpdate'])->name('application.update');
+    Route::get('admission-slip', [PortalAuthController::class, 'admissionSlipPdf'])->name('admission-slip.pdf');
+    Route::get('admission-slip/view', [PortalAuthController::class, 'admissionSlipView'])->name('admission-slip.view');
 });
 
 Route::middleware(['auth'])->group(function () {
@@ -111,10 +112,12 @@ Route::middleware(['auth'])->group(function () {
         Route::resource('users', UserController::class)->except('show')->parameters(['users' => 'user']);
         Route::get('settings', [SettingsController::class, 'index'])->name('settings.index');
         Route::put('settings', [SettingsController::class, 'update'])->name('settings.update');
+        Route::post('settings/admission-slip-preview', [SettingsController::class, 'admissionSlipPreview'])->name('settings.admission-slip-preview');
         Route::get('logs', [AuditLogController::class, 'index'])->name('logs.index');
         Route::get('logs/export', [AuditLogController::class, 'export'])->name('logs.export');
-        Route::post('admission-slip-templates/preview', [AdmissionSlipTemplateController::class, 'preview'])->name('admission-slip-templates.preview');
-        Route::resource('admission-slip-templates', AdmissionSlipTemplateController::class)->except('show')->parameters(['admission_slip_templates' => 'admission_slip_template']);
+        // Admission slip templates — deprecated; replaced by system_settings.admission_slip_html_template
+        // Route::post('admission-slip-templates/preview', [AdmissionSlipTemplateController::class, 'preview'])->name('admission-slip-templates.preview');
+        // Route::resource('admission-slip-templates', AdmissionSlipTemplateController::class)->except('show')->parameters(['admission_slip_templates' => 'admission_slip_template']);
         // AI Companion hub (replaces knowledge-documents index)
         Route::get('ai-companion', [AiCompanionAdminController::class, 'index'])->name('ai-companion.index');
         Route::put('ai-companion/persona', [AiCompanionAdminController::class, 'updatePersona'])->name('ai-companion.persona.update');
@@ -229,6 +232,9 @@ Route::middleware(['auth'])->group(function () {
         Route::put('applications/{application}/reopen', [ApplicationController::class, 'reopen'])->name('reopen');
         Route::delete('applications/{application}', [ApplicationController::class, 'destroy'])->name('destroy');
         Route::get('applications/{application}/admission-slip', [ApplicationController::class, 'admissionSlip'])->name('admission-slip');
+        Route::get('applications/{application}/admission-slip/print', [ApplicationController::class, 'admissionSlipPrint'])->name('admission-slip-print');
+        Route::post('applications/admission-slips/bulk-print', [ApplicationController::class, 'admissionSlipBulkPrint'])->name('admission-slip-bulk-print');
+        Route::post('applications/admission-slips/bulk-pdf', [ApplicationController::class, 'admissionSlipBulkPdf'])->name('admission-slip-bulk-pdf');
 
         // Privacy Policy CRUD
         Route::get('privacy-policies', [PrivacyPolicyController::class, 'index'])->name('privacy-policies.index');

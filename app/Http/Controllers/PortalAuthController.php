@@ -12,6 +12,7 @@ use App\Models\ConsultationSummary;
 use App\Models\ExamSession;
 use App\Models\GradingSession;
 use App\Models\SystemSetting;
+use App\Services\AdmissionSlipService;
 use App\Services\AuditService;
 use Carbon\Carbon;
 use Illuminate\Http\RedirectResponse;
@@ -301,6 +302,57 @@ class PortalAuthController extends Controller
             // Widget shows when AI companion is enabled via system setting
             'ai_companion_enabled' => SystemSetting::aiCompanionEnabled(),
             'results_blocked' => ($releaseMode === 'f2f'),
+            'admission_slip_enabled' => SystemSetting::admissionSlipEnabled(),
+        ]);
+    }
+
+    public function admissionSlipPdf()
+    {
+        if (! AdmissionSlipService::isEnabled()) {
+            abort(403, 'Admission slip distribution is not enabled.');
+        }
+
+        $applicant = Auth::guard('applicant')->user();
+        $application = $applicant->application;
+
+        if (! $application || $application->status !== 'accepted') {
+            abort(403, 'Admission slip is only available for accepted applications.');
+        }
+
+        $pdf = app(AdmissionSlipService::class)->generatePdf($application);
+        $filename = "admission-slip-{$application->reference_number}.pdf";
+
+        return $pdf->download($filename);
+    }
+
+    public function admissionSlipView(): Response
+    {
+        if (! AdmissionSlipService::isEnabled()) {
+            abort(403, 'Admission slip distribution is not enabled.');
+        }
+
+        $applicant = Auth::guard('applicant')->user();
+        $application = $applicant->application;
+
+        if (! $application || $application->status !== 'accepted') {
+            abort(403, 'Admission slip is only available for accepted applications.');
+        }
+
+        $templateHtml = app(AdmissionSlipService::class)->renderHtml($application);
+
+        return Inertia::render('Applications/AdmissionSlipSingle', [
+            'applicationId' => (string) $application->id,
+            'printed' => false,
+            'applicant' => [
+                'name' => trim(implode(' ', array_filter([$application->first_name, $application->middle_name, $application->last_name, $application->suffix]))),
+                'reference' => $application->reference_number,
+            ],
+            'templateHtml' => $templateHtml,
+            'templateError' => null,
+            'paperSize' => 'a4',
+            'orientation' => 'portrait',
+            'logicalUnit' => 'full',
+            'paperOptions' => [],
         ]);
     }
 

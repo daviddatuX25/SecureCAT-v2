@@ -22,6 +22,8 @@ class UpdateSystemSettingsRequest extends FormRequest
             'ai_companion_persona' => ['sometimes', 'nullable', 'string', 'max:5000'],
             'allow_direct_assessment' => ['sometimes', 'boolean'],
             'enable_normalized_scores' => ['sometimes', 'boolean'],
+            'admission_slip_enabled' => ['sometimes', 'boolean'],
+            'admission_slip_html_template' => ['sometimes', 'nullable', 'string', 'max:65000'],
         ];
     }
 }

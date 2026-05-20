@@ -17,6 +17,10 @@ use Inertia\Inertia;
 use Inertia\Response;
 use Mews\Purifier\Facades\Purifier;
 
+/**
+ * @deprecated Admission slip templates are now managed via system_settings.admission_slip_html_template.
+ *             Routes are disabled. Controller kept for backward compatibility if re-enabled.
+ */
 class AdmissionSlipTemplateController extends Controller
 {
     public function __construct(

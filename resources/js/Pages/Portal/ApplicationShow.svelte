@@ -3,10 +3,11 @@
   import PortalLayout from '@/Layouts/PortalLayout.svelte';
   import { Button } from '@/Components/ui/button';
   import * as Card from '@/Components/ui/card';
-  import { ArrowLeft, Edit, Lock, FileText } from 'lucide-svelte';
+  import { ArrowLeft, Edit, Lock, FileText, Download } from 'lucide-svelte';
   import { formatDate } from '@/lib/date-utils';
 
-  let { application = {}, courses = [] } = $props();
+  let { application = {}, courses = [], admission_slip_enabled = false } = $props();
+  const showAdmissionSlip = $derived(admission_slip_enabled && (application.status === 'accepted' || application.pipeline_status === 'accepted'));
 </script>
 
 <svelte:head>
@@ -47,6 +48,14 @@
               <Lock class="h-4 w-4" />
               <span class="text-sm">Locked</span>
             </div>
+          {/if}
+          {#if showAdmissionSlip}
+            <Link href="/portal/admission-slip">
+              <Button variant="outline" class="gap-2">
+                <Download class="h-4 w-4" />
+                Admission Slip
+              </Button>
+            </Link>
           {/if}
         </div>
       </Card.Content>

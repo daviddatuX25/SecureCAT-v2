@@ -6,7 +6,6 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\AcademicYear;
-use App\Models\AdmissionSlipTemplate;
 use App\Models\AptitudeArea;
 use App\Models\Course;
 use App\Models\PrivacyPolicy;
@@ -376,33 +375,31 @@ class SetupController extends Controller
      */
     private function checkAdmissionSlipTemplates(): array
     {
-        $total = AdmissionSlipTemplate::count();
-        $active = AdmissionSlipTemplate::where('is_active', true)->count();
+        $enabled = SystemSetting::admissionSlipEnabled();
+        $hasTemplate = SystemSetting::admissionSlipTemplate() !== null;
 
         return [
             'key' => 'admission_templates',
-            'label' => 'Admission Slip Templates',
-            'href' => '/admin/admission-slip-templates',
+            'label' => 'Admission Slip Distribution',
+            'href' => '/admin/settings',
             'checks' => [
                 [
-                    'key' => 'admission_tpl_exist',
-                    'label' => 'At least one admission slip template created',
-                    'passed' => $total > 0,
-                    'severity' => 'important',
-                    'message' => $total > 0
-                        ? "{$total} template(s) configured."
-                        : 'No admission slip templates. Needed for issuing admission slips.',
+                    'key' => 'admission_slip_enabled',
+                    'label' => 'Admission slip distribution enabled',
+                    'passed' => $enabled,
+                    'severity' => 'optional',
+                    'message' => $enabled
+                        ? 'Admission slip distribution is enabled.'
+                        : 'Admission slip distribution is disabled. Enable in Settings to allow slip printing.',
                 ],
                 [
-                    'key' => 'admission_tpl_active',
-                    'label' => 'An admission slip template is active',
-                    'passed' => $active > 0,
-                    'severity' => 'important',
-                    'message' => $active > 0
-                        ? "{$active} active template(s)."
-                        : ($total > 0
-                            ? 'Templates exist but none are active.'
-                            : 'No templates to activate.'),
+                    'key' => 'admission_slip_template',
+                    'label' => 'Custom admission slip template configured',
+                    'passed' => $hasTemplate,
+                    'severity' => 'optional',
+                    'message' => $hasTemplate
+                        ? 'Custom HTML template is configured. Default template will be used as fallback.'
+                        : 'No custom template. The default built-in template will be used.',
                 ],
             ],
         ];

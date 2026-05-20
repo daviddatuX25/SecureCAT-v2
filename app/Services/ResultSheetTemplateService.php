@@ -36,13 +36,13 @@ class ResultSheetTemplateService
     public const PLACEHOLDERS = [
         'applicant_name', 'applicant_reference',
         'family_name', 'first_name', 'middle_name', 'suffix',
-        'sex', 'gwa', 'course_applied', 'strand', 'applicant_type',
+        'sex', 'gwa', 'course_applied', 'strand', 'strand_or_prev_course', 'applicant_type',
         'exam_date', 'exam_time', 'room_name',
         'scores_rows', 'overall_pct',
         'recommended_course', 'counselor_comments', 'counselor_name',
         'applicant_name_2', 'applicant_reference_2',
         'family_name_2', 'first_name_2', 'middle_name_2', 'suffix_2',
-        'sex_2', 'gwa_2', 'course_applied_2', 'strand_2', 'applicant_type_2',
+        'sex_2', 'gwa_2', 'course_applied_2', 'strand_2', 'strand_or_prev_course_2', 'applicant_type_2',
         'exam_date_2', 'exam_time_2', 'room_name_2',
         'scores_rows_2', 'overall_pct_2',
         'recommended_course_2', 'counselor_comments_2', 'counselor_name_2',
@@ -435,8 +435,10 @@ class ResultSheetTemplateService
             'sex' => 'Sex',
             'gwa' => 'General Weighted Average',
             'course_applied' => 'Course applied for',
-            'strand' => 'Senior high school strand',
-            'applicant_type' => 'Applicant type (Freshman, Transferee, etc.)',
+            'strand' => 'SHS Strand (for new students)',
+            'strand_or_prev_course' => 'SHS Strand or Previous Course (auto-adapts: SHS strand for new students, previous college course for transferees)',
+            'applicant_type' => 'Applicant type (New Student, Transferee)',
+
             'exam_date' => 'Examination date',
             'exam_time' => 'Examination time',
             'room_name' => 'Examination room',
@@ -458,7 +460,7 @@ class ResultSheetTemplateService
         $slot1Fields = [
             'applicant_name', 'applicant_reference',
             'family_name', 'first_name', 'middle_name', 'suffix',
-            'sex', 'gwa', 'course_applied', 'strand', 'applicant_type',
+            'sex', 'gwa', 'course_applied', 'strand', 'strand_or_prev_course', 'applicant_type',
             'exam_date', 'exam_time', 'room_name',
             'scores_rows', 'overall_pct',
             'recommended_course', 'counselor_comments', 'counselor_name',
@@ -627,6 +629,7 @@ class ResultSheetTemplateService
                         'gwa' => $sample['gwa_2'] ?? '—',
                         'course_applied' => $sample['course_applied_2'] ?? '—',
                         'strand' => $sample['strand_2'] ?? '—',
+                        'strand_or_prev_course' => $sample['strand_2'] ?? '—',
                         'applicant_type' => $sample['applicant_type_2'] ?? '—',
                         'reference' => $sample['reference_2'] ?? '—',
                         'exam_date' => $sample['exam_date_2'] ?? $sample['exam_date'] ?? '—',
@@ -653,7 +656,7 @@ class ResultSheetTemplateService
 
                 $newFields = [
                     'family_name', 'first_name', 'middle_name', 'suffix',
-                    'sex', 'gwa', 'course_applied', 'strand', 'applicant_type',
+                    'sex', 'gwa', 'course_applied', 'strand', 'strand_or_prev_course', 'applicant_type',
                     'exam_time',
                     'recommended_course', 'recommended_course_code', 'counselor_comments', 'counselor_name',
                 ];
@@ -668,7 +671,7 @@ class ResultSheetTemplateService
                 $replacements["scores_rows{$suffix}"] = '';
                 $replacements["overall_pct{$suffix}"] = '—';
 
-                foreach (['family_name', 'first_name', 'middle_name', 'suffix', 'sex', 'gwa', 'course_applied', 'strand', 'applicant_type', 'exam_time', 'recommended_course', 'recommended_course_code', 'counselor_comments', 'counselor_name'] as $field) {
+                foreach (['family_name', 'first_name', 'middle_name', 'suffix', 'sex', 'gwa', 'course_applied', 'strand', 'strand_or_prev_course', 'applicant_type', 'exam_time', 'recommended_course', 'recommended_course_code', 'counselor_comments', 'counselor_name'] as $field) {
                     $replacements["{$field}{$suffix}"] = '—';
                 }
             }
@@ -960,6 +963,7 @@ class ResultSheetTemplateService
             'gwa' => $app?->gwa ?? '—',
             'course_applied' => $app?->coursePreference1?->name ?? '—',
             'strand' => $app?->strand ?? $app?->last_school_enrolled ?? '—',
+            'strand_or_prev_course' => $app?->strand ?? $app?->last_school_enrolled ?? '—',
             'applicant_type' => $app?->applicant_type ?? '—',
             'reference' => $app?->reference_number ?? '—',
             'exam_date' => $session?->examSession?->date?->format('F j, Y') ?? '—',

@@ -5,7 +5,7 @@
   import { Button } from '@/Components/ui/button';
   import ApplicationStatusTimeline from '@/Components/ApplicationStatusTimeline.svelte';
   import ApplicantTips from '@/Components/ApplicantTips.svelte';
-  import { FileText, Mail, FileBadge2, MapPin, Calendar } from 'lucide-svelte';
+  import { FileText, Mail, FileBadge2, MapPin, Calendar, Download, Printer } from 'lucide-svelte';
 
   let {
     applicant = {},
@@ -15,8 +15,11 @@
     consultation = { status: 'pending', summary: null },
     ai_companion_enabled = false,
     results_blocked = false,
+    admission_slip_enabled = false,
   } = $props();
   const safeStatusTracker = $derived(Array.isArray(status_tracker) ? status_tracker : []);
+  const isAdmitted = $derived(safeStatusTracker.some((s) => s.stage === 'Successfully admitted' && s.completed));
+  const showAdmissionSlip = $derived(admission_slip_enabled && isAdmitted);
 </script>
 
 <PortalLayout>
@@ -134,6 +137,32 @@
                 <p class="font-medium">{exam_schedule.room}</p>
                 <p class="text-sm text-muted-foreground">{exam_schedule.building}</p>
               </div>
+            </div>
+          </Card.Content>
+        </Card.Root>
+      {/if}
+
+      <!-- Admission Slip -->
+      {#if showAdmissionSlip}
+        <Card.Root class="border-primary/30 shadow-sm bg-gradient-to-br from-background to-primary/5">
+          <Card.Header>
+            <Card.Title class="text-lg">Admission Slip</Card.Title>
+            <Card.Description>Download or print your admission slip for the exam.</Card.Description>
+          </Card.Header>
+          <Card.Content class="space-y-3">
+            <div class="flex flex-col gap-2">
+              <Link href="/portal/admission-slip" class="block w-full">
+                <Button variant="default" class="w-full gap-2">
+                  <Download class="h-4 w-4" />
+                  Download PDF
+                </Button>
+              </Link>
+              <Link href="/portal/admission-slip/view" target="_blank" class="block w-full">
+                <Button variant="outline" class="w-full gap-2">
+                  <Printer class="h-4 w-4" />
+                  Print Slip
+                </Button>
+              </Link>
             </div>
           </Card.Content>
         </Card.Root>
