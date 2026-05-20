@@ -827,6 +827,18 @@ class ExamSessionController extends Controller
 
         $query = ExamSession::query()
             ->with(['room:id,name,building,capacity', 'proctors:id,name'])
+            ->withCount([
+                'applicants as total_count',
+                'applicants as present_count' => function ($q) {
+                    $q->where('exam_session_applicant.attendance_status', 'present');
+                },
+                'applicants as absent_count' => function ($q) {
+                    $q->where('exam_session_applicant.attendance_status', 'absent');
+                },
+                'applicants as submitted_count' => function ($q) {
+                    $q->where('exam_session_applicant.submission_status', 'submitted');
+                },
+            ])
             ->whereIn('status', [ExamSession::STATUS_PUBLISHED, ExamSession::STATUS_IN_PROGRESS])
             ->orderBy('date')
             ->orderBy('start_time');

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Feature;
 
 use App\Models\AcademicYear;
+use App\Models\Applicant;
 use App\Models\ExamSession;
 use App\Models\Room;
 use App\Models\User;
@@ -201,5 +202,49 @@ class ExamSessionConflictTest extends TestCase
             '10:30'
         );
         $this->assertTrue($hasConflict);
+    }
+
+    public function test_monitoring_endpoint_returns_correct_applicant_statistics(): void
+    {
+        $user = User::factory()->create();
+        $user->assignRole('super_admin');
+
+        $activeAy = AcademicYear::active() ?: AcademicYear::factory()->create(['is_active' => true]);
+
+        $session = $this->createSession([
+            'academic_year_id' => $activeAy->id,
+            'status' => ExamSession::STATUS_PUBLISHED,
+            'date' => now()->toDateString(),
+            'start_time' => '08:00:00',
+            'end_time' => '10:00:00',
+        ]);
+
+        $applicant1 = Applicant::factory()->create();
+        $applicant2 = Applicant::factory()->create();
+
+        // Attach applicants with attendance and submission statuses
+        $session->applicants()->attach($applicant1->id, [
+            'attendance_status' => 'present',
+            'submission_status' => 'submitted',
+        ]);
+        $session->applicants()->attach($applicant2->id, [
+            'attendance_status' => 'present',
+            'submission_status' => 'pending',
+        ]);
+
+        $response = $this->actingAs($user)
+            ->get('/admin/exam-monitoring');
+
+        $response->assertStatus(200);
+        $response->assertInertia(fn ($page) => $page
+            ->component('Admin/TestScheduling/Monitoring')
+            ->has('sessions', 1, fn ($pageSession) => $pageSession
+                ->where('total_count', 2)
+                ->where('present_count', 2)
+                ->where('submitted_count', 1)
+                ->where('absent_count', 0)
+                ->etc()
+            )
+        );
     }
 }
