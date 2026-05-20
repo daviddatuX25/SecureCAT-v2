@@ -34,7 +34,7 @@ class ExamSchedulingAssistantService
                         'items' => [
                             'type' => 'object',
                             'properties' => [
-                                'action' => ['type' => 'string', 'description' => 'Action: "create" for new session, "assign" to add applicants to existing draft, "edit" to change room/date/time of existing draft'],
+                                'action' => ['type' => 'string', 'description' => 'Action: "create" for new session, "assign" to add applicants to existing draft, "edit" to change room/date/time of existing draft, "delete" to remove an existing draft session'],
                                 'exam_session_id' => ['type' => 'integer', 'description' => 'Required for assign/edit: existing draft exam session ID'],
                                 'room_id' => ['type' => 'integer', 'description' => 'Room ID — required for create, optional for edit (to change room)'],
                                 'date' => ['type' => 'string', 'description' => 'Date YYYY-MM-DD — required for create, optional for edit'],
@@ -115,16 +115,17 @@ class ExamSchedulingAssistantService
             .'3) The same room cannot be double-booked (no overlapping date/time). This constraint applies to ALL sessions: you cannot create a new session or edit an existing one to overlap with ANY existing draft session or scheduled session. '
             .'4) Prioritize utilizing existing DRAFT sessions: Before proposing to create a new session, you MUST check the existing DRAFT exam sessions (listed above). If there is already a draft session on the requested date/time (or if an existing draft session can be edited or assigned to), you MUST prioritize reusing that existing draft session (action "assign" or "edit") instead of creating a duplicate new session. '
             .'IMPORTANT — Assigned means confirmed placement: applicants assigned only to DRAFT sessions are still awaiting scheduling (draft sessions are not confirmed placements). Only applicants in non-draft sessions are considered fully assigned. '
-            .'You support THREE actions, each identified by an "action" field in the JSON: '
+            .'You support FOUR actions, each identified by an "action" field in the JSON: '
             .'1) "create" — Create a NEW session. Required fields: action, room_id, date, start_time, applicant_ids. Optional: end_time. '
             .'2) "assign" — Add applicants to an EXISTING DRAFT session. Required fields: action, exam_session_id, applicant_ids. '
             .'3) "edit" — Modify an EXISTING DRAFT session (change its room, date, or time). Required fields: action, exam_session_id, plus whichever fields to change (room_id, date, start_time, end_time). Optional: applicant_ids (to also assign applicants during the edit). '
+            .'4) "delete" — Remove an EXISTING DRAFT session. Required fields: action, exam_session_id. Only draft sessions can be deleted. Never delete published or in-progress sessions. '
             .'CRITICAL: You NEVER apply changes yourself. You ONLY propose changes via JSON. The admin clicks "Apply" to execute them. NEVER say "I have applied", "Done", "Changes saved", or similar — say "Here is the proposed change" or "Review the changes below". '
             .'Ask clarifying questions (e.g. preferred dates, morning/afternoon slots) and only output the final schedule when the user confirms. '
             ."NEVER make absolute factual claims (e.g. 'there are no applicants', 'all rooms are full', 'no draft sessions') unless the data above explicitly shows zero. "
             ."If you are unsure, say 'The records show...' or 'Based on the data I have...' rather than making absolute statements. "
             .'CRITICAL FORMATTING REQUIREMENT: In the chat conversation, you MUST reply in plain conversational language. When outputting the schedule, you MUST append the valid JSON block at the very end of your response, wrapped inside a standard markdown code block: ```json\n...\n```. Do NOT put raw braces or brackets in the conversational text itself. '
-            .'The JSON block must contain a "sessions" array. Each item MUST have an "action" field ("create", "assign", or "edit") and the corresponding required fields as described above.';
+            .'The JSON block must contain a "sessions" array. Each item MUST have an "action" field ("create", "assign", "edit", or "delete") and the corresponding required fields as described above.';
     }
 
     /**

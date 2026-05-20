@@ -8,8 +8,8 @@ use App\Models\Applicant;
 use App\Models\ExamSchedulingConversation;
 use App\Models\ExamSession;
 use App\Models\Room;
-use App\Services\ApplicationPipelineService;
 use App\Services\ExamSchedulingAssistantService;
+use App\Services\ExamSchedulingService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -232,7 +232,7 @@ class ExamSchedulingAssistantController extends Controller
 
         $request->validate([
             'sessions' => 'required|array',
-            'sessions.*.action' => 'nullable|string|in:create,assign,edit',
+            'sessions.*.action' => 'nullable|string|in:create,assign,edit,delete',
             'sessions.*.applicant_ids' => 'nullable|array',
             'sessions.*.applicant_ids.*' => 'integer|exists:applicants,id',
             'sessions.*.exam_session_id' => 'nullable|integer|exists:exam_sessions,id',
@@ -243,175 +243,26 @@ class ExamSchedulingAssistantController extends Controller
         ]);
 
         $payload = $request->input('sessions');
-        $activeAcademicYear = AcademicYear::active();
-        if (! $activeAcademicYear) {
-            return response()->json(['message' => 'No active season. Activate a season first.'], 422);
-        }
-
-        $assignableIds = Applicant::query()
-            ->whereHas('application', fn ($q) => $q->where('status', 'accepted'))
-            ->whereDoesntHave('examSessions', fn ($q) => $q->whereNotIn('status', [ExamSession::STATUS_CANCELLED]))
-            ->pluck('id')
-            ->all();
-
-        $allApplicantIds = [];
-        foreach ($payload as $item) {
-            $sessionId = $item['exam_session_id'] ?? null;
-            $action = $item['action'] ?? null;
-            if (! $action) {
-                $action = $sessionId ? (($item['room_id'] || $item['date'] || $item['start_time']) ? 'edit' : 'assign') : 'create';
-            }
-
-            $ids = array_map('intval', $item['applicant_ids'] ?? []);
-
-            $alreadyAssignedToThisSession = [];
-            if ($sessionId) {
-                $alreadyAssignedToThisSession = DB::table('exam_session_applicant')
-                    ->where('exam_session_id', $sessionId)
-                    ->pluck('applicant_id')
-                    ->all();
-            }
-
-            foreach ($ids as $id) {
-                if (! in_array($id, $assignableIds, true) && ! in_array($id, $alreadyAssignedToThisSession, true)) {
-                    return response()->json([
-                        'message' => "Applicant {$id} is not assignable (must be accepted and not yet in any active session).",
-                    ], 422);
-                }
-                $allApplicantIds[] = $id;
-            }
-        }
-
-        $roomIds = Room::query()->where('is_active', true)->pluck('id')->all();
 
         try {
-            DB::transaction(function () use ($payload, $roomIds, $request, $activeAcademicYear) {
-                $pipeline = app(ApplicationPipelineService::class);
+            DB::transaction(function () use ($payload, $request) {
+                $service = app(ExamSchedulingService::class);
                 foreach ($payload as $item) {
-                    $sessionId = $item['exam_session_id'] ?? null;
-                    $action = $item['action'] ?? null;
-                    if (! $action) {
-                        $action = $sessionId ? (($item['room_id'] || $item['date'] || $item['start_time']) ? 'edit' : 'assign') : 'create';
-                    }
-
-                    $applicantIds = array_values(array_unique(array_map('intval', $item['applicant_ids'] ?? [])));
-
-                    if ($action === 'assign' || $action === 'edit') {
-                        if (empty($sessionId)) {
-                            throw new \RuntimeException('Session ID is required for assign or edit actions.');
-                        }
-                        $session = ExamSession::query()->find($sessionId);
-                        if (! $session || $session->status !== ExamSession::STATUS_DRAFT) {
-                            throw new \RuntimeException("Exam session {$sessionId} is not a draft session.");
-                        }
-
-                        if ($action === 'edit') {
-                            $updateData = [];
-                            if (isset($item['room_id'])) {
-                                $roomId = (int) $item['room_id'];
-                                if (! in_array($roomId, $roomIds, true)) {
-                                    throw new \RuntimeException("Room {$roomId} is not active.");
-                                }
-                                $updateData['room_id'] = $roomId;
-                            }
-                            if (isset($item['date'])) {
-                                $updateData['date'] = $item['date'];
-                            }
-                            if (isset($item['start_time'])) {
-                                $updateData['start_time'] = $item['start_time'];
-                            }
-                            if (isset($item['end_time'])) {
-                                $updateData['end_time'] = $item['end_time'];
-                            }
-
-                            if (! empty($updateData)) {
-                                $checkRoomId = $updateData['room_id'] ?? $session->room_id;
-                                $checkDate = $updateData['date'] ?? $session->date?->format('Y-m-d');
-                                $checkStartTime = $updateData['start_time'] ?? $session->start_time;
-                                $checkEndTime = array_key_exists('end_time', $updateData) ? $updateData['end_time'] : $session->end_time;
-
-                                if (ExamSession::hasRoomConflict($checkRoomId, $checkDate, $checkStartTime, $checkEndTime, $session->id)) {
-                                    throw new \RuntimeException("Room {$checkRoomId} has a conflict on {$checkDate} at {$checkStartTime}.");
-                                }
-
-                                $session->update($updateData);
-                            }
-                        }
-
-                        if (! empty($applicantIds)) {
-                            $alreadyAttached = $session->applicants()->pluck('applicants.id')->all();
-                            $toAttach = array_diff($applicantIds, $alreadyAttached);
-
-                            $currentCount = $session->applicants()->count();
-                            $capacity = $session->room?->capacity ?? 0;
-                            if ($currentCount + count($toAttach) > $capacity) {
-                                throw new \RuntimeException("Session {$session->id} would exceed room capacity.");
-                            }
-                            if (! empty($toAttach)) {
-                                $session->applicants()->attach($toAttach);
-
-                                $newApplicants = Applicant::whereIn('id', $toAttach)
-                                    ->with('application')
-                                    ->get();
-
-                                $newApplicants->each(function (Applicant $applicant) use ($pipeline, $session) {
-                                    if ($applicant->application) {
-                                        $pipeline->transition($applicant->application, 'draft_scheduled', [
-                                            'session_id' => $session->id,
-                                        ]);
-                                    }
-                                });
-                            }
-                        }
-
-                        continue;
-                    }
-
-                    // Create action
-                    $roomId = (int) ($item['room_id'] ?? 0);
-                    $date = $item['date'] ?? null;
-                    $startTime = $item['start_time'] ?? null;
-                    $endTime = $item['end_time'] ?? null;
-
-                    if (! $roomId || ! $date || ! $startTime) {
-                        throw new \RuntimeException('New session must have room_id, date, and start_time.');
-                    }
-                    if (! in_array($roomId, $roomIds, true)) {
-                        throw new \RuntimeException("Room {$roomId} is not active.");
-                    }
-
-                    $room = Room::find($roomId);
-                    if (count($applicantIds) > ($room->capacity ?? 0)) {
-                        throw new \RuntimeException("Room {$roomId} capacity exceeded.");
-                    }
-                    if (ExamSession::hasRoomConflict($roomId, $date, $startTime, $endTime, null)) {
-                        throw new \RuntimeException("Room {$roomId} has a conflict on {$date} at {$startTime}.");
-                    }
-
-                    $session = ExamSession::create([
-                        'academic_year_id' => $activeAcademicYear->id,
-                        'room_id' => $roomId,
-                        'date' => $date,
-                        'start_time' => $startTime,
-                        'end_time' => $endTime,
-                        'status' => ExamSession::STATUS_DRAFT,
-                        'created_by' => $request->user()->id,
-                    ]);
-                    if (! empty($applicantIds)) {
-                        $session->applicants()->attach($applicantIds);
-
-                        $newApplicants = Applicant::whereIn('id', $applicantIds)
-                            ->with('application')
-                            ->get();
-
-                        $newApplicants->each(function (Applicant $applicant) use ($pipeline, $session) {
-                            if ($applicant->application) {
-                                $pipeline->transition($applicant->application, 'draft_scheduled', [
-                                    'session_id' => $session->id,
-                                ]);
-                            }
-                        });
-                    }
+                    $action = $item['action'] ?? $this->inferAction($item);
+                    match ($action) {
+                        'create' => $service->createDraftSession($item, $request->user()),
+                        'edit' => $service->updateDraftSession(
+                            ExamSession::findOrFail($item['exam_session_id']), $item
+                        ),
+                        'assign' => $service->assignApplicants(
+                            ExamSession::findOrFail($item['exam_session_id']),
+                            $item['applicant_ids'] ?? []
+                        ),
+                        'delete' => $service->deleteDraftSession(
+                            ExamSession::findOrFail($item['exam_session_id'])
+                        ),
+                        default => throw new \RuntimeException("Unknown action: {$action}"),
+                    };
                 }
             });
         } catch (\RuntimeException $e) {
@@ -428,6 +279,19 @@ class ExamSchedulingAssistantController extends Controller
             'message' => 'Schedule applied successfully.',
             'redirect_url' => route('admin.exam-scheduling.index'),
         ]);
+    }
+
+    /**
+     * Infer action based on item payload.
+     */
+    private function inferAction(array $item): string
+    {
+        $sessionId = $item['exam_session_id'] ?? null;
+        if (! $sessionId) {
+            return 'create';
+        }
+
+        return (isset($item['room_id']) || isset($item['date']) || isset($item['start_time']) || isset($item['end_time'])) ? 'edit' : 'assign';
     }
 
     /**
