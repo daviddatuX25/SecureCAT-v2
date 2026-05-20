@@ -266,18 +266,29 @@ class SetupController extends Controller
     {
         $total = AptitudeArea::count();
         $active = AptitudeArea::where('is_active', true)->count();
-        $withScoring = AptitudeArea::where('is_active', true)
+
+        $missingScoringList = AptitudeArea::where('is_active', true)
             ->where(function ($q) {
                 $q->where(function ($q2) {
                     $q2->where('scoring_method', 'formula')
-                        ->whereNotNull('formula')
-                        ->where('formula', '!=', '');
+                        ->where(function ($q3) {
+                            $q3->whereNull('formula')->orWhere('formula', '');
+                        });
                 })->orWhere(function ($q2) {
                     $q2->where('scoring_method', 'conversion_table')
-                        ->whereHas('percentileConversions');
-                });
-            })->count();
-        $withoutScoring = $active - $withScoring;
+                        ->whereDoesntHave('percentileConversions');
+                })->orWhereNull('scoring_method');
+            })
+            ->get()
+            ->map(function ($a) {
+                $method = $a->scoring_method === 'conversion_table' ? 'conversion table' : 'formula';
+
+                return "{$a->name} ({$method})";
+            })
+            ->toArray();
+
+        $withoutScoring = count($missingScoringList);
+        $withScoring = $active - $withoutScoring;
 
         return [
             'key' => 'aptitude_areas',
@@ -306,13 +317,13 @@ class SetupController extends Controller
                 ],
                 [
                     'key' => 'aptitude_scoring',
-                    'label' => 'Active areas have scoring configured',
-                    'passed' => $active > 0 && $withScoring === $active,
+                    'label' => 'Active areas have scoring configured (formula or conversion table)',
+                    'passed' => $active > 0 && $withoutScoring === 0,
                     'severity' => 'optional',
                     'message' => match (true) {
                         $active === 0 => 'No active areas to check scoring on.',
                         $withoutScoring === 0 => "All {$active} active area(s) have scoring configured.",
-                        default => "{$withoutScoring} active area(s) missing scoring — normalized scores won't compute for them.",
+                        default => "{$withoutScoring} active area(s) missing scoring: ".implode(', ', $missingScoringList)." — normalized scores won't compute for them.",
                     },
                 ],
             ],

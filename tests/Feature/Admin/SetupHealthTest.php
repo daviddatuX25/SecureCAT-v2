@@ -285,6 +285,27 @@ class SetupHealthTest extends TestCase
             $formulaCheck = $checks->firstWhere('key', 'aptitude_scoring');
             $this->assertFalse($formulaCheck['passed'], '1 of 2 areas missing scoring.');
             $this->assertStringContainsString('1 active area(s) missing', $formulaCheck['message']);
+            $this->assertStringContainsString('Numerical (formula)', $formulaCheck['message']);
+        });
+    }
+
+    public function test_health_detects_aptitude_areas_missing_conversion_tables(): void
+    {
+        $this->clearSetupTables();
+
+        AptitudeArea::create(['name' => 'Verbal', 'code' => 'VRB', 'max_items' => 50, 'formula' => '(x/max_items)*100', 'scoring_method' => 'formula', 'is_active' => true, 'display_order' => 1]);
+        AptitudeArea::create(['name' => 'Numerical', 'code' => 'NUM', 'max_items' => 40, 'scoring_method' => 'conversion_table', 'is_active' => true, 'display_order' => 2]);
+
+        $response = $this->actingAs($this->superAdmin())->get(route('admin.setup.index'));
+
+        $response->assertInertia(function ($page) {
+            $health = $page->toArray()['props']['health'];
+            $category = collect($health['categories'])->firstWhere('key', 'aptitude_areas');
+            $checks = collect($category['checks']);
+
+            $formulaCheck = $checks->firstWhere('key', 'aptitude_scoring');
+            $this->assertFalse($formulaCheck['passed']);
+            $this->assertStringContainsString('Numerical (conversion table)', $formulaCheck['message']);
         });
     }
 
@@ -397,6 +418,8 @@ class SetupHealthTest extends TestCase
             $this->assertContains('admission_templates', $keys);
             $this->assertContains('privacy_policies', $keys);
             $this->assertContains('staff', $keys);
+            $this->assertContains('institution', $keys);
+            $this->assertContains('rating_scales', $keys);
         });
     }
 
