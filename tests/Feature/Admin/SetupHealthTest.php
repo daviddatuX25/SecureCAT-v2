@@ -272,8 +272,8 @@ class SetupHealthTest extends TestCase
     {
         $this->clearSetupTables();
 
-        AptitudeArea::create(['name' => 'Verbal', 'code' => 'VRB', 'max_items' => 50, 'formula' => '(x/max_items)*100', 'is_active' => true, 'display_order' => 1]);
-        AptitudeArea::create(['name' => 'Numerical', 'code' => 'NUM', 'max_items' => 40, 'formula' => null, 'is_active' => true, 'display_order' => 2]);
+        AptitudeArea::create(['name' => 'Verbal', 'code' => 'VRB', 'max_items' => 50, 'formula' => '(x/max_items)*100', 'scoring_method' => 'formula', 'is_active' => true, 'display_order' => 1]);
+        AptitudeArea::create(['name' => 'Numerical', 'code' => 'NUM', 'max_items' => 40, 'formula' => null, 'scoring_method' => 'formula', 'is_active' => true, 'display_order' => 2]);
 
         $response = $this->actingAs($this->superAdmin())->get(route('admin.setup.index'));
 
@@ -282,8 +282,8 @@ class SetupHealthTest extends TestCase
             $category = collect($health['categories'])->firstWhere('key', 'aptitude_areas');
             $checks = collect($category['checks']);
 
-            $formulaCheck = $checks->firstWhere('key', 'aptitude_formulas');
-            $this->assertFalse($formulaCheck['passed'], '1 of 2 areas missing formula.');
+            $formulaCheck = $checks->firstWhere('key', 'aptitude_scoring');
+            $this->assertFalse($formulaCheck['passed'], '1 of 2 areas missing scoring.');
             $this->assertStringContainsString('1 active area(s) missing', $formulaCheck['message']);
         });
     }
