@@ -398,7 +398,7 @@ class ApplicantImportService
                 'birthdate' => $birthdate,
                 'age' => $age,
                 'sex' => $sex,
-                'applicant_type' => in_array(strtolower(trim($record['applicant_type'] ?? 'new')), ['new', 'transferee'], true) ? strtolower(trim($record['applicant_type'])) : 'new',
+                'applicant_type' => in_array(strtolower(trim($record['applicant_type'] ?? 'new')), ['new', 'transferee'], true) ? strtolower(trim($record['applicant_type'] ?? 'new')) : 'new',
                 'last_school_enrolled' => $record['last_school_enrolled'] ?? null,
                 'strand' => $record['strand'] ?? null,
                 'email' => $record['email'],

@@ -74,7 +74,7 @@ class AcademicYearControllerTest extends TestCase
     public function test_admin_can_store_academic_year(): void
     {
         $response = $this->actingAs($this->admin())->post(route('admin.academic-years.store'), [
-            'academic_year' => '2025-2026',
+            'academic_year' => '2026-2027',
             'semester' => '1',
             'application_start_date' => '2025-06-01',
             'application_end_date' => '2025-07-15',
@@ -84,13 +84,13 @@ class AcademicYearControllerTest extends TestCase
         $response->assertSessionHas('success');
 
         $this->assertDatabaseHas('academic_years', [
-            'academic_year' => '2025-2026',
+            'academic_year' => '2026-2027',
             'semester' => '1',
             'is_active' => false,
         ]);
-        $academicYear = AcademicYear::first();
+        $academicYear = AcademicYear::where('academic_year', '2026-2027')->first();
         $this->assertNotNull($academicYear);
-        $this->assertSame('2025-2026', $academicYear->academic_year);
+        $this->assertSame('2026-2027', $academicYear->academic_year);
         $this->assertSame('1', $academicYear->semester);
         // Application window dates when provided via request (form or test payload)
         $this->assertTrue(
@@ -106,7 +106,7 @@ class AcademicYearControllerTest extends TestCase
     public function test_admin_can_view_edit_academic_year_form(): void
     {
         $academicYear = AcademicYear::create([
-            'academic_year' => '2025-2026',
+            'academic_year' => '2026-2027',
             'semester' => '1',
             'is_active' => false,
         ]);
@@ -118,7 +118,7 @@ class AcademicYearControllerTest extends TestCase
             ->component('Admin/AcademicYears/Edit')
             ->has('academicYear')
             ->where('academicYear.id', $academicYear->id)
-            ->where('academicYear.academic_year', '2025-2026')
+            ->where('academicYear.academic_year', '2026-2027')
             ->where('academicYear.semester', '1')
         );
     }
@@ -126,13 +126,13 @@ class AcademicYearControllerTest extends TestCase
     public function test_admin_can_update_academic_year(): void
     {
         $academicYear = AcademicYear::create([
-            'academic_year' => '2025-2026',
+            'academic_year' => '2026-2027',
             'semester' => '1',
             'is_active' => false,
         ]);
 
         $response = $this->actingAs($this->admin())->put(route('admin.academic-years.update', $academicYear), [
-            'academic_year' => '2025-2026',
+            'academic_year' => '2026-2027',
             'semester' => '2',
             'application_start_date' => '2026-01-10',
             'application_end_date' => '2026-02-28',
@@ -150,7 +150,7 @@ class AcademicYearControllerTest extends TestCase
     public function test_admin_can_activate_academic_year(): void
     {
         $academicYear1 = AcademicYear::create(['academic_year' => '2024-2025', 'semester' => '1', 'is_active' => true]);
-        $academicYear2 = AcademicYear::create(['academic_year' => '2025-2026', 'semester' => '1', 'is_active' => false]);
+        $academicYear2 = AcademicYear::create(['academic_year' => '2026-2027', 'semester' => '1', 'is_active' => false]);
 
         $response = $this->actingAs($this->admin())->post(route('admin.academic-years.activate', $academicYear2));
 
@@ -173,7 +173,7 @@ class AcademicYearControllerTest extends TestCase
         $initialCount = AcademicYear::count();
 
         $response = $this->actingAs($this->test_administrator())->post(route('admin.academic-years.store'), [
-            'academic_year' => '2025-2026',
+            'academic_year' => '2026-2027',
             'semester' => '1',
         ]);
 
