@@ -74,13 +74,13 @@
       { href: '/proctor/my-sessions', label: 'My Sessions', icon: Calendar, roles: ['proctor'], activeFor: ['/proctor/my-sessions', '/proctor/sessions'] },
       { href: '/admin/exam-monitoring', label: 'Exam Monitoring', icon: Activity, roles: ['super_admin', 'test_administrator'], activeFor: ['/admin/exam-monitoring', '/admin/test-admin'] },
       { href: '/admin/grading', label: 'Grading', icon: GraduationCap, roles: ['super_admin', 'test_administrator'], activeFor: ['/admin/grading'] },
-      { href: '/admin/release', label: 'Release', icon: SendHorizonal, roles: ['super_admin', 'test_administrator'], activeFor: ['/admin/release'] },
+      { href: '/admin/release', label: 'Release', icon: SendHorizonal, roles: ['super_admin', 'test_administrator'], activeFor: ['/admin/release'], exclude: ['/admin/release/result-templates'] },
     ]},
     { label: 'Reports', items: [
       { href: '/admin/reports', label: 'Reports', icon: BarChart3, roles: ['super_admin', 'registrar_administrator', 'test_administrator'], activeFor: ['/admin/reports'] },
     ]},
     { label: 'System', collapsible: true, items: [
-      { href: '/admin/setup', label: 'Setup', icon: Wrench, roles: ['super_admin', 'registrar_administrator', 'test_administrator'], activeFor: ['/admin/setup', '/admin/academic-years', '/admin/courses', '/admin/rooms', '/admin/aptitude-areas', '/admin/settings', '/admin/ai-companion', '/admin/admission-slip-templates', '/admin/privacy-policies'] },
+      { href: '/admin/setup', label: 'Setup', icon: Wrench, roles: ['super_admin', 'registrar_administrator', 'test_administrator'], activeFor: ['/admin/setup', '/admin/academic-years', '/admin/courses', '/admin/rooms', '/admin/aptitude-areas', '/admin/settings', '/admin/ai-companion', '/admin/admission-slip-templates', '/admin/privacy-policies', '/admin/release/result-templates'] },
       { href: '/admin/users', label: 'Users', icon: Users, roles: ['super_admin'], activeFor: ['/admin/users'] },
       { href: '/admin/logs', label: 'Audit Log', icon: ScrollText, roles: ['super_admin'], activeFor: ['/admin/logs'] },
     ]},
@@ -99,6 +99,15 @@
     // Strip query params and hash so ?search=foo&page=2 doesn't break matching
     const url = rawUrl.split('?')[0].split('#')[0];
     const href = item.href ?? '';
+
+    // Check exclude list first
+    if (item.exclude) {
+      for (const prefix of item.exclude) {
+        if (url === prefix || url === prefix + '/') return false;
+        if (prefix !== '/' && url.startsWith(prefix + '/')) return false;
+      }
+    }
+
     if (url === href || url === href + '/') return true;
     if (href !== '/' && url.startsWith(href + '/')) return true;
 
