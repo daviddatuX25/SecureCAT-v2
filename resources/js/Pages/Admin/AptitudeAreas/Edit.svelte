@@ -95,6 +95,16 @@
     return flat.sort((a, b) => a.raw_score - b.raw_score);
   }
 
+  function isSameTable(tableA, tableB) {
+    if (!tableA || !tableB) return false;
+    if (tableA.length !== tableB.length) return false;
+    for (let i = 0; i < tableA.length; i++) {
+      if (tableA[i].raw_score !== tableB[i].raw_score) return false;
+      if (tableA[i].percentile_output !== tableB[i].percentile_output) return false;
+    }
+    return true;
+  }
+
   $effect(() => {
     if (!initialized) {
       untrack(() => {
@@ -108,8 +118,12 @@
     const method = $form.scoring_method;
     untrack(() => {
       if (method === 'formula') {
-        uiTable = [];
-        $form.conversion_table = [];
+        if (uiTable.length > 0) {
+          uiTable = [];
+        }
+        if ($form.conversion_table.length > 0) {
+          $form.conversion_table = [];
+        }
       }
     });
   });
@@ -160,6 +174,7 @@
           hasError = true;
           break;
         }
+
         const start = parseInt(row.range_start, 10);
         const end = parseInt(row.range_end, 10);
         if (start < 0 || end < 0) {
@@ -185,10 +200,9 @@
     }
 
     untrack(() => {
-      if (!hasError) {
-        $form.conversion_table = flattenTable(rows);
-      } else {
-        $form.conversion_table = [];
+      const nextTable = !hasError ? flattenTable(rows) : [];
+      if (!isSameTable($form.conversion_table, nextTable)) {
+        $form.conversion_table = nextTable;
       }
     });
   });
