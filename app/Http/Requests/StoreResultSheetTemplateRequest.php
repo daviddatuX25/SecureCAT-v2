@@ -34,7 +34,7 @@ class StoreResultSheetTemplateRequest extends FormRequest
                 ResultSheetTemplate::LOGICAL_HALF_LETTER,
             ])],
             'content' => ['required_if:mode,'.ResultSheetTemplate::MODE_HTML, 'nullable', 'string'],
-            'docx' => ['required_if:mode,'.ResultSheetTemplate::MODE_DOCX, 'nullable', 'file', 'mimes:docx', 'max:5120'],
+            'document' => ['required_if:mode,'.ResultSheetTemplate::MODE_DOCX, 'nullable', 'file', 'mimes:docx,odt', 'max:5120'],
             'is_active' => ['sometimes', 'boolean'],
             'watermark_text' => ['nullable', 'string', 'max:50'],
         ];

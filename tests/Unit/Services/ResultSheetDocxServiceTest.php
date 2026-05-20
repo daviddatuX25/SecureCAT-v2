@@ -59,7 +59,7 @@ class ResultSheetDocxServiceTest extends TestCase
             $this->markTestSkipped('ZipArchive extension not loaded');
         }
         $path = $this->createDocxWithPlaceholders(['applicant_name']);
-        $html = $this->service->renderDocxFromFullPath($path, ['applicant_name' => 'Juan']);
+        $html = $this->service->renderFromFullPath($path, ['applicant_name' => 'Juan']);
 
         $this->assertStringContainsString('Juan', $html);
     }
@@ -67,17 +67,17 @@ class ResultSheetDocxServiceTest extends TestCase
     #[Test]
     public function render_returns_error_for_missing_file(): void
     {
-        $html = $this->service->renderDocxFromFullPath('/nonexistent/file.docx', []);
+        $html = $this->service->renderFromFullPath('/nonexistent/file.docx', []);
 
-        $this->assertStringContainsString('DOCX file not found', $html);
+        $this->assertStringContainsString('file not found', $html);
     }
 
     #[Test]
     public function render_storage_path_returns_error_for_null(): void
     {
-        $html = $this->service->renderDocxFromStoragePath(null, []);
+        $html = $this->service->renderFromStoragePath(null, []);
 
-        $this->assertStringContainsString('No DOCX template', $html);
+        $this->assertStringContainsString('No document template', $html);
     }
 
     private function makeCategorized(array $required = [], array $recommended = [], array $optional = [], array $domain = [], array $personnel = [], array $institution = [], array $applicant2 = []): array
@@ -103,7 +103,7 @@ class ResultSheetDocxServiceTest extends TestCase
         $path = $this->createDocxWithPlaceholders($required);
         $categorized = $this->makeCategorized(required: $required);
 
-        $result = $this->service->validateDocxTemplate($path, $categorized, true);
+        $result = $this->service->validateTemplate($path, $categorized, true);
 
         $this->assertTrue($result->valid);
         $this->assertEmpty($result->missing);
@@ -119,7 +119,7 @@ class ResultSheetDocxServiceTest extends TestCase
         $path = $this->createDocxWithPlaceholders(['applicant_name']);
         $categorized = $this->makeCategorized(required: $required);
 
-        $result = $this->service->validateDocxTemplate($path, $categorized, true);
+        $result = $this->service->validateTemplate($path, $categorized, true);
 
         $this->assertFalse($result->valid);
         $this->assertContains('applicant_reference', $result->missing);
@@ -139,7 +139,7 @@ class ResultSheetDocxServiceTest extends TestCase
             applicant2: ['applicant_name_2'],
         );
 
-        $result = $this->service->validateDocxTemplate($path, $categorized, false);
+        $result = $this->service->validateTemplate($path, $categorized, false);
 
         $this->assertTrue($result->valid);
     }
@@ -155,7 +155,7 @@ class ResultSheetDocxServiceTest extends TestCase
             required: ['applicant_name', 'applicant_name_2'],
         );
 
-        $result = $this->service->validateDocxTemplate($path, $categorized, true);
+        $result = $this->service->validateTemplate($path, $categorized, true);
 
         $this->assertFalse($result->valid);
         $this->assertContains('applicant_name_2', $result->missing);
@@ -170,7 +170,7 @@ class ResultSheetDocxServiceTest extends TestCase
         $path = $this->createDocxWithPlaceholders(['applicant_name', 'applcant_name']);
         $categorized = $this->makeCategorized(required: ['applicant_name']);
 
-        $result = $this->service->validateDocxTemplate($path, $categorized, true);
+        $result = $this->service->validateTemplate($path, $categorized, true);
 
         $this->assertTrue($result->valid);
         $this->assertContains('applcant_name', $result->extra);
@@ -185,7 +185,7 @@ class ResultSheetDocxServiceTest extends TestCase
         $path = $this->createDocxWithPlaceholders(['applicant_name']);
         $categorized = $this->makeCategorized(required: ['applicant_name']);
 
-        $result = $this->service->validateDocxTemplate($path, $categorized, true);
+        $result = $this->service->validateTemplate($path, $categorized, true);
 
         $this->assertIsArray($result->checks);
         $this->assertNotEmpty($result->checks);
@@ -199,7 +199,7 @@ class ResultSheetDocxServiceTest extends TestCase
     {
         $categorized = $this->makeCategorized(required: ['applicant_name']);
 
-        $result = $this->service->validateDocxTemplate('/nonexistent/file.docx', $categorized, true);
+        $result = $this->service->validateTemplate('/nonexistent/file.docx', $categorized, true);
 
         $this->assertFalse($result->valid);
         $this->assertNotEmpty($result->checks);

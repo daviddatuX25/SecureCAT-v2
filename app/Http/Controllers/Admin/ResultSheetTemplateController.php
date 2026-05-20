@@ -81,7 +81,7 @@ class ResultSheetTemplateController extends Controller
 
         if ($mode === ResultSheetTemplate::MODE_HTML) {
             $data['content'] = Purifier::clean($request->validated('content'), 'result_sheet');
-            $data['docx_path'] = null;
+            $data['document_path'] = null;
         }
 
         if ($data['is_active'] ?? false) {
@@ -92,14 +92,14 @@ class ResultSheetTemplateController extends Controller
             $template = ResultSheetTemplate::create($data);
         } else {
             $data['content'] = '';
-            $file = $request->file('docx');
+            $file = $request->file('document');
 
             DB::transaction(function () use (&$template, $data, $file) {
-                $template = ResultSheetTemplate::create([...$data, 'docx_path' => null]);
-                $destPath = 'result-sheet-templates/'.$template->id.'.docx';
+                $template = ResultSheetTemplate::create([...$data, 'document_path' => null]);
+                $destPath = 'result-sheet-templates/'.$template->id.'.'.$file->getClientOriginalExtension();
                 $filePath = $file->getRealPath() ?: $file->getPathname();
                 Storage::disk('local')->put($destPath, file_get_contents($filePath));
-                $template->update(['docx_path' => $destPath]);
+                $template->update(['document_path' => $destPath]);
             });
         }
 
@@ -161,23 +161,23 @@ class ResultSheetTemplateController extends Controller
             if ($request->has('content')) {
                 $data['content'] = Purifier::clean($request->validated('content'), 'result_sheet');
             }
-            if ($result_template->docx_path) {
-                Storage::disk('local')->delete($result_template->docx_path);
-                $data['docx_path'] = null;
+            if ($result_template->document_path) {
+                Storage::disk('local')->delete($result_template->document_path);
+                $data['document_path'] = null;
             }
         } else {
             $data['content'] = '';
-            if ($request->hasFile('docx')) {
-                if ($result_template->docx_path) {
-                    Storage::disk('local')->delete($result_template->docx_path);
+            if ($request->hasFile('document')) {
+                if ($result_template->document_path) {
+                    Storage::disk('local')->delete($result_template->document_path);
                 }
-                $file = $request->file('docx');
-                $destPath = 'result-sheet-templates/'.$result_template->id.'.docx';
+                $file = $request->file('document');
+                $destPath = 'result-sheet-templates/'.$result_template->id.'.'.$file->getClientOriginalExtension();
                 $filePath = $file->getRealPath() ?: $file->getPathname();
                 Storage::disk('local')->put($destPath, file_get_contents($filePath));
-                $data['docx_path'] = $destPath;
-            } elseif (! $result_template->docx_path) {
-                return redirect()->back()->withErrors(['docx' => 'DOCX file is required for DOCX mode.']);
+                $data['document_path'] = $destPath;
+            } elseif (! $result_template->document_path) {
+                return redirect()->back()->withErrors(['document' => 'Document file is required for DOCX mode.']);
             }
         }
 
@@ -192,8 +192,8 @@ class ResultSheetTemplateController extends Controller
     {
         app(AuditService::class)->log('template.result_sheet_deleted', ResultSheetTemplate::class, $result_template->id, [], ['name' => $result_template->name]);
 
-        if ($result_template->docx_path) {
-            Storage::disk('local')->delete($result_template->docx_path);
+        if ($result_template->document_path) {
+            Storage::disk('local')->delete($result_template->document_path);
         }
         $result_template->delete();
 
@@ -227,12 +227,12 @@ class ResultSheetTemplateController extends Controller
             'mode' => ['required', Rule::in(['html', 'docx'])],
             'content' => ['required_if:mode,html', 'nullable', 'string'],
             'template_id' => ['nullable', 'exists:result_sheet_templates,id'],
-            'docx' => ['nullable', 'file', 'max:5120'],
+            'document' => ['nullable', 'file', 'max:5120'],
         ]);
 
         $mode = $request->input('mode');
-        if ($mode === 'docx' && ! $request->hasFile('docx') && ! $request->input('template_id')) {
-            return response()->json(['error' => 'Either docx file or template_id is required for DOCX preview.'], 422);
+        if ($mode === 'docx' && ! $request->hasFile('document') && ! $request->input('template_id')) {
+            return response()->json(['error' => 'Either document file or template_id is required for DOCX preview.'], 422);
         }
         $paperSize = $request->input('paper_size', 'a4');
         $orientation = $request->input('orientation', 'portrait');
@@ -243,10 +243,10 @@ class ResultSheetTemplateController extends Controller
                 $content = Purifier::clean($request->input('content', ''), 'result_sheet');
                 $renderResult = $this->templateService->renderHtmlContent($content, [], true, $paperSize, $orientation, $logicalUnit);
             } else {
-                if ($request->hasFile('docx')) {
-                    $uploaded = $request->file('docx');
+                if ($request->hasFile('document')) {
+                    $uploaded = $request->file('document');
                     $path = $uploaded->getRealPath() ?: $uploaded->getPathname();
-                    $renderResult = $this->templateService->renderDocxFile($path, [], true, $paperSize, $orientation, $logicalUnit);
+                    $renderResult = $this->templateService->renderDocumentFile($path, [], true, $paperSize, $orientation, $logicalUnit);
                 } else {
                     $template = ResultSheetTemplate::findOrFail($request->input('template_id'));
                     $renderResult = $this->templateService->render($template, [], true);
@@ -267,34 +267,34 @@ class ResultSheetTemplateController extends Controller
         }
     }
 
-    public function validateDocx(Request $request): JsonResponse
+    public function validateDocument(Request $request): JsonResponse
     {
         $request->validate([
-            'docx' => ['nullable', 'file', 'mimes:docx', 'max:5120'],
+            'document' => ['nullable', 'file', 'mimes:docx,odt', 'max:5120'],
             'template_id' => ['nullable', 'exists:result_sheet_templates,id'],
             'logical_unit' => ['required', Rule::in(['full', 'half_a4'])],
         ]);
 
-        if ($request->hasFile('docx')) {
-            $uploaded = $request->file('docx');
+        if ($request->hasFile('document')) {
+            $uploaded = $request->file('document');
             if (! $uploaded->isValid()) {
                 return response()->json(['error' => 'File upload failed: '.$uploaded->getErrorMessage()], 422);
             }
             $fullPath = $uploaded->getRealPath() ?: $uploaded->getPathname();
         } elseif ($request->input('template_id')) {
             $template = ResultSheetTemplate::findOrFail($request->input('template_id'));
-            if (! $template->docx_path) {
-                return response()->json(['error' => 'Template has no DOCX file.'], 422);
+            if (! $template->document_path) {
+                return response()->json(['error' => 'Template has no document file.'], 422);
             }
-            $fullPath = Storage::path($template->docx_path);
+            $fullPath = Storage::path($template->document_path);
         } else {
-            return response()->json(['error' => 'Either docx file or template_id is required.'], 422);
+            return response()->json(['error' => 'Either document file or template_id is required.'], 422);
         }
 
         $isCrosswise = $request->input('logical_unit') === 'half_a4';
 
         return response()->json(
-            $this->templateService->getDocxValidation($fullPath, $isCrosswise)->toArray()
+            $this->templateService->getDocumentValidation($fullPath, $isCrosswise)->toArray()
         );
     }
 

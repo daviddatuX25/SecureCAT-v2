@@ -15,19 +15,19 @@ class ResultSheetDocxService
     /**
      * Render a DOCX from a storage-relative path with placeholder replacements.
      */
-    public function renderDocxFromStoragePath(?string $docxPath, array $replacements): string
+    public function renderFromStoragePath(?string $docxPath, array $replacements): string
     {
         if (! $docxPath) {
-            return '<p class="text-muted-foreground">No DOCX template.</p>';
+            return '<p class="text-muted-foreground">No document template.</p>';
         }
 
-        return $this->renderDocxFromFullPath(Storage::path($docxPath), $replacements);
+        return $this->renderFromFullPath(Storage::path($docxPath), $replacements);
     }
 
     /**
      * Render a DOCX from an absolute filesystem path with placeholder replacements.
      */
-    public function renderDocxFromFullPath(string $fullPath, array $replacements): string
+    public function renderFromFullPath(string $fullPath, array $replacements): string
     {
         if (! is_file($fullPath)) {
             return '<p class="text-destructive">DOCX file not found.</p>';
@@ -43,7 +43,7 @@ class ResultSheetDocxService
         $tempDocx = null;
         $tempHtml = null;
 
-        $repairedPath = $this->getRepairedDocx($fullPath) ?: $fullPath;
+        $repairedPath = $this->getRepairedTemplate($fullPath) ?: $fullPath;
 
         try {
             $processor = new TemplateProcessor($repairedPath);
@@ -96,7 +96,7 @@ class ResultSheetDocxService
      *
      * @param  array{required: string[], recommended: string[], optional: string[], html_only: string[], domain: string[], personnel: string[], institution: string[], applicant2: string[]}  $categorizedPlaceholders
      */
-    public function validateDocxTemplate(string $fullPath, array $categorizedPlaceholders, bool $isCrosswise): DocxValidationResult
+    public function validateTemplate(string $fullPath, array $categorizedPlaceholders, bool $isCrosswise): DocxValidationResult
     {
         $requiredAndRecommended = array_merge($categorizedPlaceholders['required'], $categorizedPlaceholders['recommended']);
         $optionalAll = array_merge(
@@ -132,7 +132,7 @@ class ResultSheetDocxService
 
         $checks[] = ['label' => 'DOCX file readable', 'detail' => 'OK', 'status' => 'pass'];
 
-        $repairedPath = $this->getRepairedDocx($fullPath) ?: $fullPath;
+        $repairedPath = $this->getRepairedTemplate($fullPath) ?: $fullPath;
 
         $processor = new TemplateProcessor($repairedPath);
         $processor->setMacroChars('{{', '}}');
@@ -203,7 +203,7 @@ class ResultSheetDocxService
      * 2. As a fallback, strip all XML tags from any content matching {{ ... }}
      *    patterns, removing XML fragmentation between the braces entirely.
      */
-    public function getRepairedDocx(string $originalPath): ?string
+    public function getRepairedTemplate(string $originalPath): ?string
     {
         $tempDir = storage_path('app/temp/phpword');
         if (! is_dir($tempDir) && ! mkdir($tempDir, 0755, true)) {

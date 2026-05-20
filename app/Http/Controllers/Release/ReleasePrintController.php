@@ -145,7 +145,7 @@ class ReleasePrintController extends Controller
 
         $filename = str_replace(' ', '_', $this->formatName($applicant)).'_result_sheet.pdf';
 
-        if ($template->mode === ResultSheetTemplate::MODE_DOCX && $template->docx_path && $this->docxToPdfService->isAvailable()) {
+        if ($template->mode === ResultSheetTemplate::MODE_DOCX && $template->document_path && $this->docxToPdfService->isAvailable()) {
             $applicantsWithScores = $this->templateService->fetchApplicantsWithScores(
                 [$applicant->id],
                 $grading_session->id,
@@ -155,7 +155,7 @@ class ReleasePrintController extends Controller
                 abort(404, 'Applicant data not found.');
             }
 
-            $docxFiles = $this->templateService->buildFilledDocxFiles($applicantsWithScores, $template);
+            $docxFiles = $this->templateService->buildFilledDocumentFiles($applicantsWithScores, $template);
 
             try {
                 $pdfContent = $this->docxToPdfService->convert($docxFiles[0]);
@@ -191,13 +191,13 @@ class ReleasePrintController extends Controller
             ->where('mode', ResultSheetTemplate::MODE_DOCX)
             ->first();
 
-        if (! $template || ! $template->docx_path) {
-            abort(404, 'No active DOCX template found.');
+        if (! $template || ! $template->document_path) {
+            abort(404, 'No active document template found.');
         }
 
-        $fullPath = Storage::path($template->docx_path);
+        $fullPath = Storage::path($template->document_path);
         if (! is_file($fullPath)) {
-            abort(404, 'DOCX template file not found on disk.');
+            abort(404, 'Document template file not found on disk.');
         }
 
         $applicantsWithScores = $this->templateService->fetchApplicantsWithScores(
@@ -216,7 +216,7 @@ class ReleasePrintController extends Controller
             mkdir($tempDir, 0755, true);
         }
 
-        $repairedPath = $this->docxService->getRepairedDocx($fullPath) ?: $fullPath;
+        $repairedPath = $this->docxService->getRepairedTemplate($fullPath) ?: $fullPath;
 
         $processor = new TemplateProcessor($repairedPath);
         $processor->setMacroChars('{{', '}}');
@@ -284,8 +284,8 @@ class ReleasePrintController extends Controller
 
         $filename = "session_{$grading_session->id}_result_sheets.pdf";
 
-        if ($template->mode === ResultSheetTemplate::MODE_DOCX && $template->docx_path && $this->docxToPdfService->isAvailable()) {
-            $docxFiles = $this->templateService->buildFilledDocxFiles($applicantsWithScores, $template);
+        if ($template->mode === ResultSheetTemplate::MODE_DOCX && $template->document_path && $this->docxToPdfService->isAvailable()) {
+            $docxFiles = $this->templateService->buildFilledDocumentFiles($applicantsWithScores, $template);
 
             try {
                 $pdfContent = $this->docxToPdfService->convertBatch($docxFiles, $copies);
@@ -346,8 +346,8 @@ class ReleasePrintController extends Controller
         $ids = array_slice(array_filter(array_map('intval', explode(',', request()->query('ids', '')))), 0, 200);
         $applicantsWithScores = $this->templateService->fetchApplicantsWithScores($ids);
 
-        if ($template->mode === ResultSheetTemplate::MODE_DOCX && $template->docx_path && $this->docxToPdfService->isAvailable()) {
-            $docxFiles = $this->templateService->buildFilledDocxFiles($applicantsWithScores, $template);
+        if ($template->mode === ResultSheetTemplate::MODE_DOCX && $template->document_path && $this->docxToPdfService->isAvailable()) {
+            $docxFiles = $this->templateService->buildFilledDocumentFiles($applicantsWithScores, $template);
 
             try {
                 $pdfContent = $this->docxToPdfService->convertBatch($docxFiles, $copies);
@@ -377,8 +377,8 @@ class ReleasePrintController extends Controller
             ->where('mode', ResultSheetTemplate::MODE_DOCX)
             ->first();
 
-        if (! $template || ! $template->docx_path) {
-            abort(404, 'No active DOCX template found.');
+        if (! $template || ! $template->document_path) {
+            abort(404, 'No active document template found.');
         }
 
         $ids = array_slice(array_filter(array_map('intval', explode(',', request()->query('ids', '')))), 0, 200);
@@ -393,8 +393,8 @@ class ReleasePrintController extends Controller
             ->where('mode', ResultSheetTemplate::MODE_DOCX)
             ->first();
 
-        if (! $template || ! $template->docx_path) {
-            abort(404, 'No active DOCX template found.');
+        if (! $template || ! $template->document_path) {
+            abort(404, 'No active document template found.');
         }
 
         $ids = array_slice(array_filter(array_map('intval', explode(',', request()->query('ids', '')))), 0, 200);
@@ -408,7 +408,7 @@ class ReleasePrintController extends Controller
      */
     private function buildBulkDocxZip(array $applicantsWithScores, ResultSheetTemplate $template, string $zipFilename): SymfonyResponse
     {
-        $docxFiles = $this->templateService->buildFilledDocxFiles($applicantsWithScores, $template);
+        $docxFiles = $this->templateService->buildFilledDocumentFiles($applicantsWithScores, $template);
 
         $tempDir = storage_path('app/temp/phpword');
         if (! is_dir($tempDir)) {
