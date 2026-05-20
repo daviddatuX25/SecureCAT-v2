@@ -17,6 +17,7 @@ class AptitudeArea extends Model
         'description',
         'max_items',
         'formula',
+        'scoring_method',
         'display_order',
         'is_active',
     ];
@@ -33,6 +34,35 @@ class AptitudeArea extends Model
     public function applicantScores(): HasMany
     {
         return $this->hasMany(ApplicantScore::class, 'aptitude_area_id');
+    }
+
+    public function percentileConversions(): HasMany
+    {
+        return $this->hasMany(PercentileConversion::class);
+    }
+
+    public function lookupPercentile(int $rawScore): ?string
+    {
+        return $this->percentileConversions()
+            ->where('raw_score', $rawScore)
+            ->value('percentile_output');
+    }
+
+    public function resolveScore(float $rawScore): array
+    {
+        if ($this->scoring_method === 'conversion_table') {
+            $percentileString = $this->lookupPercentile((int) $rawScore);
+
+            return [
+                'normalized_score' => null,
+                'percentile_string' => $percentileString ?? 'N/A',
+            ];
+        }
+
+        return [
+            'normalized_score' => $this->computeNormalizedScore($rawScore),
+            'percentile_string' => null,
+        ];
     }
 
     public function computeNormalizedScore(float $rawScore): ?float
