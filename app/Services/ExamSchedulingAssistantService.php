@@ -109,7 +109,11 @@ class ExamSchedulingAssistantService
             .'IMPORTANT — you MUST always derive factual claims (counts, room availability, session status) from the data provided below, NEVER from memory or guesswork. '
             ."There are {$applicantCount} applicants waiting to be scheduled.{$summary} "
             ."Available rooms: {$roomList}.{$draftList}{$existingList} "
-            .'Constraints: each applicant must be assigned to exactly one session; each session cannot exceed room capacity; the same room cannot be double-booked (no overlapping date/time). '
+            .'Constraints: '
+            .'1) Each applicant must be assigned to exactly one session. '
+            .'2) Each session cannot exceed room capacity. '
+            .'3) The same room cannot be double-booked (no overlapping date/time). This constraint applies to ALL sessions: you cannot create a new session or edit an existing one to overlap with ANY existing draft session or scheduled session. '
+            .'4) Prioritize utilizing existing DRAFT sessions: Before proposing to create a new session, you MUST check the existing DRAFT exam sessions (listed above). If there is already a draft session on the requested date/time (or if an existing draft session can be edited or assigned to), you MUST prioritize reusing that existing draft session (action "assign" or "edit") instead of creating a duplicate new session. '
             .'IMPORTANT — Assigned means confirmed placement: applicants assigned only to DRAFT sessions are still awaiting scheduling (draft sessions are not confirmed placements). Only applicants in non-draft sessions are considered fully assigned. '
             .'You support THREE actions, each identified by an "action" field in the JSON: '
             .'1) "create" — Create a NEW session. Required fields: action, room_id, date, start_time, applicant_ids. Optional: end_time. '
