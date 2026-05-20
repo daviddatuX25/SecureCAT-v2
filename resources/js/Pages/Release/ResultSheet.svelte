@@ -90,8 +90,29 @@
         <Link href="/admin/release/result-templates" class="mt-4 inline-block text-sm underline">Go to Result templates</Link>
       </div>
     {:else if templateHtml}
-      <div class="border border-foreground/20 rounded-lg p-6 result-sheet-content">
-        {@html templateHtml}
+      <div class="border border-foreground/20 rounded-lg p-6 bg-white">
+        <iframe
+          srcdoc={templateHtml}
+          class="w-full"
+          style="border: none; overflow: hidden; display: block;"
+          sandbox="allow-same-origin"
+          title="Result Sheet"
+          onload={(e) => {
+            const iframe = e.currentTarget;
+            const doc = iframe.contentDocument;
+            if (doc) {
+              if (doc.body) {
+                doc.body.style.margin = '0';
+                doc.body.style.padding = '0';
+                doc.body.style.background = 'transparent';
+              }
+              const h = doc.documentElement?.scrollHeight || doc.body?.scrollHeight;
+              if (h) {
+                iframe.style.height = `${h}px`;
+              }
+            }
+          }}
+        ></iframe>
       </div>
     {:else}
       <div class="rounded-lg border border-muted p-6 text-muted-foreground">

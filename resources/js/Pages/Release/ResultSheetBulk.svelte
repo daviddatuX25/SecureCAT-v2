@@ -4,7 +4,7 @@
   import { usePage } from '@inertiajs/svelte';
   import { Link, router } from '@inertiajs/svelte';
   import { Button } from '@/Components/ui/button';
-  import { ArrowLeft, Printer, Download } from 'lucide-svelte';
+  import { ArrowLeft, Printer, Download, FileText } from 'lucide-svelte';
 
   let {
     sessionId = '1',
@@ -17,7 +17,7 @@
     logicalUnit = 'full',
     paperOptions = { a4: 'A4', letter: 'Letter' },
   } = $props();
-  const sid = $derived(String(sessionId));
+  const sid = $derived(sessionId != null ? String(sessionId) : null);
 
   const _page = usePage();
   const printDisabled = $derived(($_page?.props?.release_mode ?? 'online') === 'online');
@@ -50,27 +50,57 @@
 
   function fitToBounds() {
     const scale = Math.max(0.1, Math.min(1, userScale));
-    if (isHalf) {
-      const targetPx = HALF_HEIGHT_MM * MM_TO_PX * SAFETY_FACTOR;
-      document.querySelectorAll('.half-layout-page .print-template--half').forEach((half) => {
-        const h = half.scrollHeight;
-        if (h > targetPx && h > 0) {
-          half.style.zoom = String((targetPx / h) * scale);
-        } else {
-          half.style.zoom = scale < 1 ? String(scale) : '';
+    const iframes = document.querySelectorAll('.result-sheet-iframe');
+
+    iframes.forEach((iframe) => {
+      const doc = iframe.contentDocument;
+      if (!doc) return;
+
+      if (doc.body) {
+        doc.body.style.margin = '0';
+        doc.body.style.padding = '0';
+        doc.body.style.background = 'transparent';
+      }
+
+      if (isHalf) {
+        const dual = doc.querySelector('.print-template--dual');
+        if (dual) {
+          dual.style.height = `${pageHeightMm}mm`;
         }
-      });
-    } else {
-      const targetPx = pageHeightMm * MM_TO_PX * SAFETY_FACTOR;
-      document.querySelectorAll('.result-sheet-content:not(.half-layout-page) .print-template').forEach((tmpl) => {
-        const h = tmpl.scrollHeight;
-        if (h > targetPx && h > 0) {
-          tmpl.style.zoom = String((targetPx / h) * scale);
-        } else {
-          tmpl.style.zoom = scale < 1 ? String(scale) : '';
+
+        const targetPx = HALF_HEIGHT_MM * MM_TO_PX * SAFETY_FACTOR;
+        const halfs = doc.querySelectorAll('.print-template--half');
+        halfs.forEach((half) => {
+          const h = half.scrollHeight;
+          if (h > targetPx && h > 0) {
+            half.style.zoom = String((targetPx / h) * scale);
+          } else {
+            half.style.zoom = scale < 1 ? String(scale) : '';
+          }
+        });
+      } else {
+        const targetPx = pageHeightMm * MM_TO_PX * SAFETY_FACTOR;
+        let tmpls = doc.querySelectorAll('.print-template');
+        if (tmpls.length === 0 && doc.body) {
+          const contentDiv = doc.body.querySelector('div') || doc.body;
+          tmpls = [contentDiv];
         }
-      });
-    }
+        tmpls.forEach((tmpl) => {
+          const h = tmpl.scrollHeight;
+          if (h > targetPx && h > 0) {
+            tmpl.style.zoom = String((targetPx / h) * scale);
+          } else {
+            tmpl.style.zoom = scale < 1 ? String(scale) : '';
+          }
+        });
+      }
+
+      // Automatically adjust iframe height to contain zoomed contents without scrollbar
+      const totalH = doc.documentElement?.scrollHeight || doc.body?.scrollHeight;
+      if (totalH) {
+        iframe.style.height = `${totalH + 4}px`;
+      }
+    });
   }
 
   function runFit() {
@@ -83,12 +113,20 @@
       : `/admin/release/print/bulk-pdf?ids=${applicantIds.join(',')}`
   );
 
+  const bulkDocxBaseUrl = $derived(
+    sid
+      ? `/admin/release/print/${sid}/print-bulk-docx?ids=${applicantIds.join(',')}`
+      : `/admin/release/print/bulk-docx?ids=${applicantIds.join(',')}`
+  );
+
   function toggleMarkAllPrinted() {
     markedAllPrinted = !markedAllPrinted;
-    router.post(`/admin/release/print/${sid}/mark-printed`, {
-      applicant_ids: applicants.map((a) => a.id),
-      printed: markedAllPrinted,
-    }, { preserveScroll: true });
+    if (sid) {
+      router.post(`/admin/release/print/${sid}/mark-printed`, {
+        applicant_ids: applicants.map((a) => a.id),
+        printed: markedAllPrinted,
+      }, { preserveScroll: true });
+    }
   }
 
   onMount(() => {
@@ -162,6 +200,12 @@
             Download PDF
           </Button>
         </a>
+        <a href={bulkDocxBaseUrl} rel="noopener">
+          <Button variant="outline" class="min-h-[44px] gap-2">
+            <FileText class="h-4 w-4" />
+            Download Word
+          </Button>
+        </a>
       {/if}
       {#if printDisabled}
         <p class="text-xs text-muted-foreground">
@@ -187,11 +231,20 @@
         <Link href="/admin/release/result-templates" class="mt-4 inline-block text-sm underline">Go to Result templates</Link>
       </div>
     {:else if sheetsHtml.length > 0}
-      {#each sheetsHtml as html}
+      {#each sheetsHtml as html, index}
         <div
-          class="border border-foreground/20 rounded-lg p-6 result-sheet-content bg-white {isHalf ? 'half-layout-page' : ''}"
+          class="border border-foreground/20 rounded-lg p-6 bg-white"
         >
-          {@html html}
+          <iframe
+            srcdoc={html}
+            class="w-full result-sheet-iframe"
+            style="border: none; overflow: hidden; display: block;"
+            sandbox="allow-same-origin"
+            title="Result Sheet {index + 1}"
+            onload={() => {
+              fitToBounds();
+            }}
+          ></iframe>
         </div>
       {/each}
     {:else}
