@@ -5,6 +5,7 @@
   import * as Table from '@/Components/ui/table';
   import { MessageSquare, Send, Sparkles, Calendar, CheckCircle2, Trash2 } from 'lucide-svelte';
   import { Textarea } from '@/Components/ui/textarea';
+  import { success as showSuccess } from '@/lib/toast';
 
   let {
     applicant_count = 0,
@@ -34,6 +35,21 @@
   const draftMap = $derived(
     Object.fromEntries((draft_sessions ?? []).map((s) => [s.id, s]))
   );
+
+  /**
+   * Scrub JSON blocks from conversational text to keep UI extremely clean.
+   */
+  function formatContent(content) {
+    if (!content) return '';
+    // Strip markdown JSON code blocks with "json" (with or without spaces/caps)
+    let clean = content.replace(/```\s*json\s*(\{.*?\}|\[.*?\])\s*```/gis, '');
+    // Strip standard/fallback ``` markdown code blocks holding JSON-like structures
+    clean = clean.replace(/```\s*(\{.*?\}|\[.*?\])\s*```/gis, '');
+    // Strip bare JSON blocks if any remain
+    clean = clean.replace(/(\{[\s\S]*?"sessions"[\s\S]*?\})/g, '');
+    // Clean up trailing whitespace/newlines
+    return clean.trim();
+  }
 
   /**
    * Normalise a raw session object from the AI to the canonical field set.
@@ -180,6 +196,8 @@
         return;
       }
 
+      showSuccess(data.message ?? 'Schedule applied successfully!');
+
       if (typeof onApplied === 'function') {
         onApplied();
       } else if (data.redirect_url) {
@@ -290,36 +308,9 @@
                   {msg.content}
                 </div>
               {:else}
-                {#if msg.content}
-                  <div class="rounded-lg px-3 py-2 text-sm max-w-[85%] bg-muted">
-                    {msg.content}
-                  </div>
-                {/if}
-                {#if msg.schedule?.sessions?.length}
-                  <div class="rounded-lg border border-border bg-background overflow-hidden max-w-[85%] mt-1">
-                    <p class="text-xs font-medium text-muted-foreground px-3 py-2 border-b border-border">Generated schedule</p>
-                    <Table.Root>
-                      <Table.Header class="bg-muted/50">
-                        <Table.Row>
-                          <Table.Head class="px-3 py-2 text-xs">Type</Table.Head>
-                          <Table.Head class="px-3 py-2 text-xs">Room</Table.Head>
-                          <Table.Head class="px-3 py-2 text-xs">Date</Table.Head>
-                          <Table.Head class="px-3 py-2 text-xs">Time</Table.Head>
-                          <Table.Head class="px-3 py-2 text-xs">#</Table.Head>
-                        </Table.Row>
-                      </Table.Header>
-                      <Table.Body>
-                        {#each getScheduleRows(msg.schedule) as row}
-                          <Table.Row>
-                            <Table.Cell class="px-3 py-2 text-xs">{row.type}</Table.Cell>
-                            <Table.Cell class="px-3 py-2 text-xs">{row.room}</Table.Cell>
-                            <Table.Cell class="px-3 py-2 text-xs">{row.date}</Table.Cell>
-                            <Table.Cell class="px-3 py-2 text-xs">{row.time}</Table.Cell>
-                            <Table.Cell class="px-3 py-2 text-xs">{row.applicant_count}</Table.Cell>
-                          </Table.Row>
-                        {/each}
-                      </Table.Body>
-                    </Table.Root>
+                {#if formatContent(msg.content)}
+                  <div class="rounded-lg px-3 py-2 text-sm max-w-[85%] bg-muted whitespace-pre-line">
+                    {formatContent(msg.content)}
                   </div>
                 {/if}
               {/if}
