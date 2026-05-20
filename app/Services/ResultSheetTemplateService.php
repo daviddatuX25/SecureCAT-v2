@@ -1029,13 +1029,13 @@ class ResultSheetTemplateService
     protected function buildCategorizedPlaceholders(): array
     {
         $categorized = [
-            'required' => ['applicant_name', 'applicant_reference'],
+            'required' => ['applicant_reference'],
             'recommended' => [
-                'family_name', 'first_name', 'middle_name', 'suffix',
+                'family_name', 'first_name', 'middle_name',
                 'sex', 'course_applied', 'applicant_type',
-                'exam_date', 'exam_time', 'room_name', 'overall_pct',
             ],
             'optional' => [
+                'applicant_name', 'suffix', 'exam_date', 'exam_time', 'room_name', 'overall_pct',
                 'gwa', 'strand',
                 'recommended_course', 'counselor_comments', 'counselor_name',
             ],
