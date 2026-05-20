@@ -40,6 +40,43 @@
     });
   });
 
+  const summarizedRanges = $derived.by(() => {
+    if ($form.conversion_table.length === 0) return [];
+    
+    const sorted = [...$form.conversion_table]
+      .filter(r => r.raw_score !== '' && r.raw_score !== null && !isNaN(parseInt(r.raw_score, 10)))
+      .sort((a, b) => parseInt(a.raw_score, 10) - parseInt(b.raw_score, 10));
+      
+    if (sorted.length === 0) return [];
+    
+    const groups = [];
+    let currentGroup = {
+      start: parseInt(sorted[0].raw_score, 10),
+      end: parseInt(sorted[0].raw_score, 10),
+      percentile: sorted[0].percentile_output
+    };
+    
+    for (let i = 1; i < sorted.length; i++) {
+      const score = parseInt(sorted[i].raw_score, 10);
+      const pct = sorted[i].percentile_output;
+      
+      if (score === currentGroup.end + 1 && pct === currentGroup.percentile) {
+        currentGroup.end = score;
+      } else {
+        groups.push(currentGroup);
+        currentGroup = { start: score, end: score, percentile: pct };
+      }
+    }
+    groups.push(currentGroup);
+    
+    return groups.map(g => {
+      return {
+        range: g.start === g.end ? `${g.start}` : `${g.start}-${g.end}`,
+        percentile: g.percentile || '—'
+      };
+    });
+  });
+
   function addRow() {
     $form.conversion_table = [
       ...$form.conversion_table,
@@ -88,25 +125,39 @@
     const lines = pasteText.trim().split(/\r?\n/).filter(l => l.trim());
     const rows = [];
     for (const line of lines) {
-      const parts = line.split(/[\t:=]/);
-      if (parts.length >= 2) {
-        const scorePart = parts[0]?.trim() ?? '';
-        const out = parts[1]?.trim() ?? '';
-        if (scorePart && out) {
-          const rangeMatch = scorePart.match(/^(\d+)\s*-\s*(\d+)$/);
-          if (rangeMatch) {
-            const start = parseInt(rangeMatch[1], 10);
-            const end = parseInt(rangeMatch[2], 10);
-            if (!isNaN(start) && !isNaN(end) && start <= end) {
-              for (let score = start; score <= end; score++) {
-                rows.push({ raw_score: score, percentile_output: out });
-              }
+      let separatorIndex = line.search(/[\t:=]|\s{2,}/);
+      let scorePart = '';
+      let out = '';
+      
+      if (separatorIndex !== -1) {
+        scorePart = line.substring(0, separatorIndex).trim();
+        const matchedDelim = line.match(/[\t:=]|\s{2,}/);
+        const delimLength = matchedDelim ? matchedDelim[0].length : 1;
+        out = line.substring(separatorIndex + delimLength).trim();
+      } else {
+        const spaceIndex = line.indexOf(' ');
+        if (spaceIndex !== -1) {
+          scorePart = line.substring(0, spaceIndex).trim();
+          out = line.substring(spaceIndex + 1).trim();
+        } else {
+          continue;
+        }
+      }
+
+      if (scorePart && out) {
+        const rangeMatch = scorePart.match(/^(\d+)\s*(?:-|_|~|\/|to)\s*(\d+)$/i);
+        if (rangeMatch) {
+          const start = parseInt(rangeMatch[1], 10);
+          const end = parseInt(rangeMatch[2], 10);
+          if (!isNaN(start) && !isNaN(end) && start <= end) {
+            for (let score = start; score <= end; score++) {
+              rows.push({ raw_score: score, percentile_output: out });
             }
-          } else {
-            const raw = parseInt(scorePart, 10);
-            if (!isNaN(raw)) {
-              rows.push({ raw_score: raw, percentile_output: out });
-            }
+          }
+        } else {
+          const raw = parseInt(scorePart, 10);
+          if (!isNaN(raw)) {
+            rows.push({ raw_score: raw, percentile_output: out });
           }
         }
       }
@@ -115,7 +166,6 @@
       pasteError = 'No valid rows found. Supported format:\n- raw_score [tab] percentile_output\n- range (e.g. 0-10) [tab] percentile_output\n- raw_score: percentile_output';
       return;
     }
-    // Merge with existing rows, overwrite duplicates
     const map = new Map();
     for (const r of $form.conversion_table) {
       map.set(r.raw_score, r);
@@ -330,49 +380,72 @@
           </div>
 
           {#if $form.conversion_table.length > 0}
-            <div class="flex gap-2 text-xs font-medium text-muted-foreground px-2">
-              <span class="w-24">Raw Score</span>
-              <span class="flex-1">Percentile Output</span>
-              <span class="w-8"></span>
-            </div>
-            <div class="max-h-72 overflow-y-auto space-y-2 pr-1 p-2 bg-background/50 border border-border/50 rounded-md">
-              {#each $form.conversion_table as row, i}
-                <div class="flex items-center gap-2">
-                  <Input
-                    type="number"
-                    min="0"
-                    value={row.raw_score}
-                    oninput={(e) => updateRow(i, 'raw_score', parseInt(e.currentTarget.value, 10) || 0)}
-                    class="w-24"
-                  />
-                  <Input
-                    type="text"
-                    maxlength="20"
-                    value={row.percentile_output}
-                    oninput={(e) => updateRow(i, 'percentile_output', e.currentTarget.value)}
-                    placeholder="e.g., 85th, 99+, N/A"
-                    class="flex-1"
-                  />
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    class="h-9 w-8 p-0 text-destructive hover:bg-destructive/10"
-                    onclick={() => removeRow(i)}
-                  >
-                    <Trash2 class="h-4 w-4" />
-                  </Button>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <!-- Scrollable Raw Score List -->
+              <div class="md:col-span-2 space-y-2">
+                <div class="flex gap-2 text-xs font-medium text-muted-foreground px-2">
+                  <span class="w-24">Raw Score</span>
+                  <span class="flex-1">Percentile Output</span>
+                  <span class="w-8"></span>
                 </div>
-              {/each}
+                <div class="max-h-72 overflow-y-auto space-y-2 pr-1 p-2 bg-background/50 border border-border/50 rounded-md">
+                  {#each $form.conversion_table as row, i}
+                    <div class="flex items-center gap-2">
+                      <Input
+                        type="number"
+                        min="0"
+                        value={row.raw_score}
+                        oninput={(e) => updateRow(i, 'raw_score', parseInt(e.currentTarget.value, 10) || 0)}
+                        class="w-24 font-mono text-center"
+                      />
+                      <Input
+                        type="text"
+                        maxlength="20"
+                        value={row.percentile_output}
+                        oninput={(e) => updateRow(i, 'percentile_output', e.currentTarget.value)}
+                        placeholder="e.g., 85th, 99+, N/A"
+                        class="flex-1"
+                      />
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        class="h-9 w-8 p-0 text-destructive hover:bg-destructive/10"
+                        onclick={() => removeRow(i)}
+                      >
+                        <Trash2 class="h-4 w-4" />
+                      </Button>
+                    </div>
+                  {/each}
+                </div>
+                <Button type="button" variant="outline" size="sm" onclick={addRow} class="w-full">
+                  <Plus class="mr-1.5 h-3.5 w-3.5" />
+                  Add Row
+                </Button>
+              </div>
+
+              <!-- Range Summary View -->
+              <div class="space-y-2">
+                <div class="text-xs font-medium text-muted-foreground px-1">
+                  Range Summary View ({summarizedRanges.length} ranges)
+                </div>
+                <div class="max-h-[360px] overflow-y-auto p-3 bg-background/30 border border-border/50 rounded-md space-y-1.5">
+                  {#if summarizedRanges.length === 0}
+                    <p class="text-xs text-muted-foreground italic">No ranges detected.</p>
+                  {:else}
+                    {#each summarizedRanges as r}
+                      <div class="flex items-center justify-between text-xs py-1 px-2 bg-background/50 border border-border/30 rounded">
+                        <span class="font-mono font-medium text-foreground">{r.range}</span>
+                        <span class="font-semibold text-primary">{r.percentile}</span>
+                      </div>
+                    {/each}
+                  {/if}
+                </div>
+              </div>
             </div>
           {:else}
             <p class="text-sm text-muted-foreground">No rows yet. Use Generate or Paste to add rows.</p>
           {/if}
-
-          <Button type="button" variant="outline" size="sm" onclick={addRow}>
-            <Plus class="mr-1.5 h-3.5 w-3.5" />
-            Add Row
-          </Button>
 
           {#if $form.errors?.conversion_table}
             <p class="text-sm text-destructive">{$form.errors.conversion_table}</p>
