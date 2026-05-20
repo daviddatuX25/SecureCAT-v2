@@ -130,6 +130,7 @@
 
     <form onsubmit={submit} class="space-y-6">
       <!-- Institution Profile Card -->
+      {#if Object.keys(profile).length > 0}
       <Card>
         <CardHeader>
           <CardTitle class="flex items-center gap-2">
@@ -163,6 +164,7 @@
           </div>
         </CardContent>
       </Card>
+      {/if}
 
       <!-- Key Personnel Card -->
       <Card>
