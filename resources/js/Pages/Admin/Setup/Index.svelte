@@ -52,6 +52,8 @@
     admission_templates: Ticket,
     privacy_policies: Shield,
     staff: Users,
+    institution: Building2,
+    rating_scales: BarChart3,
   };
 
   // Compute category status: 'healthy' | 'warning' | 'critical'
@@ -147,6 +149,7 @@
         description: 'Percentile-to-rating mappings for result sheets.',
         icon: BarChart3,
         roles: ['super_admin', 'test_administrator'],
+        healthKey: 'rating_scales',
       },
       {
         href: '/admin/setup/institution',
@@ -154,6 +157,7 @@
         description: 'Institution profile, exam branding, and key personnel for documents.',
         icon: Building2,
         roles: ['super_admin', 'registrar_administrator', 'test_administrator'],
+        healthKey: 'institution',
       },
       {
         href: '/admin/release/result-templates',
@@ -179,6 +183,14 @@
         icon: Shield,
         roles: ['super_admin', 'registrar_administrator'],
         healthKey: 'privacy_policies',
+      },
+      {
+        href: '/admin/users',
+        label: 'Staff Accounts',
+        description: 'Manage staff roles and user accounts.',
+        icon: Users,
+        roles: ['super_admin'],
+        healthKey: 'staff',
       },
       {
         href: '/admin/ai-companion',
