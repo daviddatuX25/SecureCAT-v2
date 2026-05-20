@@ -4,7 +4,7 @@
   import { Button } from '@/Components/ui/button';
   import { Badge } from '@/Components/ui/badge';
   import * as Table from '@/Components/ui/table';
-  import { Plus, Pencil, ArrowUp, ArrowDown, Info, Trash2 } from 'lucide-svelte';
+  import { Plus, Pencil, ArrowUp, ArrowDown, Info, Trash2, Calculator, Table2 } from 'lucide-svelte';
   import { router } from '@inertiajs/svelte';
 
   let { aptitude_areas = [] } = $props();
@@ -58,7 +58,6 @@
       </div>
     </div>
 
-
     <div class="min-w-0">
       <div class="w-full min-w-0 overflow-x-auto scrollbar-hide">
         <Table.Root class="w-full min-w-[640px] text-sm">
@@ -76,6 +75,7 @@
               <Table.Head class="px-4 py-3">Name</Table.Head>
               <Table.Head class="px-4 py-3">Code</Table.Head>
               <Table.Head class="px-4 py-3">Max items</Table.Head>
+              <Table.Head class="px-4 py-3">Method</Table.Head>
               <Table.Head>Status</Table.Head>
               <Table.Head class="px-4 py-3 text-center">Actions</Table.Head>
             </Table.Row>
@@ -111,6 +111,19 @@
                   <Table.Cell class="font-mono text-muted-foreground">{area.code ?? '—'}</Table.Cell>
                   <Table.Cell>{area.max_items ?? '—'}</Table.Cell>
                   <Table.Cell>
+                    {#if area.scoring_method === 'conversion_table'}
+                      <Badge variant="secondary" class="gap-1">
+                        <Table2 class="h-3 w-3" />
+                        Conversion Table
+                      </Badge>
+                    {:else}
+                      <Badge variant="outline" class="gap-1">
+                        <Calculator class="h-3 w-3" />
+                        Formula
+                      </Badge>
+                    {/if}
+                  </Table.Cell>
+                  <Table.Cell>
                     <Badge variant={area.is_active ? 'success' : 'muted'}>
                       {area.is_active ? 'Active' : 'Inactive'}
                     </Badge>
@@ -138,7 +151,7 @@
               {/if}
             {:else}
               <Table.Row>
-                <Table.Cell colspan={6} class="py-12 text-center text-muted-foreground">
+                <Table.Cell colspan={7} class="py-12 text-center text-muted-foreground">
                   No aptitude areas yet. Add one to use in grading and result templates.
                 </Table.Cell>
               </Table.Row>

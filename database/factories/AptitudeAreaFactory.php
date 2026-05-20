@@ -16,7 +16,8 @@ class AptitudeAreaFactory extends Factory
             'code' => strtoupper($this->faker->unique()->bothify('??')),
             'description' => $this->faker->sentence(),
             'max_items' => $this->faker->numberBetween(5, 20),
-            'is_active' => true,
+            'formula' => '(x / max_items) * 100',
+            'scoring_method' => 'formula',
             'display_order' => $this->faker->numberBetween(1, 10),
         ];
     }

@@ -31,6 +31,7 @@ class AptitudeAreaController extends Controller
                 'description' => $a->description,
                 'max_items' => $a->max_items,
                 'formula' => $a->formula,
+                'scoring_method' => $a->scoring_method,
                 'display_order' => $a->display_order,
                 'is_active' => $a->is_active,
             ]);
@@ -57,9 +58,19 @@ class AptitudeAreaController extends Controller
             'description' => $data['description'] ?? null,
             'max_items' => (int) $data['max_items'],
             'formula' => $data['formula'] ?? null,
+            'scoring_method' => $data['scoring_method'] ?? 'formula',
             'display_order' => isset($data['display_order']) ? (int) $data['display_order'] : 0,
             'is_active' => $data['is_active'] ?? true,
         ]);
+
+        if (($data['scoring_method'] ?? 'formula') === 'conversion_table' && ! empty($data['conversion_table'])) {
+            foreach ($data['conversion_table'] as $row) {
+                $area->percentileConversions()->create([
+                    'raw_score' => $row['raw_score'],
+                    'percentile_output' => $row['percentile_output'],
+                ]);
+            }
+        }
 
         app(AuditService::class)->log('aptitude_area.created', AptitudeArea::class, $area->id, [], $data);
 
@@ -71,6 +82,8 @@ class AptitudeAreaController extends Controller
     {
         $this->authorize('update', $aptitudeArea);
 
+        $aptitudeArea->load('percentileConversions');
+
         return Inertia::render('Admin/AptitudeAreas/Edit', [
             'aptitude_area' => [
                 'id' => $aptitudeArea->id,
@@ -79,6 +92,15 @@ class AptitudeAreaController extends Controller
                 'description' => $aptitudeArea->description ?? '',
                 'max_items' => $aptitudeArea->max_items,
                 'formula' => $aptitudeArea->formula ?? '',
+                'scoring_method' => $aptitudeArea->scoring_method ?? 'formula',
+                'percentile_conversions' => $aptitudeArea->percentileConversions
+                    ->sortBy('raw_score')
+                    ->values()
+                    ->map(fn ($p) => [
+                        'raw_score' => $p->raw_score,
+                        'percentile_output' => $p->percentile_output,
+                    ])
+                    ->all(),
                 'display_order' => $aptitudeArea->display_order,
                 'is_active' => $aptitudeArea->is_active,
             ],
@@ -95,9 +117,20 @@ class AptitudeAreaController extends Controller
             'description' => $data['description'] ?? null,
             'max_items' => (int) $data['max_items'],
             'formula' => $data['formula'] ?? null,
+            'scoring_method' => $data['scoring_method'] ?? 'formula',
             'display_order' => isset($data['display_order']) ? (int) $data['display_order'] : 0,
             'is_active' => $data['is_active'] ?? true,
         ]);
+
+        if (($data['scoring_method'] ?? 'formula') === 'conversion_table' && ! empty($data['conversion_table'])) {
+            $aptitudeArea->percentileConversions()->delete();
+            foreach ($data['conversion_table'] as $row) {
+                $aptitudeArea->percentileConversions()->create([
+                    'raw_score' => $row['raw_score'],
+                    'percentile_output' => $row['percentile_output'],
+                ]);
+            }
+        }
 
         app(AuditService::class)->log('aptitude_area.updated', AptitudeArea::class, $aptitudeArea->id, [], $data);
 

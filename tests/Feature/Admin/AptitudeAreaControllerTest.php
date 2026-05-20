@@ -5,6 +5,8 @@ namespace Tests\Feature\Admin;
 use App\Models\AptitudeArea;
 use App\Models\Role;
 use App\Models\User;
+use Database\Seeders\AptitudeAreaSeeder;
+use Database\Seeders\RoleSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -15,14 +17,15 @@ class AptitudeAreaControllerTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->seed(\Database\Seeders\RoleSeeder::class);
-        $this->seed(\Database\Seeders\AptitudeAreaSeeder::class);
+        $this->seed(RoleSeeder::class);
+        $this->seed(AptitudeAreaSeeder::class);
     }
 
-    private function testAdministrator(): User
+    private function test_administrator(): User
     {
         $user = User::factory()->create();
         $user->roles()->attach(Role::where('name', 'test_administrator')->first());
+
         return $user;
     }
 
@@ -30,6 +33,7 @@ class AptitudeAreaControllerTest extends TestCase
     {
         $user = User::factory()->create();
         $user->roles()->attach(Role::where('name', 'registrar_administrator')->first());
+
         return $user;
     }
 
@@ -57,7 +61,7 @@ class AptitudeAreaControllerTest extends TestCase
 
     public function test_test_administrator_can_view_aptitude_areas_index(): void
     {
-        $response = $this->actingAs($this->testAdministrator())
+        $response = $this->actingAs($this->test_administrator())
             ->get(route('admin.aptitude-areas.index'));
 
         $response->assertStatus(200);
@@ -69,11 +73,12 @@ class AptitudeAreaControllerTest extends TestCase
 
     public function test_test_administrator_can_create_aptitude_area(): void
     {
-        $response = $this->actingAs($this->testAdministrator())
+        $response = $this->actingAs($this->test_administrator())
             ->post(route('admin.aptitude-areas.store'), [
                 'name' => 'Critical Thinking',
                 'code' => 'CT',
                 'max_items' => 30,
+                'scoring_method' => 'formula',
                 'display_order' => 7,
                 'is_active' => true,
             ]);
@@ -84,6 +89,7 @@ class AptitudeAreaControllerTest extends TestCase
             'code' => 'CT',
             'name' => 'Critical Thinking',
             'max_items' => 30,
+            'scoring_method' => 'formula',
         ]);
     }
 
@@ -91,11 +97,12 @@ class AptitudeAreaControllerTest extends TestCase
     {
         $area = AptitudeArea::first();
 
-        $response = $this->actingAs($this->testAdministrator())
+        $response = $this->actingAs($this->test_administrator())
             ->put(route('admin.aptitude-areas.update', $area), [
                 'name' => 'Updated Name',
                 'code' => $area->code,
                 'max_items' => 20,
+                'scoring_method' => $area->scoring_method ?? 'formula',
                 'display_order' => 1,
                 'is_active' => false,
             ]);
