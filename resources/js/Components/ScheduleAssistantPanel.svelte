@@ -5,7 +5,7 @@
   import * as Table from '@/Components/ui/table';
   import { MessageSquare, Send, Sparkles, Calendar, CheckCircle2, Trash2 } from 'lucide-svelte';
   import { Textarea } from '@/Components/ui/textarea';
-  import { success as showSuccess } from '@/lib/toast';
+  import { success as showSuccess, error as showError } from '@/lib/toast';
 
   let {
     applicant_count = 0,
@@ -28,6 +28,43 @@
   let hasReplyThisSession = $state(false);
   /** Reference to the messages container for auto-scrolling. */
   let messagesContainer = $state(null);
+
+  let isHydrated = $state(false);
+
+  $effect(() => {
+    if (typeof window !== 'undefined' && !isHydrated) {
+      const storedMsgs = localStorage.getItem('ai_scheduler_messages');
+      const storedSchedule = localStorage.getItem('ai_scheduler_schedule');
+      if (storedMsgs) {
+        try {
+          messages = JSON.parse(storedMsgs);
+        } catch (e) {}
+      }
+      if (storedSchedule) {
+        try {
+          structuredSchedule = JSON.parse(storedSchedule);
+        } catch (e) {}
+      }
+      isHydrated = true;
+    }
+  });
+
+  $effect(() => {
+    if (typeof window !== 'undefined' && isHydrated) {
+      const cappedMessages = messages.slice(-50);
+      localStorage.setItem('ai_scheduler_messages', JSON.stringify(cappedMessages));
+    }
+  });
+
+  $effect(() => {
+    if (typeof window !== 'undefined' && isHydrated) {
+      if (structuredSchedule) {
+        localStorage.setItem('ai_scheduler_schedule', JSON.stringify(structuredSchedule));
+      } else {
+        localStorage.removeItem('ai_scheduler_schedule');
+      }
+    }
+  });
 
   const roomMap = $derived(
     Object.fromEntries((rooms ?? []).map((r) => [r.id, r]))
@@ -156,6 +193,17 @@
         };
       }
 
+      if (action === 'delete') {
+        const draft = draftMap[s.exam_session_id];
+        return {
+          type: 'Delete draft',
+          room: draft?.room?.name ?? '—',
+          date: draft?.date ?? '—',
+          time: draft ? [draft.start_time, draft.end_time].filter(Boolean).join('–') : '—',
+          applicant_count: `Release ${draft?.current_count ?? 0} applicant(s)`,
+        };
+      }
+
       return {
         type: 'New',
         room: roomMap[s.room_id]?.name ?? s.room_name ?? `Room ${s.room_id ?? '?'}`,
@@ -268,10 +316,15 @@
 
       if (!res.ok) {
         applyError = data.message ?? 'Failed to apply schedule.';
+        showError(applyError);
         return;
       }
 
       showSuccess(data.message ?? 'Schedule applied successfully!');
+      if (typeof window !== 'undefined') {
+        localStorage.removeItem('ai_scheduler_messages');
+        localStorage.removeItem('ai_scheduler_schedule');
+      }
 
       if (typeof onApplied === 'function') {
         onApplied();
@@ -282,6 +335,7 @@
       }
     } catch (e) {
       applyError = 'Network error. Please try again.';
+      showError(applyError);
     } finally {
       applying = false;
     }
@@ -303,6 +357,10 @@
         hasReplyThisSession = false;
         structuredSchedule = null;
         error = '';
+        if (typeof window !== 'undefined') {
+          localStorage.removeItem('ai_scheduler_messages');
+          localStorage.removeItem('ai_scheduler_schedule');
+        }
       }
     } catch (e) {
       error = 'Failed to reset conversation.';

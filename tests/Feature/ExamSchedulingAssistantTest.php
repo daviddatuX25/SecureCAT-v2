@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Http\Controllers\Admin\ExamSchedulingAssistantController;
 use App\Models\AcademicYear;
 use App\Models\Applicant;
+use App\Models\Application;
 use App\Models\ExamSchedulingConversation;
 use App\Models\ExamSession;
 use App\Models\Room;
@@ -352,5 +353,111 @@ class ExamSchedulingAssistantTest extends TestCase
             ->assertJsonFragment([
                 'message' => "Room {$room->id} has a conflict on 2026-05-25 at 10:00.",
             ]);
+    }
+
+    public function test_apply_schedule_can_delete_existing_draft_session(): void
+    {
+        $user = User::factory()->create();
+        $user->assignRole('registrar_administrator');
+
+        $year = AcademicYear::factory()->create(['academic_year' => '2025-2026', 'semester' => '1', 'is_active' => true]);
+        $room = Room::factory()->create(['is_active' => true]);
+
+        $session = ExamSession::create([
+            'academic_year_id' => $year->id,
+            'room_id' => $room->id,
+            'date' => '2026-05-25',
+            'start_time' => '09:00',
+            'status' => ExamSession::STATUS_DRAFT,
+            'created_by' => $user->id,
+        ]);
+
+        $application = Application::factory()->create([
+            'status' => 'accepted',
+            'pipeline_status' => 'draft_scheduled',
+        ]);
+        $applicant = Applicant::factory()->create([
+            'application_id' => $application->id,
+        ]);
+        $session->applicants()->attach($applicant->id);
+
+        $payload = [
+            'sessions' => [
+                [
+                    'action' => 'delete',
+                    'exam_session_id' => $session->id,
+                ],
+            ],
+        ];
+
+        $this->actingAs($user)
+            ->postJson('/admin/exam-scheduling/schedule-assistant/apply-schedule', $payload)
+            ->assertOk();
+
+        // Verify the session is deleted
+        $this->assertNull(ExamSession::find($session->id));
+
+        // Verify the applicant is detached
+        $this->assertFalse($session->applicants()->where('applicants.id', $applicant->id)->exists());
+
+        // Verify the applicant application is reverted to accepted
+        $this->assertEquals('accepted', $application->fresh()->status);
+        $this->assertEquals('accepted', $application->fresh()->pipeline_status);
+
+        // Verify audit log is recorded
+        $this->assertDatabaseHas('audit_logs', [
+            'event' => 'exam_session.deleted',
+            'auditable_type' => ExamSession::class,
+            'auditable_id' => $session->id,
+        ]);
+    }
+
+    public function test_apply_schedule_can_create_and_assign_via_service(): void
+    {
+        $user = User::factory()->create();
+        $user->assignRole('registrar_administrator');
+
+        $year = AcademicYear::factory()->create(['academic_year' => '2025-2026', 'semester' => '1', 'is_active' => true]);
+        $room = Room::factory()->create(['is_active' => true, 'capacity' => 10]);
+
+        $application = Application::factory()->create([
+            'status' => 'accepted',
+            'pipeline_status' => 'accepted',
+            'academic_year_id' => $year->id,
+        ]);
+        $applicant = Applicant::factory()->create([
+            'application_id' => $application->id,
+        ]);
+
+        $payload = [
+            'sessions' => [
+                [
+                    'action' => 'create',
+                    'room_id' => $room->id,
+                    'date' => '2026-05-25',
+                    'start_time' => '09:00',
+                    'end_time' => '12:00',
+                    'applicant_ids' => [$applicant->id],
+                ],
+            ],
+        ];
+
+        $this->actingAs($user)
+            ->postJson('/admin/exam-scheduling/schedule-assistant/apply-schedule', $payload)
+            ->assertOk();
+
+        // Verify the session is created
+        $session = ExamSession::where('room_id', $room->id)->first();
+        $this->assertNotNull($session);
+        $this->assertEquals('2026-05-25', $session->date->format('Y-m-d'));
+        $this->assertEquals('09:00', $session->start_time);
+        $this->assertEquals('12:00', $session->end_time);
+        $this->assertEquals(ExamSession::STATUS_DRAFT, $session->status);
+
+        // Verify the applicant is attached
+        $this->assertTrue($session->applicants()->where('applicants.id', $applicant->id)->exists());
+
+        // Verify applicant's application status is transitioned
+        $this->assertEquals('draft_scheduled', $application->fresh()->pipeline_status);
     }
 }
