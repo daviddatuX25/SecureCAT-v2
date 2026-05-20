@@ -298,12 +298,15 @@ Route::middleware(['auth'])->group(function () {
             // Result Sheet Templates
             Route::post('result-templates/preview', [ResultSheetTemplateController::class, 'preview'])->name('result-templates.preview');
             Route::post('result-templates/validate-docx', [ResultSheetTemplateController::class, 'validateDocx'])->name('result-templates.validate-docx');
+            Route::post('result-templates/{result_template}/activate', [ResultSheetTemplateController::class, 'activate'])->name('result-templates.activate');
+            Route::post('result-templates/{result_template}/deactivate', [ResultSheetTemplateController::class, 'deactivate'])->name('result-templates.deactivate');
             Route::resource('result-templates', ResultSheetTemplateController::class)->except('show');
 
             // Print batch
             Route::prefix('print')->name('print.')->group(function () {
                 Route::get('bulk', [ReleasePrintController::class, 'printBulkAgnostic'])->name('bulk');
                 Route::get('bulk-pdf', [ReleasePrintController::class, 'printBulkAgnosticPdf'])->name('bulk-agnostic-pdf');
+                Route::get('bulk-docx', [ReleasePrintController::class, 'downloadBulkAgnosticDocx'])->name('bulk-agnostic-docx');
                 Route::get('{grading_session}', [ReleasePrintController::class, 'index'])->name('index');
                 Route::post('{grading_session}/mark-printed', [ReleasePrintController::class, 'markPrinted'])->name('mark-printed');
                 Route::get('{grading_session}/applicants/{applicant}', [ReleasePrintController::class, 'resultSheet'])->name('result-sheet');
@@ -311,6 +314,7 @@ Route::middleware(['auth'])->group(function () {
                 Route::get('{grading_session}/applicants/{applicant}/docx', [ReleasePrintController::class, 'downloadDocx'])->name('result-sheet-docx');
                 Route::get('{grading_session}/print-bulk', [ReleasePrintController::class, 'printBulk'])->name('print-bulk');
                 Route::get('{grading_session}/print-bulk-pdf', [ReleasePrintController::class, 'printBulkPdf'])->name('print-bulk-pdf');
+                Route::get('{grading_session}/print-bulk-docx', [ReleasePrintController::class, 'downloadBulkDocx'])->name('print-bulk-docx');
             });
         });
 });
