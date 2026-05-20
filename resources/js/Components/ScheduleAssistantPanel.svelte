@@ -19,13 +19,14 @@
   let messages = $state([...(initialMessages ?? [])]);
   let input = $state('');
   let loading = $state(false);
-  let generating = $state(false);
   let applying = $state(false);
   let error = $state('');
   let structuredSchedule = $state(null);
   let applyError = $state('');
   /** True only after we receive an assistant reply during this session (not from loaded history). */
   let hasReplyThisSession = $state(false);
+  /** Reference to the messages container for auto-scrolling. */
+  let messagesContainer = $state(null);
 
   const roomMap = $derived(
     Object.fromEntries((rooms ?? []).map((r) => [r.id, r]))
@@ -76,32 +77,31 @@
 
   const previewRows = $derived.by(() => getScheduleRows(structuredSchedule));
 
-  /** Generate unlocks only after we get an assistant reply in this session (finalized plan in chat). */
-  const canGenerate = $derived(openrouter_configured && hasReplyThisSession);
+  /** Scroll conversation to bottom after messages change. */
+  function scrollToBottom() {
+    if (messagesContainer) {
+      requestAnimationFrame(() => {
+        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+      });
+    }
+  }
 
-  const generateButtonTitle = $derived(
-    !openrouter_configured
-      ? 'AI scheduling is not configured. Please contact the system administrator.'
-      : !hasReplyThisSession
-        ? 'Send a message and get a reply from the assistant to unlock'
-        : 'Ask the AI to output a structured schedule'
-  );
+  $effect(() => {
+    // Re-run when messages array changes
+    messages;
+    scrollToBottom();
+  });
 
-  async function send(requestStructured = false) {
-    const text = requestStructured
-      ? 'Generate the schedule now. Output the structured schedule.'
-      : input.trim();
-    if (!text && !requestStructured) return;
-    if (loading || generating) return;
+  async function send() {
+    const text = input.trim();
+    if (!text) return;
+    if (loading) return;
 
-    if (!requestStructured) input = '';
+    input = '';
     error = '';
     applyError = '';
-    if (!requestStructured) {
-      messages = [...messages, { role: 'user', content: text }];
-    }
+    messages = [...messages, { role: 'user', content: text }];
     loading = true;
-    if (requestStructured) generating = true;
 
     try {
       const res = await fetch('/admin/exam-scheduling/schedule-assistant/chat', {
@@ -114,7 +114,6 @@
         },
         body: JSON.stringify({
           message: text,
-          request_structured: requestStructured,
         }),
         credentials: 'same-origin',
       });
@@ -123,9 +122,7 @@
 
       if (!res.ok) {
         error = data.message ?? 'Something went wrong. Please try again.';
-        if (!requestStructured) {
-          messages = messages.filter((m) => m.role !== 'user' || m.content !== text);
-        }
+        messages = messages.filter((m) => m.role !== 'user' || m.content !== text);
         return;
       }
 
@@ -145,19 +142,16 @@
       }
     } catch (e) {
       error = 'Network error. Please try again.';
-      if (!requestStructured) {
-        messages = messages.filter((m) => m.role !== 'user' || m.content !== text);
-      }
+      messages = messages.filter((m) => m.role !== 'user' || m.content !== text);
     } finally {
       loading = false;
-      generating = false;
     }
   }
 
   function handleKeydown(e) {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
-      send(false);
+      send();
     }
   }
 
@@ -223,25 +217,27 @@
   }
 </script>
 
-<div class="space-y-6">
-  <div class="rounded-lg border border-border bg-muted/30 p-4 space-y-4">
-    <div class="flex items-center justify-between">
+<!-- Main container: flex column to fill dialog height -->
+<div class="flex flex-col gap-4 min-h-0">
+  <!-- Context header — compact stats bar -->
+  <div class="rounded-lg border border-border bg-muted/30 px-4 py-3">
+    <div class="flex items-center justify-between gap-3">
       <div class="flex items-center gap-2">
-        <Sparkles class="w-5 h-5 text-primary" />
+        <Sparkles class="w-5 h-5 text-primary shrink-0" />
         <h2 class="text-lg font-bold text-foreground">Schedule with AI</h2>
       </div>
       {#if messages.length > 0}
         <button
           type="button"
           onclick={resetConversation}
-          class="text-xs text-muted-foreground hover:text-destructive transition-colors"
+          class="text-xs text-muted-foreground hover:text-destructive transition-colors shrink-0"
           title="Reset conversation"
         >
           <Trash2 class="h-4 w-4" />
         </button>
       {/if}
     </div>
-    <div class="flex flex-wrap gap-4 text-sm">
+    <div class="flex flex-wrap gap-x-4 gap-y-1 text-sm mt-1.5">
       <span class="flex items-center gap-1.5">
         <Calendar class="w-4 h-4 text-muted-foreground" />
         <strong>{applicant_count}</strong> applicants to schedule
@@ -254,7 +250,7 @@
   </div>
 
   {#if !openrouter_configured}
-    <Card.Root class="border-amber-500/50 bg-amber-500/10">
+    <Card.Root class="border-amber-500/50 bg-amber-500/10 shrink-0">
       <Card.Content class="pt-6">
         <p class="text-sm text-foreground">
           <strong>AI scheduling is currently disabled.</strong>
@@ -264,20 +260,23 @@
     </Card.Root>
   {/if}
 
-  <Card.Root variant="glass">
-    <Card.Header>
+  <!-- Conversation card — grows to fill available space -->
+  <Card.Root variant="glass" class="flex flex-col min-h-0 flex-1">
+    <Card.Header class="shrink-0">
       <Card.Title class="flex items-center gap-2">
         <MessageSquare class="h-5 w-5" />
         Conversation
       </Card.Title>
       {#if error}
-        <Card.Title class="flex items-center gap-2">
-          <p class="text-sm text-destructive rounded-md bg-destructive/10 px-3 py-2">{error}</p>
-        </Card.Title>
+        <p class="text-sm text-destructive rounded-md bg-destructive/10 px-3 py-2 mt-2">{error}</p>
       {/if}
     </Card.Header>
-    <Card.Content class="space-y-4">
-      <div class="rounded-lg border border-border bg-muted/30 min-h-[200px] max-h-[360px] overflow-y-auto p-4 space-y-3">
+    <Card.Content class="flex flex-col gap-3 min-h-0 flex-1">
+      <!-- Messages area — scrollable -->
+      <div
+        bind:this={messagesContainer}
+        class="rounded-lg border border-border bg-muted/30 min-h-[180px] max-h-[45vh] overflow-y-auto p-4 space-y-3 flex-1"
+      >
         {#if messages.length === 0}
           <p class="text-sm text-muted-foreground">
             e.g. &quot;I want morning slots only, 9–12, next week&quot; or &quot;Spread applicants across 3 rooms on Monday and Tuesday.&quot;
@@ -296,7 +295,7 @@
                     {msg.content}
                   </div>
                 {/if}
-                {#if msg.schedule?.sessions?.length && !structuredSchedule}
+                {#if msg.schedule?.sessions?.length}
                   <div class="rounded-lg border border-border bg-background overflow-hidden max-w-[85%] mt-1">
                     <p class="text-xs font-medium text-muted-foreground px-3 py-2 border-b border-border">Generated schedule</p>
                     <Table.Root>
@@ -329,8 +328,10 @@
         {/if}
       </div>
 
-      <div class="flex flex-col gap-2 md:flex-row md:flex-wrap">
-        <div class="flex gap-2 flex-1 min-w-0 w-full">
+      <!-- Input area — pinned to bottom, never scrolls away -->
+      <div class="shrink-0 space-y-2">
+        <!-- Textarea + Send button row -->
+        <div class="flex items-end gap-2">
           <Textarea
             bind:value={input}
             onkeydown={handleKeydown}
@@ -340,7 +341,13 @@
             maxlength="4000"
             disabled={loading}
           />
-          <Button type="button" onclick={() => send(false)} disabled={loading || generating || !input.trim()} class="min-h-[44px] shrink-0" title="Send message">
+          <Button
+            type="button"
+            onclick={() => send()}
+            disabled={loading || !input.trim()}
+            class="min-h-[44px] min-w-[44px] shrink-0"
+            title="Send message"
+          >
             {#if loading}
               <svg class="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
@@ -351,33 +358,13 @@
             {/if}
           </Button>
         </div>
-        {#if hasReplyThisSession}
-          <Button
-            type="button"
-            variant="secondary"
-            onclick={() => send(true)}
-            disabled={!canGenerate || loading || generating}
-            class="min-h-[44px] w-full md:w-auto shrink-0"
-            title={generateButtonTitle}
-          >
-            {#if generating}
-              <svg class="animate-spin h-4 w-4 mr-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-              </svg>
-            {:else}
-            {:else}
-              <Sparkles class="h-4 w-4 mr-2 inline" />
-              Generate schedule
-            {/if}
-          </Button>
-        {/if}
       </div>
     </Card.Content>
   </Card.Root>
 
+  <!-- Preview card — only when schedule exists -->
   {#if structuredSchedule?.sessions?.length > 0}
-    <Card.Root variant="glass">
+    <Card.Root variant="glass" class="shrink-0">
       <Card.Header>
         <Card.Title>Preview</Card.Title>
         <Card.Description>
@@ -388,7 +375,7 @@
         {#if applyError}
           <p class="text-sm text-destructive rounded-md bg-destructive/10 px-3 py-2">{applyError}</p>
         {/if}
-        <div class="rounded-lg border border-border overflow-hidden">
+        <div class="rounded-lg border border-border overflow-x-auto">
           <Table.Root>
             <Table.Header class="bg-muted/50">
               <Table.Row>
@@ -412,7 +399,7 @@
             </Table.Body>
           </Table.Root>
         </div>
-        <Button onclick={applySchedule} disabled={applying} class="min-h-[44px]">
+        <Button onclick={applySchedule} disabled={applying} class="min-h-[44px] w-full sm:w-auto">
           {#if applying}
             Applying…
           {:else}
