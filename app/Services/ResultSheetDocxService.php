@@ -94,13 +94,14 @@ class ResultSheetDocxService
     /**
      * Validate that a DOCX template contains all required placeholders.
      *
-     * @param  array{required: string[], recommended: string[], optional: string[], domain: string[], personnel: string[], institution: string[], applicant2: string[]}  $categorizedPlaceholders
+     * @param  array{required: string[], recommended: string[], optional: string[], html_only: string[], domain: string[], personnel: string[], institution: string[], applicant2: string[]}  $categorizedPlaceholders
      */
     public function validateDocxTemplate(string $fullPath, array $categorizedPlaceholders, bool $isCrosswise): DocxValidationResult
     {
         $requiredAndRecommended = array_merge($categorizedPlaceholders['required'], $categorizedPlaceholders['recommended']);
         $optionalAll = array_merge(
             $categorizedPlaceholders['optional'],
+            $categorizedPlaceholders['html_only'] ?? [],
             $categorizedPlaceholders['domain'],
             $categorizedPlaceholders['personnel'],
             $categorizedPlaceholders['institution'],
@@ -166,7 +167,17 @@ class ResultSheetDocxService
             ? ['label' => 'No unknown placeholders', 'detail' => 'Clean', 'status' => 'pass']
             : ['label' => 'Unknown placeholders', 'detail' => count($extra).' found', 'status' => 'warn'];
 
-        // Valid only if there are no missing required/recommended placeholders
+        $htmlOnly = $categorizedPlaceholders['html_only'] ?? [];
+        $htmlOnlyUsed = array_values(array_intersect($htmlOnly, $docxPlaceholders));
+
+        if (! empty($htmlOnlyUsed)) {
+            $checks[] = [
+                'label' => 'HTML-only placeholders in DOCX',
+                'detail' => implode(', ', $htmlOnlyUsed).' — use per-domain placeholders instead',
+                'status' => 'warn',
+            ];
+        }
+
         return new DocxValidationResult(
             valid: empty($missing),
             found: $found,
@@ -179,9 +190,20 @@ class ResultSheetDocxService
 
     /**
      * Creates a temporary copy of the DOCX and repairs broken {{ }} macros
-     * that are split across XML tags. Returns the path to the repaired file.
+     * that are split across XML runs. Returns the path to the repaired file.
+     *
+     * Word/DOCX often fragments placeholders like {{scores_rows}} across
+     * multiple <w:r> elements: <w:r><w:t>{{scores</w:t></w:r><w:r><w:t>_rows}}</w:t></w:r>
+     * TemplateProcessor::setValue() can never match the full placeholder.
+     *
+     * This method applies two repair strategies:
+     * 1. Merge adjacent <w:r> runs within each <w:p> that share the same
+     *    formatting (same <w:rPr> or both missing it), concatenating their
+     *    <w:t> text. This reunites most split placeholders into a single run.
+     * 2. As a fallback, strip all XML tags from any content matching {{ ... }}
+     *    patterns, removing XML fragmentation between the braces entirely.
      */
-    protected function getRepairedDocx(string $originalPath): ?string
+    public function getRepairedDocx(string $originalPath): ?string
     {
         $tempDir = storage_path('app/temp/phpword');
         if (! is_dir($tempDir) && ! mkdir($tempDir, 0755, true)) {
@@ -194,40 +216,205 @@ class ResultSheetDocxService
         }
 
         $zip = new \ZipArchive;
-        if ($zip->open($tempDocx) === true) {
-            $filesToFix = [];
-            for ($i = 0; $i < $zip->numFiles; $i++) {
-                $name = $zip->getNameIndex($i);
-                if (preg_match('/^word\/(document|header|footer).*\.xml$/i', $name)) {
-                    $filesToFix[] = $name;
-                }
-            }
-
-            // Match {{ ... }} even if separated by XML tags
-            $pattern = '/\{[^{}]*\{[^{}]*\}[^{}]*\}/s';
-
-            foreach ($filesToFix as $file) {
-                $content = $zip->getFromName($file);
-                if (! $content) {
-                    continue;
-                }
-
-                $fixedContent = preg_replace_callback($pattern, function ($match) {
-                    $stripped = strip_tags($match[0]);
-                    // Clean up spaces between the double braces that might have been typed by the user
-                    $stripped = preg_replace('/\{\s+/', '{', $stripped);
-                    $stripped = preg_replace('/\s+\}/', '}', $stripped);
-
-                    return $stripped;
-                }, $content);
-
-                if ($content !== $fixedContent) {
-                    $zip->addFromString($file, $fixedContent);
-                }
-            }
-            $zip->close();
+        if ($zip->open($tempDocx) !== true) {
+            return $tempDocx;
         }
 
+        $filesToFix = [];
+        for ($i = 0; $i < $zip->numFiles; $i++) {
+            $name = $zip->getNameIndex($i);
+            if (preg_match('/^word\/(document|header|footer).*\.xml$/i', $name)) {
+                $filesToFix[] = $name;
+            }
+        }
+
+        foreach ($filesToFix as $file) {
+            $content = $zip->getFromName($file);
+            if (! $content) {
+                continue;
+            }
+
+            $fixedContent = $this->repairDocxXml($content);
+
+            if ($content !== $fixedContent) {
+                $zip->addFromString($file, $fixedContent);
+            }
+        }
+        $zip->close();
+
         return $tempDocx;
+    }
+
+    /**
+     * Repair DOCX XML content to fix fragmented {{...}} placeholders.
+     *
+     * Strategy 1: Merge adjacent <w:r> runs within <w:p> paragraphs that
+     * have identical run properties, combining their text content.
+     *
+     * Strategy 2: Strip XML tags from any content between {{ and }},
+     * ensuring even completely shattered placeholders are reassembled.
+     */
+    protected function repairDocxXml(string $content): string
+    {
+        $content = $this->mergeAdjacentRuns($content);
+        $content = $this->stripXmlFromMacros($content);
+
+        return $content;
+    }
+
+    /**
+     * Merge adjacent <w:r> elements within <w:p> that share the same
+     * formatting, concatenating their <w:t> text nodes into one run.
+     *
+     * This handles Word's common fragmentation pattern where a single
+     * placeholder like {{scores_rows}} gets split into multiple runs
+     * with identical formatting (same font, size, etc.).
+     */
+    protected function mergeAdjacentRuns(string $content): string
+    {
+        return preg_replace_callback(
+            '/<w:p[ >].*?<\/w:p>/s',
+            function ($paragraphMatch) {
+                $paragraph = $paragraphMatch[0];
+
+                preg_match_all('/<w:r\b[^>]*>.*?<\/w:r>/s', $paragraph, $elements, PREG_OFFSET_CAPTURE);
+
+                if (count($elements[0]) < 2) {
+                    return $paragraph;
+                }
+
+                $groups = [];
+                $i = 0;
+
+                while ($i < count($elements[0])) {
+                    $xml = $elements[0][$i][0];
+                    $offset = $elements[0][$i][1];
+                    $rpr = $this->extractRunProperties($xml);
+                    $text = $this->extractTextFromRun($xml);
+
+                    $group = [
+                        'startOffset' => $offset,
+                        'endOffset' => $offset + strlen($xml),
+                        'rpr' => $rpr,
+                        'text' => $text,
+                        'count' => 1,
+                        'firstXml' => $xml,
+                    ];
+
+                    $j = $i + 1;
+                    while ($j < count($elements[0])) {
+                        $nextXml = $elements[0][$j][0];
+                        $nextRpr = $this->extractRunProperties($nextXml);
+                        $nextText = $this->extractTextFromRun($nextXml);
+
+                        if ($nextRpr === $rpr && $nextText !== '') {
+                            $group['text'] .= $nextText;
+                            $group['endOffset'] = $elements[0][$j][1] + strlen($nextXml);
+                            $group['count']++;
+                            $j++;
+                        } else {
+                            break;
+                        }
+                    }
+
+                    $groups[] = $group;
+                    $i = $j;
+                }
+
+                $wasMerged = false;
+                foreach ($groups as $g) {
+                    if ($g['count'] > 1) {
+                        $wasMerged = true;
+
+                        break;
+                    }
+                }
+
+                if (! $wasMerged) {
+                    return $paragraph;
+                }
+
+                $result = '';
+                $lastEnd = 0;
+
+                foreach ($groups as $group) {
+                    $result .= substr($paragraph, $lastEnd, $group['startOffset'] - $lastEnd);
+
+                    if ($group['count'] > 1) {
+                        $result .= $this->buildMergedRun($group['firstXml'], $group['rpr'], $group['text']);
+                    } else {
+                        $result .= substr($paragraph, $group['startOffset'], $group['endOffset'] - $group['startOffset']);
+                    }
+
+                    $lastEnd = $group['endOffset'];
+                }
+
+                $result .= substr($paragraph, $lastEnd);
+
+                return $result;
+            },
+            $content
+        );
+    }
+
+    /**
+     * Strip XML tags from any {{ ... }} macros that still contain markup.
+     * This is a fallback for cases where run merging didn't fully reassemble
+     * the placeholder — e.g., when formatting differs between fragments.
+     */
+    protected function stripXmlFromMacros(string $content): string
+    {
+        return preg_replace_callback(
+            '/\{\{(?:[^}]|<[^>]*>)*\}\}/s',
+            function ($match) {
+                $stripped = strip_tags($match[0]);
+                $stripped = preg_replace('/\{\{\s+/', '{{', $stripped);
+                $stripped = preg_replace('/\s+\}\}/', '}}', $stripped);
+                $stripped = preg_replace('/\{\{(\s*)([a-zA-Z_][a-zA-Z0-9_]*)(\s*)\}\}/', '{{$2}}', $stripped);
+
+                return $stripped;
+            },
+            $content
+        );
+    }
+
+    /**
+     * Extract the <w:rPr>...</w:rPr> block from a <w:r> element, or
+     * return empty string if none exists. Used to compare run formatting.
+     */
+    protected function extractRunProperties(string $runXml): string
+    {
+        if (preg_match('/<w:rPr\b[^>]*>.*?<\/w:rPr>/s', $runXml, $matches)) {
+            return $matches[0];
+        }
+
+        return '';
+    }
+
+    /**
+     * Extract concatenated text content from all <w:t> elements in a <w:r>.
+     */
+    protected function extractTextFromRun(string $runXml): string
+    {
+        preg_match_all('/<w:t\b[^>]*>(.*?)<\/w:t>/s', $runXml, $textMatches);
+
+        return implode('', $textMatches[1] ?? []);
+    }
+
+    /**
+     * Build a merged <w:r> element preserving the run properties and
+     * combining all text into a single <w:t> element.
+     */
+    protected function buildMergedRun(string $originalXml, string $rpr, string $text): string
+    {
+        $xmlPreserve = str_contains($text, "\n") || str_contains($text, "\r") || str_starts_with($text, ' ') || str_ends_with($text, ' ');
+        $tAttr = $xmlPreserve ? ' xml:space="preserve"' : '';
+        $textElement = "<w:t{$tAttr}>{$text}</w:t>";
+
+        if ($rpr !== '') {
+            return "<w:r>{$rpr}{$textElement}</w:r>";
+        }
+
+        return "<w:r>{$textElement}</w:r>";
     }
 }

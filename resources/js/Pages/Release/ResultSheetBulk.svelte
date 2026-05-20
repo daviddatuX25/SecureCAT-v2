@@ -4,7 +4,7 @@
   import { usePage } from '@inertiajs/svelte';
   import { Link, router } from '@inertiajs/svelte';
   import { Button } from '@/Components/ui/button';
-  import { ArrowLeft, Printer, Download, FileText } from 'lucide-svelte';
+  import { Printer, Download, FileText } from 'lucide-svelte';
 
   let {
     sessionId = '1',
@@ -149,17 +149,6 @@
 
 <AuthenticatedLayout breadcrumbs={breadcrumbs}>
   <div class="p-4 space-y-4">
-    {#if sessionId}
-      <Link href={"/admin/release/print/" + sid} class="text-sm text-muted-foreground hover:text-foreground inline-flex items-center gap-1">
-        <ArrowLeft class="h-4 w-4" />
-        Back to print batch
-      </Link>
-    {:else}
-      <Link href="/admin/release" class="text-sm text-muted-foreground hover:text-foreground inline-flex items-center gap-1">
-        <ArrowLeft class="h-4 w-4" />
-        Back to release
-      </Link>
-    {/if}
     <div class="flex flex-wrap gap-3 items-center">
       {#if sheetsHtml.length > 0 && !templateError}
         <div class="flex items-center gap-2">

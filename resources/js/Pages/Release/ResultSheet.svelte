@@ -3,7 +3,7 @@
   import { usePage } from '@inertiajs/svelte';
   import { Link, router } from '@inertiajs/svelte';
   import { Button } from '@/Components/ui/button';
-  import { ArrowLeft, Printer, Download, FileDown } from 'lucide-svelte';
+  import { Printer, Download, FileDown } from 'lucide-svelte';
 
   let { sessionId = '1', applicantId = '1001', applicant = {}, scores = [], printed = false, templateHtml = null, templateError = null, paperSize = 'a4', orientation = 'portrait', logicalUnit = 'full' } = $props();
 
@@ -46,10 +46,6 @@
 
 <AuthenticatedLayout breadcrumbs={breadcrumbs}>
   <div class="p-4 space-y-4">
-    <Link href={"/admin/release/print/" + sid} class="text-sm text-muted-foreground hover:text-foreground inline-flex items-center gap-1">
-      <ArrowLeft class="h-4 w-4" />
-      Back to print batch
-    </Link>
     <div class="flex flex-wrap gap-3">
       {#if canUsePdf}
         <a href={pdfBaseUrl} target="_blank" rel="noopener">

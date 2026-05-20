@@ -47,8 +47,22 @@
 
   let isCrosswise = $derived($form.logical_unit !== 'full');
 
-  const applicant1Items = $derived(placeholdersApplicant1.map((ph) => ({ value: ph })));
-  const applicant2Items = $derived(placeholdersApplicant2.map((ph) => ({ value: ph })));
+  const applicant1Items = $derived(
+    placeholdersApplicant1
+      .filter((ph) => !ph.endsWith('_check}}'))
+      .map((ph) => ({ value: ph }))
+  );
+  const applicant2Items = $derived(
+    placeholdersApplicant2
+      .filter((ph) => !ph.endsWith('_check_2}}'))
+      .map((ph) => ({ value: ph }))
+  );
+  const courseCheckItems1 = $derived(
+    placeholderGroups?.course_checks?.map((p) => ({ value: p.placeholder, label: p.description })) ?? [],
+  );
+  const courseCheckItems2 = $derived(
+    placeholderGroups?.course_checks_2?.map((p) => ({ value: p.placeholder, label: p.description })) ?? [],
+  );
   const institutionItems = $derived(
     placeholderGroups?.institution?.map((p) => ({ value: p.placeholder, label: p.description })) ?? [],
   );
@@ -207,6 +221,13 @@
     <GuidePanel title="Placeholder Reference & Templates Guide">
       <GuideSection title={isCrosswise ? 'Applicant 1 — Single print / odd in crosswise bulk' : 'Applicant Placeholders'}>
         <CopyableGroup items={applicant1Items} subtitle="Identity & Info" />
+        {#if courseCheckItems1.length > 0}
+          <CopyableGroup
+            items={courseCheckItems1}
+            subtitle="Course Recommendation Checks (e.g. BSIT_check resolves to ✔ if recommended, otherwise empty)"
+            class="mt-3"
+          />
+        {/if}
         {#if domainPlaceholders.length > 0}
           <CopyableGroup
             items={domainItems1}
@@ -218,6 +239,13 @@
 
       <GuideSection title="Applicant 2 — Even in crosswise bulk" visible={isCrosswise}>
         <CopyableGroup items={applicant2Items} subtitle="Identity & Info" />
+        {#if courseCheckItems2.length > 0}
+          <CopyableGroup
+            items={courseCheckItems2}
+            subtitle="Course Recommendation Checks"
+            class="mt-3"
+          />
+        {/if}
         {#if domainPlaceholders.length > 0}
           <CopyableGroup
             items={domainItems2}
