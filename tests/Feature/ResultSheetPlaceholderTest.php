@@ -208,4 +208,23 @@ class ResultSheetPlaceholderTest extends TestCase
         $this->assertEquals('', $replacements['BSIT_check_2']);
         $this->assertEquals('✔', $replacements['BSCS_check_2']);
     }
+
+    public function test_minimal_required_placeholders_and_new_optional_placeholders(): void
+    {
+        $service = app(ResultSheetTemplateService::class);
+        $method = new \ReflectionMethod($service, 'buildCategorizedPlaceholders');
+        $method->setAccessible(true);
+        $categorized = $method->invoke($service);
+
+        // Required should only contain applicant_reference
+        $this->assertEquals(['applicant_reference'], $categorized['required']);
+
+        // Optional should contain applicant_name, suffix, exam_date, exam_time, room_name, overall_pct
+        $expectedOptional = ['applicant_name', 'suffix', 'exam_date', 'exam_time', 'room_name', 'overall_pct'];
+        foreach ($expectedOptional as $field) {
+            $this->assertContains($field, $categorized['optional']);
+            $this->assertNotContains($field, $categorized['required']);
+            $this->assertNotContains($field, $categorized['recommended']);
+        }
+    }
 }
