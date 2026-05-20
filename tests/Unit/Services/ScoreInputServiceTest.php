@@ -180,7 +180,69 @@ class ScoreInputServiceTest extends TestCase
         ]);
     }
 
-    public function test_save_scores_auto_compute_without_formula_stores_null_normalized()
+    public function test_save_scores_with_conversion_table_stores_percentile_string(): void
+    {
+        $area = AptitudeArea::factory()->create([
+            'scoring_method' => 'conversion_table',
+            'formula' => null,
+            'max_items' => 50,
+        ]);
+        $area->percentileConversions()->create(['raw_score' => 10, 'percentile_output' => '85th']);
+        $area->percentileConversions()->create(['raw_score' => 20, 'percentile_output' => '99+']);
+        $scores = [
+            ['aptitude_area_id' => $area->id, 'raw_score' => 10, 'max_score' => 50],
+        ];
+
+        $this->service->saveScores(
+            $this->gradingSession,
+            $this->applicant->id,
+            $scores,
+            $this->scorer,
+            true
+        );
+
+        $this->assertDatabaseHas('applicant_scores', [
+            'grading_session_id' => $this->gradingSession->id,
+            'applicant_id' => $this->applicant->id,
+            'aptitude_area_id' => $area->id,
+            'raw_score' => 10,
+            'max_score' => 50,
+            'normalized_score' => null,
+            'percentile_string' => '85th',
+            'scored_by' => $this->scorer->id,
+        ]);
+    }
+
+    public function test_save_scores_with_conversion_table_returns_na_for_unmapped_raw_score(): void
+    {
+        $area = AptitudeArea::factory()->create([
+            'scoring_method' => 'conversion_table',
+            'formula' => null,
+            'max_items' => 50,
+        ]);
+        $area->percentileConversions()->create(['raw_score' => 10, 'percentile_output' => '85th']);
+        $scores = [
+            ['aptitude_area_id' => $area->id, 'raw_score' => 99, 'max_score' => 50],
+        ];
+
+        $this->service->saveScores(
+            $this->gradingSession,
+            $this->applicant->id,
+            $scores,
+            $this->scorer,
+            true
+        );
+
+        $this->assertDatabaseHas('applicant_scores', [
+            'grading_session_id' => $this->gradingSession->id,
+            'aptitude_area_id' => $area->id,
+            'raw_score' => 99,
+            'percentile_string' => 'N/A',
+            'normalized_score' => null,
+        ]);
+    }
+
+    public function test_save_scores_auto_compute_without_formula_stores_null_normalized(): void
     {
         $area = AptitudeArea::factory()->create(['formula' => null, 'max_items' => 50]);
         $scores = [

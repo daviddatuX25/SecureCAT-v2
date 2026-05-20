@@ -33,11 +33,20 @@ class ScoreInputService
                 $rawScore = (int) ($entry['raw_score'] ?? 0);
                 $maxScore = (int) ($entry['max_score'] ?? 0);
                 $area = AptitudeArea::find($domainId);
-                $normalizedScore = $area?->computeNormalizedScore((float) $rawScore);
 
-                $attributes['raw_score'] = $rawScore;
-                $attributes['max_score'] = $maxScore;
-                $attributes['normalized_score'] = $normalizedScore;
+                if ($area?->scoring_method === 'conversion_table') {
+                    $percentileString = $area->lookupPercentile($rawScore);
+                    $attributes['raw_score'] = $rawScore;
+                    $attributes['max_score'] = $maxScore;
+                    $attributes['normalized_score'] = null;
+                    $attributes['percentile_string'] = $percentileString ?? 'N/A';
+                } else {
+                    $normalizedScore = $area?->computeNormalizedScore((float) $rawScore);
+                    $attributes['raw_score'] = $rawScore;
+                    $attributes['max_score'] = $maxScore;
+                    $attributes['normalized_score'] = $normalizedScore;
+                    $attributes['percentile_string'] = null;
+                }
             } else {
                 $attributes['raw_score'] = null;
                 $attributes['max_score'] = null;

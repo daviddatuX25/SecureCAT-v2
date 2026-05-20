@@ -58,6 +58,10 @@ class GradingScoreController extends Controller
                 'max_items' => $d->max_items,
                 'formula' => $d->formula,
                 'has_formula' => $d->formula !== null,
+                'scoring_method' => $d->scoring_method ?? 'formula',
+                'conversion_table' => ($d->scoring_method ?? 'formula') === 'conversion_table'
+                    ? $d->percentileConversions()->orderBy('raw_score')->get(['raw_score', 'percentile_output'])->toArray()
+                    : null,
             ])->values()->all(),
             'existing_scores' => $existingScores->map(fn ($s) => [
                 'aptitude_area_id' => $s->aptitude_area_id,

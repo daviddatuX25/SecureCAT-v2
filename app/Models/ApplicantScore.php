@@ -17,6 +17,7 @@ class ApplicantScore extends Model
         'raw_score',
         'max_score',
         'normalized_score',
+        'percentile_string',
         'scored_by',
         'scored_at',
     ];
