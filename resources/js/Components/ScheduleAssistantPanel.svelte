@@ -37,18 +37,70 @@
   );
 
   /**
-   * Scrub JSON blocks from conversational text to keep UI extremely clean.
+   * Scrub JSON blocks and orphan braces from conversational text to keep UI extremely clean.
    */
   function formatContent(content) {
     if (!content) return '';
-    // Strip markdown JSON code blocks with "json" (with or without spaces/caps)
-    let clean = content.replace(/```\s*json\s*(\{.*?\}|\[.*?\])\s*```/gis, '');
-    // Strip standard/fallback ``` markdown code blocks holding JSON-like structures
-    clean = clean.replace(/```\s*(\{.*?\}|\[.*?\])\s*```/gis, '');
-    // Strip bare JSON blocks if any remain
-    clean = clean.replace(/(\{[\s\S]*?"sessions"[\s\S]*?\})/g, '');
-    // Clean up trailing whitespace/newlines
-    return clean.trim();
+
+    // First, strip markdown code fences that wrap JSON
+    let clean = content.replace(/```\s*json\s*([\s\S]*?)\s*```/gis, '');
+    clean = clean.replace(/```\s*([\s\S]*?)\s*```/gis, (match) => {
+      // If the code block contains JSON-like keys, strip the whole block
+      if (match.includes('"sessions"') || match.includes('"room_id"') || match.includes('"applicant_ids"')) {
+        return '';
+      }
+      return match;
+    });
+
+    // Parse out raw/bare JSON structures by tracking matching braces/brackets
+    let i = 0;
+    while (i < clean.length) {
+      const char = clean[i];
+      if (char === '{' || char === '[') {
+        let braceCount = 1;
+        let j = i + 1;
+        let inString = false;
+        let isEscaped = false;
+        const openChar = char;
+        const closeChar = char === '{' ? '}' : ']';
+
+        while (j < clean.length && braceCount > 0) {
+          const c = clean[j];
+          if (isEscaped) {
+            isEscaped = false;
+          } else if (c === '\\') {
+            isEscaped = true;
+          } else if (c === '"') {
+            inString = !inString;
+          } else if (!inString) {
+            if (c === openChar) {
+              braceCount++;
+            } else if (c === closeChar) {
+              braceCount--;
+            }
+          }
+          j++;
+        }
+
+        if (braceCount === 0) {
+          const block = clean.substring(i, j);
+          if (
+            block.includes('"sessions"') || 
+            block.includes('"room_id"') || 
+            block.includes('"exam_session_id"') || 
+            block.includes('"applicant_ids"')
+          ) {
+            clean = clean.substring(0, i) + clean.substring(j);
+            continue;
+          }
+        }
+      }
+      i++;
+    }
+
+    // Clean up orphan closing braces/brackets and extra whitespace
+    clean = clean.replace(/^\s*[\}\]]+\s*$/gm, '');
+    return clean.replace(/\n{3,}/g, '\n\n').trim();
   }
 
   /**
