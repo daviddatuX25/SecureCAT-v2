@@ -30,12 +30,13 @@ class ExamSchedulingAssistantController extends Controller
 
         $request->validate(['message' => 'required|string|max:4000']);
 
-        $requestStructured = (bool) $request->input('request_structured', false);
-        if ($requestStructured && ! config('services.openrouter.key')) {
+        if (! config('services.openrouter.key')) {
             return response()->json([
-                'message' => 'Generate schedule requires OPENROUTER_API_KEY in .env.',
+                'message' => 'AI scheduling requires OPENROUTER_API_KEY in .env.',
             ], 403);
         }
+
+        $requestStructured = (bool) $request->input('request_structured', false);
 
         $user = $request->user();
         $message = $request->input('message');
@@ -230,7 +231,7 @@ class ExamSchedulingAssistantController extends Controller
 
         $request->validate([
             'sessions' => 'required|array',
-            'sessions.*.applicant_ids' => 'required|array',
+            'sessions.*.applicant_ids' => 'present|array',
             'sessions.*.applicant_ids.*' => 'integer|exists:applicants,id',
             'sessions.*.exam_session_id' => 'nullable|integer|exists:exam_sessions,id',
             'sessions.*.room_id' => 'nullable|integer|exists:rooms,id',
@@ -273,9 +274,6 @@ class ExamSchedulingAssistantController extends Controller
             DB::transaction(function () use ($payload, $roomIds, $request, $activeAcademicYear) {
                 foreach ($payload as $item) {
                     $applicantIds = array_values(array_unique(array_map('intval', $item['applicant_ids'] ?? [])));
-                    if (empty($applicantIds)) {
-                        continue;
-                    }
 
                     if (! empty($item['exam_session_id'])) {
                         $session = ExamSession::query()->find($item['exam_session_id']);

@@ -212,7 +212,10 @@ class ExamSchedulingAssistantService
 
         $result = ['reply' => $content];
 
-        if ($requestStructured && $content !== '') {
+        // Always attempt to extract structured JSON from the AI's reply.
+        // This way the AI can naturally output a schedule during conversation
+        // and it gets auto-detected — no separate "Generate" step needed.
+        if ($content !== '') {
             $schedule = $this->extractJsonFromText($content);
             if ($schedule !== null) {
                 $result['structured_schedule'] = $schedule;
@@ -242,33 +245,117 @@ class ExamSchedulingAssistantService
 
     /**
      * Extract a JSON object containing 'sessions' from free-form text.
-     * Handles: raw JSON, and JSON inside ```json ... ``` code fences.
+     * Handles multiple formats the AI may produce:
+     * 1. Clean `{"sessions": [...]}` wrapper
+     * 2. JSON inside ```json ... ``` code fences
+     * 3. Multiple separate JSON objects on different lines
+     * 4. A bare array `[{...}, {...}]` of session objects
+     * 5. A single session object `{...}` without wrapper
      */
     private function extractJsonFromText(string $text): ?array
     {
-        // Try direct parse first (handles when AI returns clean JSON as the full response)
-        try {
-            $decoded = json_decode($text, true, 512, JSON_THROW_ON_ERROR);
-            if (is_array($decoded) && isset($decoded['sessions'])) {
-                return $decoded;
+        // 1. Try direct parse — handles clean JSON as the full response
+        $decoded = $this->tryJsonDecode($text);
+        if ($decoded !== null) {
+            $wrapped = $this->wrapAsSchedule($decoded);
+            if ($wrapped !== null) {
+                return $wrapped;
             }
-        } catch (\JsonException) {
-            // Not a direct JSON response — try code fences
         }
 
-        // Try extracting from ```json ... ``` code fences
-        if (preg_match('/```json\s*(\{.*?\})\s*```/s', $text, $m)) {
-            try {
-                $decoded = json_decode($m[1], true, 512, JSON_THROW_ON_ERROR);
-                if (is_array($decoded) && isset($decoded['sessions'])) {
-                    return $decoded;
+        // 2. Try extracting from ```json ... ``` code fences
+        if (preg_match('/```json\s*(\{.*?\}|\[.*?\])\s*```/s', $text, $m)) {
+            $decoded = $this->tryJsonDecode($m[1]);
+            if ($decoded !== null) {
+                $wrapped = $this->wrapAsSchedule($decoded);
+                if ($wrapped !== null) {
+                    return $wrapped;
                 }
-            } catch (\JsonException) {
-                // Fall through
             }
+        }
+
+        // 3. Try extracting multiple separate JSON objects from different lines
+        //    e.g. the AI outputs `{ "room_id": 1, ... }\n{ "room_id": 2, ... }`
+        $jsonObjects = [];
+        preg_match_all('/\{[^{}]*(?:\{[^{}]*\}[^{}]*)*\}/s', $text, $matches);
+        foreach ($matches[0] ?? [] as $fragment) {
+            $obj = $this->tryJsonDecode($fragment);
+            if (is_array($obj) && ! isset($obj['sessions'])) {
+                // Looks like an individual session object
+                if ($this->looksLikeSession($obj)) {
+                    $jsonObjects[] = $obj;
+                }
+            } elseif (is_array($obj) && isset($obj['sessions'])) {
+                return $obj;
+            }
+        }
+
+        if (count($jsonObjects) > 0) {
+            return ['sessions' => $jsonObjects];
         }
 
         return null;
+    }
+
+    /**
+     * Attempt to JSON-decode a string, returning null on failure.
+     */
+    private function tryJsonDecode(string $text): mixed
+    {
+        try {
+            return json_decode(trim($text), true, 512, JSON_THROW_ON_ERROR);
+        } catch (\JsonException) {
+            return null;
+        }
+    }
+
+    /**
+     * Wrap decoded JSON into the canonical `{"sessions": [...]}` format.
+     * Accepts: already-wrapped object, bare array, or single session object.
+     */
+    private function wrapAsSchedule(mixed $decoded): ?array
+    {
+        if (! is_array($decoded)) {
+            return null;
+        }
+
+        // Already has sessions wrapper
+        if (isset($decoded['sessions']) && is_array($decoded['sessions'])) {
+            return $decoded;
+        }
+
+        // Bare array of session objects
+        if (array_is_list($decoded) && count($decoded) > 0 && $this->looksLikeSession($decoded[0])) {
+            return ['sessions' => $decoded];
+        }
+
+        // Single session object
+        if ($this->looksLikeSession($decoded)) {
+            return ['sessions' => [$decoded]];
+        }
+
+        return null;
+    }
+
+    /**
+     * Heuristic: does this array look like a session object?
+     * Checks for any of the known session-related keys.
+     */
+    private function looksLikeSession(mixed $data): bool
+    {
+        if (! is_array($data)) {
+            return false;
+        }
+
+        $sessionKeys = ['room_id', 'roomId', 'date', 'start_time', 'startTime', 'exam_session_id', 'session_id', 'applicant_ids', 'applicantIds', 'applicants'];
+
+        foreach ($sessionKeys as $key) {
+            if (array_key_exists($key, $data)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**

@@ -187,4 +187,76 @@ class ExamSchedulingAssistantTest extends TestCase
         $this->assertStringContainsString('DRAFT', $prompt);
         $this->assertStringContainsString('2026-04-20', $prompt);
     }
+
+    public function test_extract_json_various_formats(): void
+    {
+        $service = new ExamSchedulingAssistantService;
+        $method = new \ReflectionMethod($service, 'extractJsonFromText');
+        $method->setAccessible(true);
+
+        // Format 1: Clean wrapped JSON
+        $json = '{"sessions": [{"room_id": 1, "date": "2026-05-20"}]}';
+        $res = $method->invoke($service, $json);
+        $this->assertNotNull($res);
+        $this->assertEquals(1, $res['sessions'][0]['room_id']);
+
+        // Format 2: JSON in code fences
+        $fenced = "Here is the schedule:\n```json\n{\"sessions\": [{\"room_id\": 2, \"date\": \"2026-05-21\"}]}\n```";
+        $res = $method->invoke($service, $fenced);
+        $this->assertNotNull($res);
+        $this->assertEquals(2, $res['sessions'][0]['room_id']);
+
+        // Format 3: Multiple separate JSON objects on different lines
+        $multi = "{\n  \"room_id\": 3,\n  \"date\": \"2026-05-22\"\n}\n{\n  \"room_id\": 4,\n  \"date\": \"2026-05-23\"\n}";
+        $res = $method->invoke($service, $multi);
+        $this->assertNotNull($res);
+        $this->assertCount(2, $res['sessions']);
+        $this->assertEquals(3, $res['sessions'][0]['room_id']);
+        $this->assertEquals(4, $res['sessions'][1]['room_id']);
+
+        // Format 4: Bare array
+        $array = '[{"room_id": 5, "date": "2026-05-24"}]';
+        $res = $method->invoke($service, $array);
+        $this->assertNotNull($res);
+        $this->assertEquals(5, $res['sessions'][0]['room_id']);
+
+        // Format 5: Single session object without wrapper
+        $singleObj = '{"room_id": 6, "date": "2026-05-25"}';
+        $res = $method->invoke($service, $singleObj);
+        $this->assertNotNull($res);
+        $this->assertEquals(6, $res['sessions'][0]['room_id']);
+    }
+
+    public function test_apply_schedule_allows_empty_applicant_ids(): void
+    {
+        $user = User::factory()->create();
+        $user->assignRole('registrar_administrator');
+
+        $year = AcademicYear::factory()->create(['academic_year' => '2025-2026', 'semester' => '1', 'is_active' => true]);
+        $room = Room::factory()->create(['is_active' => true]);
+
+        $payload = [
+            'sessions' => [
+                [
+                    'room_id' => $room->id,
+                    'date' => '2026-05-25',
+                    'start_time' => '09:00',
+                    'end_time' => '12:00',
+                    'applicant_ids' => [], // Empty applicant IDs
+                ],
+            ],
+        ];
+
+        $this->actingAs($user)
+            ->postJson('/admin/exam-scheduling/schedule-assistant/apply-schedule', $payload)
+            ->assertOk()
+            ->assertJsonStructure(['message', 'redirect_url']);
+
+        $this->assertDatabaseHas('exam_sessions', [
+            'room_id' => $room->id,
+            'date' => '2026-05-25 00:00:00',
+            'start_time' => '09:00',
+            'status' => ExamSession::STATUS_DRAFT,
+        ]);
+    }
 }

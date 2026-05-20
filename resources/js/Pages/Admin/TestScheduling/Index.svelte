@@ -438,8 +438,8 @@
 
   {#if schedule_assistant}
     <Dialog.Root bind:open={assistantOpen}>
-      <Dialog.Content class="w-[95vw] max-w-6xl max-h-[90vh] overflow-y-auto" aria-describedby="schedule-assistant-description">
-        <Dialog.Header>
+      <Dialog.Content class="w-[95vw] max-w-2xl max-h-[90vh] flex flex-col" aria-describedby="schedule-assistant-description">
+        <Dialog.Header class="shrink-0">
           <Dialog.Title>AI Exam Scheduler</Dialog.Title>
           <InfoPopover
             content="Chat with the assistant to refine your schedule. After you get a reply, click Generate Schedule to create a preview."
@@ -449,7 +449,7 @@
             Chat with the assistant to refine your schedule. After you get a reply, click Generate Schedule to create a preview.
           </Dialog.Description>
         </Dialog.Header>
-        <div class="mt-4">
+        <div class="mt-4 min-h-0 flex-1 overflow-y-auto">
           <ScheduleAssistantPanel
             applicant_count={schedule_assistant.applicant_count}
             rooms={schedule_assistant.rooms}
