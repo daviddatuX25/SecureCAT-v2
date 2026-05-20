@@ -32,77 +32,183 @@
   let testResult = $state(null);
   let testError = $state('');
 
+  let uiTable = $state([]);
+  let uiTableError = $state('');
+  let initialized = $state(false);
+
+  function collapseTable(flatRows) {
+    if (!flatRows || flatRows.length === 0) return [];
+    const sorted = [...flatRows]
+      .filter(r => r.raw_score !== '' && r.raw_score !== null && !isNaN(parseInt(r.raw_score, 10)))
+      .sort((a, b) => parseInt(a.raw_score, 10) - parseInt(b.raw_score, 10));
+    
+    const uiRows = [];
+    let currentGroup = null;
+
+    for (const row of sorted) {
+      const score = parseInt(row.raw_score, 10);
+      const pct = row.percentile_output;
+      
+      if (!currentGroup) {
+        currentGroup = { start: score, end: score, percentile: pct };
+        continue;
+      }
+      
+      if (score === currentGroup.end + 1 && pct === currentGroup.percentile) {
+        currentGroup.end = score;
+      } else {
+        uiRows.push(currentGroup);
+        currentGroup = { start: score, end: score, percentile: pct };
+      }
+    }
+    if (currentGroup) {
+      uiRows.push(currentGroup);
+    }
+    
+    return uiRows.map(g => {
+      if (g.start === g.end) {
+        return { type: 'single', raw_score: g.start, percentile_output: g.percentile };
+      } else {
+        return { type: 'range', range_start: g.start, range_end: g.end, percentile_output: g.percentile };
+      }
+    });
+  }
+
+  function flattenTable(uiRows) {
+    const flat = [];
+    for (const row of uiRows) {
+      if (row.type === 'single') {
+        const val = parseInt(row.raw_score, 10);
+        if (!isNaN(val)) {
+          flat.push({ raw_score: val, percentile_output: row.percentile_output });
+        }
+      } else if (row.type === 'range') {
+        const start = parseInt(row.range_start, 10);
+        const end = parseInt(row.range_end, 10);
+        if (!isNaN(start) && !isNaN(end) && start <= end) {
+          for (let s = start; s <= end; s++) {
+            flat.push({ raw_score: s, percentile_output: row.percentile_output });
+          }
+        }
+      }
+    }
+    return flat.sort((a, b) => a.raw_score - b.raw_score);
+  }
+
+  $effect(() => {
+    if (!initialized) {
+      untrack(() => {
+        uiTable = collapseTable($form.conversion_table);
+        initialized = true;
+      });
+    }
+  });
+
   $effect(() => {
     const method = $form.scoring_method;
     untrack(() => {
-      if (method === 'formula' && $form.conversion_table.length > 0) {
+      if (method === 'formula') {
+        uiTable = [];
         $form.conversion_table = [];
       }
     });
   });
 
-  const summarizedRanges = $derived.by(() => {
-    if ($form.conversion_table.length === 0) return [];
-    
-    const sorted = [...$form.conversion_table]
-      .filter(r => r.raw_score !== '' && r.raw_score !== null && !isNaN(parseInt(r.raw_score, 10)))
-      .sort((a, b) => parseInt(a.raw_score, 10) - parseInt(b.raw_score, 10));
-      
-    if (sorted.length === 0) return [];
-    
-    const groups = [];
-    let currentGroup = {
-      start: parseInt(sorted[0].raw_score, 10),
-      end: parseInt(sorted[0].raw_score, 10),
-      percentile: sorted[0].percentile_output
-    };
-    
-    for (let i = 1; i < sorted.length; i++) {
-      const score = parseInt(sorted[i].raw_score, 10);
-      const pct = sorted[i].percentile_output;
-      
-      if (score === currentGroup.end + 1 && pct === currentGroup.percentile) {
-        currentGroup.end = score;
-      } else {
-        groups.push(currentGroup);
-        currentGroup = { start: score, end: score, percentile: pct };
+  $effect(() => {
+    const rows = uiTable;
+    uiTableError = '';
+
+    const seenScores = new Set();
+    let hasError = false;
+
+    for (let idx = 0; idx < rows.length; idx++) {
+      const row = rows[idx];
+      const label = `Row ${idx + 1}`;
+
+      if (row.percentile_output === '') {
+        uiTableError = `${label}: Percentile output cannot be empty.`;
+        hasError = true;
+        break;
+      }
+
+      if (row.type === 'single') {
+        if (row.raw_score === '' || row.raw_score === null || isNaN(parseInt(row.raw_score, 10))) {
+          uiTableError = `${label}: Raw score is missing or invalid.`;
+          hasError = true;
+          break;
+        }
+        const val = parseInt(row.raw_score, 10);
+        if (val < 0) {
+          uiTableError = `${label}: Raw score cannot be negative.`;
+          hasError = true;
+          break;
+        }
+        if (seenScores.has(val)) {
+          uiTableError = `${label}: Raw score ${val} is defined more than once.`;
+          hasError = true;
+          break;
+        }
+        seenScores.add(val);
+      } else if (row.type === 'range') {
+        if (row.range_start === '' || row.range_start === null || isNaN(parseInt(row.range_start, 10))) {
+          uiTableError = `${label}: Range start is missing or invalid.`;
+          hasError = true;
+          break;
+        }
+        if (row.range_end === '' || row.range_end === null || isNaN(parseInt(row.range_end, 10))) {
+          uiTableError = `${label}: Range end is missing or invalid.`;
+          hasError = true;
+          break;
+        }
+        const start = parseInt(row.range_start, 10);
+        const end = parseInt(row.range_end, 10);
+        if (start < 0 || end < 0) {
+          uiTableError = `${label}: Range boundaries cannot be negative.`;
+          hasError = true;
+          break;
+        }
+        if (start > end) {
+          uiTableError = `${label}: Range start (${start}) cannot be greater than range end (${end}).`;
+          hasError = true;
+          break;
+        }
+        for (let s = start; s <= end; s++) {
+          if (seenScores.has(s)) {
+            uiTableError = `${label}: Raw score ${s} in range ${start}-${end} is defined more than once.`;
+            hasError = true;
+            break;
+          }
+          seenScores.add(s);
+        }
+        if (hasError) break;
       }
     }
-    groups.push(currentGroup);
-    
-    return groups.map(g => {
-      return {
-        range: g.start === g.end ? `${g.start}` : `${g.start}-${g.end}`,
-        percentile: g.percentile || '—'
-      };
+
+    untrack(() => {
+      if (!hasError) {
+        $form.conversion_table = flattenTable(rows);
+      } else {
+        $form.conversion_table = [];
+      }
     });
   });
 
-  function addRow() {
-    $form.conversion_table = [
-      ...$form.conversion_table,
-      { raw_score: '', percentile_output: '' },
-    ];
+  function addSingleRow() {
+    uiTable = [...uiTable, { type: 'single', raw_score: '', percentile_output: '' }];
+  }
+
+  function addRangeRow() {
+    uiTable = [...uiTable, { type: 'range', range_start: '', range_end: '', percentile_output: '' }];
   }
 
   function removeRow(index) {
-    $form.conversion_table = $form.conversion_table.filter((_, i) => i !== index);
-  }
-
-  function updateRow(index, field, value) {
-    const updated = [...$form.conversion_table];
-    updated[index] = { ...updated[index], [field]: value };
-    $form.conversion_table = updated;
+    uiTable = uiTable.filter((_, i) => i !== index);
   }
 
   function generateRows() {
     const max = parseInt($form.max_items, 10) || 0;
     if (max <= 0) return;
-    const rows = [];
-    for (let i = 0; i <= max; i++) {
-      rows.push({ raw_score: i, percentile_output: '' });
-    }
-    $form.conversion_table = rows;
+    uiTable = [{ type: 'range', range_start: 0, range_end: max, percentile_output: '' }];
   }
 
   function openPaste() {
@@ -124,7 +230,7 @@
       return;
     }
     const lines = pasteText.trim().split(/\r?\n/).filter(l => l.trim());
-    const rows = [];
+    const parsedRows = [];
     for (const line of lines) {
       let separatorIndex = line.search(/[\t:=]|\s{2,}/);
       let scorePart = '';
@@ -151,41 +257,36 @@
           const start = parseInt(rangeMatch[1], 10);
           const end = parseInt(rangeMatch[2], 10);
           if (!isNaN(start) && !isNaN(end) && start <= end) {
-            for (let score = start; score <= end; score++) {
-              rows.push({ raw_score: score, percentile_output: out });
-            }
+            parsedRows.push({ type: 'range', range_start: start, range_end: end, percentile_output: out });
           }
         } else {
           const raw = parseInt(scorePart, 10);
           if (!isNaN(raw)) {
-            rows.push({ raw_score: raw, percentile_output: out });
+            parsedRows.push({ type: 'single', raw_score: raw, percentile_output: out });
           }
         }
       }
     }
-    if (rows.length === 0) {
-      pasteError = 'No valid rows found. Supported format:\n- raw_score [tab] percentile_output\n- range (e.g. 0-10) [tab] percentile_output\n- raw_score: percentile_output';
+    if (parsedRows.length === 0) {
+      pasteError = 'No valid rows found. Supported format:\n- 0-10 [tab] 85th\n- 15: 90th';
       return;
     }
-    const map = new Map();
-    for (const r of $form.conversion_table) {
-      map.set(r.raw_score, r);
-    }
-    for (const r of rows) {
-      map.set(r.raw_score, r);
-    }
-    $form.conversion_table = Array.from(map.values()).sort((a, b) => a.raw_score - b.raw_score);
+    uiTable = [...uiTable, ...parsedRows];
     closePaste();
   }
 
   function copyTable() {
-    if ($form.conversion_table.length === 0) {
+    if (uiTable.length === 0) {
       success('The conversion table is empty.');
       return;
     }
-    const text = $form.conversion_table
-      .map(r => `${r.raw_score}\t${r.percentile_output}`)
-      .join('\n');
+    const text = uiTable.map(r => {
+      if (r.type === 'single') {
+        return `${r.raw_score}\t${r.percentile_output}`;
+      } else {
+        return `${r.range_start}-${r.range_end}\t${r.percentile_output}`;
+      }
+    }).join('\n');
     
     navigator.clipboard.writeText(text)
       .then(() => {
@@ -234,6 +335,14 @@
 
   function submitForm(e) {
     e.preventDefault();
+    if (uiTableError) {
+      alert('Please resolve the conversion table errors before saving.');
+      return;
+    }
+    if ($form.scoring_method === 'conversion_table' && uiTable.length === 0) {
+      alert('Conversion table cannot be empty.');
+      return;
+    }
     $form.put(`/admin/aptitude-areas/${aptitude_area.id}`);
   }
 
@@ -361,13 +470,13 @@
           <div class="flex items-center justify-between">
             <p class="text-sm font-medium">Conversion Table</p>
             <div class="flex gap-2">
-              {#if $form.conversion_table.length === 0}
+              {#if uiTable.length === 0}
                 <Button type="button" variant="outline" size="sm" onclick={generateRows}>
                   <Wand2 class="mr-1.5 h-3.5 w-3.5" />
                   Generate 0–{$form.max_items}
                 </Button>
               {/if}
-              {#if $form.conversion_table.length > 0}
+              {#if uiTable.length > 0}
                 <Button type="button" variant="outline" size="sm" onclick={copyTable}>
                   <Copy class="mr-1.5 h-3.5 w-3.5" />
                   Copy
@@ -380,72 +489,92 @@
             </div>
           </div>
 
-          {#if $form.conversion_table.length > 0}
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <!-- Scrollable Raw Score List -->
-              <div class="md:col-span-2 space-y-2">
-                <div class="flex gap-2 text-xs font-medium text-muted-foreground px-2">
-                  <span class="w-24">Raw Score</span>
-                  <span class="flex-1">Percentile Output</span>
-                  <span class="w-8"></span>
-                </div>
-                <div class="max-h-72 overflow-y-auto space-y-2 pr-1 p-2 bg-background/50 border border-border/50 rounded-md">
-                  {#each $form.conversion_table as row, i}
-                    <div class="flex items-center gap-2">
-                      <Input
-                        type="number"
-                        min="0"
-                        value={row.raw_score}
-                        oninput={(e) => updateRow(i, 'raw_score', parseInt(e.currentTarget.value, 10) || 0)}
-                        class="w-24 font-mono text-center"
-                      />
-                      <Input
-                        type="text"
-                        maxlength="20"
-                        value={row.percentile_output}
-                        oninput={(e) => updateRow(i, 'percentile_output', e.currentTarget.value)}
-                        placeholder="e.g., 85th, 99+, N/A"
-                        class="flex-1"
-                      />
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        class="h-9 w-8 p-0 text-destructive hover:bg-destructive/10"
-                        onclick={() => removeRow(i)}
-                      >
-                        <Trash2 class="h-4 w-4" />
-                      </Button>
-                    </div>
-                  {/each}
-                </div>
-                <Button type="button" variant="outline" size="sm" onclick={addRow} class="w-full">
-                  <Plus class="mr-1.5 h-3.5 w-3.5" />
-                  Add Row
-                </Button>
+          {#if uiTable.length > 0}
+            <div class="space-y-2">
+              <div class="flex gap-2 text-xs font-medium text-muted-foreground px-2">
+                <span class="w-48">Raw Score / Range</span>
+                <span class="flex-1">Percentile Output</span>
+                <span class="w-8"></span>
               </div>
-
-              <!-- Range Summary View -->
-              <div class="space-y-2">
-                <div class="text-xs font-medium text-muted-foreground px-1">
-                  Range Summary View ({summarizedRanges.length} ranges)
-                </div>
-                <div class="max-h-[360px] overflow-y-auto p-3 bg-background/30 border border-border/50 rounded-md space-y-1.5">
-                  {#if summarizedRanges.length === 0}
-                    <p class="text-xs text-muted-foreground italic">No ranges detected.</p>
-                  {:else}
-                    {#each summarizedRanges as r}
-                      <div class="flex items-center justify-between text-xs py-1 px-2 bg-background/50 border border-border/30 rounded">
-                        <span class="font-mono font-medium text-foreground">{r.range}</span>
-                        <span class="font-semibold text-primary">{r.percentile}</span>
+              <div class="max-h-72 overflow-y-auto space-y-2 pr-1 p-2 bg-background/50 border border-border/50 rounded-md">
+                {#each uiTable as row, i}
+                  <div class="flex items-center gap-2">
+                    {#if row.type === 'single'}
+                      <div class="flex items-center gap-1 w-48">
+                        <Input
+                          type="number"
+                          min="0"
+                          bind:value={row.raw_score}
+                          placeholder="Score"
+                          class="w-full font-mono text-center"
+                        />
                       </div>
-                    {/each}
-                  {/if}
-                </div>
+                    {:else}
+                      <div class="flex items-center gap-1 w-48">
+                        <Input
+                          type="number"
+                          min="0"
+                          bind:value={row.range_start}
+                          placeholder="Min"
+                          class="w-[45%] font-mono text-center p-1"
+                        />
+                        <span class="text-muted-foreground font-bold px-0.5">—</span>
+                        <Input
+                          type="number"
+                          min="0"
+                          bind:value={row.range_end}
+                          placeholder="Max"
+                          class="w-[45%] font-mono text-center p-1"
+                        />
+                      </div>
+                    {/if}
+                    <Input
+                      type="text"
+                      maxlength="20"
+                      bind:value={row.percentile_output}
+                      placeholder="e.g., 85th, 99+, N/A"
+                      class="flex-1"
+                    />
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      class="h-9 w-8 p-0 text-destructive hover:bg-destructive/10"
+                      onclick={() => removeRow(i)}
+                    >
+                      <Trash2 class="h-4 w-4" />
+                    </Button>
+                  </div>
+                {/each}
+              </div>
+              
+              <div class="flex gap-2">
+                <Button type="button" variant="outline" size="sm" onclick={addSingleRow} class="flex-1">
+                  <Plus class="mr-1.5 h-3.5 w-3.5" />
+                  Add Single Score
+                </Button>
+                <Button type="button" variant="outline" size="sm" onclick={addRangeRow} class="flex-1">
+                  <Plus class="mr-1.5 h-3.5 w-3.5" />
+                  Add Range
+                </Button>
               </div>
             </div>
           {:else}
-            <p class="text-sm text-muted-foreground">No rows yet. Use Generate or Paste to add rows.</p>
+            <p class="text-sm text-muted-foreground">No rows yet. Use buttons or Paste to add rows.</p>
+            <div class="flex gap-2 mt-2">
+              <Button type="button" variant="outline" size="sm" onclick={addSingleRow} class="flex-1">
+                <Plus class="mr-1.5 h-3.5 w-3.5" />
+                Add Single Score
+              </Button>
+              <Button type="button" variant="outline" size="sm" onclick={addRangeRow} class="flex-1">
+                <Plus class="mr-1.5 h-3.5 w-3.5" />
+                Add Range
+              </Button>
+            </div>
+          {/if}
+
+          {#if uiTableError}
+            <p class="text-sm text-destructive mt-1">{uiTableError}</p>
           {/if}
 
           {#if $form.errors?.conversion_table}
