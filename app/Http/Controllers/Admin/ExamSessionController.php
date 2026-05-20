@@ -229,16 +229,6 @@ class ExamSessionController extends Controller
         $academicYearId = $validated['academic_year_id'] ?? AcademicYear::active()?->id;
 
         $type = $validated['type'] ?? 'scheduled';
-        if ($type === 'scheduled' && isset($validated['room_id'])) {
-            if (ExamSession::hasRoomConflict(
-                $validated['room_id'],
-                $validated['date'],
-                $validated['start_time'],
-                $validated['end_time'] ?? null
-            )) {
-                return back()->withErrors(['room_id' => 'This room is already booked for the selected date and time.'])->withInput();
-            }
-        }
 
         $session = ExamSession::create([
             'academic_year_id' => $academicYearId,

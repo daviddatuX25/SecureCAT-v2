@@ -116,6 +116,15 @@ class ExamSession extends Model
      */
     public static function hasRoomConflict(int $roomId, string $date, string $startTime, ?string $endTime, ?int $excludeSessionId = null): bool
     {
+        try {
+            $start = Carbon::parse($startTime)->format('H:i:s');
+            $end = ($endTime && $endTime !== '00:00:00' && $endTime !== '00:00')
+                ? Carbon::parse($endTime)->format('H:i:s')
+                : '23:59:59';
+        } catch (\Throwable $e) {
+            return false;
+        }
+
         $query = self::query()
             ->where('room_id', $roomId)
             ->whereDate('date', $date);
@@ -126,14 +135,15 @@ class ExamSession extends Model
 
         $sessions = $query->get(['id', 'start_time', 'end_time']);
 
-        $start = Carbon::parse($startTime)->format('H:i:s');
-        $end = $endTime ? Carbon::parse($endTime)->format('H:i:s') : '23:59:59';
-
         foreach ($sessions as $session) {
-            $otherStart = Carbon::parse($session->start_time)->format('H:i:s');
-            $otherEnd = $session->end_time
-                ? Carbon::parse($session->end_time)->format('H:i:s')
-                : '23:59:59';
+            try {
+                $otherStart = Carbon::parse($session->start_time)->format('H:i:s');
+                $otherEnd = ($session->end_time && $session->end_time !== '00:00:00' && $session->end_time !== '00:00')
+                    ? Carbon::parse($session->end_time)->format('H:i:s')
+                    : '23:59:59';
+            } catch (\Throwable $e) {
+                continue;
+            }
             if ($start < $otherEnd && $end > $otherStart) {
                 return true;
             }
@@ -275,5 +285,15 @@ class ExamSession extends Model
     public function getPublishBlockReasonAttribute(): ?string
     {
         return $this->publishBlockReason();
+    }
+
+    public function setEndTimeAttribute($value): void
+    {
+        $this->attributes['end_time'] = (empty($value) || $value === '00:00:00' || $value === '00:00') ? null : $value;
+    }
+
+    public function setExtendedEndTimeAttribute($value): void
+    {
+        $this->attributes['extended_end_time'] = (empty($value) || $value === '00:00:00' || $value === '00:00') ? null : $value;
     }
 }
