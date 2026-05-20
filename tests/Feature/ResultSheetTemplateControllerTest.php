@@ -6,6 +6,7 @@ use App\Models\AptitudeArea;
 use App\Models\ResultSheetTemplate;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\UploadedFile;
 use Tests\TestCase;
 
 class ResultSheetTemplateControllerTest extends TestCase
@@ -136,5 +137,70 @@ class ResultSheetTemplateControllerTest extends TestCase
 
         $this->assertFalse($active->fresh()->is_active);
         $this->assertEquals(0, ResultSheetTemplate::where('is_active', true)->count());
+    }
+
+    private function createDummyOdt(string $contentXml): string
+    {
+        $path = tempnam(sys_get_temp_dir(), 'test_odt_');
+        $zip = new \ZipArchive;
+        $zip->open($path, \ZipArchive::CREATE | \ZipArchive::OVERWRITE);
+        $zip->addFromString('content.xml', $contentXml);
+        $zip->close();
+
+        return $path;
+    }
+
+    public function test_validate_document_with_odt_upload(): void
+    {
+        $fixturePath = base_path('tests/fixtures/test_template.odt');
+        if (! file_exists($fixturePath)) {
+            $this->markTestSkipped('ODT fixture missing');
+        }
+
+        $tempPath = tempnam(sys_get_temp_dir(), 'test_odt_');
+        copy($fixturePath, $tempPath);
+
+        $uploadedFile = new UploadedFile(
+            $tempPath,
+            'template.odt',
+            'application/vnd.oasis.opendocument.text',
+            null,
+            true // test mode
+        );
+
+        $this->actingAs($this->admin)
+            ->post(route('admin.release.result-templates.validate-document'), [
+                'document' => $uploadedFile,
+                'logical_unit' => 'full',
+            ])
+            ->assertOk()
+            ->assertJsonStructure(['valid', 'found', 'missing']);
+
+        @unlink($tempPath);
+    }
+
+    public function test_preview_with_odt_upload(): void
+    {
+        $odtPath = $this->createDummyOdt('<?xml version="1.0" encoding="UTF-8"?><office:document-content xmlns:office="urn:oasis:names:tc:opendocument:xmlns:office:1.0" xmlns:text="urn:oasis:names:tc:opendocument:xmlns:text:1.0"><office:body><office:text><text:p>Hello {{applicant_name}}</text:p></office:text></office:body></office:document-content>');
+        $uploadedFile = new UploadedFile(
+            $odtPath,
+            'template.odt',
+            'application/vnd.oasis.opendocument.text',
+            null,
+            true // test mode
+        );
+
+        $this->actingAs($this->admin)
+            ->post(route('admin.release.result-templates.preview'), [
+                'mode' => 'docx',
+                'document' => $uploadedFile,
+                'paper_size' => 'a4',
+                'orientation' => 'portrait',
+                'logical_unit' => 'full',
+            ])
+            ->assertOk()
+            ->assertJsonStructure(['html', 'dimensions']);
+
+        @unlink($odtPath);
     }
 }

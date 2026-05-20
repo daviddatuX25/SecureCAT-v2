@@ -246,7 +246,8 @@ class ResultSheetTemplateController extends Controller
                 if ($request->hasFile('document')) {
                     $uploaded = $request->file('document');
                     $path = $uploaded->getRealPath() ?: $uploaded->getPathname();
-                    $renderResult = $this->templateService->renderDocumentFile($path, [], true, $paperSize, $orientation, $logicalUnit);
+                    $originalName = $uploaded->getClientOriginalName();
+                    $renderResult = $this->templateService->renderDocumentFile($path, [], true, $paperSize, $orientation, $logicalUnit, $originalName);
                 } else {
                     $template = ResultSheetTemplate::findOrFail($request->input('template_id'));
                     $renderResult = $this->templateService->render($template, [], true);
@@ -292,9 +293,10 @@ class ResultSheetTemplateController extends Controller
         }
 
         $isCrosswise = $request->input('logical_unit') === 'half_a4';
+        $originalName = $request->hasFile('document') ? $request->file('document')->getClientOriginalName() : null;
 
         return response()->json(
-            $this->templateService->getDocumentValidation($fullPath, $isCrosswise)->toArray()
+            $this->templateService->getDocumentValidation($fullPath, $isCrosswise, $originalName)->toArray()
         );
     }
 
