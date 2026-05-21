@@ -14,9 +14,18 @@ class CourseSeeder extends Seeder
         }
 
         $courses = [
+            ['name' => 'Bachelor of Secondary Education', 'code' => 'BSEd'],
+            ['name' => 'Bachelor of Elementary Education', 'code' => 'BEEd'],
+            ['name' => 'Bachelor of Physical Education', 'code' => 'BPEd'],
+            ['name' => 'Bachelor of Science in Mathematics', 'code' => 'BSMath'],
+            ['name' => 'Bachelor of Arts in Psychology', 'code' => 'BAPsych'],
+            ['name' => 'Bachelor of Science in Psychology', 'code' => 'BSPsych'],
             ['name' => 'Bachelor of Science in Information Technology', 'code' => 'BSIT'],
-            ['name' => 'Bachelor of Science in Computer Science', 'code' => 'BSCS'],
-            ['name' => 'Bachelor of Science in Data Science', 'code' => 'BSDS'],
+            ['name' => 'Bachelor of Science in Business Administration', 'code' => 'BSBA'],
+            ['name' => 'Bachelor of Science in Entrepreneurship', 'code' => 'BSEntrep'],
+            ['name' => 'Bachelor of Public Administration', 'code' => 'BPA'],
+            ['name' => 'Bachelor of Arts in English Language', 'code' => 'BAEL'],
+            ['name' => 'Bachelor of Arts in Social Science', 'code' => 'BASS'],
         ];
 
         foreach ($courses as $c) {
