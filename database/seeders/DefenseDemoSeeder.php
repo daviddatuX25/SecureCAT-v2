@@ -129,6 +129,11 @@ class DefenseDemoSeeder extends Seeder
             [20, 'Teresita',   null,     'Mirasol',    null,   'female', '2005-09-18', 'Santiago',    'Ilocos Sur', '2712', '09171001020', 'incomplete_documents',  8, 'dismissed'],
         ];
 
+        // Ensure BSCS and BSDS exist (inactive) for the demo seeder reference
+        foreach (['BSCS' => 'Bachelor of Science in Computer Science', 'BSDS' => 'Bachelor of Science in Data Science'] as $code => $name) {
+            Course::firstOrCreate(['code' => $code], ['name' => $name, 'is_active' => false]);
+        }
+
         $courseIdMap = Course::query()
             ->whereIn('code', ['BSIT', 'BSCS', 'BSDS'])
             ->pluck('id', 'code');

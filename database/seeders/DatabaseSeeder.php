@@ -8,29 +8,26 @@ class DatabaseSeeder extends Seeder
 {
     public function run(): void
     {
-        // Seed order (foundation data — run first):
-        //  1. RoleSeeder          → roles (super_admin, admin, staff, proctor, registrar_administrator)
-        //  2. CourseSeeder        → courses (BSIT, BSCS, BSDS, etc.)
-        //  3. AptitudeAreaSeeder   → aptitude areas (SA, NA, VR, AR, LR, PSA)
-        //  4. AdmissionSlipTemplateSeeder → print templates
-        //  5. ResultSheetTemplateSeeder   → print templates
-        //  6. DemoAccountSeeder   → demo/admin accounts (admin@example.com)
-        //  7. SeasonSeeder        → academic seasons
-        //
-        // Defense demo data (run after foundation):
-        //  - DefenseDemoSeeder     → ISPSC Tagudin defense-ready data (applications, sessions, scores)
-        //    Invoke separately: php artisan db:seed --class=DefenseDemoSeeder
+        // ── Production Foundation Data ──────────────────────────────
+        // These seeders populate the essential lookup tables required
+        // for a fresh deployment. Safe to run on any environment.
         $this->call([
-            RoleSeeder::class,
-            CourseSeeder::class,
-            AptitudeAreaSeeder::class,
-            AdmissionSlipTemplateSeeder::class,
-            ResultSheetTemplateSeeder::class,
-            DemoAccountSeeder::class,
-            AcademicYearSeeder::class,
-            PrivacyPolicySeeder::class,
+            RoleSeeder::class,              // 1. User roles (super_admin, staff, etc.)
+            CourseSeeder::class,            // 2. Academic programs (BSEd, BSIT, etc.)
+            RoomSeeder::class,              // 3. Exam rooms (Room 101, Lab Room 1, etc.)
+            AptitudeAreaSeeder::class,      // 4. Test domains (GA, VA, NAP, SPA, PA, MD)
+            RatingScaleSeeder::class,       // 5. Score interpretation scale
+            AdmissionSlipTemplateSeeder::class,  // 6. Default admission slip template
+            ResultSheetTemplateSeeder::class,    // 7. Default result sheet template
+            AcademicYearSeeder::class,      // 8. Current academic year
+            PrivacyPolicySeeder::class,     // 9. Data privacy notice (RA 10173)
+            DemoAccountSeeder::class,       // 10. Super admin account (from .env)
         ]);
 
+        // ── Development / Demo Data ────────────────────────────────
+        // Only runs when DEMO=true in .env. Seeds fake applicants,
+        // exam sessions, scores, etc. for testing and demonstrations.
+        // NEVER enable in production.
         if (config('demo.enabled', false)) {
             $this->command?->info('DEMO=true detected — running DefenseDemoSeeder...');
             $this->call(DefenseDemoSeeder::class);
