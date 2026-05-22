@@ -48,9 +48,16 @@ class ScoreInputService
                     $attributes['percentile_string'] = null;
                 }
             } else {
+                $area = AptitudeArea::find($domainId);
                 $attributes['raw_score'] = null;
                 $attributes['max_score'] = null;
-                $attributes['normalized_score'] = $entry['normalized_score'] ?? null;
+                if ($area?->scoring_method === 'conversion_table') {
+                    $attributes['normalized_score'] = null;
+                    $attributes['percentile_string'] = $entry['percentile_string'] ?? null;
+                } else {
+                    $attributes['normalized_score'] = $entry['normalized_score'] ?? null;
+                    $attributes['percentile_string'] = null;
+                }
             }
 
             ApplicantScore::updateOrCreate(

@@ -30,7 +30,7 @@ class SystemSetting extends Model
         }
 
         $v = $row->value;
-        if (in_array($key, ['ai_exam_companion_enabled', 'notify_on_publish', 'allow_direct_assessment', 'enable_normalized_scores', 'admission_slip_enabled'], true)) {
+        if (in_array($key, ['ai_exam_companion_enabled', 'notify_on_publish', 'allow_direct_assessment', 'enable_normalized_scores', 'admission_slip_enabled', 'allow_flexible_applications'], true)) {
             return filter_var($v, FILTER_VALIDATE_BOOLEAN);
         }
 
@@ -112,6 +112,14 @@ class SystemSetting extends Model
     public static function admissionSlipEnabled(): bool
     {
         return (bool) self::get('admission_slip_enabled', false);
+    }
+
+    /**
+     * Whether to allow flexible/optional application details. Default: false.
+     */
+    public static function allowFlexibleApplications(): bool
+    {
+        return (bool) self::get('allow_flexible_applications', false);
     }
 
     public static function admissionSlipTemplate(): ?string
