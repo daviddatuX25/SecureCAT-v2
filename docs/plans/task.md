@@ -12,3 +12,7 @@
 | Task 8 | Sidebar Highlight Update | done | Update AuthenticatedLayout.svelte sidebar items and logic |
 | Task 9 | Make Placeholders Optional | done | Update ResultSheetTemplateService.php with optional placeholders |
 | Task 10 | Fix PHPUnit Tests for Templates | done | Align tests with new validation placeholders |
+| Task 11 | Update AssignApplicantsRequest Validation | todo | Accept backtrack boolean parameter |
+| Task 12 | Implement Backtracking Logic in Controller | todo | Mark assigned applicants as present & submitted, complete session |
+| Task 13 | Support Direct Backtrack Endpoint | todo | Route, policy, and controller action for direct backtrack |
+| Task 14 | Add Backtrack Options to Frontend UI | todo | Add backtrack checkbox and action buttons on Show.svelte |
