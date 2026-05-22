@@ -1,0 +1,206 @@
+<?php
+
+namespace Tests\Feature;
+
+use App\Models\AptitudeArea;
+use App\Models\ResultSheetTemplate;
+use App\Models\User;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\UploadedFile;
+use Tests\TestCase;
+
+class ResultSheetTemplateControllerTest extends TestCase
+{
+    use RefreshDatabase;
+
+    private User $admin;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->admin = User::factory()->create();
+        $this->admin->assignRole('super_admin');
+        AptitudeArea::factory()->create(['name' => 'Spatial Awareness', 'is_active' => true, 'display_order' => 0]);
+    }
+
+    public function test_store_deactivates_other_templates_when_creating_active(): void
+    {
+        $existing = ResultSheetTemplate::factory()->active()->create(['name' => 'Old Active']);
+
+        $this->actingAs($this->admin)
+            ->post(route('admin.release.result-templates.store'), [
+                'name' => 'New Active',
+                'mode' => 'html',
+                'content' => '<div>{{applicant_name}}</div>',
+                'is_active' => true,
+                'paper_size' => 'a4',
+                'orientation' => 'portrait',
+                'logical_unit' => 'full',
+            ])
+            ->assertRedirect(route('admin.release.result-templates.index'));
+
+        $this->assertFalse($existing->fresh()->is_active);
+        $this->assertEquals(1, ResultSheetTemplate::where('is_active', true)->count());
+        $this->assertTrue(ResultSheetTemplate::where('name', 'New Active')->first()->is_active);
+    }
+
+    public function test_store_does_not_deactivate_when_creating_inactive(): void
+    {
+        $existing = ResultSheetTemplate::factory()->active()->create(['name' => 'Old Active']);
+
+        $this->actingAs($this->admin)
+            ->post(route('admin.release.result-templates.store'), [
+                'name' => 'New Inactive',
+                'mode' => 'html',
+                'content' => '<div>{{applicant_name}}</div>',
+                'is_active' => false,
+                'paper_size' => 'a4',
+                'orientation' => 'portrait',
+                'logical_unit' => 'full',
+            ])
+            ->assertRedirect(route('admin.release.result-templates.index'));
+
+        $this->assertTrue($existing->fresh()->is_active);
+        $this->assertFalse(ResultSheetTemplate::where('name', 'New Inactive')->first()->is_active);
+    }
+
+    public function test_update_deactivates_other_templates_when_activating(): void
+    {
+        $active = ResultSheetTemplate::factory()->active()->create(['name' => 'Active']);
+        $inactive = ResultSheetTemplate::factory()->create(['name' => 'Inactive', 'is_active' => false]);
+
+        $this->actingAs($this->admin)
+            ->put(route('admin.release.result-templates.update', $inactive), [
+                'is_active' => true,
+            ])
+            ->assertRedirect(route('admin.release.result-templates.index'));
+
+        $this->assertFalse($active->fresh()->is_active);
+        $this->assertTrue($inactive->fresh()->is_active);
+        $this->assertEquals(1, ResultSheetTemplate::where('is_active', true)->count());
+    }
+
+    public function test_update_does_not_deactivate_self(): void
+    {
+        $active = ResultSheetTemplate::factory()->active()->create(['name' => 'Active']);
+
+        $this->actingAs($this->admin)
+            ->put(route('admin.release.result-templates.update', $active), [
+                'name' => 'Still Active',
+            ])
+            ->assertRedirect(route('admin.release.result-templates.index'));
+
+        $this->assertTrue($active->fresh()->is_active);
+    }
+
+    public function test_only_one_template_can_be_active_at_a_time(): void
+    {
+        ResultSheetTemplate::factory()->active()->create(['name' => 'A']);
+        ResultSheetTemplate::factory()->active()->create(['name' => 'B']);
+        ResultSheetTemplate::factory()->active()->create(['name' => 'C']);
+
+        $this->assertGreaterThan(1, ResultSheetTemplate::where('is_active', true)->count());
+
+        $target = ResultSheetTemplate::where('name', 'B')->first();
+
+        $this->actingAs($this->admin)
+            ->put(route('admin.release.result-templates.update', $target), [
+                'is_active' => true,
+            ])
+            ->assertRedirect(route('admin.release.result-templates.index'));
+
+        $this->assertEquals(1, ResultSheetTemplate::where('is_active', true)->count());
+        $this->assertTrue($target->fresh()->is_active);
+    }
+
+    public function test_activate_endpoint_sets_template_active_and_deactivates_others(): void
+    {
+        $active = ResultSheetTemplate::factory()->active()->create(['name' => 'Active']);
+        $inactive = ResultSheetTemplate::factory()->create(['name' => 'Inactive', 'is_active' => false]);
+
+        $this->actingAs($this->admin)
+            ->post(route('admin.release.result-templates.activate', $inactive))
+            ->assertRedirect(route('admin.release.result-templates.index'));
+
+        $this->assertFalse($active->fresh()->is_active);
+        $this->assertTrue($inactive->fresh()->is_active);
+        $this->assertEquals(1, ResultSheetTemplate::where('is_active', true)->count());
+    }
+
+    public function test_deactivate_endpoint_sets_template_inactive(): void
+    {
+        $active = ResultSheetTemplate::factory()->active()->create(['name' => 'Active']);
+
+        $this->actingAs($this->admin)
+            ->post(route('admin.release.result-templates.deactivate', $active))
+            ->assertRedirect(route('admin.release.result-templates.index'));
+
+        $this->assertFalse($active->fresh()->is_active);
+        $this->assertEquals(0, ResultSheetTemplate::where('is_active', true)->count());
+    }
+
+    private function createDummyOdt(string $contentXml): string
+    {
+        $path = tempnam(sys_get_temp_dir(), 'test_odt_');
+        $zip = new \ZipArchive;
+        $zip->open($path, \ZipArchive::CREATE | \ZipArchive::OVERWRITE);
+        $zip->addFromString('content.xml', $contentXml);
+        $zip->close();
+
+        return $path;
+    }
+
+    public function test_validate_document_with_odt_upload(): void
+    {
+        $fixturePath = base_path('tests/fixtures/test_template.odt');
+        if (! file_exists($fixturePath)) {
+            $this->markTestSkipped('ODT fixture missing');
+        }
+
+        $tempPath = tempnam(sys_get_temp_dir(), 'test_odt_');
+        copy($fixturePath, $tempPath);
+
+        $uploadedFile = new UploadedFile(
+            $tempPath,
+            'template.odt',
+            'application/vnd.oasis.opendocument.text',
+            null,
+            true // test mode
+        );
+
+        $this->actingAs($this->admin)
+            ->post(route('admin.release.result-templates.validate-document'), [
+                'document' => $uploadedFile,
+                'logical_unit' => 'full',
+            ])
+            ->assertOk()
+            ->assertJsonStructure(['valid', 'found', 'missing']);
+
+        @unlink($tempPath);
+    }
+
+    public function test_preview_with_odt_upload(): void
+    {
+        $odtPath = $this->createDummyOdt('<?xml version="1.0" encoding="UTF-8"?><office:document-content xmlns:office="urn:oasis:names:tc:opendocument:xmlns:office:1.0" xmlns:text="urn:oasis:names:tc:opendocument:xmlns:text:1.0"><office:body><office:text><text:p>Hello {{applicant_name}}</text:p></office:text></office:body></office:document-content>');
+        $uploadedFile = new UploadedFile(
+            $odtPath,
+            'template.odt',
+            'application/vnd.oasis.opendocument.text',
+            null,
+            true // test mode
+        );
+
+        $this->actingAs($this->admin)
+            ->post(route('admin.release.result-templates.preview'), [
+                'mode' => 'docx',
+                'document' => $uploadedFile,
+                'paper_size' => 'a4',
+                'orientation' => 'portrait',
+                'logical_unit' => 'full',
+            ])
+            ->assertOk()
+            ->assertJsonStructure(['html', 'dimensions']);
+
+        @unlink($odtPath);
+    }
+}

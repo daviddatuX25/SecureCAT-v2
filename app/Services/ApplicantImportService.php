@@ -17,23 +17,23 @@ class ApplicantImportService
     public const REQUIRED_COLUMNS = [
         'first_name',
         'last_name',
-        'email',
     ];
 
     public const OPTIONAL_COLUMNS = [
-        'middle_name',
+        'email',
+        'middle_name',   // also accepted as: middle_initial, mi
         'suffix',
         'birthdate',
-        'sex',
+        'sex',           // also accepted as: gender | values: male/female/m/f
         'applicant_type',
         'last_school_enrolled',
-        'strand',
+        'strand',        // also accepted as: strand_prev_course, prev_course
         'phone',
         'address_line',
         'city',
         'province',
         'zip_code',
-        'course_preference_1',
+        'course_preference_1',  // also accepted as: course_applied, course
         'course_preference_2',
         'course_preference_3',
         'gwa',
@@ -219,18 +219,15 @@ class ApplicantImportService
             $errors[] = 'Last name is required';
         }
 
-        // Required: email
-        if (empty($record['email'])) {
-            $errors[] = 'Email is required';
-        } elseif (! filter_var($record['email'], FILTER_VALIDATE_EMAIL)) {
+        // Optional: email (auto-generated if missing)
+        $email = $record['email'] ?? null;
+        if (! empty($email) && ! filter_var($email, FILTER_VALIDATE_EMAIL)) {
             $errors[] = 'Invalid email format';
         }
 
-        // Required by DB: birthdate
+        // Optional: birthdate — validate format only if provided
         $birthdate = $record['birthdate'] ?? null;
-        if (empty($birthdate)) {
-            $errors[] = 'Birthdate is required';
-        } else {
+        if (! empty($birthdate)) {
             try {
                 Carbon::parse($birthdate);
             } catch (\Exception $e) {
@@ -238,19 +235,14 @@ class ApplicantImportService
             }
         }
 
-        // Required by DB: sex
+        // Optional: sex — validate value only if provided
         $sex = strtolower(trim($record['sex'] ?? ''));
-        if (empty($sex)) {
-            $errors[] = 'Sex is required (male or female)';
-        } elseif (! in_array($sex, ['male', 'female'], true)) {
-            $errors[] = "Sex must be 'male' or 'female', got '{$sex}'";
+        if (! empty($sex) && ! in_array($this->normalizeSex($sex), ['male', 'female'], true)) {
+            $errors[] = "Sex must be 'male', 'female', 'm', or 'f', got '{$sex}'";
         }
 
-        // Required by DB: course_preference_1
+        // Optional: course_preference_1
         $pref1Value = $record['course_preference_1'] ?? null;
-        if (empty($pref1Value)) {
-            $errors[] = 'Course preference 1 is required';
-        }
 
         // Validate course preferences: accept course code or numeric ID
         $resolvedPrefs = [];
@@ -350,6 +342,22 @@ class ApplicantImportService
     }
 
     /**
+     * Normalize sex/gender values to 'male' or 'female'.
+     * Accepts: male, female, m, f (case-insensitive).
+     * Returns null if unrecognized.
+     */
+    private function normalizeSex(?string $value): ?string
+    {
+        $v = strtolower(trim($value ?? ''));
+
+        return match ($v) {
+            'male', 'm'   => 'male',
+            'female', 'f' => 'female',
+            default       => null,
+        };
+    }
+
+    /**
      * Import a single record into database.
      *
      * @param  array<string, mixed>  $record
@@ -361,8 +369,19 @@ class ApplicantImportService
         int $importerId
     ): array {
         try {
+            // Generate reference number
+            $referenceNumber = $this->generateReferenceNumber($academicYearId);
+
+            // Email fallback: if email is not provided, generate a unique placeholder
+            $email = $record['email'] ?? null;
+            if (empty($email)) {
+                $safeFirstName = preg_replace('/[^a-z0-9]/', '', strtolower($record['first_name']));
+                $safeLastName = preg_replace('/[^a-z0-9]/', '', strtolower($record['last_name']));
+                $email = "{$safeFirstName}.{$safeLastName}.{$referenceNumber}@securecat.local";
+            }
+
             // Check for duplicate email in same academic year
-            $exists = Application::where('email', $record['email'])
+            $exists = Application::where('email', $email)
                 ->where('academic_year_id', $academicYearId)
                 ->exists();
 
@@ -375,47 +394,52 @@ class ApplicantImportService
             $coursePref2 = $this->resolveCoursePreference($record['course_preference_2'] ?? null, 'course_preference_2');
             $coursePref3 = $this->resolveCoursePreference($record['course_preference_3'] ?? null, 'course_preference_3');
 
-            // Generate reference number
-            $referenceNumber = $this->generateReferenceNumber($academicYearId);
+            $fallbackCourseId = Course::where('is_active', true)->first()?->id ?? Course::first()?->id;
 
-            // Parse birthdate and calculate age
-            $birthdate = $this->parseDate($record['birthdate'] ?? null);
-            $age = $birthdate ? Carbon::parse($birthdate)->age : 0;
+            // Parse birthdate — fallback if absent
+            $birthdate = $this->parseDate($record['birthdate'] ?? null) ?? '2005-01-01';
+            $age = Carbon::parse($birthdate)->age;
 
-            // Normalize sex value
-            $sex = strtolower(trim($record['sex'] ?? 'male'));
-            if (! in_array($sex, ['male', 'female'], true)) {
-                $sex = 'male'; // fallback, should be caught by validation
+            // Normalize sex — default null if absent/unrecognized
+            $sex = $this->normalizeSex($record['sex'] ?? null);
+
+            // Middle name: also accept middle_initial column (already aliased by parser,
+            // but handle explicit 'middle_initial' key for safety)
+            $middleName = $record['middle_name'] ?? $record['middle_initial'] ?? null;
+            if (! empty($middleName)) {
+                $middleName = trim($middleName);
+            } else {
+                $middleName = null;
             }
 
             Application::create([
-                'academic_year_id' => $academicYearId,
-                'reference_number' => $referenceNumber,
-                'first_name' => $record['first_name'],
-                'middle_name' => $record['middle_name'] ?? null,
-                'last_name' => $record['last_name'],
-                'suffix' => $record['suffix'] ?? null,
-                'birthdate' => $birthdate,
-                'age' => $age,
-                'sex' => $sex,
-                'applicant_type' => in_array(strtolower(trim($record['applicant_type'] ?? 'new')), ['new', 'transferee'], true) ? strtolower(trim($record['applicant_type'] ?? 'new')) : 'new',
-                'last_school_enrolled' => $record['last_school_enrolled'] ?? null,
-                'strand' => $record['strand'] ?? null,
-                'email' => $record['email'],
-                'phone' => $record['phone'] ?? null,
-                'address_line' => $record['address_line'] ?? null,
-                'city' => $record['city'] ?? null,
-                'province' => $record['province'] ?? null,
-                'zip_code' => $record['zip_code'] ?? null,
-                'gwa' => isset($record['gwa']) && is_numeric($record['gwa']) ? (float) $record['gwa'] : null,
-                'course_preference_1' => $coursePref1['resolved'],
+                'academic_year_id'    => $academicYearId,
+                'reference_number'    => $referenceNumber,
+                'first_name'          => $record['first_name'],
+                'middle_name'         => $middleName,
+                'last_name'           => $record['last_name'],
+                'suffix'              => $record['suffix'] ?? null,
+                'birthdate'           => $birthdate,
+                'age'                 => $age ?? 0,
+                'sex'                 => $sex ?? 'male',
+                'applicant_type'      => in_array(strtolower(trim($record['applicant_type'] ?? 'new')), ['new', 'transferee'], true) ? strtolower(trim($record['applicant_type'] ?? 'new')) : 'new',
+                'last_school_enrolled'=> $record['last_school_enrolled'] ?? null,
+                'strand'              => $record['strand'] ?? null,
+                'email'               => $email,
+                'phone'               => $record['phone'] ?? null,
+                'address_line'        => $record['address_line'] ?? null,
+                'city'                => $record['city'] ?? null,
+                'province'            => $record['province'] ?? null,
+                'zip_code'            => $record['zip_code'] ?? null,
+                'gwa'                 => isset($record['gwa']) && is_numeric($record['gwa']) ? (float) $record['gwa'] : null,
+                'course_preference_1' => $coursePref1['resolved'] ?? $fallbackCourseId,
                 'course_preference_2' => $coursePref2['resolved'],
                 'course_preference_3' => $coursePref3['resolved'],
-                'status' => 'pending',
-                'pipeline_status' => 'pending',
-                'processed_by' => $importerId,
-                'processed_at' => now(),
-                'submitted_at' => now(),
+                'status'              => 'pending',
+                'pipeline_status'     => 'pending',
+                'processed_by'        => $importerId,
+                'processed_at'        => now(),
+                'submitted_at'        => now(),
             ]);
 
             return ['success' => true];

@@ -10,6 +10,8 @@
   const sid = $derived(String(sessionId));
   const isReadOnly = $derived(workflowStatus === 'completed');
   const autoCompute = $derived(enableNormalizedScores === true);
+  const hasConversionTableDomains = $derived(domains.some((d) => d.scoring_method === 'conversion_table'));
+  const hasFormulaDomains = $derived(domains.some((d) => d.scoring_method !== 'conversion_table'));
 
   const breadcrumbs = $derived([
     { label: 'Grading', href: '/admin/grading' },
@@ -26,6 +28,7 @@
         raw_score: existing?.raw_score ?? 0,
         max_score: existing?.max_score ?? d.max_items ?? 0,
         normalized_score: existing?.normalized_score ?? null,
+        percentile_string: existing?.percentile_string ?? null,
       });
     }
     return arr;
@@ -57,6 +60,18 @@
     const num = value === '' ? null : Math.max(0, parseFloat(value) || 0);
     scores = scores.map((s) =>
       s.aptitude_area_id === domainId ? { ...s, normalized_score: num } : s
+    );
+  }
+
+  function getPercentileString(domainId) {
+    const s = scores.find((x) => x.aptitude_area_id === domainId);
+    return s?.percentile_string ?? null;
+  }
+
+  function setPercentileString(domainId, value) {
+    const val = value === '' ? null : value;
+    scores = scores.map((s) =>
+      s.aptitude_area_id === domainId ? { ...s, percentile_string: val } : s
     );
   }
 
@@ -101,6 +116,13 @@
           max_score: sc.max_score,
         };
       }
+      const d = domains.find((x) => x.id === sc.aptitude_area_id);
+      if (d?.scoring_method === 'conversion_table') {
+        return {
+          aptitude_area_id: sc.aptitude_area_id,
+          percentile_string: sc.percentile_string,
+        };
+      }
       return {
         aptitude_area_id: sc.aptitude_area_id,
         normalized_score: sc.normalized_score,
@@ -143,7 +165,16 @@
     {:else}
       <div class="flex items-center gap-2 rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800 dark:border-amber-800 dark:bg-amber-950 dark:text-amber-200">
         <PenLine class="h-4 w-4 shrink-0" />
-        <span><strong>Manual mode</strong> — Enter normalized scores directly for each aptitude area.</span>
+        <span>
+          <strong>Manual mode</strong> —
+          {#if hasConversionTableDomains && hasFormulaDomains}
+            Enter already-converted percentiles for conversion table areas, and normalized scores for formula areas.
+          {:else if hasConversionTableDomains}
+            Enter already-converted percentiles directly for each aptitude area.
+          {:else}
+            Enter normalized scores directly for each aptitude area.
+          {/if}
+        </span>
       </div>
     {/if}
 
@@ -157,6 +188,10 @@
           Reference: {applicant.reference}
           {#if autoCompute}
             · Enter raw score per aptitude area (items correct)
+          {:else if hasConversionTableDomains && hasFormulaDomains}
+            · Enter percentiles or normalized scores per aptitude area
+          {:else if hasConversionTableDomains}
+            · Enter already-converted percentile per aptitude area
           {:else}
             · Enter normalized score per aptitude area
           {/if}
@@ -218,21 +253,37 @@
                     {/if}
                   {/if}
                 {:else}
-                {@const normScore = getNormalizedScore(domain.id)}
-                <div class="flex items-center gap-3">
-                  <Input
-                    id="score-{domain.id}"
-                    type="number"
-                    min="0"
-                    step="0.01"
-                    value={normScore ?? ''}
-                    oninput={(e) => !isReadOnly && setNormalizedScore(domain.id, e.currentTarget.value)}
-                    disabled={isReadOnly}
-                    class="w-24"
-                    placeholder="0.00"
-                  />
-                  <span class="text-sm text-muted-foreground">points</span>
-                </div>
+                  {#if domain.scoring_method === 'conversion_table'}
+                    {@const pctString = getPercentileString(domain.id)}
+                    <div class="flex items-center gap-3">
+                      <Input
+                        id="score-{domain.id}"
+                        type="text"
+                        value={pctString ?? ''}
+                        oninput={(e) => !isReadOnly && setPercentileString(domain.id, e.currentTarget.value)}
+                        disabled={isReadOnly}
+                        class="w-32"
+                        placeholder="e.g. 85th, 99+"
+                      />
+                      <span class="text-sm text-muted-foreground">percentile</span>
+                    </div>
+                  {:else}
+                    {@const normScore = getNormalizedScore(domain.id)}
+                    <div class="flex items-center gap-3">
+                      <Input
+                        id="score-{domain.id}"
+                        type="number"
+                        min="0"
+                        step="0.01"
+                        value={normScore ?? ''}
+                        oninput={(e) => !isReadOnly && setNormalizedScore(domain.id, e.currentTarget.value)}
+                        disabled={isReadOnly}
+                        class="w-24"
+                        placeholder="0.00"
+                      />
+                      <span class="text-sm text-muted-foreground">points</span>
+                    </div>
+                  {/if}
               {/if}
             </div>
           {/each}

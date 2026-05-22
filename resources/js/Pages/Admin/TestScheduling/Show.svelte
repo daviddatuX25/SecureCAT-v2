@@ -17,6 +17,7 @@
 
 
   let selectedAvailable = $state([]);
+  let backtrack = $state(false);
 
 
 
@@ -49,8 +50,14 @@
 
   function assignSelected() {
     if (selectedAvailable.length === 0) return;
-    router.post(`/admin/exam-scheduling/${session.id}/assign-applicants`, { applicant_ids: selectedAvailable }, {
-      onSuccess: () => (selectedAvailable = []),
+    router.post(`/admin/exam-scheduling/${session.id}/assign-applicants`, {
+      applicant_ids: selectedAvailable,
+      backtrack: backtrack
+    }, {
+      onSuccess: () => {
+        selectedAvailable = [];
+        backtrack = false;
+      },
     });
   }
 
@@ -226,7 +233,7 @@
             </Table.Body>
           </Table.Root>
         </div>
-        <div class="mt-3">
+        <div class="mt-3 flex flex-wrap items-center gap-4">
           <Button
             class="min-h-[44px]"
             disabled={selectedAvailable.length === 0}
@@ -235,6 +242,15 @@
             <UserPlus class="h-4 w-4 mr-2" />
             Assign selected ({selectedAvailable.length})
           </Button>
+
+          <label class="flex items-center gap-2 text-sm select-none cursor-pointer">
+            <input
+              type="checkbox"
+              class="h-4 w-4 rounded border-input accent-primary"
+              bind:checked={backtrack}
+            />
+            <span>Backtrack (mark present/submitted and complete session immediately)</span>
+          </label>
         </div>
       {:else}
         <p class="mt-4 text-sm text-muted-foreground">No available applicants, or all accepted applicants are already assigned.</p>
@@ -270,6 +286,23 @@
             <p class="mt-1 text-xs text-muted-foreground">Notify assigned applicants and lock schedule.</p>
           {/if}
         </div>
+        {#if assigned_applicants.length > 0}
+          <div>
+            <Button
+              class="min-h-[44px]"
+              variant="outline"
+              onclick={() => {
+                if (confirm('Are you sure you want to backtrack this session? All assigned applicants will be marked as present/submitted, and the session will be marked as completed.')) {
+                  router.post(`/admin/exam-scheduling/${session.id}/backtrack`, {}, { onSuccess: () => router.reload() });
+                }
+              }}
+            >
+              <ClipboardList class="h-4 w-4 mr-2" />
+              Backtrack Session
+            </Button>
+            <p class="mt-1 text-xs text-muted-foreground">Mark already-assigned applicants present/submitted & complete session.</p>
+          </div>
+        {/if}
       </div>
     </div>
     {/if}

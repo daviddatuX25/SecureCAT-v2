@@ -47,7 +47,9 @@ class AptitudeAreaController extends Controller
     {
         $this->authorize('create', AptitudeArea::class);
 
-        return Inertia::render('Admin/AptitudeAreas/Create');
+        return Inertia::render('Admin/AptitudeAreas/Create', [
+            'enable_normalized_scores' => \App\Models\SystemSetting::enableNormalizedScores(),
+        ]);
     }
 
     public function store(StoreAptitudeAreaRequest $request): RedirectResponse
@@ -87,6 +89,7 @@ class AptitudeAreaController extends Controller
         $aptitudeArea->load('percentileConversions');
 
         return Inertia::render('Admin/AptitudeAreas/Edit', [
+            'enable_normalized_scores' => \App\Models\SystemSetting::enableNormalizedScores(),
             'aptitude_area' => [
                 'id' => $aptitudeArea->id,
                 'name' => $aptitudeArea->name,

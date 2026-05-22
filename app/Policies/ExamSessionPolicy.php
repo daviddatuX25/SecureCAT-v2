@@ -121,4 +121,13 @@ class ExamSessionPolicy
 
         return $user->hasAnyRole(['test_administrator', 'super_admin', 'registrar_administrator']);
     }
+
+    public function backtrack(User $user, ExamSession $examSession): bool
+    {
+        if (in_array($examSession->status, [ExamSession::STATUS_COMPLETED, ExamSession::STATUS_CANCELLED], true)) {
+            return false;
+        }
+
+        return $user->hasAnyRole(['super_admin', 'registrar_administrator']);
+    }
 }

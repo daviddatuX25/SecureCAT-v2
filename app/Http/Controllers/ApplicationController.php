@@ -261,13 +261,18 @@ class ApplicationController extends Controller
 
         $validated = $request->validated();
 
+        $referenceNumber = Application::nextReferenceNumber();
+
         // Identity-based duplicate check (name + birthdate + sex)
-        $identityDuplicate = Application::where('academic_year_id', $activeAcademicYear->id)
-            ->whereRaw('LOWER(first_name) = ?', [strtolower($validated['first_name'])])
-            ->whereRaw('LOWER(last_name) = ?', [strtolower($validated['last_name'])])
-            ->where('birthdate', $validated['birthdate'])
-            ->where('sex', $validated['sex'])
-            ->first();
+        $identityDuplicate = null;
+        if (!empty($validated['birthdate']) && !empty($validated['sex'])) {
+            $identityDuplicate = Application::where('academic_year_id', $activeAcademicYear->id)
+                ->whereRaw('LOWER(first_name) = ?', [strtolower($validated['first_name'])])
+                ->whereRaw('LOWER(last_name) = ?', [strtolower($validated['last_name'])])
+                ->where('birthdate', $validated['birthdate'])
+                ->where('sex', $validated['sex'])
+                ->first();
+        }
 
         if ($identityDuplicate) {
             return redirect()
@@ -276,10 +281,19 @@ class ApplicationController extends Controller
                 ->with('error', "A person with the same name, birthdate, and sex already has an application ({$identityDuplicate->reference_number}) for this academic year.");
         }
 
-        $birthdate = Carbon::parse($validated['birthdate']);
+        $birthdateVal = !empty($validated['birthdate']) ? $validated['birthdate'] : '2005-01-01';
+        $birthdate = Carbon::parse($birthdateVal);
         $age = (int) $birthdate->diffInYears(now());
 
-        $referenceNumber = Application::nextReferenceNumber();
+        // Email fallback
+        $email = $validated['email'] ?? null;
+        if (empty($email)) {
+            $safeFirstName = preg_replace('/[^a-z0-9]/', '', strtolower($validated['first_name']));
+            $safeLastName = preg_replace('/[^a-z0-9]/', '', strtolower($validated['last_name']));
+            $email = "{$safeFirstName}.{$safeLastName}.{$referenceNumber}@securecat.local";
+        }
+
+        $fallbackCourseId = Course::where('is_active', true)->first()?->id ?? Course::first()?->id;
 
         // Handle auto-accept toggle
         $acceptImmediately = $validated['accept_immediately'] ?? false;
@@ -292,19 +306,19 @@ class ApplicationController extends Controller
             'middle_name' => $validated['middle_name'] ?? null,
             'last_name' => $validated['last_name'],
             'suffix' => $validated['suffix'] ?? null,
-            'birthdate' => $validated['birthdate'],
+            'birthdate' => $birthdateVal,
             'age' => $age,
-            'sex' => $validated['sex'],
+            'sex' => $validated['sex'] ?? 'male',
             'applicant_type' => $validated['applicant_type'] ?? 'new',
             'last_school_enrolled' => $validated['last_school_enrolled'] ?? null,
-            'email' => $validated['email'],
+            'email' => $email,
             'phone' => $validated['phone'] ?? null,
             'address_line' => $validated['address_line'] ?? null,
             'city' => $validated['city'] ?? null,
             'province' => $validated['province'] ?? null,
             'zip_code' => $validated['zip_code'] ?? null,
             'gwa' => $validated['gwa'] ?? null,
-            'course_preference_1' => $validated['course_preference_1'],
+            'course_preference_1' => $validated['course_preference_1'] ?? $fallbackCourseId,
             'course_preference_2' => ! empty($validated['course_preference_2']) ? (int) $validated['course_preference_2'] : null,
             'course_preference_3' => ! empty($validated['course_preference_3']) ? (int) $validated['course_preference_3'] : null,
             'status' => $status,
@@ -454,12 +468,15 @@ class ApplicationController extends Controller
         $validated = $request->validated();
 
         // Identity-based duplicate check (name + birthdate + sex)
-        $identityDuplicate = Application::where('academic_year_id', $activeAcademicYear->id)
-            ->whereRaw('LOWER(first_name) = ?', [strtolower($validated['first_name'])])
-            ->whereRaw('LOWER(last_name) = ?', [strtolower($validated['last_name'])])
-            ->where('birthdate', $validated['birthdate'])
-            ->where('sex', $validated['sex'])
-            ->first();
+        $identityDuplicate = null;
+        if (!empty($validated['birthdate']) && !empty($validated['sex'])) {
+            $identityDuplicate = Application::where('academic_year_id', $activeAcademicYear->id)
+                ->whereRaw('LOWER(first_name) = ?', [strtolower($validated['first_name'])])
+                ->whereRaw('LOWER(last_name) = ?', [strtolower($validated['last_name'])])
+                ->where('birthdate', $validated['birthdate'])
+                ->where('sex', $validated['sex'])
+                ->first();
+        }
 
         if ($identityDuplicate) {
             return redirect()
@@ -468,10 +485,21 @@ class ApplicationController extends Controller
                 ->with('error', "A person with the same name, birthdate, and sex already has an application ({$identityDuplicate->reference_number}) for this academic year.");
         }
 
-        $birthdate = Carbon::parse($validated['birthdate']);
+        $birthdateVal = !empty($validated['birthdate']) ? $validated['birthdate'] : '2005-01-01';
+        $birthdate = Carbon::parse($birthdateVal);
         $age = (int) $birthdate->diffInYears(now());
 
         $referenceNumber = Application::nextReferenceNumber();
+
+        // Email fallback
+        $email = $validated['email'] ?? null;
+        if (empty($email)) {
+            $safeFirstName = preg_replace('/[^a-z0-9]/', '', strtolower($validated['first_name']));
+            $safeLastName = preg_replace('/[^a-z0-9]/', '', strtolower($validated['last_name']));
+            $email = "{$safeFirstName}.{$safeLastName}.{$referenceNumber}@securecat.local";
+        }
+
+        $fallbackCourseId = Course::where('is_active', true)->first()?->id ?? Course::first()?->id;
 
         $application = Application::create([
             'academic_year_id' => $activeAcademicYear->id,
@@ -480,19 +508,19 @@ class ApplicationController extends Controller
             'middle_name' => $validated['middle_name'] ?? null,
             'last_name' => $validated['last_name'],
             'suffix' => $validated['suffix'] ?? null,
-            'birthdate' => $validated['birthdate'],
+            'birthdate' => $birthdateVal,
             'age' => $age,
-            'sex' => $validated['sex'],
+            'sex' => $validated['sex'] ?? 'male',
             'applicant_type' => $validated['applicant_type'] ?? 'new',
             'last_school_enrolled' => $validated['last_school_enrolled'] ?? null,
-            'email' => $validated['email'],
+            'email' => $email,
             'phone' => $validated['phone'] ?? null,
             'address_line' => $validated['address_line'] ?? null,
             'city' => $validated['city'] ?? null,
             'province' => $validated['province'] ?? null,
             'zip_code' => $validated['zip_code'] ?? null,
             'gwa' => $validated['gwa'] ?? null,
-            'course_preference_1' => $validated['course_preference_1'],
+            'course_preference_1' => $validated['course_preference_1'] ?? $fallbackCourseId,
             'course_preference_2' => ! empty($validated['course_preference_2']) ? (int) $validated['course_preference_2'] : null,
             'course_preference_3' => ! empty($validated['course_preference_3']) ? (int) $validated['course_preference_3'] : null,
             'status' => 'pending',

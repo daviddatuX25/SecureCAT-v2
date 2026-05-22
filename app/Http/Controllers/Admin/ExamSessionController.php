@@ -369,43 +369,82 @@ class ExamSessionController extends Controller
         if ($redirect = $this->redirectIfCompleted($exam_session, 'You cannot assign applicants to a completed exam session.')) {
             return $redirect;
         }
+
+        $backtrack = (bool) $request->validated('backtrack');
         $applicantIds = array_values(array_unique(array_map('intval', $request->validated('applicant_ids'))));
         $alreadyAttached = $exam_session->applicants()->whereIn('applicants.id', $applicantIds)->pluck('applicants.id')->all();
         $toAttach = array_diff($applicantIds, $alreadyAttached);
         if (! empty($toAttach)) {
             $exam_session->applicants()->attach($toAttach);
 
-            // Pipeline hook: newly assigned applicants advance to draft_scheduled or scheduled
-            $targetStatus = $exam_session->status === ExamSession::STATUS_DRAFT
-                ? 'draft_scheduled'
-                : 'scheduled';
             $pipeline = app(ApplicationPipelineService::class);
-            $newApplicants = Applicant::whereIn('id', $toAttach)
-                ->with('application')
-                ->get();
 
-            $newApplicants->each(function (Applicant $applicant) use ($pipeline, $targetStatus, $exam_session) {
-                if ($applicant->application) {
-                    $pipeline->transition($applicant->application, $targetStatus, [
-                        'session_id' => $exam_session->id,
+            if ($backtrack) {
+                // Bulk update the pivot records for these newly assigned applicants to present and submitted
+                DB::table('exam_session_applicant')
+                    ->where('exam_session_id', $exam_session->id)
+                    ->whereIn('applicant_id', $toAttach)
+                    ->update([
+                        'attendance_status' => 'present',
+                        'attendance_marked_at' => now(),
+                        'attendance_marked_by' => $request->user()->id,
+                        'submission_status' => 'submitted',
+                        'submitted_at' => now(),
+                        'submitted_to' => $request->user()->id,
+                        'updated_at' => now(),
                     ]);
-                }
-            });
 
-            // Notify late-assigned applicants when session is already published or in-progress.
-            // Unlike bulk publish (gated by notifyOnPublish), late additions always need notification
-            // because the applicant must know their exam date, time, and room.
-            if (in_array($exam_session->status, [ExamSession::STATUS_PUBLISHED, ExamSession::STATUS_IN_PROGRESS], true)) {
-                $exam_session->load('room');
-                $newApplicants->each(
-                    fn (Applicant $applicant) => $applicant->notify(new ExamSessionPublished($exam_session))
-                );
+                // Transition through scheduled -> attended -> submitted to record complete milestones
+                $newApplicants = Applicant::whereIn('id', $toAttach)->with('application')->get();
+                $newApplicants->each(function (Applicant $applicant) use ($pipeline, $exam_session) {
+                    if ($applicant->application) {
+                        $pipeline->transition($applicant->application, 'scheduled', ['session_id' => $exam_session->id]);
+                        $pipeline->transition($applicant->application, 'attended', ['session_id' => $exam_session->id]);
+                        $pipeline->transition($applicant->application, 'submitted', ['session_id' => $exam_session->id]);
+                    }
+                });
+            } else {
+                // Pipeline hook: newly assigned applicants advance to draft_scheduled or scheduled
+                $targetStatus = $exam_session->status === ExamSession::STATUS_DRAFT
+                    ? 'draft_scheduled'
+                    : 'scheduled';
+                $newApplicants = Applicant::whereIn('id', $toAttach)
+                    ->with('application')
+                    ->get();
+
+                $newApplicants->each(function (Applicant $applicant) use ($pipeline, $targetStatus, $exam_session) {
+                    if ($applicant->application) {
+                        $pipeline->transition($applicant->application, $targetStatus, [
+                            'session_id' => $exam_session->id,
+                        ]);
+                    }
+                });
+
+                // Notify late-assigned applicants when session is already published or in-progress.
+                // Unlike bulk publish (gated by notifyOnPublish), late additions always need notification
+                // because the applicant must know their exam date, time, and room.
+                if (in_array($exam_session->status, [ExamSession::STATUS_PUBLISHED, ExamSession::STATUS_IN_PROGRESS], true)) {
+                    $exam_session->load('room');
+                    $newApplicants->each(
+                        fn (Applicant $applicant) => $applicant->notify(new ExamSessionPublished($exam_session))
+                    );
+                }
             }
+        }
+
+        if ($backtrack) {
+            $exam_session->update([
+                'status' => ExamSession::STATUS_COMPLETED,
+                'closed_at' => now(),
+            ]);
+
+            app(AuditService::class)->log('exam_session.completed', ExamSession::class, $exam_session->id);
         }
 
         if (! empty($toAttach)) {
             app(AuditService::class)->log('exam_session.applicants_assigned', ExamSession::class, $exam_session->id, [], [
                 'applicant_count' => count($toAttach),
+                'backtrack' => $backtrack,
             ]);
         }
 
@@ -418,6 +457,49 @@ class ExamSessionController extends Controller
         }
 
         return redirect()->route('admin.exam-scheduling.show', $exam_session)->with('success', 'Applicants assigned.');
+    }
+
+    public function backtrack(ExamSession $exam_session): RedirectResponse
+    {
+        $this->authorize('backtrack', $exam_session);
+
+        if ($exam_session->applicants()->count() === 0) {
+            return redirect()->route('admin.exam-scheduling.show', $exam_session)
+                ->with('error', 'Cannot backtrack a session with no applicants assigned.');
+        }
+
+        DB::transaction(function () use ($exam_session) {
+            DB::table('exam_session_applicant')
+                ->where('exam_session_id', $exam_session->id)
+                ->update([
+                    'attendance_status' => 'present',
+                    'attendance_marked_at' => now(),
+                    'attendance_marked_by' => auth()->id(),
+                    'submission_status' => 'submitted',
+                    'submitted_at' => now(),
+                    'submitted_to' => auth()->id(),
+                    'updated_at' => now(),
+                ]);
+
+            $pipeline = app(ApplicationPipelineService::class);
+            $exam_session->applicants()->with('application')->get()->each(function (Applicant $applicant) use ($pipeline, $exam_session) {
+                if ($applicant->application) {
+                    $pipeline->transition($applicant->application, 'scheduled', ['session_id' => $exam_session->id]);
+                    $pipeline->transition($applicant->application, 'attended', ['session_id' => $exam_session->id]);
+                    $pipeline->transition($applicant->application, 'submitted', ['session_id' => $exam_session->id]);
+                }
+            });
+
+            $exam_session->update([
+                'status' => ExamSession::STATUS_COMPLETED,
+                'closed_at' => now(),
+            ]);
+
+            app(AuditService::class)->log('exam_session.completed', ExamSession::class, $exam_session->id);
+        });
+
+        return redirect()->route('admin.exam-scheduling.show', $exam_session)
+            ->with('success', 'Session completed and applicants marked as submitted.');
     }
 
     public function removeApplicant(Request $request, ExamSession $exam_session): RedirectResponse

@@ -175,6 +175,7 @@ Route::middleware(['auth'])->group(function () {
         Route::post('exam-scheduling/{exam_session}/start', [ExamSessionController::class, 'start'])->name('exam-scheduling.start');
         Route::post('exam-scheduling/{exam_session}/complete', [ExamSessionController::class, 'complete'])->name('exam-scheduling.complete');
         Route::post('exam-scheduling/{exam_session}/reopen', [ExamSessionController::class, 'reopen'])->name('exam-scheduling.reopen');
+        Route::post('exam-scheduling/{exam_session}/backtrack', [ExamSessionController::class, 'backtrack'])->name('exam-scheduling.backtrack');
         Route::post('exam-scheduling', [ExamSessionController::class, 'store'])->name('exam-scheduling.store');
         Route::get('exam-scheduling/{exam_session}/edit', [ExamSessionController::class, 'edit'])->name('exam-scheduling.edit');
         Route::put('exam-scheduling/{exam_session}', [ExamSessionController::class, 'update'])->name('exam-scheduling.update');

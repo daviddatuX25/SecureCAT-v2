@@ -1,12 +1,15 @@
 <script>
   import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.svelte';
-  import { Link, useForm } from '@inertiajs/svelte';
+  import { Link, useForm, usePage } from '@inertiajs/svelte';
   import { Button } from '@/Components/ui/button';
   import { Input } from '@/Components/ui/input';
   import * as Select from '@/Components/ui/select';
   import { success, error } from '@/lib/toast';
 
   let { courses = [], appointments = [], active_season = null } = $props();
+
+  const page = usePage();
+  const allowFlexible = $derived($page.props.allow_flexible_applications ?? false);
 
   const form = useForm({
     first_name: '',
@@ -120,14 +123,14 @@
         </div>
         <div class="grid gap-4 sm:grid-cols-2">
           <div class="space-y-2">
-            <label for="birthdate" class="text-sm font-medium">Birthdate *</label>
-            <Input id="birthdate" type="date" bind:value={$form.birthdate} required />
+            <label for="birthdate" class="text-sm font-medium">Birthdate {allowFlexible ? '(optional)' : '*'}</label>
+            <Input id="birthdate" type="date" bind:value={$form.birthdate} required={!allowFlexible} />
             {#if $form.errors?.birthdate}
               <p class="text-sm text-destructive">{$form.errors.birthdate}</p>
             {/if}
           </div>
           <div class="space-y-2">
-            <label for="sex" class="text-sm font-medium">Sex *</label>
+            <label for="sex" class="text-sm font-medium">Sex {allowFlexible ? '(optional)' : '*'}</label>
             <Select.Root type="single" bind:value={$form.sex}>
               <Select.Trigger id="sex" class="w-full">
                 {#if $form.sex === 'male'}
@@ -150,7 +153,7 @@
         </div>
         <div class="grid gap-4 sm:grid-cols-2">
           <div class="space-y-2">
-            <label for="applicant_type" class="text-sm font-medium">Applicant classification *</label>
+            <label for="applicant_type" class="text-sm font-medium">Applicant classification {allowFlexible ? '(optional)' : '*'}</label>
             <Select.Root type="single" bind:value={$form.applicant_type}>
               <Select.Trigger id="applicant_type" class="w-full">
                 {#if $form.applicant_type === 'new'}
@@ -196,8 +199,8 @@
       <div class="space-y-4">
         <h3 class="text-lg font-semibold">Contact Information</h3>
         <div class="space-y-2">
-          <label for="email" class="text-sm font-medium">Email *</label>
-          <Input id="email" type="email" bind:value={$form.email} required />
+          <label for="email" class="text-sm font-medium">Email {allowFlexible ? '(optional)' : '*'}</label>
+          <Input id="email" type="email" bind:value={$form.email} required={!allowFlexible} />
           {#if $form.errors?.email}
             <p class="text-sm text-destructive">{$form.errors.email}</p>
           {/if}

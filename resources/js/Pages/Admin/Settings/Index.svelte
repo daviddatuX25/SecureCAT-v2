@@ -5,17 +5,18 @@
   import Switch from '@/Components/ui/switch/switch.svelte';
   import { Button } from '@/Components/ui/button';
   import { Textarea } from '@/Components/ui/textarea';
-  import { Bot, Bell, Share2, FileCheck, Calculator, Ticket } from 'lucide-svelte';
+  import { Bot, Bell, Share2, FileCheck, Calculator, Ticket, FileText } from 'lucide-svelte';
   import { success as showSuccess, error as showError } from '@/lib/toast';
   import { GuidePanel, GuideSection, CopyableGroup } from '@/Components/Guide';
 
-  let { ai_exam_companion_enabled = false, notify_on_publish = false, release_mode = 'online', allow_direct_assessment = true, enable_normalized_scores = false, admission_slip_enabled = false, admission_slip_html_template = '' } = $props();
+  let { ai_exam_companion_enabled = false, notify_on_publish = false, release_mode = 'online', allow_direct_assessment = true, allow_flexible_applications = false, enable_normalized_scores = false, admission_slip_enabled = false, admission_slip_html_template = '' } = $props();
 
   const form = useForm({
     ai_exam_companion_enabled,
     notify_on_publish,
     release_mode,
     allow_direct_assessment,
+    allow_flexible_applications,
     enable_normalized_scores,
     admission_slip_enabled,
     admission_slip_html_template,
@@ -273,6 +274,28 @@
           />
           <span class="text-sm font-medium">
             {$form.allow_direct_assessment ? 'Enabled' : 'Disabled'}
+          </span>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle class="flex items-center gap-2">
+            <FileText class="h-5 w-5" />
+            Flexible Application Details
+          </CardTitle>
+          <CardDescription>
+            When enabled, applicants can submit applications without providing email, birthdate, sex, classification, or course preferences. Authenticated staff/admins can always bypass these requirements regardless of this toggle.
+          </CardDescription>
+        </CardHeader>
+        <CardContent class="flex items-center gap-4">
+          <Switch
+            checked={$form.allow_flexible_applications}
+            onCheckedChange={(checked) => toggleField('allow_flexible_applications', checked)}
+            aria-label="Enable flexible application details"
+          />
+          <span class="text-sm font-medium">
+            {$form.allow_flexible_applications ? 'Enabled' : 'Disabled'}
           </span>
         </CardContent>
       </Card>
