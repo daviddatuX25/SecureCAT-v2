@@ -8,7 +8,7 @@
   import { formatDate } from '@/lib/date-utils';
   import { Input } from '@/Components/ui/input';
 
-  let { session, assigned_applicants = [], available_applicants = [], proctors = [], view = 'admin', breadcrumbParent = { label: 'Exam Scheduling', href: '/admin/exam-scheduling' }, grading_session_id = null } = $props();
+  let { session, assigned_applicants = [], available_applicants = [], proctors = [], view = 'admin', breadcrumbParent = { label: 'Exam Scheduling', href: '/admin/exam-scheduling' }, grading_session_id = null, grading_session_status = null } = $props();
   const isProctorView = $derived(view === 'proctor');
 
   const breadcrumbs = $derived([
@@ -188,7 +188,7 @@
             </Button>
           </Link>
         {/if}
-        {#if ['draft', 'published', 'in_progress'].includes(session.status)}
+        {#if ['draft', 'published', 'in_progress'].includes(session.status) || (session.status === 'completed' && grading_session_status !== 'finalized')}
           <Button variant="destructive" class="min-h-[44px] gap-2" onclick={deleteSession}>
             <Trash2 class="h-4 w-4" />
             <span class="hidden sm:inline">Delete session</span>
@@ -245,7 +245,8 @@
               <GraduationCap class="h-4 w-4" />
               Go to Grading
             </a>
-          {:else}
+          {/if}
+          {#if !grading_session_id || grading_session_status !== 'finalized'}
             <Button class="min-h-[44px]" variant="outline" onclick={reopenSession}>
               <RotateCcw class="h-4 w-4 mr-2" />
               Reopen session

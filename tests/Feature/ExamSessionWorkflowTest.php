@@ -7,6 +7,7 @@ namespace Tests\Feature;
 use App\Models\AcademicYear;
 use App\Models\Applicant;
 use App\Models\ExamSession;
+use App\Models\GradingSession;
 use App\Models\Room;
 use App\Models\User;
 use App\Notifications\ExamSessionCompleted;
@@ -181,5 +182,61 @@ class ExamSessionWorkflowTest extends TestCase
 
         $via = $reminder->via($user);
         $this->assertEquals(['mail', 'database'], $via);
+    }
+
+    /** @test */
+    public function super_admin_can_delete_completed_exam_session_if_grading_is_not_finalized(): void
+    {
+        $session = $this->createSession(ExamSession::STATUS_COMPLETED);
+        $admin = User::factory()->create();
+        $admin->assignRole('super_admin');
+
+        $gradingSession = GradingSession::factory()->create([
+            'exam_session_id' => $session->id,
+            'status' => GradingSession::STATUS_IN_PROGRESS,
+        ]);
+
+        $response = $this->actingAs($admin)->delete("/admin/exam-scheduling/{$session->id}");
+
+        $response->assertRedirect();
+        $this->assertSoftDeleted($session);
+        $this->assertDatabaseMissing('grading_sessions', ['id' => $gradingSession->id]);
+    }
+
+    /** @test */
+    public function super_admin_cannot_delete_completed_exam_session_if_grading_is_finalized(): void
+    {
+        $session = $this->createSession(ExamSession::STATUS_COMPLETED);
+        $admin = User::factory()->create();
+        $admin->assignRole('super_admin');
+
+        $gradingSession = GradingSession::factory()->create([
+            'exam_session_id' => $session->id,
+            'status' => GradingSession::STATUS_FINALIZED,
+        ]);
+
+        $response = $this->actingAs($admin)->delete("/admin/exam-scheduling/{$session->id}");
+
+        $response->assertStatus(403);
+        $this->assertDatabaseHas('exam_sessions', ['id' => $session->id]);
+        $this->assertDatabaseHas('grading_sessions', ['id' => $gradingSession->id]);
+    }
+
+    /** @test */
+    public function super_admin_can_reopen_completed_exam_session_if_grading_is_not_finalized(): void
+    {
+        $session = $this->createSession(ExamSession::STATUS_COMPLETED);
+        $admin = User::factory()->create();
+        $admin->assignRole('super_admin');
+
+        $gradingSession = GradingSession::factory()->create([
+            'exam_session_id' => $session->id,
+            'status' => GradingSession::STATUS_IN_PROGRESS,
+        ]);
+
+        $response = $this->actingAs($admin)->post("/admin/exam-scheduling/{$session->id}/reopen");
+
+        $response->assertRedirect();
+        $this->assertEquals(ExamSession::STATUS_IN_PROGRESS, $session->fresh()->status);
     }
 }

@@ -302,6 +302,7 @@ class ExamSessionController extends Controller
             'view' => $isProctorView ? 'proctor' : 'admin',
             'breadcrumbParent' => $breadcrumbParent,
             'grading_session_id' => $gradingSession?->id,
+            'grading_session_status' => $gradingSession?->status,
         ]);
     }
 
