@@ -263,4 +263,58 @@ class ResultSheetPlaceholderTest extends TestCase
         $this->assertEquals('BSIT', $replacements['course_applied_code']);
         $this->assertEquals('BSA', $replacements['course_applied_code_2']);
     }
+
+    public function test_sex_placeholder_converts_male_and_female_to_m_and_f(): void
+    {
+        $service = app(ResultSheetTemplateService::class);
+
+        // 1. Test with sample data
+        $replacements = $service->buildReplacements([], true);
+        $this->assertEquals('M', $replacements['sex']);
+        $this->assertEquals('F', $replacements['sex_2']);
+
+        // 2. Test with explicit applicant data
+        $applicants = [
+            [
+                'name' => 'John Doe',
+                'reference' => 'REF-01',
+                'sex' => 'male',
+                'scores' => [],
+                'overall_pct' => 80,
+            ],
+            [
+                'name' => 'Jane Doe',
+                'reference' => 'REF-02',
+                'sex' => 'female',
+                'scores' => [],
+                'overall_pct' => 85,
+            ]
+        ];
+
+        $replacements2 = $service->buildReplacements($applicants, false);
+        $this->assertEquals('M', $replacements2['sex']);
+        $this->assertEquals('F', $replacements2['sex_2']);
+
+        // Test with uppercase/mixed case
+        $applicantsMixed = [
+            [
+                'name' => 'John Doe',
+                'reference' => 'REF-01',
+                'sex' => 'Male',
+                'scores' => [],
+                'overall_pct' => 80,
+            ],
+            [
+                'name' => 'Jane Doe',
+                'reference' => 'REF-02',
+                'sex' => 'FEMALE',
+                'scores' => [],
+                'overall_pct' => 85,
+            ]
+        ];
+
+        $replacements3 = $service->buildReplacements($applicantsMixed, false);
+        $this->assertEquals('M', $replacements3['sex']);
+        $this->assertEquals('F', $replacements3['sex_2']);
+    }
 }

@@ -673,7 +673,16 @@ class ResultSheetTemplateService
                     'recommended_course', 'recommended_course_code', 'counselor_comments', 'counselor_name',
                 ];
                 foreach ($newFields as $field) {
-                    $replacements["{$field}{$suffix}"] = (string) ($data[$field] ?? '');
+                    $val = (string) ($data[$field] ?? '');
+                    if ($field === 'sex') {
+                        $lowerVal = strtolower($val);
+                        if ($lowerVal === 'male' || $lowerVal === 'm') {
+                            $val = 'M';
+                        } elseif ($lowerVal === 'female' || $lowerVal === 'f') {
+                            $val = 'F';
+                        }
+                    }
+                    $replacements["{$field}{$suffix}"] = $val;
                 }
             } else {
                 $replacements["applicant_name{$suffix}"] = '';
