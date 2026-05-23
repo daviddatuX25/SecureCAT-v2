@@ -7,6 +7,8 @@
 
   let { rooms = [], proctors = [] } = $props();
 
+  let backtrackMode = $state(false);
+
   const form = useForm({
     room_id: '',
     date: '',
@@ -37,6 +39,7 @@
       ...data,
       room_id: data.room_id ? parseInt(data.room_id, 10) : null,
       proctor_ids: selectedProctorIds,
+      backtrack: backtrackMode,
     }));
     $form.post('/admin/exam-scheduling');
   }
@@ -107,6 +110,18 @@ const breadcrumbs = [{ label: 'Exam Scheduling', href: '/admin/exam-scheduling' 
         {#if $form.errors?.proctor_ids}
           <p class="text-sm text-destructive">{$form.errors.proctor_ids}</p>
         {/if}
+      </div>
+
+      <div class="space-y-2 rounded-md border border-amber-500/30 bg-amber-500/5 p-4">
+        <label class="flex items-center gap-2 cursor-pointer min-h-[44px]">
+          <input
+            type="checkbox"
+            bind:checked={backtrackMode}
+            class="h-4 w-4 rounded border-input accent-primary"
+          />
+          <span class="text-sm font-medium">Backtrack session</span>
+        </label>
+        <p class="text-xs text-muted-foreground">Enable this for recording a past exam session. Allows past dates and lets you mark all assigned applicants as present/submitted immediately after assigning them on the session detail page.</p>
       </div>
 
       <div class="flex gap-2 pt-4">

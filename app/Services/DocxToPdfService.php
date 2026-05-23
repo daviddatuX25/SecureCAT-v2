@@ -47,9 +47,7 @@ class DocxToPdfService
 
             $timeout = config('docx.conversion_timeout', 120);
 
-            $process = new Process($command);
-            $process->setTimeout($timeout);
-            $process->run();
+            $process = $this->runCommand($command, $timeout);
 
             if (! $process->isSuccessful()) {
                 $this->logger->error('LibreOffice conversion failed', [
@@ -99,11 +97,8 @@ class DocxToPdfService
             }
         }
 
-        $pdfs = [];
-
-        foreach ($docxPaths as $docxPath) {
-            $pdfs[] = $this->convert($docxPath);
-        }
+        // Convert all DOCX files in batches to avoid launching LibreOffice multiple times
+        $pdfs = $this->convertMultiple($docxPaths);
 
         $allPdfs = [];
         for ($i = 0; $i < $copies; $i++) {
@@ -126,6 +121,84 @@ class DocxToPdfService
     }
 
     /**
+     * Convert multiple DOCX files to PDF in batches using single LibreOffice invocations.
+     *
+     * @param  string[]  $docxPaths
+     * @return string[]  Array of PDF file contents in the same order as $docxPaths
+     */
+    public function convertMultiple(array $docxPaths): array
+    {
+        if (empty($docxPaths)) {
+            return [];
+        }
+
+        // We chunk the files to avoid command line limits (Windows command limit is 8191 characters).
+        // A chunk size of 40 is extremely safe and delivers massive speedup (95%+ reduction in executions).
+        $chunkSize = 40;
+        $chunks = array_chunk($docxPaths, $chunkSize);
+        $pdfContents = [];
+
+        foreach ($chunks as $chunk) {
+            $outputDir = $this->createTempDir();
+            $profileDir = $this->createTempDir('lo_profile_');
+
+            try {
+                $profileUri = 'file:///'.str_replace('\\', '/', $profileDir);
+
+                $command = [
+                    config('docx.libreoffice_path'),
+                    '--headless',
+                    '--norestore',
+                    '-env:UserInstallation='.$profileUri,
+                    '--convert-to', 'pdf',
+                    '--outdir', $outputDir,
+                ];
+
+                foreach ($chunk as $path) {
+                    $command[] = $path;
+                }
+
+                $timeout = config('docx.conversion_timeout', 120);
+
+                $process = $this->runCommand($command, $timeout);
+
+                if (! $process->isSuccessful()) {
+                    $this->logger->error('LibreOffice batch conversion failed', [
+                        'command' => $process->getCommandLine(),
+                        'exitCode' => $process->getExitCode(),
+                        'stdout' => $process->getOutput(),
+                        'stderr' => $process->getErrorOutput(),
+                    ]);
+
+                    throw new \RuntimeException(
+                        'LibreOffice batch conversion failed: '.$process->getErrorOutput()
+                    );
+                }
+
+                // Read files in the original order of the chunk
+                foreach ($chunk as $docxPath) {
+                    $basename = pathinfo($docxPath, PATHINFO_FILENAME);
+                    $pdfPath = $outputDir.DIRECTORY_SEPARATOR.$basename.'.pdf';
+
+                    if (! file_exists($pdfPath)) {
+                        throw new \RuntimeException(
+                            "Expected PDF output not found: {$pdfPath}"
+                        );
+                    }
+
+                    $pdfContents[] = file_get_contents($pdfPath);
+                }
+            } finally {
+                $this->removeDir($profileDir);
+                $this->removeDir($outputDir);
+            }
+        }
+
+        return $pdfContents;
+    }
+
+
+    /**
      * @param  string[]  $pdfContents
      */
     protected function mergeWithPdfunite(array $pdfContents, string $pdfunitePath): string
@@ -144,9 +217,7 @@ class DocxToPdfService
 
             $command = array_merge([$pdfunitePath], $inputFiles, [$outputPath]);
 
-            $process = new Process($command);
-            $process->setTimeout(config('docx.conversion_timeout', 120));
-            $process->run();
+            $process = $this->runCommand($command, (int) config('docx.conversion_timeout', 120));
 
             if (! $process->isSuccessful()) {
                 $this->logger->error('pdfunite merge failed', [
@@ -245,5 +316,19 @@ class DocxToPdfService
         }
 
         rmdir($dir);
+    }
+
+    /**
+     * Run an external command using Symfony Process.
+     *
+     * @param  string[]  $command
+     */
+    protected function runCommand(array $command, int $timeout): Process
+    {
+        $process = new Process($command);
+        $process->setTimeout($timeout);
+        $process->run();
+
+        return $process;
     }
 }

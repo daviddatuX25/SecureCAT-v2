@@ -189,10 +189,16 @@
             Download PDF
           </Button>
         </a>
+        <a href={`${bulkDocxBaseUrl}&merge=1`} rel="noopener">
+          <Button variant="outline" class="min-h-[44px] gap-2">
+            <FileText class="h-4 w-4" />
+            Download Word (Merged)
+          </Button>
+        </a>
         <a href={bulkDocxBaseUrl} rel="noopener">
           <Button variant="outline" class="min-h-[44px] gap-2">
             <FileText class="h-4 w-4" />
-            Download Word
+            Download Word (ZIP)
           </Button>
         </a>
       {/if}

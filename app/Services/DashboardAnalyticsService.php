@@ -504,7 +504,7 @@ class DashboardAnalyticsService
                 ->where('actor_id', $user->getKey())
                 ->orderByDesc('created_at')
                 ->limit($limit)
-                ->get(['event', 'summary', 'category', 'created_at'])
+                ->get(['id', 'event', 'summary', 'category', 'created_at'])
                 ->toArray();
         } catch (Throwable) {
             return [];

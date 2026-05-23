@@ -5,10 +5,12 @@
   import { Input } from '@/Components/ui/input';
   import * as Card from '@/Components/ui/card';
   import { Link } from '@inertiajs/svelte';
+  import { Eye, EyeOff } from 'lucide-svelte';
 
   const form = useForm({ email: '', password: '' });
   const page = usePage();
   const errors = $derived({ ...($page.props.errors ?? {}), ...($form.errors ?? {}) });
+  let showPassword = $state(false);
 
 
   function handleSubmit(e) {
@@ -34,7 +36,32 @@
         </div>
         <div class="space-y-2">
           <label for="password" class="text-sm font-medium leading-none">Password</label>
-          <Input id="password" type="password" bind:value={$form.password} placeholder="••••••••" autocomplete="current-password" required aria-invalid={!!errors?.password} />
+          <div class="relative">
+            <Input
+              id="password"
+              type={showPassword ? 'text' : 'password'}
+              bind:value={$form.password}
+              placeholder="••••••••"
+              autocomplete="current-password"
+              required
+              aria-invalid={!!errors?.password}
+              class="pr-10"
+            />
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon-sm"
+              class="absolute right-1.5 top-1/2 -translate-y-1/2 size-8 text-muted-foreground hover:text-foreground"
+              onclick={() => (showPassword = !showPassword)}
+              aria-label={showPassword ? 'Hide password' : 'Show password'}
+            >
+              {#if showPassword}
+                <EyeOff class="size-4" />
+              {:else}
+                <Eye class="size-4" />
+              {/if}
+            </Button>
+          </div>
           {#if errors?.password}
             <p class="text-sm text-destructive">{typeof errors.password === 'string' ? errors.password : errors.password[0]}</p>
           {/if}

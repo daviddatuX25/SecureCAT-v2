@@ -121,10 +121,16 @@
                 Download PDF
               </Button>
             </a>
+            <a href={`/admin/release/print/${sid}/print-bulk-docx?ids=${Array.from(selected).join(',')}&merge=1`} rel="noopener">
+              <Button variant="outline" class="min-h-[44px] gap-2">
+                <FileText class="h-4 w-4" />
+                Download Word (Merged)
+              </Button>
+            </a>
             <a href={`/admin/release/print/${sid}/print-bulk-docx?ids=${Array.from(selected).join(',')}`} rel="noopener">
               <Button variant="outline" class="min-h-[44px] gap-2">
                 <FileText class="h-4 w-4" />
-                Download Word
+                Download Word (ZIP)
               </Button>
             </a>
           {/if}

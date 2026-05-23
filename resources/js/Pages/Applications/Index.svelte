@@ -534,7 +534,7 @@
                   aria-label="Select all on page"
                 />
               </Table.Head>
-              <Table.Head class="px-4 py-3">Reference</Table.Head>
+              <Table.Head class="px-4 py-3">Applicant No.</Table.Head>
               <Table.Head class="px-4 py-3">Name</Table.Head>
               <Table.Head class="px-4 py-3">Email</Table.Head>
               <Table.Head class="px-4 py-3 cursor-pointer select-none" onclick={() => { sortField = 'pipeline_status'; sortDirection = sortDirection === 'asc' ? 'desc' : 'asc'; applyFilters(); }}>
