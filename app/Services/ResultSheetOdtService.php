@@ -127,6 +127,12 @@ class ResultSheetOdtService
 
         $found = array_values(array_intersect($allKnown, $odtPlaceholders));
         $missing = array_values(array_diff($requiredAndRecommended, $odtPlaceholders));
+        if (in_array('applicant_reference', $missing) && (in_array('applicant_number', $odtPlaceholders) || in_array('applicant_no', $odtPlaceholders))) {
+            $missing = array_values(array_diff($missing, ['applicant_reference']));
+        }
+        if (in_array('course_applied', $missing) && in_array('course_applied_code', $odtPlaceholders)) {
+            $missing = array_values(array_diff($missing, ['course_applied']));
+        }
         $missingOptional = array_values(array_diff($optionalAll, $odtPlaceholders));
         $extra = array_values(array_diff($odtPlaceholders, $allKnown));
 

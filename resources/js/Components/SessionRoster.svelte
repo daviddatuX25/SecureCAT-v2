@@ -6,7 +6,7 @@
   import QrScanner from '@/Components/QrScanner.svelte';
   import {
     ArrowLeft, UserCheck, UserX, FileCheck, Play, Square, QrCode,
-    UserMinus, BarChart2, Search,
+    UserMinus, BarChart2, Search, Clock, Info, AlertTriangle,
   } from 'lucide-svelte';
   import axios from 'axios';
   import { success as showSuccess, error as showError } from '@/lib/toast';
@@ -527,7 +527,7 @@
         <table class="w-full text-sm">
           <thead class="bg-muted/50">
             <tr>
-              <th class="px-4 py-3 text-left font-medium">Reference</th>
+              <th class="px-4 py-3 text-left font-medium">Applicant No.</th>
               <th class="px-4 py-3 text-left font-medium">Name</th>
               <th class="px-4 py-3 text-left font-medium">Attendance</th>
               <th class="px-4 py-3 text-left font-medium">Time in</th>

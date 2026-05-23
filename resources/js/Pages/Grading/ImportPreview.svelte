@@ -119,7 +119,7 @@
                 <Checkbox checked={selectAll} onCheckedChange={toggleAll} />
               </th>
               <th class="px-3 py-2 text-left w-16">Row</th>
-              <th class="px-3 py-2 text-left">Reference #</th>
+              <th class="px-3 py-2 text-left">Applicant #</th>
               <th class="px-3 py-2 text-left">Applicant</th>
               <th class="px-3 py-2 text-left">Session</th>
               {#each aptitudeAreaCodes as code}
@@ -139,7 +139,7 @@
                   {/if}
                 </td>
                 <td class="px-3 py-2 text-muted-foreground">{record.row}</td>
-                <td class="px-3 py-2">{record.reference_number || '—'}</td>
+                <td class="px-3 py-2">{record.applicant_number || '—'}</td>
                 <td class="px-3 py-2">{record.applicant_name || '—'}</td>
                 <td class="px-3 py-2">{record.grading_session_label || '—'}</td>
                 {#each aptitudeAreaCodes as code}

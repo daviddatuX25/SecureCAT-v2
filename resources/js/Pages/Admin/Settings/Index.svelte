@@ -118,7 +118,9 @@
   });
 
   const applicantPlaceholders = [
-    { value: '{{reference_number}}', label: 'Application reference number' },
+    { value: '{{applicant_number}}', label: 'Applicant number' },
+    { value: '{{applicant_no}}', label: 'Applicant number (alias)' },
+    { value: '{{reference_number}}', label: 'Application reference number (Deprecated: use applicant_number)' },
     { value: '{{full_name}}', label: 'Full name (computed)' },
     { value: '{{first_name}}', label: 'First name' },
     { value: '{{last_name}}', label: 'Last name' },
@@ -129,7 +131,7 @@
     { value: '{{course_1}}', label: '1st course preference' },
     { value: '{{course_2}}', label: '2nd course preference' },
     { value: '{{course_3}}', label: '3rd course preference' },
-    { value: '{{qr_code}}', label: 'QR code image (encodes ref number)' },
+    { value: '{{qr_code}}', label: 'QR code image (encodes applicant number)' },
   ];
 
   const institutionPlaceholders = [
@@ -142,7 +144,9 @@
   ];
 
   const dualSlotPlaceholders = [
-    { value: '{{reference_number_2}}', label: 'Applicant 2 reference number' },
+    { value: '{{applicant_number_2}}', label: 'Applicant 2 applicant number' },
+    { value: '{{applicant_no_2}}', label: 'Applicant 2 applicant number (alias)' },
+    { value: '{{reference_number_2}}', label: 'Applicant 2 reference number (Deprecated)' },
     { value: '{{full_name_2}}', label: 'Applicant 2 full name' },
     { value: '{{first_name_2}}', label: 'Applicant 2 first name' },
     { value: '{{last_name_2}}', label: 'Applicant 2 last name' },
@@ -304,20 +308,30 @@
         <CardHeader>
           <CardTitle class="flex items-center gap-2">
             <Calculator class="h-5 w-5" />
-            Normalized Score Computation
+            Score Entry & Auto-Computation
           </CardTitle>
           <CardDescription>
-            When enabled, bulk import expects raw scores and auto-computes normalized scores using aptitude area formulas.
+            Choose how exam scores are entered and processed across the system (affects both manual entry and bulk imports).
+            <div class="mt-2 grid grid-cols-1 md:grid-cols-2 gap-4 text-xs pt-2 border-t border-border/50">
+              <div>
+                <span class="font-medium text-foreground">Enabled (Auto-Compute):</span>
+                <p class="text-muted-foreground mt-0.5">Input raw scores (items correct). The system automatically computes normalized scores using formulas or looks up percentile grades via conversion tables.</p>
+              </div>
+              <div>
+                <span class="font-medium text-foreground">Disabled (Manual Mode):</span>
+                <p class="text-muted-foreground mt-0.5">Input pre-converted scores directly. Enter the final normalized score (e.g. 85.50) or percentile string (e.g. "95th") manually.</p>
+              </div>
+            </div>
           </CardDescription>
         </CardHeader>
         <CardContent class="flex items-center gap-4">
           <Switch
             checked={$form.enable_normalized_scores}
             onCheckedChange={(checked) => toggleField('enable_normalized_scores', checked)}
-            aria-label="Enable normalized score computation"
+            aria-label="Enable automated score computation"
           />
           <span class="text-sm font-medium">
-            {$form.enable_normalized_scores ? 'Enabled' : 'Disabled'}
+            {$form.enable_normalized_scores ? 'Auto-Compute Enabled' : 'Manual Mode Enabled'}
           </span>
         </CardContent>
       </Card>
@@ -372,7 +386,7 @@
                 id="admission_slip_html_template"
                 bind:value={$form.admission_slip_html_template}
                 rows="16"
-                placeholder="<div style=&quot;padding: 2rem; font-family: sans-serif;&quot;>&#10;  <h1>{{institution_name}}</h1>&#10;  <p>Reference: <strong>{{reference_number}}</strong></p>&#10;  <p>Name: {{full_name}}</p>&#10;</div>"
+                placeholder="<div style=&quot;padding: 2rem; font-family: sans-serif;&quot;>&#10;  <h1>{{institution_name}}</h1>&#10;  <p>Applicant No.: <strong>{{applicant_number}}</strong></p>&#10;  <p>Name: {{full_name}}</p>&#10;</div>"
                 class="mt-2 flex w-full font-mono"
               />
               {#if $form.errors?.admission_slip_html_template}<p class="text-sm text-destructive mt-1">{$form.errors.admission_slip_html_template}</p>{/if}

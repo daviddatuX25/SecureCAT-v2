@@ -10,7 +10,7 @@
   let {
     enableNormalizedScores = false,
     aptitudeAreaCodes = [],
-    requiredColumns = ['reference_number'],
+    requiredColumns = ['applicant_number'],
     optionalColumns = [],
     previewUrl = '/admin/grading/import/preview',
   } = $props();
@@ -94,15 +94,17 @@
         />
       </GuideSection>
 
-      <GuideNote variant={enableNormalizedScores ? 'warning' : 'info'} title={enableNormalizedScores ? 'Raw Score Mode' : 'Normalized Score Mode'}>
-        {enableNormalizedScores
-          ? 'Scores are stored as raw values. Enter the original scores from the exam.'
-          : 'Scores are automatically normalized after import. Enter raw scores — the system will normalize them.'}
+      <GuideNote variant={enableNormalizedScores ? 'info' : 'warning'} title={enableNormalizedScores ? 'Auto-Compute Mode' : 'Manual Entry Mode'}>
+        {#if enableNormalizedScores}
+          Scores will be auto-calculated. Enter the raw scores (items correct) in your spreadsheet; the system will automatically compute normalized scores or look up percentile grades.
+        {:else}
+          Scores must be pre-converted. Enter the final normalized scores or percentile grade strings directly in your spreadsheet. No automated calculations will be applied.
+        {/if}
       </GuideNote>
 
       <GuideNote variant="tip" title="Tips">
         <ul class="list-disc pl-4 space-y-1 text-xs text-muted-foreground">
-          <li>First row must contain column headers — spaces are fine (e.g. "reference number" works)</li>
+          <li>First row must contain column headers — spaces are fine (e.g. "applicant number" works)</li>
           <li>Supports CSV, XLSX, and XLS files up to 10MB</li>
           <li>Each applicant must have a completed exam session with an open grading session</li>
           <li>Duplicate scores for the same aptitude area in the same academic year will be rejected</li>

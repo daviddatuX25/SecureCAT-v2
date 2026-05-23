@@ -24,7 +24,7 @@
       </Link>
       <div>
         <h1 class="text-2xl font-bold">My Application</h1>
-        <p class="text-sm text-muted-foreground">Reference: {application.reference_number}</p>
+        <p class="text-sm text-muted-foreground">Applicant No.: {application.reference_number}</p>
       </div>
     </div>
 

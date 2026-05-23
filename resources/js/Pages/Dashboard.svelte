@@ -253,7 +253,7 @@
         </div>
         {#if Array.isArray(myActivity) && myActivity.length > 0}
           <ul class="divide-y divide-border max-h-[400px] overflow-y-auto">
-            {#each myActivity as entry (entry.created_at)}
+            {#each myActivity as entry (entry.id)}
               <li class="flex items-start gap-3 px-5 py-3">
                 <div class="mt-1.5 shrink-0">
                   <div class="h-2 w-2 rounded-full bg-primary"></div>

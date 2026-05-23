@@ -16,12 +16,12 @@ class AdmissionSlipTemplateService
     ) {}
 
     public const PLACEHOLDERS = [
-        'reference_number', 'full_name', 'first_name', 'last_name', 'middle_name', 'suffix',
+        'reference_number', 'applicant_number', 'applicant_no', 'full_name', 'first_name', 'last_name', 'middle_name', 'suffix',
         'birthdate', 'sex',
         'course_1', 'course_2', 'course_3',
         'photo_placeholder', 'qr_code',
         'institution_name', 'institution_address', 'institution_logo', 'exam_title', 'academic_year', 'registrar_name',
-        'reference_number_2', 'full_name_2', 'first_name_2', 'last_name_2', 'middle_name_2', 'suffix_2',
+        'reference_number_2', 'applicant_number_2', 'applicant_no_2', 'full_name_2', 'first_name_2', 'last_name_2', 'middle_name_2', 'suffix_2',
         'birthdate_2', 'sex_2',
         'course_1_2', 'course_2_2', 'course_3_2',
         'photo_placeholder_2', 'qr_code_2',
@@ -68,6 +68,8 @@ class AdmissionSlipTemplateService
             $suffix = $slot === 1 ? '' : '_2';
             if ($data) {
                 $replacements["reference_number{$suffix}"] = $data['reference_number'] ?? '—';
+                $replacements["applicant_number{$suffix}"] = $data['reference_number'] ?? '—';
+                $replacements["applicant_no{$suffix}"] = $data['reference_number'] ?? '—';
                 $replacements["full_name{$suffix}"] = $data['full_name'] ?? '—';
                 $replacements["first_name{$suffix}"] = $data['first_name'] ?? '—';
                 $replacements["last_name{$suffix}"] = $data['last_name'] ?? '—';
@@ -83,6 +85,8 @@ class AdmissionSlipTemplateService
                 $replacements["qr_placeholder{$suffix}"] = $data['qr_code'] ?? $this->qrPlaceholder($data['reference_number'] ?? '');
             } else {
                 $replacements["reference_number{$suffix}"] = '—';
+                $replacements["applicant_number{$suffix}"] = '—';
+                $replacements["applicant_no{$suffix}"] = '—';
                 $replacements["full_name{$suffix}"] = '—';
                 $replacements["first_name{$suffix}"] = '—';
                 $replacements["last_name{$suffix}"] = '—';

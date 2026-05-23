@@ -20,6 +20,7 @@ class ApplicantImportService
     ];
 
     public const OPTIONAL_COLUMNS = [
+        'applicant_number',
         'email',
         'middle_name',   // also accepted as: middle_initial, mi
         'suffix',
@@ -158,10 +159,11 @@ class ApplicantImportService
     {
         $valid = [];
         $errors = [];
+        $seenApplicantNumbers = [];
 
         foreach ($records as $index => $record) {
             $rowNum = $index + 2; // +2 for 1-based index and header row
-            $recordErrors = $this->validateSingleRecord($record, $rowNum);
+            $recordErrors = $this->validateSingleRecord($record, $rowNum, $seenApplicantNumbers);
 
             if (empty($recordErrors)) {
                 $valid[] = $record;
@@ -182,10 +184,11 @@ class ApplicantImportService
     public function validateRecordsWithDetails(array $records): array
     {
         $results = [];
+        $seenApplicantNumbers = [];
 
         foreach ($records as $index => $record) {
             $rowNum = $index + 2;
-            $recordErrors = $this->validateSingleRecord($record, $rowNum);
+            $recordErrors = $this->validateSingleRecord($record, $rowNum, $seenApplicantNumbers);
 
             $results[] = [
                 'id' => $index,
@@ -203,9 +206,10 @@ class ApplicantImportService
      * Validate a single record.
      *
      * @param  array<string, mixed>  $record
+     * @param  array<int, string>  $seenApplicantNumbers
      * @return array<int, string>
      */
-    private function validateSingleRecord(array $record, int $rowNum): array
+    private function validateSingleRecord(array $record, int $rowNum, array &$seenApplicantNumbers): array
     {
         $errors = [];
 
@@ -217,6 +221,25 @@ class ApplicantImportService
         // Required: last_name
         if (empty($record['last_name'])) {
             $errors[] = 'Last name is required';
+        }
+
+        // Optional: applicant_number
+        $applicantNumber = $record['applicant_number'] ?? null;
+        if (! empty($applicantNumber)) {
+            $applicantNumber = trim($applicantNumber);
+            if (strlen($applicantNumber) > 20) {
+                $errors[] = 'Applicant number must not exceed 20 characters';
+            }
+
+            if (Application::where('reference_number', $applicantNumber)->exists()) {
+                $errors[] = "Applicant number \"{$applicantNumber}\" has already been taken";
+            }
+
+            if (in_array($applicantNumber, $seenApplicantNumbers, true)) {
+                $errors[] = "Duplicate applicant number \"{$applicantNumber}\" in the import file";
+            } else {
+                $seenApplicantNumbers[] = $applicantNumber;
+            }
         }
 
         // Optional: email (auto-generated if missing)
@@ -369,8 +392,13 @@ class ApplicantImportService
         int $importerId
     ): array {
         try {
-            // Generate reference number
-            $referenceNumber = $this->generateReferenceNumber($academicYearId);
+            // Use custom applicant number if provided, otherwise generate one
+            $referenceNumber = $record['applicant_number'] ?? null;
+            if (empty($referenceNumber)) {
+                $referenceNumber = $this->generateReferenceNumber($academicYearId);
+            } else {
+                $referenceNumber = trim($referenceNumber);
+            }
 
             // Email fallback: if email is not provided, generate a unique placeholder
             $email = $record['email'] ?? null;

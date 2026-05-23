@@ -9,6 +9,8 @@ use App\Models\AptitudeArea;
 use App\Models\ExamSession;
 use App\Models\GradingSession;
 use App\Models\SystemSetting;
+use App\Models\ConsultationSummary;
+use App\Services\ApplicationPipelineService;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
@@ -16,7 +18,7 @@ use Illuminate\Support\Facades\DB;
 class ScoreImportService
 {
     public const REQUIRED_COLUMNS = [
-        'reference_number',
+        'applicant_number',
     ];
 
     public function __construct(
@@ -69,7 +71,7 @@ class ScoreImportService
         $areaCodeToId = $activeAreas->mapWithKeys(fn ($a) => [strtolower($a->code) => $a->id])->toArray();
         $areaMap = $activeAreas->keyBy(fn ($a) => strtolower($a->code));
 
-        $referenceNumbers = array_filter(array_map(fn ($r) => $r['reference_number'] ?? null, $records));
+        $referenceNumbers = array_filter(array_map(fn ($r) => $r['applicant_number'] ?? null, $records));
         $applicationMap = Application::whereIn('reference_number', $referenceNumbers)
             ->with('applicant.examSessions.gradingSession.examSession')
             ->get()
@@ -130,7 +132,7 @@ class ScoreImportService
             $results[] = [
                 'id' => $index,
                 'row' => $rowNum,
-                'reference_number' => $record['reference_number'] ?? null,
+                'applicant_number' => $record['applicant_number'] ?? null,
                 'applicant_name' => $applicant ? trim("{$application->first_name} {$application->last_name}") : '—',
                 'grading_session_id' => $gradingSession?->id,
                 'grading_session_label' => $gradingSession ? "Session #{$gradingSession->id}" : '—',
@@ -156,11 +158,11 @@ class ScoreImportService
      */
     private function resolveRow(array $record, Collection $applicationMap): array
     {
-        if (empty($record['reference_number'])) {
-            return ['application' => null, 'applicant' => null, 'gradingSession' => null, 'errors' => ['Reference number is required']];
+        if (empty($record['applicant_number'])) {
+            return ['application' => null, 'applicant' => null, 'gradingSession' => null, 'errors' => ['Applicant number is required']];
         }
 
-        $ref = $record['reference_number'];
+        $ref = $record['applicant_number'];
         $application = $applicationMap[$ref] ?? null;
         if (! $application) {
             return ['application' => null, 'applicant' => null, 'gradingSession' => null, 'errors' => ['Application not found']];
@@ -231,7 +233,7 @@ class ScoreImportService
         $activeAreas = AptitudeArea::where('is_active', true)->get(['id', 'code', 'max_items', 'formula', 'scoring_method']);
         $areaCodeToId = $activeAreas->mapWithKeys(fn ($a) => [strtolower($a->code) => $a])->all();
 
-        $referenceNumbers = array_filter(array_map(fn ($r) => $r['reference_number'] ?? null, $records));
+        $referenceNumbers = array_filter(array_map(fn ($r) => $r['applicant_number'] ?? null, $records));
         $applicationMap = Application::whereIn('reference_number', $referenceNumbers)
             ->with('applicant.examSessions.gradingSession.examSession')
             ->get()
@@ -333,6 +335,30 @@ class ScoreImportService
                     ]);
 
                     $imported++;
+                }
+
+                // Check if all active aptitude areas are scored for this applicant
+                $activeAreaCount = AptitudeArea::where('is_active', true)->count();
+                $scoredCount = $gradingSession->applicantScores()
+                    ->where('applicant_id', $applicant->id)
+                    ->count();
+
+                if ($scoredCount >= $activeAreaCount) {
+                    $summary = ConsultationSummary::firstOrCreate(
+                        ['applicant_id' => $applicant->id],
+                        ['status' => ConsultationSummary::STATUS_DRAFT]
+                    );
+
+                    if ($summary->status === ConsultationSummary::STATUS_PENDING) {
+                        $summary->update(['status' => ConsultationSummary::STATUS_DRAFT]);
+                    }
+
+                    $applicant->loadMissing('application');
+                    if ($applicant->application) {
+                        app(ApplicationPipelineService::class)->transition($applicant->application, 'scored', [
+                            'grading_session_id' => $gradingSession->id,
+                        ]);
+                    }
                 }
             });
         }

@@ -248,17 +248,20 @@ class ApplicationImportController extends Controller
         return response()->streamDownload(function () use ($headers) {
             $handle = fopen('php://output', 'w');
             fputcsv($handle, $headers);
-            // Add one example row
             fputcsv($handle, [
                 'Juan',            // first_name
                 'Dela Cruz',       // last_name
-                'juan@example.com', // email
+                'APP-2026-00001',  // applicant_number
+                'juan.delacruz@example.com', // email
                 'Santos',          // middle_name
                 'Jr.',             // suffix
                 '2000-01-15',      // birthdate
                 'Male',            // sex
+                'New',             // applicant_type
+                'Manila High School', // last_school_enrolled
+                'STEM',            // strand
                 '09171234567',     // phone
-                '123 Main St',    // address_line
+                '123 Main St',     // address_line
                 'Manila',          // city
                 'Metro Manila',    // province
                 '1000',            // zip_code

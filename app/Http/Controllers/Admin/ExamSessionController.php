@@ -23,6 +23,7 @@ use App\Notifications\ExamSessionStaffPostponed;
 use App\Notifications\ExamSessionStarted;
 use App\Services\ApplicationPipelineService;
 use App\Services\AuditService;
+use App\Services\GradingSessionService;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
@@ -291,6 +292,8 @@ class ExamSessionController extends Controller
             ? ['label' => 'My Sessions', 'href' => '/proctor/my-sessions']
             : ['label' => 'Exam Scheduling', 'href' => '/admin/exam-scheduling'];
 
+        $gradingSession = $exam_session->gradingSession;
+
         return Inertia::render('Admin/TestScheduling/Show', [
             'session' => $exam_session,
             'assigned_applicants' => $assigned_applicants,
@@ -298,6 +301,7 @@ class ExamSessionController extends Controller
             'proctors' => $proctors,
             'view' => $isProctorView ? 'proctor' : 'admin',
             'breadcrumbParent' => $breadcrumbParent,
+            'grading_session_id' => $gradingSession?->id,
         ]);
     }
 
@@ -342,12 +346,36 @@ class ExamSessionController extends Controller
     {
         $this->authorize('delete', $exam_session);
 
-        app(AuditService::class)->log('exam_session.deleted', ExamSession::class, $exam_session->id, [
-            'room_id' => $exam_session->room_id,
-            'date' => $exam_session->date?->format('Y-m-d'),
-        ]);
+        DB::transaction(function () use ($exam_session) {
+            app(AuditService::class)->log('exam_session.deleted', ExamSession::class, $exam_session->id, [
+                'room_id' => $exam_session->room_id,
+                'date' => $exam_session->date?->format('Y-m-d'),
+            ]);
 
-        $exam_session->delete();
+            // Detach applicants and update their pipeline status
+            $applicants = $exam_session->applicants()->with('application')->get();
+            $exam_session->applicants()->detach();
+
+            $pipeline = app(ApplicationPipelineService::class);
+            foreach ($applicants as $applicant) {
+                if ($applicant->application) {
+                    $pipeline->syncStatus($applicant->application);
+                }
+            }
+
+            // Detach proctors
+            $exam_session->proctors()->detach();
+
+            // Clean up related grading session if it exists
+            $gradingSession = $exam_session->gradingSession;
+            if ($gradingSession) {
+                $gradingSession->applicants()->detach();
+                $gradingSession->applicantScores()->delete();
+                $gradingSession->delete();
+            }
+
+            $exam_session->delete();
+        });
 
         return redirect()->route('admin.exam-scheduling.index')->with('success', 'Session deleted.');
     }
@@ -456,6 +484,15 @@ class ExamSessionController extends Controller
             ], 200);
         }
 
+        if ($backtrack) {
+            // Auto-open a grading session so the admin can go straight to scoring
+            $gradingSession = $exam_session->gradingSession
+                ?? app(GradingSessionService::class)->openForExamSession($exam_session->fresh(['applicants']), $request->user());
+
+            return redirect()->route('admin.grading.sessions.show', $gradingSession->id)
+                ->with('success', 'Session backtracked. Grading session is ready.');
+        }
+
         return redirect()->route('admin.exam-scheduling.show', $exam_session)->with('success', 'Applicants assigned.');
     }
 
@@ -498,8 +535,12 @@ class ExamSessionController extends Controller
             app(AuditService::class)->log('exam_session.completed', ExamSession::class, $exam_session->id);
         });
 
-        return redirect()->route('admin.exam-scheduling.show', $exam_session)
-            ->with('success', 'Session completed and applicants marked as submitted.');
+        // Auto-open a grading session so the admin can go straight to scoring
+        $gradingSession = $exam_session->gradingSession
+            ?? app(GradingSessionService::class)->openForExamSession($exam_session->fresh(['applicants']), auth()->user());
+
+        return redirect()->route('admin.grading.sessions.show', $gradingSession->id)
+            ->with('success', 'Session backtracked. Grading session is ready — start entering scores.');
     }
 
     public function removeApplicant(Request $request, ExamSession $exam_session): RedirectResponse
@@ -510,7 +551,17 @@ class ExamSessionController extends Controller
         $this->authorize('update', $exam_session);
         $data = $request->validate(['session_applicant_id' => 'required|integer']);
         $pivotId = (int) $data['session_applicant_id'];
-        DB::table('exam_session_applicant')->where('id', $pivotId)->where('exam_session_id', $exam_session->id)->delete();
+
+        $pivot = DB::table('exam_session_applicant')->where('id', $pivotId)->where('exam_session_id', $exam_session->id)->first();
+        if ($pivot) {
+            $applicantId = $pivot->applicant_id;
+            DB::table('exam_session_applicant')->where('id', $pivotId)->delete();
+
+            $applicant = Applicant::with('application')->find($applicantId);
+            if ($applicant && $applicant->application) {
+                app(ApplicationPipelineService::class)->syncStatus($applicant->application);
+            }
+        }
 
         app(AuditService::class)->log('exam_session.applicant_removed', ExamSession::class, $exam_session->id, [], [
             'applicant_pivot_id' => $pivotId,
@@ -614,8 +665,7 @@ class ExamSessionController extends Controller
 
     /**
      * Cancel an in-progress exam session.
-     */
-    public function cancel(ExamSession $exam_session): RedirectResponse
+     */    public function cancel(ExamSession $exam_session): RedirectResponse
     {
         if ($exam_session->status !== ExamSession::STATUS_IN_PROGRESS) {
             return redirect()->route('admin.exam-scheduling.show', $exam_session)
@@ -630,6 +680,14 @@ class ExamSessionController extends Controller
             fn ($applicant) => $applicant->notify(new ExamSessionCancelled($exam_session))
         );
 
+        // Re-sync applicant pipeline statuses
+        $pipeline = app(ApplicationPipelineService::class);
+        $exam_session->applicants()->with('application')->get()->each(function ($applicant) use ($pipeline) {
+            if ($applicant->application) {
+                $pipeline->syncStatus($applicant->application);
+            }
+        });
+
         // Notify assigned proctors and test_admins on cancel
         $recipients = $exam_session->proctors;
         $testAdmins = User::whereHas('roles', fn ($q) => $q->where('name', 'test_administrator'))->get();
@@ -642,6 +700,7 @@ class ExamSessionController extends Controller
 
         return redirect()->route('admin.exam-scheduling.index')->with('success', 'Session cancelled.');
     }
+
 
     public function start(ExamSession $exam_session): RedirectResponse
     {
@@ -696,7 +755,12 @@ class ExamSessionController extends Controller
 
         app(AuditService::class)->log('exam_session.completed', ExamSession::class, $exam_session->id);
 
-        return back()->with('success', 'Session completed.');
+        // Auto-open a grading session if one doesn't already exist
+        $gradingSession = $exam_session->gradingSession
+            ?? app(GradingSessionService::class)->openForExamSession($exam_session->fresh(['applicants']), auth()->user());
+
+        return redirect()->route('admin.grading.sessions.show', $gradingSession->id)
+            ->with('success', 'Session completed. Grading session is ready.');
     }
 
     /**

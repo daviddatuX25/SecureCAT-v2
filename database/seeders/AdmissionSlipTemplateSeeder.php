@@ -17,8 +17,8 @@ class AdmissionSlipTemplateSeeder extends Seeder
   </div>
   <table class="w-full text-sm border-collapse">
     <tr>
-      <td class="text-muted-foreground w-32">Reference Number</td>
-      <td class="font-mono font-bold">{{reference_number}}</td>
+      <td class="text-muted-foreground w-32">Applicant Number</td>
+      <td class="font-mono font-bold">{{applicant_number}}</td>
       <td rowspan="4" class="text-right align-top">{{photo_placeholder}}</td>
     </tr>
     <tr>

@@ -61,9 +61,13 @@ class SpreadsheetParser
         'classification'         => 'applicant_type',
         'applicant_classification' => 'applicant_type',
         'type'                   => 'applicant_type',
+        // Reference / Applicant Number mapping
+        'applicant_no'           => 'applicant_number',
+        'applicant_number'       => 'applicant_number',
+        'reference_no'           => 'applicant_number',
+        'reference_number'       => 'applicant_number',
+        'ref_no'                 => 'applicant_number',
         // Columns to silently ignore (map to special marker)
-        'applicant_no'           => '__ignore__',
-        'applicant_number'       => '__ignore__',
         'no'                     => '__ignore__',
         'seq'                    => '__ignore__',
         'sequence'               => '__ignore__',

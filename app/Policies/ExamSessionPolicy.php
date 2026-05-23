@@ -50,7 +50,12 @@ class ExamSessionPolicy
 
     public function delete(User $user, ExamSession $examSession): bool
     {
-        if (in_array($examSession->status, [ExamSession::STATUS_IN_PROGRESS, ExamSession::STATUS_COMPLETED, ExamSession::STATUS_CANCELLED], true)) {
+        if (in_array($examSession->status, [ExamSession::STATUS_COMPLETED, ExamSession::STATUS_CANCELLED], true)) {
+            return false;
+        }
+
+        $gradingSession = $examSession->gradingSession;
+        if ($gradingSession && $gradingSession->status === \App\Models\GradingSession::STATUS_FINALIZED) {
             return false;
         }
 
