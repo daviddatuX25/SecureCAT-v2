@@ -50,7 +50,7 @@ class ExamSessionPolicy
 
     public function delete(User $user, ExamSession $examSession): bool
     {
-        if (in_array($examSession->status, [ExamSession::STATUS_COMPLETED, ExamSession::STATUS_CANCELLED], true)) {
+        if ($examSession->status === ExamSession::STATUS_CANCELLED) {
             return false;
         }
 
