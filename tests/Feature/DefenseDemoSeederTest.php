@@ -56,14 +56,19 @@ class DefenseDemoSeederTest extends TestCase
         $this->assertSame(4, ExamSession::count());
     }
 
-    public function test_session_a_is_finalized(): void
+    public function test_session_a_and_b_are_finalized(): void
     {
-        $this->assertSame(1, GradingSession::where('status', GradingSession::STATUS_FINALIZED)->count());
+        $this->assertSame(2, GradingSession::where('status', GradingSession::STATUS_FINALIZED)->count());
     }
 
-    public function test_session_b_grading_is_in_progress(): void
+    public function test_session_c_grading_is_in_progress(): void
     {
-        $this->assertSame(1, GradingSession::where('status', GradingSession::STATUS_IN_PROGRESS)->count());
+        $sessionC = ExamSession::whereDate('date', today()->subDays(2))->first();
+        $this->assertNotNull($sessionC);
+        $this->assertDatabaseHas('grading_sessions', [
+            'exam_session_id' => $sessionC->id,
+            'status' => GradingSession::STATUS_IN_PROGRESS,
+        ]);
     }
 
     public function test_session_a_consultation_summaries_are_released(): void
@@ -71,43 +76,38 @@ class DefenseDemoSeederTest extends TestCase
         $this->assertSame(3, ConsultationSummary::where('status', ConsultationSummary::STATUS_RELEASED)->count());
     }
 
-    public function test_session_b_consultation_summaries_are_pending(): void
+    public function test_session_b_consultation_summaries_are_draft(): void
     {
-        $this->assertSame(2, ConsultationSummary::where('status', ConsultationSummary::STATUS_PENDING)->count());
+        $this->assertSame(2, ConsultationSummary::where('status', ConsultationSummary::STATUS_DRAFT)->count());
     }
 
-    public function test_session_b_consultations_have_no_course_or_comments_pre_filled(): void
+    public function test_session_b_consultations_have_course_and_comments_pre_filled(): void
     {
-        $pending = ConsultationSummary::where('status', ConsultationSummary::STATUS_PENDING)->get();
+        $drafts = ConsultationSummary::where('status', ConsultationSummary::STATUS_DRAFT)->get();
+        $this->assertCount(2, $drafts);
 
-        foreach ($pending as $summary) {
-            $this->assertNull(
-                $summary->recommended_course_id,
-                'Session B consultations must have null recommended_course_id so the demo can fill it live.'
-            );
-            $this->assertNull(
-                $summary->counselor_comments,
-                'Session B consultations must have null counselor_comments so the demo can fill it live.'
-            );
+        foreach ($drafts as $summary) {
+            $this->assertNotNull($summary->recommended_course_id);
+            $this->assertNotNull($summary->counselor_comments);
         }
     }
 
-    public function test_session_c_has_one_present_and_two_pending_attendance(): void
+    public function test_session_d_has_pending_attendance(): void
     {
-        $sessionC = ExamSession::whereDate('date', today())->first();
-        $this->assertNotNull($sessionC);
+        $sessionD = ExamSession::whereDate('date', today())->first();
+        $this->assertNotNull($sessionD);
 
         $present = DB::table('exam_session_applicant')
-            ->where('exam_session_id', $sessionC->id)
+            ->where('exam_session_id', $sessionD->id)
             ->where('attendance_status', 'present')
             ->count();
 
         $pending = DB::table('exam_session_applicant')
-            ->where('exam_session_id', $sessionC->id)
+            ->where('exam_session_id', $sessionD->id)
             ->where('attendance_status', 'pending')
             ->count();
 
-        $this->assertSame(1, $present);
+        $this->assertSame(0, $present);
         $this->assertSame(3, $pending);
     }
 }

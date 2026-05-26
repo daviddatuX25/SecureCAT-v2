@@ -292,6 +292,7 @@ class SetupHealthTest extends TestCase
     public function test_health_detects_aptitude_areas_missing_conversion_tables(): void
     {
         $this->clearSetupTables();
+        SystemSetting::set('enable_normalized_scores', true);
 
         AptitudeArea::create(['name' => 'Verbal', 'code' => 'VRB', 'max_items' => 50, 'formula' => '(x/max_items)*100', 'scoring_method' => 'formula', 'is_active' => true, 'display_order' => 1]);
         AptitudeArea::create(['name' => 'Numerical', 'code' => 'NUM', 'max_items' => 40, 'scoring_method' => 'conversion_table', 'is_active' => true, 'display_order' => 2]);
