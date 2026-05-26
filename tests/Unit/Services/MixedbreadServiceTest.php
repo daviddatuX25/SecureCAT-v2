@@ -16,7 +16,7 @@ class MixedbreadServiceTest extends TestCase
   public function test_upload_document_posts_to_store_files_endpoint(): void
   {
     Http::fake([
-      'https://api.mixedbread.com/v1/stores/store_123/files' => Http::response([
+      'https://api.mixedbread.com/v1/stores/store_123/files/upload' => Http::response([
         'id' => 'file_abc', 'status' => 'processing',
       ], 200),
     ]);
