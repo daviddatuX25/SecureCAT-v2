@@ -50,7 +50,12 @@ class ExamSessionPolicy
 
     public function delete(User $user, ExamSession $examSession): bool
     {
-        if (in_array($examSession->status, [ExamSession::STATUS_IN_PROGRESS, ExamSession::STATUS_COMPLETED, ExamSession::STATUS_CANCELLED], true)) {
+        if ($examSession->status === ExamSession::STATUS_CANCELLED) {
+            return false;
+        }
+
+        $gradingSession = $examSession->gradingSession;
+        if ($gradingSession && $gradingSession->status === \App\Models\GradingSession::STATUS_FINALIZED) {
             return false;
         }
 
@@ -120,5 +125,14 @@ class ExamSessionPolicy
         }
 
         return $user->hasAnyRole(['test_administrator', 'super_admin', 'registrar_administrator']);
+    }
+
+    public function backtrack(User $user, ExamSession $examSession): bool
+    {
+        if (in_array($examSession->status, [ExamSession::STATUS_COMPLETED, ExamSession::STATUS_CANCELLED], true)) {
+            return false;
+        }
+
+        return $user->hasAnyRole(['super_admin', 'registrar_administrator']);
     }
 }

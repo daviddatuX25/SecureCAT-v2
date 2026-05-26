@@ -1,6 +1,6 @@
 <script>
   import GuestLayout from '@/Layouts/GuestLayout.svelte';
-  import { Link, useForm } from '@inertiajs/svelte';
+  import { Link, useForm, usePage } from '@inertiajs/svelte';
   import { Button } from '@/Components/ui/button';
   import { Input } from '@/Components/ui/input';
   import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/Components/ui/card';
@@ -10,6 +10,10 @@
   import * as Dialog from '@/Components/ui/dialog';
 
   let { courses = [], appointments = [], active_season = null, allow_apply = false, is_staff = false } = $props();
+
+  const page = usePage();
+  const allowFlexible = $derived($page.props.allow_flexible_applications ?? false);
+  const isFlexible = $derived(allowFlexible || is_staff);
 
   const form = useForm({
     first_name: '',
@@ -167,23 +171,39 @@
                 {/if}
               </div>
             </div>
+            <div class="grid gap-4 sm:grid-cols-2">
+              <div>
+                <label for="middle_name" class="block text-sm font-medium">Middle name / Initial <span class="text-muted-foreground font-normal">(optional)</span></label>
+                <Input id="middle_name" name="middle_name" bind:value={$form.middle_name} class="mt-1 min-h-[44px]" placeholder="e.g. Santos or S." />
+                {#if $form.errors?.middle_name}
+                  <p class="mt-1 text-sm text-destructive">{$form.errors.middle_name}</p>
+                {/if}
+              </div>
+              <div>
+                <label for="suffix" class="block text-sm font-medium">Suffix <span class="text-muted-foreground font-normal">(optional)</span></label>
+                <Input id="suffix" name="suffix" bind:value={$form.suffix} class="mt-1 min-h-[44px]" placeholder="e.g. Jr., III" />
+                {#if $form.errors?.suffix}
+                  <p class="mt-1 text-sm text-destructive">{$form.errors.suffix}</p>
+                {/if}
+              </div>
+            </div>
             <div>
-              <label for="email" class="block text-sm font-medium">Email *</label>
-              <Input id="email" name="email" type="email" bind:value={$form.email} class="mt-1 min-h-[44px]" required />
+              <label for="email" class="block text-sm font-medium">Email {isFlexible ? '(optional)' : '*'}</label>
+              <Input id="email" name="email" type="email" bind:value={$form.email} class="mt-1 min-h-[44px]" required={!isFlexible} />
               {#if $form.errors?.email}
                 <p class="mt-1 text-sm text-destructive">{$form.errors.email}</p>
               {/if}
             </div>
             <div class="grid gap-4 sm:grid-cols-2">
               <div>
-                <label for="birthdate" class="block text-sm font-medium">Birthdate *</label>
-                <Input id="birthdate" name="birthdate" type="date" bind:value={$form.birthdate} class="mt-1 min-h-[44px]" required />
+                <label for="birthdate" class="block text-sm font-medium">Birthdate {isFlexible ? '(optional)' : '*'}</label>
+                <Input id="birthdate" name="birthdate" type="date" bind:value={$form.birthdate} class="mt-1 min-h-[44px]" required={!isFlexible} />
                 {#if $form.errors?.birthdate}
                   <p class="mt-1 text-sm text-destructive">{$form.errors.birthdate}</p>
                 {/if}
               </div>
               <div>
-                <label for="sex" class="block text-sm font-medium">Sex *</label>
+                <label for="sex" class="block text-sm font-medium">Sex {isFlexible ? '(optional)' : '*'}</label>
                 <Select.Root type="single" bind:value={$form.sex}>
                   <Select.Trigger id="sex" class="mt-1 w-full min-h-[44px]">
                     {#if $form.sex === 'male'}
@@ -206,7 +226,7 @@
             </div>
             <div class="grid gap-4 sm:grid-cols-2">
               <div>
-                <label for="applicant_type" class="block text-sm font-medium">Applicant classification *</label>
+                <label for="applicant_type" class="block text-sm font-medium">Applicant classification {isFlexible ? '(optional)' : '*'}</label>
                 <Select.Root type="single" bind:value={$form.applicant_type}>
                   <Select.Trigger id="applicant_type" class="mt-1 w-full min-h-[44px]">
                     {#if $form.applicant_type === 'new'}
@@ -302,7 +322,7 @@
               </div>
             </details>
             <div>
-              <label for="course_preference_1" class="block text-sm font-medium">Course preferences *</label>
+              <label for="course_preference_1" class="block text-sm font-medium">Course preferences {isFlexible ? '(optional)' : '*'}</label>
               <p class="text-xs text-muted-foreground mt-1">Select one or up to three different courses in order of preference.</p>
               <div class="mt-2 space-y-2">
                 <Select.Root type="single" bind:value={$form.course_preference_1}>
@@ -311,7 +331,7 @@
                       {@const course = coursesUnique.find(c => String(c.id) === String($form.course_preference_1))}
                       {course ? `${course.code} – ${course.name}` : '1st choice'}
                     {:else}
-                      <span class="text-muted-foreground">1st choice</span>
+                      <span class="text-muted-foreground">{isFlexible ? '1st choice (optional)' : '1st choice *'}</span>
                     {/if}
                   </Select.Trigger>
                   <Select.Content>

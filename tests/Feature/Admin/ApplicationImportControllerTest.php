@@ -117,7 +117,6 @@ class ApplicationImportControllerTest extends TestCase
         $response->assertOk();
         $data = $response->json();
         $this->assertContains('last_name', $data['missing_required']);
-        $this->assertContains('email', $data['missing_required']);
 
         // Should have a failed check for required columns
         $requiredCheck = collect($data['checks'])->firstWhere('label', 'Required columns');
@@ -181,11 +180,11 @@ class ApplicationImportControllerTest extends TestCase
         );
     }
 
-    public function test_preview_shows_missing_field_errors(): void
+    public function test_preview_shows_validation_errors(): void
     {
         $file = $this->makeCsv(
             ['first_name', 'last_name', 'email'],
-            [['John', 'Doe', 'john@example.com']]
+            [['John', 'Doe', 'invalid-email']]
         );
 
         $response = $this->actingAs($this->admin)
@@ -197,7 +196,7 @@ class ApplicationImportControllerTest extends TestCase
         $response->assertOk();
         $response->assertInertia(fn ($page) => $page
             ->component('Admin/Applications/ImportPreview')
-            ->where('validCount', 0) // Missing birthdate, sex, course_preference_1
+            ->where('validCount', 0) // Invalid email
         );
     }
 

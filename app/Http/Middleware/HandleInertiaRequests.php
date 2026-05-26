@@ -56,6 +56,7 @@ class HandleInertiaRequests extends Middleware
             ],
             'csrf_token' => $request->session()->token(),
             'ai_exam_companion_enabled' => SystemSetting::aiCompanionEnabled(),
+            'allow_flexible_applications' => SystemSetting::allowFlexibleApplications(),
             'googleOAuthEnabled' => GoogleOAuthConfig::isConfigured(),
             'release_mode' => SystemSetting::releaseMode(),
             'activeAcademicYear' => fn () => $this->resolveActiveAcademicYear(),

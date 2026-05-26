@@ -31,6 +31,7 @@ class SettingsController extends Controller
             'notify_on_publish' => SystemSetting::notifyOnPublish(),
             'release_mode' => SystemSetting::releaseMode(),
             'allow_direct_assessment' => SystemSetting::allowDirectAssessment(),
+            'allow_flexible_applications' => SystemSetting::allowFlexibleApplications(),
             'enable_normalized_scores' => SystemSetting::enableNormalizedScores(),
             'admission_slip_enabled' => SystemSetting::admissionSlipEnabled(),
             'admission_slip_html_template' => SystemSetting::admissionSlipTemplate() ?? '',
@@ -63,6 +64,10 @@ class SettingsController extends Controller
 
         if (array_key_exists('allow_direct_assessment', $validated)) {
             SystemSetting::set('allow_direct_assessment', (bool) $validated['allow_direct_assessment']);
+        }
+
+        if (array_key_exists('allow_flexible_applications', $validated)) {
+            SystemSetting::set('allow_flexible_applications', (bool) $validated['allow_flexible_applications']);
         }
 
         if (array_key_exists('enable_normalized_scores', $validated)) {

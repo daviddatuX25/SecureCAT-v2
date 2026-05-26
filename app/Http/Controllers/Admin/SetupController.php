@@ -265,17 +265,26 @@ class SetupController extends Controller
     {
         $total = AptitudeArea::count();
         $active = AptitudeArea::where('is_active', true)->count();
+        $autoCompute = SystemSetting::enableNormalizedScores();
 
+        // In auto-compute mode: conversion table areas MUST have data (for lookup),
+        // and formula areas MUST have a formula.
+        // In manual mode: conversion table areas are fine without data (user types
+        // the percentile directly); only formula areas without a formula are flagged.
         $missingScoringList = AptitudeArea::where('is_active', true)
-            ->where(function ($q) {
+            ->where(function ($q) use ($autoCompute) {
                 $q->where(function ($q2) {
+                    // Formula areas missing a formula — always a problem
                     $q2->where('scoring_method', 'formula')
                         ->where(function ($q3) {
                             $q3->whereNull('formula')->orWhere('formula', '');
                         });
-                })->orWhere(function ($q2) {
-                    $q2->where('scoring_method', 'conversion_table')
-                        ->whereDoesntHave('percentileConversions');
+                })->orWhere(function ($q2) use ($autoCompute) {
+                    // Conversion table areas with no entries — only a problem in auto-compute
+                    if ($autoCompute) {
+                        $q2->where('scoring_method', 'conversion_table')
+                            ->whereDoesntHave('percentileConversions');
+                    }
                 })->orWhereNull('scoring_method');
             })
             ->get()
@@ -288,6 +297,21 @@ class SetupController extends Controller
 
         $withoutScoring = count($missingScoringList);
         $withScoring = $active - $withoutScoring;
+
+        // Count conversion table areas that have no data (informational in manual mode)
+        $emptyConversionTables = ! $autoCompute
+            ? AptitudeArea::where('is_active', true)
+                ->where('scoring_method', 'conversion_table')
+                ->whereDoesntHave('percentileConversions')
+                ->count()
+            : 0;
+
+        $scoringMessage = match (true) {
+            $active === 0 => 'No active areas to check scoring on.',
+            $withoutScoring === 0 && $emptyConversionTables === 0 => "All {$active} active area(s) have scoring configured.",
+            $withoutScoring === 0 && $emptyConversionTables > 0 => "All formula areas have scoring configured. {$emptyConversionTables} conversion table area(s) have no table data — this is fine in manual mode (percentiles are entered directly). Switch to auto-compute to require table data.",
+            default => "{$withoutScoring} active area(s) missing scoring: ".implode(', ', $missingScoringList)." — normalized scores won't compute for them.",
+        };
 
         return [
             'key' => 'aptitude_areas',
@@ -316,14 +340,12 @@ class SetupController extends Controller
                 ],
                 [
                     'key' => 'aptitude_scoring',
-                    'label' => 'Active areas have scoring configured (formula or conversion table)',
+                    'label' => $autoCompute
+                        ? 'Active areas have scoring configured (formula or populated conversion table)'
+                        : 'Active areas have scoring configured (formula or conversion table method)',
                     'passed' => $active > 0 && $withoutScoring === 0,
                     'severity' => 'optional',
-                    'message' => match (true) {
-                        $active === 0 => 'No active areas to check scoring on.',
-                        $withoutScoring === 0 => "All {$active} active area(s) have scoring configured.",
-                        default => "{$withoutScoring} active area(s) missing scoring: ".implode(', ', $missingScoringList)." — normalized scores won't compute for them.",
-                    },
+                    'message' => $scoringMessage,
                 ],
             ],
         ];

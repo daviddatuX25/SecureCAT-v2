@@ -28,8 +28,9 @@ class ResultSheetPlaceholderTest extends TestCase
 
         $requiredFields = [
             'family_name', 'first_name', 'middle_name', 'suffix',
-            'sex', 'gwa', 'course_applied', 'strand', 'applicant_type',
-            'exam_time', 'recommended_course', 'counselor_comments', 'counselor_name',
+            'sex', 'gwa', 'course_applied', 'course_applied_code', 'strand', 'applicant_type',
+            'exam_time', 'exam_date_start', 'exam_date_end', 'exam_time_start', 'exam_time_end',
+            'recommended_course', 'counselor_comments', 'counselor_name',
         ];
         foreach ($requiredFields as $field) {
             $this->assertArrayHasKey($field, $sample, "Missing field: {$field}");
@@ -85,7 +86,8 @@ class ResultSheetPlaceholderTest extends TestCase
         $expected = [
             'applicant_name', 'applicant_reference',
             'family_name', 'first_name', 'middle_name', 'suffix',
-            'sex', 'gwa', 'course_applied', 'strand', 'applicant_type',
+            'sex', 'gwa', 'course_applied', 'course_applied_code', 'strand', 'applicant_type',
+            'exam_date_start', 'exam_date_end', 'exam_time_start', 'exam_time_end',
             'institution_name', 'institution_campus',
         ];
         $placeholders = ResultSheetTemplateService::PLACEHOLDERS;
@@ -219,12 +221,100 @@ class ResultSheetPlaceholderTest extends TestCase
         // Required should only contain applicant_reference
         $this->assertEquals(['applicant_reference'], $categorized['required']);
 
-        // Optional should contain applicant_name, suffix, exam_date, exam_time, room_name, overall_pct
-        $expectedOptional = ['applicant_name', 'suffix', 'exam_date', 'exam_time', 'room_name', 'overall_pct'];
+        // Optional should contain applicant_name, suffix, exam_date, exam_time, room_name, overall_pct, and the new range placeholders
+        $expectedOptional = ['applicant_name', 'suffix', 'exam_date', 'exam_time', 'exam_date_start', 'exam_date_end', 'exam_time_start', 'exam_time_end', 'room_name', 'overall_pct'];
         foreach ($expectedOptional as $field) {
             $this->assertContains($field, $categorized['optional']);
             $this->assertNotContains($field, $categorized['required']);
             $this->assertNotContains($field, $categorized['recommended']);
         }
+    }
+
+    public function test_course_applied_code_validation_and_resolution(): void
+    {
+        $service = app(ResultSheetTemplateService::class);
+        $method = new \ReflectionMethod($service, 'buildCategorizedPlaceholders');
+        $method->setAccessible(true);
+        $categorized = $method->invoke($service);
+
+        $this->assertContains('course_applied_code', $categorized['recommended']);
+        $this->assertContains('course_applied_code_2', $categorized['applicant2']);
+
+        $applicants = [
+            [
+                'name' => 'John Doe',
+                'reference' => 'REF-01',
+                'course_applied' => 'BS Information Technology',
+                'course_applied_code' => 'BSIT',
+                'scores' => [],
+                'overall_pct' => 80,
+            ],
+            [
+                'name' => 'Jane Doe',
+                'reference' => 'REF-02',
+                'course_applied' => 'BS Accountancy',
+                'course_applied_code' => 'BSA',
+                'scores' => [],
+                'overall_pct' => 85,
+            ]
+        ];
+
+        $replacements = $service->buildReplacements($applicants, false);
+        $this->assertEquals('BSIT', $replacements['course_applied_code']);
+        $this->assertEquals('BSA', $replacements['course_applied_code_2']);
+    }
+
+    public function test_sex_placeholder_converts_male_and_female_to_m_and_f(): void
+    {
+        $service = app(ResultSheetTemplateService::class);
+
+        // 1. Test with sample data
+        $replacements = $service->buildReplacements([], true);
+        $this->assertEquals('M', $replacements['sex']);
+        $this->assertEquals('F', $replacements['sex_2']);
+
+        // 2. Test with explicit applicant data
+        $applicants = [
+            [
+                'name' => 'John Doe',
+                'reference' => 'REF-01',
+                'sex' => 'male',
+                'scores' => [],
+                'overall_pct' => 80,
+            ],
+            [
+                'name' => 'Jane Doe',
+                'reference' => 'REF-02',
+                'sex' => 'female',
+                'scores' => [],
+                'overall_pct' => 85,
+            ]
+        ];
+
+        $replacements2 = $service->buildReplacements($applicants, false);
+        $this->assertEquals('M', $replacements2['sex']);
+        $this->assertEquals('F', $replacements2['sex_2']);
+
+        // Test with uppercase/mixed case
+        $applicantsMixed = [
+            [
+                'name' => 'John Doe',
+                'reference' => 'REF-01',
+                'sex' => 'Male',
+                'scores' => [],
+                'overall_pct' => 80,
+            ],
+            [
+                'name' => 'Jane Doe',
+                'reference' => 'REF-02',
+                'sex' => 'FEMALE',
+                'scores' => [],
+                'overall_pct' => 85,
+            ]
+        ];
+
+        $replacements3 = $service->buildReplacements($applicantsMixed, false);
+        $this->assertEquals('M', $replacements3['sex']);
+        $this->assertEquals('F', $replacements3['sex_2']);
     }
 }

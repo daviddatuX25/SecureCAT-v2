@@ -13,6 +13,8 @@ class StoreAptitudeAreaRequest extends FormRequest
 
     public function rules(): array
     {
+        $autoCompute = \App\Models\SystemSetting::enableNormalizedScores();
+
         return [
             'name' => ['required', 'string', 'max:100'],
             'code' => ['required', 'string', 'max:20', 'unique:aptitude_areas,code'],
@@ -20,7 +22,7 @@ class StoreAptitudeAreaRequest extends FormRequest
             'max_items' => ['required', 'integer', 'min:1', 'max:999'],
             'formula' => ['nullable', 'string', 'max:500'],
             'scoring_method' => ['required', 'in:formula,conversion_table'],
-            'conversion_table' => ['required_if:scoring_method,conversion_table', 'array'],
+            'conversion_table' => [$autoCompute ? 'required_if:scoring_method,conversion_table' : 'nullable', 'array'],
             'conversion_table.*.raw_score' => ['required', 'integer', 'min:0'],
             'conversion_table.*.percentile_output' => ['required', 'string', 'max:20'],
             'display_order' => ['nullable', 'integer', 'min:0'],

@@ -16,6 +16,7 @@ class AssignApplicantsRequest extends FormRequest
         return [
             'applicant_ids' => ['required', 'array', 'min:1'],
             'applicant_ids.*' => ['required', 'integer', 'exists:applicants,id'],
+            'backtrack' => ['nullable', 'boolean'],
         ];
     }
 }

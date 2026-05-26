@@ -96,7 +96,7 @@
     {#if application?.submitted_at}
       <div class="grid gap-2 rounded-lg bg-muted/50 p-4 text-sm sm:grid-cols-2">
         <div>
-          <span class="text-muted-foreground">Reference Number:</span>
+          <span class="text-muted-foreground">Applicant Number:</span>
           <span class="ml-2 font-medium">{application.reference_number}</span>
         </div>
         <div>

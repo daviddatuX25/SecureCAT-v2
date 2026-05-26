@@ -39,7 +39,7 @@ class ScoreImportControllerTest extends TestCase
 
         $this->academicYear = AcademicYear::factory()->create();
         $this->areaSa = AptitudeArea::factory()->create(['code' => 'SA', 'max_items' => 50, 'formula' => '(x / max_items) * 100']);
-        $this->areaVr = AptitudeArea::factory()->create(['code' => 'VR', 'max_items' => 50]);
+        $this->areaVr = AptitudeArea::factory()->create(['code' => 'VR', 'max_items' => 50, 'formula' => null]);
 
         $this->examSession = ExamSession::factory()->create([
             'academic_year_id' => $this->academicYear->id,
@@ -60,7 +60,7 @@ class ScoreImportControllerTest extends TestCase
         $applicant = Applicant::factory()->create(['application_id' => $application->id]);
         $this->examSession->applicants()->attach($applicant);
 
-        $csv = "reference_number,SA,VR\nAPP-2026-00001,20,30\n";
+        $csv = "applicant_number,SA,VR\nAPP-2026-00001,20,30\n";
         $file = UploadedFile::fake()->createWithContent('scores.csv', $csv);
 
         $response = $this->actingAs($this->admin)
@@ -69,7 +69,7 @@ class ScoreImportControllerTest extends TestCase
         $response->assertInertia(fn ($page) => $page
             ->component('Grading/ImportPreview')
             ->has('records', 1)
-            ->where('records.0.reference_number', 'APP-2026-00001')
+            ->where('records.0.applicant_number', 'APP-2026-00001')
             ->where('records.0.is_valid', true)
             ->where('records.0.grading_session_id', $this->gradingSession->id)
             ->where('records.0.scores', fn ($scores) => count($scores) === 2)
@@ -83,7 +83,7 @@ class ScoreImportControllerTest extends TestCase
         ]);
         Applicant::factory()->create(['application_id' => $application->id]);
 
-        $csv = "reference_number,SA\nAPP-2026-00002,20\n";
+        $csv = "applicant_number,SA\nAPP-2026-00002,20\n";
         $file = UploadedFile::fake()->createWithContent('scores.csv', $csv);
 
         $response = $this->actingAs($this->admin)
@@ -110,7 +110,7 @@ class ScoreImportControllerTest extends TestCase
             'aptitude_area_id' => $this->areaSa->id,
         ]);
 
-        $csv = "reference_number,SA\nAPP-2026-00003,25\n";
+        $csv = "applicant_number,SA\nAPP-2026-00003,25\n";
         $file = UploadedFile::fake()->createWithContent('scores.csv', $csv);
 
         $response = $this->actingAs($this->admin)
@@ -133,7 +133,7 @@ class ScoreImportControllerTest extends TestCase
         $applicant = Applicant::factory()->create(['application_id' => $application->id]);
         $this->examSession->applicants()->attach($applicant);
 
-        $csv = "reference_number,SA,VR\nAPP-2026-00004,25,40\n";
+        $csv = "applicant_number,SA,VR\nAPP-2026-00004,25,40\n";
         $file = UploadedFile::fake()->createWithContent('scores.csv', $csv);
 
         $client = $this->actingAs($this->admin);
@@ -172,7 +172,7 @@ class ScoreImportControllerTest extends TestCase
         $applicant = Applicant::factory()->create(['application_id' => $application->id]);
         $this->examSession->applicants()->attach($applicant);
 
-        $csv = "reference_number,SA\nAPP-2026-00005,88.5\n";
+        $csv = "applicant_number,SA\nAPP-2026-00005,88.5\n";
         $file = UploadedFile::fake()->createWithContent('scores.csv', $csv);
 
         $client = $this->actingAs($this->admin);
@@ -193,7 +193,7 @@ class ScoreImportControllerTest extends TestCase
 
     public function test_analyze_returns_column_analysis_for_valid_csv()
     {
-        $csv = "reference_number,SA,VR\nAPP-2026-00001,20,30\n";
+        $csv = "applicant_number,SA,VR\nAPP-2026-00001,20,30\n";
         $file = UploadedFile::fake()->createWithContent('scores.csv', $csv);
 
         $response = $this->actingAs($this->admin)
@@ -236,16 +236,16 @@ class ScoreImportControllerTest extends TestCase
             ->assertHeader('content-type', 'text/csv; charset=UTF-8')
             ->assertDownload('score_import_template.csv');
 
-        // Should contain reference_number and aptitude area codes
+        // Should contain applicant_number and aptitude area codes
         $content = $response->streamedContent();
-        $this->assertStringContainsString('reference_number', $content);
+        $this->assertStringContainsString('applicant_number', $content);
         $this->assertStringContainsString('SA', $content);
         $this->assertStringContainsString('VR', $content);
     }
 
     public function test_preview_rejects_unmatched_reference_number()
     {
-        $csv = "reference_number,SA\nNONEXISTENT-REF,20\n";
+        $csv = "applicant_number,SA\nNONEXISTENT-REF,20\n";
         $file = UploadedFile::fake()->createWithContent('scores.csv', $csv);
 
         $response = $this->actingAs($this->admin)
@@ -259,7 +259,7 @@ class ScoreImportControllerTest extends TestCase
 
     public function test_preview_rejects_missing_reference_number()
     {
-        $csv = "reference_number,SA\n,20\n";
+        $csv = "applicant_number,SA\n,20\n";
         $file = UploadedFile::fake()->createWithContent('scores.csv', $csv);
 
         $response = $this->actingAs($this->admin)
@@ -267,7 +267,7 @@ class ScoreImportControllerTest extends TestCase
 
         $response->assertInertia(fn ($page) => $page
             ->where('records.0.is_valid', false)
-            ->where('records.0.errors.0', 'Reference number is required')
+            ->where('records.0.errors.0', 'Applicant number is required')
         );
     }
 }

@@ -14,6 +14,7 @@ use App\Services\PrintBatchService;
 use App\Services\ResultSheetDocxService;
 use App\Services\ResultSheetPdfService;
 use App\Services\ResultSheetTemplateService;
+use App\Services\DocxMergeService;
 use App\ValueObjects\RenderResult;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Collection;
@@ -32,6 +33,7 @@ class ReleasePrintController extends Controller
         private ResultSheetPdfService $pdfService,
         private DocxToPdfService $docxToPdfService,
         private ResultSheetDocxService $docxService,
+        private DocxMergeService $docxMergeService,
     ) {}
 
     public function index(GradingSession $grading_session): Response
@@ -102,14 +104,12 @@ class ReleasePrintController extends Controller
             ]);
         }
 
-        $session = $grading_session->load(['examSession.room']);
-        $applicant->load('application');
-        $scores = $grading_session->applicantScores()
-            ->where('applicant_id', $applicant->id)
-            ->with('aptitudeArea')
-            ->get();
+        $applicantsWithScores = $this->templateService->fetchApplicantsWithScores(
+            [$applicant->id],
+            $grading_session->id
+        );
+        $applicantData = $applicantsWithScores[0] ?? abort(404, 'Applicant data not found.');
 
-        $applicantData = $this->buildApplicantData($applicant, $session, $scores);
         $result = $this->templateService->render($template, [$applicantData], false);
 
         return Inertia::render('Release/ResultSheet', [
@@ -145,17 +145,14 @@ class ReleasePrintController extends Controller
 
         $filename = str_replace(' ', '_', $this->formatName($applicant)).'_result_sheet.pdf';
 
+        $applicantsWithScores = $this->templateService->fetchApplicantsWithScores(
+            [$applicant->id],
+            $grading_session->id
+        );
+        $applicantData = $applicantsWithScores[0] ?? abort(404, 'Applicant data not found.');
+
         if ($template->mode === ResultSheetTemplate::MODE_DOCX && $template->document_path && $this->docxToPdfService->isAvailable()) {
-            $applicantsWithScores = $this->templateService->fetchApplicantsWithScores(
-                [$applicant->id],
-                $grading_session->id,
-            );
-
-            if (empty($applicantsWithScores)) {
-                abort(404, 'Applicant data not found.');
-            }
-
-            $docxFiles = $this->templateService->buildFilledDocumentFiles($applicantsWithScores, $template);
+            $docxFiles = $this->templateService->buildFilledDocumentFiles([$applicantData], $template);
 
             try {
                 $pdfContent = $this->docxToPdfService->convert($docxFiles[0]);
@@ -170,14 +167,6 @@ class ReleasePrintController extends Controller
             }
         }
 
-        $session = $grading_session->load(['examSession.room']);
-        $applicant->load('application');
-        $scores = $grading_session->applicantScores()
-            ->where('applicant_id', $applicant->id)
-            ->with('aptitudeArea')
-            ->get();
-
-        $applicantData = $this->buildApplicantData($applicant, $session, $scores);
         $result = $this->templateService->render($template, [$applicantData], false, true);
 
         return request()->boolean('download')
@@ -384,6 +373,10 @@ class ReleasePrintController extends Controller
         $ids = array_slice(array_filter(array_map('intval', explode(',', request()->query('ids', '')))), 0, 200);
         $applicantsWithScores = $this->templateService->fetchApplicantsWithScores($ids, $grading_session->id);
 
+        if (request()->boolean('merge') && strtolower(pathinfo($template->document_path, PATHINFO_EXTENSION)) === 'docx') {
+            return $this->buildBulkDocxMerged($applicantsWithScores, $template, "session_{$grading_session->id}_result_sheets.docx");
+        }
+
         return $this->buildBulkDocxZip($applicantsWithScores, $template, "session_{$grading_session->id}_result_sheets.zip");
     }
 
@@ -399,6 +392,10 @@ class ReleasePrintController extends Controller
 
         $ids = array_slice(array_filter(array_map('intval', explode(',', request()->query('ids', '')))), 0, 200);
         $applicantsWithScores = $this->templateService->fetchApplicantsWithScores($ids);
+
+        if (request()->boolean('merge') && strtolower(pathinfo($template->document_path, PATHINFO_EXTENSION)) === 'docx') {
+            return $this->buildBulkDocxMerged($applicantsWithScores, $template, 'result_sheets.docx');
+        }
 
         return $this->buildBulkDocxZip($applicantsWithScores, $template, 'result_sheets.zip');
     }
@@ -443,6 +440,37 @@ class ReleasePrintController extends Controller
         }
     }
 
+    /**
+     * Build a single merged DOCX file containing all filled document templates.
+     */
+    private function buildBulkDocxMerged(array $applicantsWithScores, ResultSheetTemplate $template, string $docxFilename): SymfonyResponse
+    {
+        $docxFiles = $this->templateService->buildFilledDocumentFiles($applicantsWithScores, $template);
+
+        $tempDir = storage_path('app/temp/phpword');
+        if (! is_dir($tempDir)) {
+            mkdir($tempDir, 0755, true);
+        }
+
+        $mergedPath = tempnam($tempDir, 'docx_bulk_merged_').'.docx';
+
+        try {
+            $this->docxMergeService->merge($docxFiles, $mergedPath);
+
+            app(AuditService::class)->log('result_sheet.downloaded_bulk_docx_merged', ResultSheetTemplate::class, $template->id, [], [
+                'count' => count($applicantsWithScores),
+            ]);
+
+            return response()->download($mergedPath, $docxFilename, [
+                'Content-Type' => 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+            ])->deleteFileAfterSend(true);
+        } finally {
+            foreach ($docxFiles as $f) {
+                @unlink($f);
+            }
+        }
+    }
+
     // -- Private Helpers ---------------------------------------------------
 
     private function formatName(Applicant $applicant): string
@@ -457,66 +485,6 @@ class ReleasePrintController extends Controller
             $applicant->application->last_name,
             $applicant->application->suffix,
         ])));
-    }
-
-    /**
-     * Build applicant data array for template rendering.
-     *
-     * @param  Collection<int, array{domain: string, raw: int|float|null, max: int|float|null, pct: int}>|null  $rawScores
-     * @param  array<int, array{domain: string, raw: int|float|null, max: int|float|null, pct: int}>|null  $mappedScores
-     * @return array<string, mixed>
-     */
-    private function buildApplicantData(Applicant $applicant, ?GradingSession $session, ?Collection $rawScores = null, ?array $mappedScores = null): array
-    {
-        $scores = $mappedScores ?? $this->mapScores($rawScores ?? collect());
-        $overallPct = count($scores) > 0
-            ? (int) round(collect($scores)->avg('pct_numeric'))
-            : 0;
-
-        return [
-            'id' => $applicant->id,
-            'name' => $this->formatName($applicant),
-            'reference' => $applicant->application?->reference_number ?? '—',
-            'exam_date' => $session?->examSession?->date?->format('F j, Y') ?? '—',
-            'room_name' => $session?->examSession?->room?->name ?? '—',
-            'scores' => $scores,
-            'overall_pct' => $overallPct,
-        ];
-    }
-
-    /**
-     * @param  Collection<int, ApplicantScore>  $scores
-     * @return array<int, array{domain: string, raw: int|float|null, max: int|float|null, pct: int, pct_string: string|null, pct_numeric: int}>
-     */
-    private function mapScores(Collection $scores): array
-    {
-        return $scores->map(function ($s) {
-            if ($s->percentile_string !== null) {
-                $numeric = preg_match('/(\d+)/', $s->percentile_string, $matches)
-                    ? (int) ($matches[1] ?? 0)
-                    : 0;
-
-                return [
-                    'domain' => $s->aptitudeArea?->name ?? '—',
-                    'raw' => $s->raw_score,
-                    'max' => $s->max_score,
-                    'pct' => $numeric,
-                    'pct_string' => $s->percentile_string,
-                    'pct_numeric' => $numeric,
-                ];
-            }
-
-            $pctVal = $s->max_score > 0 ? (int) round(($s->raw_score / $s->max_score) * 100) : 0;
-
-            return [
-                'domain' => $s->aptitudeArea?->name ?? '—',
-                'raw' => $s->raw_score,
-                'max' => $s->max_score,
-                'pct' => $pctVal,
-                'pct_string' => null,
-                'pct_numeric' => $pctVal,
-            ];
-        })->values()->all();
     }
 
     /**
