@@ -9,6 +9,8 @@ use App\Models\AptitudeArea;
 use App\Models\ExamSession;
 use App\Models\GradingSession;
 use App\Models\SystemSetting;
+use App\Models\ConsultationSummary;
+use App\Services\ApplicationPipelineService;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
@@ -16,7 +18,7 @@ use Illuminate\Support\Facades\DB;
 class ScoreImportService
 {
     public const REQUIRED_COLUMNS = [
-        'reference_number',
+        'applicant_number',
     ];
 
     public function __construct(
@@ -65,10 +67,11 @@ class ScoreImportService
      */
     public function validateRecords(array $records): array
     {
-        $activeAreas = AptitudeArea::where('is_active', true)->get(['id', 'code', 'max_items', 'formula']);
+        $activeAreas = AptitudeArea::where('is_active', true)->get(['id', 'code', 'max_items', 'formula', 'scoring_method']);
         $areaCodeToId = $activeAreas->mapWithKeys(fn ($a) => [strtolower($a->code) => $a->id])->toArray();
+        $areaMap = $activeAreas->keyBy(fn ($a) => strtolower($a->code));
 
-        $referenceNumbers = array_filter(array_map(fn ($r) => $r['reference_number'] ?? null, $records));
+        $referenceNumbers = array_filter(array_map(fn ($r) => $r['applicant_number'] ?? null, $records));
         $applicationMap = Application::whereIn('reference_number', $referenceNumbers)
             ->with('applicant.examSessions.gradingSession.examSession')
             ->get()
@@ -91,7 +94,12 @@ class ScoreImportService
             foreach ($record as $key => $value) {
                 $lowerKey = strtolower($key);
                 if (isset($areaCodeToId[$lowerKey])) {
-                    if ($value !== '' && $value !== null && ! is_numeric($value)) {
+                    $area = $areaMap[$lowerKey] ?? null;
+                    $isConversionTable = $area && ($area->scoring_method ?? 'formula') === 'conversion_table';
+                    $enableNormalizedScores = SystemSetting::enableNormalizedScores();
+                    $mustBeNumeric = $enableNormalizedScores || !$isConversionTable;
+
+                    if ($value !== '' && $value !== null && $mustBeNumeric && ! is_numeric($value)) {
                         $recordErrors[] = "{$key} must be a number";
                     }
                     $areaScores[] = [
@@ -124,7 +132,7 @@ class ScoreImportService
             $results[] = [
                 'id' => $index,
                 'row' => $rowNum,
-                'reference_number' => $record['reference_number'] ?? null,
+                'applicant_number' => $record['applicant_number'] ?? null,
                 'applicant_name' => $applicant ? trim("{$application->first_name} {$application->last_name}") : '—',
                 'grading_session_id' => $gradingSession?->id,
                 'grading_session_label' => $gradingSession ? "Session #{$gradingSession->id}" : '—',
@@ -150,11 +158,11 @@ class ScoreImportService
      */
     private function resolveRow(array $record, Collection $applicationMap): array
     {
-        if (empty($record['reference_number'])) {
-            return ['application' => null, 'applicant' => null, 'gradingSession' => null, 'errors' => ['Reference number is required']];
+        if (empty($record['applicant_number'])) {
+            return ['application' => null, 'applicant' => null, 'gradingSession' => null, 'errors' => ['Applicant number is required']];
         }
 
-        $ref = $record['reference_number'];
+        $ref = $record['applicant_number'];
         $application = $applicationMap[$ref] ?? null;
         if (! $application) {
             return ['application' => null, 'applicant' => null, 'gradingSession' => null, 'errors' => ['Application not found']];
@@ -222,10 +230,10 @@ class ScoreImportService
         $errors = [];
         $enableNormalizedScores = SystemSetting::enableNormalizedScores();
 
-        $activeAreas = AptitudeArea::where('is_active', true)->get(['id', 'code', 'max_items', 'formula']);
+        $activeAreas = AptitudeArea::where('is_active', true)->get(['id', 'code', 'max_items', 'formula', 'scoring_method']);
         $areaCodeToId = $activeAreas->mapWithKeys(fn ($a) => [strtolower($a->code) => $a])->all();
 
-        $referenceNumbers = array_filter(array_map(fn ($r) => $r['reference_number'] ?? null, $records));
+        $referenceNumbers = array_filter(array_map(fn ($r) => $r['applicant_number'] ?? null, $records));
         $applicationMap = Application::whereIn('reference_number', $referenceNumbers)
             ->with('applicant.examSessions.gradingSession.examSession')
             ->get()
@@ -253,13 +261,17 @@ class ScoreImportService
             foreach ($record as $key => $value) {
                 $lowerKey = strtolower($key);
                 if (isset($areaCodeToId[$lowerKey]) && $value !== '' && $value !== null) {
-                    if (! is_numeric($value)) {
+                    $area = $areaCodeToId[$lowerKey];
+                    $isConversionTable = ($area->scoring_method ?? 'formula') === 'conversion_table';
+                    $mustBeNumeric = $enableNormalizedScores || !$isConversionTable;
+
+                    if ($mustBeNumeric && ! is_numeric($value)) {
                         $skipped++;
                         $errors[] = "Row {$rowNum}: {$key} must be a number";
 
                         continue 2;
                     }
-                    $areaScores[$lowerKey] = (float) $value;
+                    $areaScores[$lowerKey] = $mustBeNumeric ? (float) $value : $value;
                 }
             }
 
@@ -284,15 +296,30 @@ class ScoreImportService
             DB::transaction(function () use ($areaScores, $areaCodeToId, $enableNormalizedScores, $gradingSession, $applicant, $importerId, &$imported) {
                 foreach ($areaScores as $code => $value) {
                     $area = $areaCodeToId[$code];
+                    $percentileString = null;
 
                     if ($enableNormalizedScores) {
-                        $rawScore = $value;
-                        $maxScore = $area->max_items;
-                        $normalizedScore = $area->computeNormalizedScore($value);
+                        if ($area->scoring_method === 'conversion_table') {
+                            $percentileString = $area->lookupPercentile((int) $value);
+                            $rawScore = (int) $value;
+                            $maxScore = $area->max_items;
+                            $normalizedScore = null;
+                        } else {
+                            $rawScore = (int) $value;
+                            $maxScore = $area->max_items;
+                            $normalizedScore = $area->computeNormalizedScore($value);
+                        }
                     } else {
-                        $rawScore = null;
-                        $maxScore = null;
-                        $normalizedScore = $value;
+                        if ($area->scoring_method === 'conversion_table') {
+                            $percentileString = $value;
+                            $rawScore = null;
+                            $maxScore = null;
+                            $normalizedScore = null;
+                        } else {
+                            $rawScore = null;
+                            $maxScore = null;
+                            $normalizedScore = $value;
+                        }
                     }
 
                     ApplicantScore::create([
@@ -302,11 +329,36 @@ class ScoreImportService
                         'raw_score' => $rawScore,
                         'max_score' => $maxScore,
                         'normalized_score' => $normalizedScore,
+                        'percentile_string' => $percentileString,
                         'scored_by' => $importerId,
                         'scored_at' => now(),
                     ]);
 
                     $imported++;
+                }
+
+                // Check if all active aptitude areas are scored for this applicant
+                $activeAreaCount = AptitudeArea::where('is_active', true)->count();
+                $scoredCount = $gradingSession->applicantScores()
+                    ->where('applicant_id', $applicant->id)
+                    ->count();
+
+                if ($scoredCount >= $activeAreaCount) {
+                    $summary = ConsultationSummary::firstOrCreate(
+                        ['applicant_id' => $applicant->id],
+                        ['status' => ConsultationSummary::STATUS_DRAFT]
+                    );
+
+                    if ($summary->status === ConsultationSummary::STATUS_PENDING) {
+                        $summary->update(['status' => ConsultationSummary::STATUS_DRAFT]);
+                    }
+
+                    $applicant->loadMissing('application');
+                    if ($applicant->application) {
+                        app(ApplicationPipelineService::class)->transition($applicant->application, 'scored', [
+                            'grading_session_id' => $gradingSession->id,
+                        ]);
+                    }
                 }
             });
         }

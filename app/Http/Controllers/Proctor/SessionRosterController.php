@@ -399,7 +399,13 @@ class SessionRosterController extends Controller
             return response()->json(['message' => 'Session closed.'], 200);
         }
 
-        return back()->with('success', 'Session closed.');
+        // Auto-open a grading session if one doesn't already exist
+        $exam_session->load('applicants');
+        $gradingSession = $exam_session->gradingSession
+            ?? app(\App\Services\GradingSessionService::class)->openForExamSession($exam_session, auth()->user());
+
+        return redirect()->route('admin.grading.sessions.show', $gradingSession->id)
+            ->with('success', 'Session closed. Grading session is ready.');
     }
 
     /**

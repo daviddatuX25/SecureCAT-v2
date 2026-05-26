@@ -5,7 +5,7 @@
   import { Badge } from '@/Components/ui/badge';
   import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/Components/ui/card';
   import * as Table from '@/Components/ui/table';
-  import { UserCheck, CheckCircle2, Circle, Printer, RotateCcw, Send } from 'lucide-svelte';
+  import { UserCheck, CheckCircle2, Circle, Printer, RotateCcw, Send, Trash2 } from 'lucide-svelte';
   import { formatDate } from '@/lib/date-utils';
 
   let { sessionId = '1', session = {}, applicants = [], workflowStatus = 'in_progress' } = $props();
@@ -41,6 +41,8 @@
     const next = workflowStatus === 'in_progress' ? 'finalized' : 'in_progress';
     router.put(`/admin/grading/sessions/${sid}/workflow`, { status: next });
   }
+
+
 </script>
 
 <AuthenticatedLayout breadcrumbs={breadcrumbs}>
@@ -68,6 +70,7 @@
           <RotateCcw class="h-4 w-4 mr-2" />
           Mark as {workflowStatus === 'in_progress' ? 'Completed' : 'In progress'}
         </Button>
+
         {#if showPrint}
           <Link href={`/admin/release/print/${sid}`}>
             <Button class="min-h-[44px]">

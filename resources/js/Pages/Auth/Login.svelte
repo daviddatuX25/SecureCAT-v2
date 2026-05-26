@@ -5,8 +5,11 @@
   import { Button } from '@/Components/ui/button';
   import { Input } from '@/Components/ui/input';
   import * as Card from '@/Components/ui/card';
+  import { Eye, EyeOff } from 'lucide-svelte';
 
   let activeTab = $state('applicant'); // 'applicant' or 'staff'
+  let showApplicantPassword = $state(false);
+  let showStaffPassword = $state(false);
 
   onMount(() => {
     const saved = localStorage.getItem('loginTab');
@@ -140,16 +143,32 @@
                   <label for="app_password" class="text-sm font-bold text-foreground">Password</label>
                   <Link href="/portal/forgot-password" class="text-xs font-bold text-primary hover:underline hover:text-primary/80 transition-colors">Forgot password?</Link>
                 </div>
-                <Input
-                  id="app_password"
-                  type="password"
-                  bind:value={$applicantForm.password}
-                  placeholder="••••••••"
-                  autocomplete="current-password"
-                  required
-                  aria-invalid={!!errors?.password}
-                  class="min-h-[48px] shadow-sm bg-background/50 focus:bg-background rounded-xl border-border/60"
-                />
+                <div class="relative">
+                  <Input
+                    id="app_password"
+                    type={showApplicantPassword ? 'text' : 'password'}
+                    bind:value={$applicantForm.password}
+                    placeholder="••••••••"
+                    autocomplete="current-password"
+                    required
+                    aria-invalid={!!errors?.password}
+                    class="min-h-[48px] shadow-sm bg-background/50 focus:bg-background rounded-xl border-border/60 pr-10"
+                  />
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon-sm"
+                    class="absolute right-1.5 top-1/2 -translate-y-1/2 size-8 text-muted-foreground hover:text-foreground"
+                    onclick={() => (showApplicantPassword = !showApplicantPassword)}
+                    aria-label={showApplicantPassword ? 'Hide password' : 'Show password'}
+                  >
+                    {#if showApplicantPassword}
+                      <EyeOff class="size-4" />
+                    {:else}
+                      <Eye class="size-4" />
+                    {/if}
+                  </Button>
+                </div>
                 {#if errors?.password}
                   <p class="text-sm text-destructive font-bold">{typeof errors.password === 'string' ? errors.password : errors.password[0]}</p>
                 {/if}
@@ -195,16 +214,32 @@
 
               <div class="space-y-2">
                 <label for="staff_password" class="text-sm font-bold text-foreground">Password</label>
-                <Input
-                  id="staff_password"
-                  type="password"
-                  bind:value={$staffForm.password}
-                  placeholder="••••••••"
-                  autocomplete="current-password"
-                  required
-                  aria-invalid={!!errors?.password}
-                  class="min-h-[48px] shadow-sm bg-background/50 focus:bg-background rounded-xl border-border/60"
-                />
+                <div class="relative">
+                  <Input
+                    id="staff_password"
+                    type={showStaffPassword ? 'text' : 'password'}
+                    bind:value={$staffForm.password}
+                    placeholder="••••••••"
+                    autocomplete="current-password"
+                    required
+                    aria-invalid={!!errors?.password}
+                    class="min-h-[48px] shadow-sm bg-background/50 focus:bg-background rounded-xl border-border/60 pr-10"
+                  />
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon-sm"
+                    class="absolute right-1.5 top-1/2 -translate-y-1/2 size-8 text-muted-foreground hover:text-foreground"
+                    onclick={() => (showStaffPassword = !showStaffPassword)}
+                    aria-label={showStaffPassword ? 'Hide password' : 'Show password'}
+                  >
+                    {#if showStaffPassword}
+                      <EyeOff class="size-4" />
+                    {:else}
+                      <Eye class="size-4" />
+                    {/if}
+                  </Button>
+                </div>
                 {#if errors?.password}
                   <p class="text-sm text-destructive font-bold">{typeof errors.password === 'string' ? errors.password : errors.password[0]}</p>
                 {/if}

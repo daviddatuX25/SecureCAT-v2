@@ -19,6 +19,7 @@ class UpdateScoresRequest extends FormRequest
             'scores.*.raw_score' => ['nullable', 'integer', 'min:0'],
             'scores.*.max_score' => ['nullable', 'integer', 'min:0'],
             'scores.*.normalized_score' => ['nullable', 'numeric', 'min:0'],
+            'scores.*.percentile_string' => ['nullable', 'string', 'max:20'],
         ];
     }
 }

@@ -34,16 +34,18 @@ class ResultSheetTemplateService
     }
 
     public const PLACEHOLDERS = [
-        'applicant_name', 'applicant_reference',
+        'applicant_name', 'applicant_reference', 'applicant_number', 'applicant_no',
         'family_name', 'first_name', 'middle_name', 'suffix',
-        'sex', 'gwa', 'course_applied', 'strand', 'strand_or_prev_course', 'applicant_type',
+        'sex', 'gwa', 'course_applied', 'course_applied_code', 'strand', 'strand_or_prev_course', 'applicant_type',
         'exam_date', 'exam_time', 'room_name',
+        'exam_date_start', 'exam_date_end', 'exam_time_start', 'exam_time_end',
         'scores_rows', 'overall_pct',
         'recommended_course', 'counselor_comments', 'counselor_name',
-        'applicant_name_2', 'applicant_reference_2',
+        'applicant_name_2', 'applicant_reference_2', 'applicant_number_2', 'applicant_no_2',
         'family_name_2', 'first_name_2', 'middle_name_2', 'suffix_2',
-        'sex_2', 'gwa_2', 'course_applied_2', 'strand_2', 'strand_or_prev_course_2', 'applicant_type_2',
+        'sex_2', 'gwa_2', 'course_applied_2', 'course_applied_code_2', 'strand_2', 'strand_or_prev_course_2', 'applicant_type_2',
         'exam_date_2', 'exam_time_2', 'room_name_2',
+        'exam_date_start_2', 'exam_date_end_2', 'exam_time_start_2', 'exam_time_end_2',
         'scores_rows_2', 'overall_pct_2',
         'recommended_course_2', 'counselor_comments_2', 'counselor_name_2',
         'institution_name', 'institution_campus', 'institution_address',
@@ -427,7 +429,9 @@ class ResultSheetTemplateService
     {
         $descriptions = [
             'applicant_name' => 'Full name of applicant',
-            'applicant_reference' => 'Reference number',
+            'applicant_reference' => 'Reference number (Deprecated: use applicant_number or applicant_no)',
+            'applicant_number' => 'Applicant number',
+            'applicant_no' => 'Applicant number (alias)',
             'family_name' => 'Family/last name',
             'first_name' => 'First name',
             'middle_name' => 'Middle name',
@@ -435,12 +439,17 @@ class ResultSheetTemplateService
             'sex' => 'Sex',
             'gwa' => 'General Weighted Average',
             'course_applied' => 'Course applied for',
+            'course_applied_code' => 'Course code of course applied for',
             'strand' => 'SHS Strand (for new students)',
             'strand_or_prev_course' => 'SHS Strand or Previous Course (auto-adapts: SHS strand for new students, previous college course for transferees)',
             'applicant_type' => 'Applicant type (New Student, Transferee)',
 
             'exam_date' => 'Examination date',
             'exam_time' => 'Examination time',
+            'exam_date_start' => 'Examination start date',
+            'exam_date_end' => 'Examination end date',
+            'exam_time_start' => 'Examination start time',
+            'exam_time_end' => 'Examination end time',
             'room_name' => 'Examination room',
             'scores_rows' => 'HTML scores table rows (HTML mode)',
             'overall_pct' => 'Overall percentage score',
@@ -458,10 +467,10 @@ class ResultSheetTemplateService
         ];
 
         $slot1Fields = [
-            'applicant_name', 'applicant_reference',
+            'applicant_name', 'applicant_reference', 'applicant_number', 'applicant_no',
             'family_name', 'first_name', 'middle_name', 'suffix',
-            'sex', 'gwa', 'course_applied', 'strand', 'strand_or_prev_course', 'applicant_type',
-            'exam_date', 'exam_time', 'room_name',
+            'sex', 'gwa', 'course_applied', 'course_applied_code', 'strand', 'strand_or_prev_course', 'applicant_type',
+            'exam_date', 'exam_time', 'exam_date_start', 'exam_date_end', 'exam_time_start', 'exam_time_end', 'room_name',
             'scores_rows', 'overall_pct',
             'recommended_course', 'counselor_comments', 'counselor_name',
         ];
@@ -620,59 +629,73 @@ class ResultSheetTemplateService
                     $data = $sample;
                 } else {
                     $data = [
-                        'name' => $sample['name_2'] ?? '—',
-                        'family_name' => $sample['family_name_2'] ?? '—',
-                        'first_name' => $sample['first_name_2'] ?? '—',
-                        'middle_name' => $sample['middle_name_2'] ?? '—',
+                        'name' => $sample['name_2'] ?? '',
+                        'family_name' => $sample['family_name_2'] ?? '',
+                        'first_name' => $sample['first_name_2'] ?? '',
+                        'middle_name' => $sample['middle_name_2'] ?? '',
                         'suffix' => $sample['suffix_2'] ?? '',
-                        'sex' => $sample['sex_2'] ?? '—',
-                        'gwa' => $sample['gwa_2'] ?? '—',
-                        'course_applied' => $sample['course_applied_2'] ?? '—',
-                        'strand' => $sample['strand_2'] ?? '—',
-                        'strand_or_prev_course' => $sample['strand_2'] ?? '—',
-                        'applicant_type' => $sample['applicant_type_2'] ?? '—',
-                        'reference' => $sample['reference_2'] ?? '—',
-                        'exam_date' => $sample['exam_date_2'] ?? $sample['exam_date'] ?? '—',
-                        'exam_time' => $sample['exam_time_2'] ?? '—',
-                        'room_name' => $sample['room_name_2'] ?? '—',
+                        'sex' => $sample['sex_2'] ?? '',
+                        'gwa' => $sample['gwa_2'] ?? '',
+                        'course_applied' => $sample['course_applied_2'] ?? '',
+                        'course_applied_code' => $sample['course_applied_code_2'] ?? '',
+                        'strand' => $sample['strand_2'] ?? '',
+                        'strand_or_prev_course' => $sample['strand_2'] ?? '',
+                        'applicant_type' => $sample['applicant_type_2'] ?? '',
+                        'reference' => $sample['reference_2'] ?? '',
+                        'exam_date' => $sample['exam_date_2'] ?? $sample['exam_date'] ?? '',
+                        'exam_time' => $sample['exam_time_2'] ?? '',
+                        'room_name' => $sample['room_name_2'] ?? '',
                         'scores' => $sample['scores_2'] ?? [],
                         'overall_pct' => $sample['overall_pct_2'] ?? 0,
-                        'recommended_course' => $sample['recommended_course_2'] ?? '—',
+                        'recommended_course' => $sample['recommended_course_2'] ?? '',
                         'recommended_course_code' => $sample['recommended_course_code_2'] ?? '',
-                        'counselor_comments' => $sample['counselor_comments_2'] ?? '—',
-                        'counselor_name' => $sample['counselor_name_2'] ?? '—',
+                        'counselor_comments' => $sample['counselor_comments_2'] ?? '',
+                        'counselor_name' => $sample['counselor_name_2'] ?? '',
                     ];
                 }
             }
 
             $suffix = $slot === 1 ? '' : '_2';
             if ($data) {
-                $replacements["applicant_name{$suffix}"] = $data['name'] ?? '—';
-                $replacements["applicant_reference{$suffix}"] = $data['reference'] ?? '—';
-                $replacements["exam_date{$suffix}"] = $data['exam_date'] ?? '—';
-                $replacements["room_name{$suffix}"] = $data['room_name'] ?? '—';
+                $replacements["applicant_name{$suffix}"] = $data['name'] ?? '';
+                $replacements["applicant_reference{$suffix}"] = $data['reference'] ?? '';
+                $replacements["applicant_number{$suffix}"] = $data['reference'] ?? '';
+                $replacements["applicant_no{$suffix}"] = $data['reference'] ?? '';
+                $replacements["exam_date{$suffix}"] = $data['exam_date'] ?? '';
+                $replacements["room_name{$suffix}"] = $data['room_name'] ?? '';
                 $replacements["scores_rows{$suffix}"] = $this->buildScoresRows($data['scores'] ?? []);
                 $replacements["overall_pct{$suffix}"] = (string) ($data['overall_pct'] ?? 0);
 
                 $newFields = [
                     'family_name', 'first_name', 'middle_name', 'suffix',
-                    'sex', 'gwa', 'course_applied', 'strand', 'strand_or_prev_course', 'applicant_type',
-                    'exam_time',
+                    'sex', 'gwa', 'course_applied', 'course_applied_code', 'strand', 'strand_or_prev_course', 'applicant_type',
+                    'exam_time', 'exam_date_start', 'exam_date_end', 'exam_time_start', 'exam_time_end',
                     'recommended_course', 'recommended_course_code', 'counselor_comments', 'counselor_name',
                 ];
                 foreach ($newFields as $field) {
-                    $replacements["{$field}{$suffix}"] = (string) ($data[$field] ?? '—');
+                    $val = (string) ($data[$field] ?? '');
+                    if ($field === 'sex') {
+                        $lowerVal = strtolower($val);
+                        if ($lowerVal === 'male' || $lowerVal === 'm') {
+                            $val = 'M';
+                        } elseif ($lowerVal === 'female' || $lowerVal === 'f') {
+                            $val = 'F';
+                        }
+                    }
+                    $replacements["{$field}{$suffix}"] = $val;
                 }
             } else {
-                $replacements["applicant_name{$suffix}"] = '—';
-                $replacements["applicant_reference{$suffix}"] = '—';
-                $replacements["exam_date{$suffix}"] = '—';
-                $replacements["room_name{$suffix}"] = '—';
+                $replacements["applicant_name{$suffix}"] = '';
+                $replacements["applicant_reference{$suffix}"] = '';
+                $replacements["applicant_number{$suffix}"] = '';
+                $replacements["applicant_no{$suffix}"] = '';
+                $replacements["exam_date{$suffix}"] = '';
+                $replacements["room_name{$suffix}"] = '';
                 $replacements["scores_rows{$suffix}"] = '';
-                $replacements["overall_pct{$suffix}"] = '—';
+                $replacements["overall_pct{$suffix}"] = '';
 
-                foreach (['family_name', 'first_name', 'middle_name', 'suffix', 'sex', 'gwa', 'course_applied', 'strand', 'strand_or_prev_course', 'applicant_type', 'exam_time', 'recommended_course', 'recommended_course_code', 'counselor_comments', 'counselor_name'] as $field) {
-                    $replacements["{$field}{$suffix}"] = '—';
+                foreach (['family_name', 'first_name', 'middle_name', 'suffix', 'sex', 'gwa', 'course_applied', 'course_applied_code', 'strand', 'strand_or_prev_course', 'applicant_type', 'exam_time', 'exam_date_start', 'exam_date_end', 'exam_time_start', 'exam_time_end', 'recommended_course', 'recommended_course_code', 'counselor_comments', 'counselor_name'] as $field) {
+                    $replacements["{$field}{$suffix}"] = '';
                 }
             }
 
@@ -684,17 +707,17 @@ class ResultSheetTemplateService
             }
         }
 
-        $replacements['exam_date'] = $replacements['exam_date'] ?? $replacements['exam_date_2'] ?? '—';
-        $replacements['room_name'] = $replacements['room_name'] ?? $replacements['room_name_2'] ?? '—';
+        $replacements['exam_date'] = $replacements['exam_date'] ?? $replacements['exam_date_2'] ?? '';
+        $replacements['room_name'] = $replacements['room_name'] ?? $replacements['room_name_2'] ?? '';
 
-        $replacements['institution_name'] = SystemSetting::institution('name', '—');
-        $replacements['institution_campus'] = SystemSetting::institution('campus', '—');
-        $replacements['institution_address'] = SystemSetting::institution('address', '—');
-        $replacements['institution_contact'] = SystemSetting::institution('contact_number', '—');
-        $replacements['institution_email'] = SystemSetting::institution('email', '—');
-        $replacements['institution_website'] = SystemSetting::institution('website', '—');
-        $replacements['institution_exam_name'] = SystemSetting::institution('exam_name', '—');
-        $replacements['institution_exam_acronym'] = SystemSetting::institution('exam_acronym', '—');
+        $replacements['institution_name'] = SystemSetting::institution('name', '');
+        $replacements['institution_campus'] = SystemSetting::institution('campus', '');
+        $replacements['institution_address'] = SystemSetting::institution('address', '');
+        $replacements['institution_contact'] = SystemSetting::institution('contact_number', '');
+        $replacements['institution_email'] = SystemSetting::institution('email', '');
+        $replacements['institution_website'] = SystemSetting::institution('website', '');
+        $replacements['institution_exam_name'] = SystemSetting::institution('exam_name', '');
+        $replacements['institution_exam_acronym'] = SystemSetting::institution('exam_acronym', '');
 
         $replacements['institution_contact_number'] = $replacements['institution_contact'];
         $replacements['examination_name'] = $replacements['institution_exam_name'];
@@ -705,8 +728,8 @@ class ResultSheetTemplateService
             foreach (['name', 'title', 'credentials'] as $field) {
                 $dotKey = "personnel.{$role}.{$field}";
                 $val = SystemSetting::institution($dotKey) ?? ($defaults[$field] ?? '');
-                $replacements["personnel_{$role}_{$field}"] = $val ?: '—';
-                $replacements["{$role}_{$field}"] = $val ?: '—';
+                $replacements["personnel_{$role}_{$field}"] = $val ?: '';
+                $replacements["{$role}_{$field}"] = $val ?: '';
             }
         }
 
@@ -794,18 +817,23 @@ class ResultSheetTemplateService
             foreach ($domains as $domain) {
                 $slug = $this->aptitudeAreaSlug($domain->name);
                 $score = $scoresByDomain->get($domain->name);
-                $pct = $score !== null ? (string) ((int) ($score['pct'] ?? 0)) : '—';
-                $raw = $score !== null
-                    ? ($score['max'] > 0 ? sprintf('%d / %d', (int) ($score['raw'] ?? 0), (int) ($score['max'])) : (string) ($score['raw'] ?? '—'))
-                    : '—';
+                if ($score !== null) {
+                    $pct = (string) ((int) ($score['pct'] ?? 0));
+                    $raw = $score['max'] > 0
+                        ? sprintf('%d / %d', (int) ($score['raw'] ?? 0), (int) ($score['max']))
+                        : (string) ($score['raw'] ?? '');
+                    $pctWithUnit = $score['pct_string'] ?? $this->formatOrdinal((int) ($score['pct_numeric'] ?? 0));
+                    $rating = $this->percentileToRating((int) ($score['pct_numeric'] ?? 0), $ratingScale);
+                } else {
+                    $pct = '';
+                    $raw = '';
+                    $pctWithUnit = '';
+                    $rating = '';
+                }
+
                 $replacements[$slug.$suffix] = $pct;
                 $replacements[$slug.'_raw'.$suffix] = $raw;
-
-                // _wunit variant: use stored percentile_string or auto-format ordinal
-                $pctWithUnit = $score['pct_string'] ?? ($score !== null ? $this->formatOrdinal((int) ($score['pct_numeric'] ?? 0)) : '—');
                 $replacements[$slug.'_wunit'.$suffix] = $pctWithUnit;
-
-                $rating = $this->percentileToRating((int) ($score['pct_numeric'] ?? 0), $ratingScale);
                 $replacements[$slug.'_rating'.$suffix] = $rating;
             }
         }
@@ -837,6 +865,7 @@ class ResultSheetTemplateService
                 'application.coursePreference1',
                 'consultationSummary.recommendedCourse',
                 'consultationSummary.counselor',
+                'examSessions.room',
             ])
             ->get();
 
@@ -846,10 +875,10 @@ class ResultSheetTemplateService
             ->get()
             ->groupBy('applicant_id');
 
-        return $applicants->map(function ($a) use ($scoresByApplicant) {
+        return $applicants->map(function ($a) use ($session, $scoresByApplicant) {
             $scores = $this->mapScoresFromCollection($scoresByApplicant->get($a->id, collect()));
 
-            return $this->buildApplicantDataArray($a, null, $scores);
+            return $this->buildApplicantDataArray($a, $session, $scores);
         })->values()->all();
     }
 
@@ -865,6 +894,7 @@ class ResultSheetTemplateService
                 'consultationSummary.recommendedCourse',
                 'consultationSummary.counselor',
                 'gradingSessions.examSession.room',
+                'examSessions.room',
             ])
             ->get();
 
@@ -906,7 +936,7 @@ class ResultSheetTemplateService
                 $numeric = $this->extractNumeric($s->percentile_string);
 
                 return [
-                    'domain' => $s->aptitudeArea?->name ?? '—',
+                    'domain' => $s->aptitudeArea?->name ?? '',
                     'raw' => $s->raw_score,
                     'max' => $s->max_score,
                     'pct' => $numeric,
@@ -919,7 +949,7 @@ class ResultSheetTemplateService
                 ?? ($s->max_score > 0 ? (int) round(($s->raw_score / $s->max_score) * 100) : 0);
 
             return [
-                'domain' => $s->aptitudeArea?->name ?? '—',
+                'domain' => $s->aptitudeArea?->name ?? '',
                 'raw' => $s->normalized_score ?? $s->raw_score,
                 'max' => $s->max_score,
                 'pct' => (int) $pctVal,
@@ -939,7 +969,7 @@ class ResultSheetTemplateService
             ? (int) round(collect($scores)->avg('pct_numeric'))
             : 0;
 
-        $name = '—';
+        $name = '';
         if ($applicant->application) {
             $name = trim(implode(' ', array_filter([
                 $applicant->application->first_name,
@@ -952,31 +982,51 @@ class ResultSheetTemplateService
         $app = $applicant->application;
         $summary = $applicant->consultationSummary;
 
+        $examSession = $session?->examSession
+            ?? $applicant->gradingSessions->where('status', GradingSession::STATUS_FINALIZED)->first()?->examSession
+            ?? $applicant->gradingSessions->first()?->examSession
+            ?? $applicant->examSessions->first();
+
+        $examDate = $examSession?->date?->format('F d, Y') ?? '';
+        $examTime = $examSession?->start_time
+            ? Carbon::parse($examSession->start_time)->format('g:i A')
+            : '';
+
+        $examDateStart = $examDate;
+        $examDateEnd = $examDate;
+        $examTimeStart = $examTime;
+        $examTimeEnd = $examSession?->end_time
+            ? Carbon::parse($examSession->end_time)->format('g:i A')
+            : '';
+
         return [
             'id' => $applicant->id,
             'name' => $name,
-            'family_name' => $app?->last_name ?? '—',
-            'first_name' => $app?->first_name ?? '—',
-            'middle_name' => $app?->middle_name ?? '—',
+            'family_name' => $app?->last_name ?? '',
+            'first_name' => $app?->first_name ?? '',
+            'middle_name' => $app?->middle_name ?? '',
             'suffix' => $app?->suffix ?? '',
-            'sex' => $app?->sex ?? '—',
-            'gwa' => $app?->gwa ?? '—',
-            'course_applied' => $app?->coursePreference1?->name ?? '—',
-            'strand' => $app?->strand ?? $app?->last_school_enrolled ?? '—',
-            'strand_or_prev_course' => $app?->strand ?? $app?->last_school_enrolled ?? '—',
-            'applicant_type' => $app?->applicant_type ?? '—',
-            'reference' => $app?->reference_number ?? '—',
-            'exam_date' => $session?->examSession?->date?->format('F j, Y') ?? '—',
-            'exam_time' => $session?->examSession?->start_time
-                                     ? Carbon::parse($session->examSession->start_time)->format('g:i A')
-                                     : '—',
-            'room_name' => $session?->examSession?->room?->name ?? '—',
+            'sex' => $app?->sex ?? '',
+            'gwa' => $app?->gwa ?? '',
+            'course_applied' => $app?->coursePreference1?->name ?? '',
+            'course_applied_code' => $app?->coursePreference1?->code ?? '',
+            'strand' => $app?->strand ?? $app?->last_school_enrolled ?? '',
+            'strand_or_prev_course' => $app?->strand ?? $app?->last_school_enrolled ?? '',
+            'applicant_type' => $app?->applicant_type ?? '',
+            'reference' => $app?->reference_number ?? '',
+            'exam_date' => $examDate,
+            'exam_time' => $examTime,
+            'exam_date_start' => $examDateStart,
+            'exam_date_end' => $examDateEnd,
+            'exam_time_start' => $examTimeStart,
+            'exam_time_end' => $examTimeEnd,
+            'room_name' => $examSession?->room?->name ?? '',
             'scores' => $scores,
             'overall_pct' => $overallPct,
-            'recommended_course' => $summary?->recommendedCourse?->name ?? '—',
+            'recommended_course' => $summary?->recommendedCourse?->name ?? '',
             'recommended_course_code' => $summary?->recommendedCourse?->code ?? '',
-            'counselor_comments' => $summary?->counselor_comments ?? '—',
-            'counselor_name' => $summary?->counselor?->name ?? '—',
+            'counselor_comments' => $summary?->counselor_comments ?? '',
+            'counselor_name' => $summary?->counselor?->name ?? '',
         ];
     }
 
@@ -1036,10 +1086,11 @@ class ResultSheetTemplateService
             'required' => ['applicant_reference'],
             'recommended' => [
                 'family_name', 'first_name', 'middle_name',
-                'sex', 'course_applied', 'applicant_type',
+                'sex', 'course_applied', 'course_applied_code', 'applicant_type',
             ],
             'optional' => [
-                'applicant_name', 'suffix', 'exam_date', 'exam_time', 'room_name', 'overall_pct',
+                'applicant_name', 'applicant_number', 'applicant_no', 'suffix', 'exam_date', 'exam_time',
+                'exam_date_start', 'exam_date_end', 'exam_time_start', 'exam_time_end', 'room_name', 'overall_pct',
                 'gwa', 'strand',
                 'recommended_course', 'counselor_comments', 'counselor_name',
             ],
@@ -1048,10 +1099,10 @@ class ResultSheetTemplateService
                 'scores_rows_2',
             ],
             'applicant2' => [
-                'applicant_name_2', 'applicant_reference_2',
+                'applicant_name_2', 'applicant_reference_2', 'applicant_number_2', 'applicant_no_2',
                 'family_name_2', 'first_name_2', 'middle_name_2', 'suffix_2',
-                'sex_2', 'gwa_2', 'course_applied_2', 'strand_2', 'applicant_type_2',
-                'exam_date_2', 'exam_time_2', 'room_name_2',
+                'sex_2', 'gwa_2', 'course_applied_2', 'course_applied_code_2', 'strand_2', 'applicant_type_2',
+                'exam_date_2', 'exam_time_2', 'exam_date_start_2', 'exam_date_end_2', 'exam_time_start_2', 'exam_time_end_2', 'room_name_2',
                 'overall_pct_2',
                 'recommended_course_2', 'counselor_comments_2', 'counselor_name_2',
             ],
@@ -1104,11 +1155,11 @@ class ResultSheetTemplateService
         foreach ($scores as $s) {
             $rawFormatted = $s['max'] > 0
                 ? sprintf('%d / %d', (int) ($s['raw'] ?? 0), (int) ($s['max']))
-                : (string) ($s['raw'] ?? '—');
+                : (string) ($s['raw'] ?? '');
 
             $rows[] = sprintf(
                 '<tr class="border-b border-border/50"><td class="py-1.5">%s</td><td class="text-right py-1.5">%s</td><td class="text-right py-1.5 font-medium">%d%%</td></tr>',
-                htmlspecialchars($s['domain'] ?? '—'),
+                htmlspecialchars($s['domain'] ?? ''),
                 $rawFormatted,
                 (int) ($s['pct'] ?? 0)
             );
@@ -1128,11 +1179,16 @@ class ResultSheetTemplateService
             'sex' => 'Male',
             'gwa' => '1.50',
             'course_applied' => 'BS Information Technology',
+            'course_applied_code' => 'BSIT',
             'strand' => 'STEM',
             'applicant_type' => 'Freshman',
             'reference' => 'ICAT-2026-00042',
-            'exam_date' => now()->format('F j, Y'),
+            'exam_date' => now()->format('F d, Y'),
             'exam_time' => '8:00 AM',
+            'exam_date_start' => now()->format('F d, Y'),
+            'exam_date_end' => now()->format('F d, Y'),
+            'exam_time_start' => '8:00 AM',
+            'exam_time_end' => '10:00 AM',
             'room_name' => 'Conference Hall A - Seat 12',
             'recommended_course' => 'BS Information Technology',
             'recommended_course_code' => 'BSIT',
@@ -1155,10 +1211,15 @@ class ResultSheetTemplateService
             'sex_2' => 'Female',
             'gwa_2' => '1.75',
             'course_applied_2' => 'BS Accountancy',
+            'course_applied_code_2' => 'BSA',
             'strand_2' => 'ABM',
             'applicant_type_2' => 'Freshman',
             'reference_2' => 'ICAT-2026-00043',
             'exam_time_2' => '8:00 AM',
+            'exam_date_start_2' => now()->format('F d, Y'),
+            'exam_date_end_2' => now()->format('F d, Y'),
+            'exam_time_start_2' => '8:00 AM',
+            'exam_time_end_2' => '10:00 AM',
             'room_name_2' => 'Conference Hall A - Seat 13',
             'recommended_course_2' => 'BS Computer Science',
             'recommended_course_code_2' => 'BSCS',

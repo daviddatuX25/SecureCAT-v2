@@ -68,6 +68,7 @@ class GradingScoreController extends Controller
                 'raw_score' => $s->raw_score,
                 'max_score' => $s->max_score,
                 'normalized_score' => $s->normalized_score,
+                'percentile_string' => $s->percentile_string,
             ])->values()->all(),
         ]);
     }

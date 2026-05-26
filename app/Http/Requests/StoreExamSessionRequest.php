@@ -16,15 +16,23 @@ class StoreExamSessionRequest extends FormRequest
 
     public function rules(): array
     {
+        $backtrack = filter_var($this->input('backtrack'), FILTER_VALIDATE_BOOLEAN);
+
+        $dateRules = ['required', 'date'];
+        if (! $backtrack) {
+            $dateRules[] = 'after_or_equal:today';
+        }
+
         return [
             'academic_year_id' => ['sometimes', 'nullable', 'integer', 'exists:academic_years,id'],
             'room_id' => ['required_unless:type,direct', 'nullable', 'integer', 'exists:rooms,id', new NoRoomConflict],
-            'date' => ['required', 'date', 'after_or_equal:today'],
+            'date' => $dateRules,
             'start_time' => ['required', 'string', 'date_format:H:i'],
             'end_time' => ['nullable', 'string', 'date_format:H:i'],
             'type' => ['sometimes', 'in:scheduled,direct'],
             'proctor_ids' => ['sometimes', 'array'],
             'proctor_ids.*' => ['integer', 'exists:users,id'],
+            'backtrack' => ['nullable', 'boolean'],
         ];
     }
 }

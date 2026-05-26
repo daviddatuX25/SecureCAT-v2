@@ -146,6 +146,12 @@ class ResultSheetDocxService
 
         // Missing required/recommended: what we care about most
         $missing = array_values(array_diff($requiredAndRecommended, $docxPlaceholders));
+        if (in_array('applicant_reference', $missing) && (in_array('applicant_number', $docxPlaceholders) || in_array('applicant_no', $docxPlaceholders))) {
+            $missing = array_values(array_diff($missing, ['applicant_reference']));
+        }
+        if (in_array('course_applied', $missing) && in_array('course_applied_code', $docxPlaceholders)) {
+            $missing = array_values(array_diff($missing, ['course_applied']));
+        }
 
         // Missing optional
         $missingOptional = array_values(array_diff($optionalAll, $docxPlaceholders));

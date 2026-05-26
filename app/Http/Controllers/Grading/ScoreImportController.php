@@ -114,7 +114,7 @@ class ScoreImportController extends Controller
     public function template(): StreamedResponse
     {
         $aptitudeAreaCodes = AptitudeArea::where('is_active', true)->pluck('code')->toArray();
-        $headers = array_merge(['reference_number'], $aptitudeAreaCodes);
+        $headers = array_merge(['applicant_number'], $aptitudeAreaCodes);
 
         return response()->streamDownload(function () use ($headers) {
             $handle = fopen('php://output', 'w');

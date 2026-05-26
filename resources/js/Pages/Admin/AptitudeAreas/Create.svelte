@@ -9,6 +9,7 @@
   import { success } from '@/lib/toast';
   import { Calculator, Table, Plus, Trash2, ClipboardPaste, Wand2, X, Copy } from 'lucide-svelte';
 
+  let { enable_normalized_scores = false } = $props();
   const page = usePage();
 
   const form = useForm({
@@ -353,7 +354,7 @@
       alert('Please resolve the conversion table errors before saving.');
       return;
     }
-    if ($form.scoring_method === 'conversion_table' && uiTable.length === 0) {
+    if (enable_normalized_scores && $form.scoring_method === 'conversion_table' && uiTable.length === 0) {
       alert('Conversion table cannot be empty.');
       return;
     }

@@ -23,6 +23,7 @@ use App\Notifications\ExamSessionStaffPostponed;
 use App\Notifications\ExamSessionStarted;
 use App\Services\ApplicationPipelineService;
 use App\Services\AuditService;
+use App\Services\GradingSessionService;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
@@ -291,6 +292,8 @@ class ExamSessionController extends Controller
             ? ['label' => 'My Sessions', 'href' => '/proctor/my-sessions']
             : ['label' => 'Exam Scheduling', 'href' => '/admin/exam-scheduling'];
 
+        $gradingSession = $exam_session->gradingSession;
+
         return Inertia::render('Admin/TestScheduling/Show', [
             'session' => $exam_session,
             'assigned_applicants' => $assigned_applicants,
@@ -298,6 +301,8 @@ class ExamSessionController extends Controller
             'proctors' => $proctors,
             'view' => $isProctorView ? 'proctor' : 'admin',
             'breadcrumbParent' => $breadcrumbParent,
+            'grading_session_id' => $gradingSession?->id,
+            'grading_session_status' => $gradingSession?->status,
         ]);
     }
 
@@ -342,12 +347,36 @@ class ExamSessionController extends Controller
     {
         $this->authorize('delete', $exam_session);
 
-        app(AuditService::class)->log('exam_session.deleted', ExamSession::class, $exam_session->id, [
-            'room_id' => $exam_session->room_id,
-            'date' => $exam_session->date?->format('Y-m-d'),
-        ]);
+        DB::transaction(function () use ($exam_session) {
+            app(AuditService::class)->log('exam_session.deleted', ExamSession::class, $exam_session->id, [
+                'room_id' => $exam_session->room_id,
+                'date' => $exam_session->date?->format('Y-m-d'),
+            ]);
 
-        $exam_session->delete();
+            // Detach applicants and update their pipeline status
+            $applicants = $exam_session->applicants()->with('application')->get();
+            $exam_session->applicants()->detach();
+
+            $pipeline = app(ApplicationPipelineService::class);
+            foreach ($applicants as $applicant) {
+                if ($applicant->application) {
+                    $pipeline->syncStatus($applicant->application);
+                }
+            }
+
+            // Detach proctors
+            $exam_session->proctors()->detach();
+
+            // Clean up related grading session if it exists
+            $gradingSession = $exam_session->gradingSession;
+            if ($gradingSession) {
+                $gradingSession->applicants()->detach();
+                $gradingSession->applicantScores()->delete();
+                $gradingSession->delete();
+            }
+
+            $exam_session->delete();
+        });
 
         return redirect()->route('admin.exam-scheduling.index')->with('success', 'Session deleted.');
     }
@@ -369,43 +398,82 @@ class ExamSessionController extends Controller
         if ($redirect = $this->redirectIfCompleted($exam_session, 'You cannot assign applicants to a completed exam session.')) {
             return $redirect;
         }
+
+        $backtrack = (bool) $request->validated('backtrack');
         $applicantIds = array_values(array_unique(array_map('intval', $request->validated('applicant_ids'))));
         $alreadyAttached = $exam_session->applicants()->whereIn('applicants.id', $applicantIds)->pluck('applicants.id')->all();
         $toAttach = array_diff($applicantIds, $alreadyAttached);
         if (! empty($toAttach)) {
             $exam_session->applicants()->attach($toAttach);
 
-            // Pipeline hook: newly assigned applicants advance to draft_scheduled or scheduled
-            $targetStatus = $exam_session->status === ExamSession::STATUS_DRAFT
-                ? 'draft_scheduled'
-                : 'scheduled';
             $pipeline = app(ApplicationPipelineService::class);
-            $newApplicants = Applicant::whereIn('id', $toAttach)
-                ->with('application')
-                ->get();
 
-            $newApplicants->each(function (Applicant $applicant) use ($pipeline, $targetStatus, $exam_session) {
-                if ($applicant->application) {
-                    $pipeline->transition($applicant->application, $targetStatus, [
-                        'session_id' => $exam_session->id,
+            if ($backtrack) {
+                // Bulk update the pivot records for these newly assigned applicants to present and submitted
+                DB::table('exam_session_applicant')
+                    ->where('exam_session_id', $exam_session->id)
+                    ->whereIn('applicant_id', $toAttach)
+                    ->update([
+                        'attendance_status' => 'present',
+                        'attendance_marked_at' => now(),
+                        'attendance_marked_by' => $request->user()->id,
+                        'submission_status' => 'submitted',
+                        'submitted_at' => now(),
+                        'submitted_to' => $request->user()->id,
+                        'updated_at' => now(),
                     ]);
-                }
-            });
 
-            // Notify late-assigned applicants when session is already published or in-progress.
-            // Unlike bulk publish (gated by notifyOnPublish), late additions always need notification
-            // because the applicant must know their exam date, time, and room.
-            if (in_array($exam_session->status, [ExamSession::STATUS_PUBLISHED, ExamSession::STATUS_IN_PROGRESS], true)) {
-                $exam_session->load('room');
-                $newApplicants->each(
-                    fn (Applicant $applicant) => $applicant->notify(new ExamSessionPublished($exam_session))
-                );
+                // Transition through scheduled -> attended -> submitted to record complete milestones
+                $newApplicants = Applicant::whereIn('id', $toAttach)->with('application')->get();
+                $newApplicants->each(function (Applicant $applicant) use ($pipeline, $exam_session) {
+                    if ($applicant->application) {
+                        $pipeline->transition($applicant->application, 'scheduled', ['session_id' => $exam_session->id]);
+                        $pipeline->transition($applicant->application, 'attended', ['session_id' => $exam_session->id]);
+                        $pipeline->transition($applicant->application, 'submitted', ['session_id' => $exam_session->id]);
+                    }
+                });
+            } else {
+                // Pipeline hook: newly assigned applicants advance to draft_scheduled or scheduled
+                $targetStatus = $exam_session->status === ExamSession::STATUS_DRAFT
+                    ? 'draft_scheduled'
+                    : 'scheduled';
+                $newApplicants = Applicant::whereIn('id', $toAttach)
+                    ->with('application')
+                    ->get();
+
+                $newApplicants->each(function (Applicant $applicant) use ($pipeline, $targetStatus, $exam_session) {
+                    if ($applicant->application) {
+                        $pipeline->transition($applicant->application, $targetStatus, [
+                            'session_id' => $exam_session->id,
+                        ]);
+                    }
+                });
+
+                // Notify late-assigned applicants when session is already published or in-progress.
+                // Unlike bulk publish (gated by notifyOnPublish), late additions always need notification
+                // because the applicant must know their exam date, time, and room.
+                if (in_array($exam_session->status, [ExamSession::STATUS_PUBLISHED, ExamSession::STATUS_IN_PROGRESS], true)) {
+                    $exam_session->load('room');
+                    $newApplicants->each(
+                        fn (Applicant $applicant) => $applicant->notify(new ExamSessionPublished($exam_session))
+                    );
+                }
             }
+        }
+
+        if ($backtrack) {
+            $exam_session->update([
+                'status' => ExamSession::STATUS_COMPLETED,
+                'closed_at' => now(),
+            ]);
+
+            app(AuditService::class)->log('exam_session.completed', ExamSession::class, $exam_session->id);
         }
 
         if (! empty($toAttach)) {
             app(AuditService::class)->log('exam_session.applicants_assigned', ExamSession::class, $exam_session->id, [], [
                 'applicant_count' => count($toAttach),
+                'backtrack' => $backtrack,
             ]);
         }
 
@@ -417,7 +485,63 @@ class ExamSessionController extends Controller
             ], 200);
         }
 
+        if ($backtrack) {
+            // Auto-open a grading session so the admin can go straight to scoring
+            $gradingSession = $exam_session->gradingSession
+                ?? app(GradingSessionService::class)->openForExamSession($exam_session->fresh(['applicants']), $request->user());
+
+            return redirect()->route('admin.grading.sessions.show', $gradingSession->id)
+                ->with('success', 'Session backtracked. Grading session is ready.');
+        }
+
         return redirect()->route('admin.exam-scheduling.show', $exam_session)->with('success', 'Applicants assigned.');
+    }
+
+    public function backtrack(ExamSession $exam_session): RedirectResponse
+    {
+        $this->authorize('backtrack', $exam_session);
+
+        if ($exam_session->applicants()->count() === 0) {
+            return redirect()->route('admin.exam-scheduling.show', $exam_session)
+                ->with('error', 'Cannot backtrack a session with no applicants assigned.');
+        }
+
+        DB::transaction(function () use ($exam_session) {
+            DB::table('exam_session_applicant')
+                ->where('exam_session_id', $exam_session->id)
+                ->update([
+                    'attendance_status' => 'present',
+                    'attendance_marked_at' => now(),
+                    'attendance_marked_by' => auth()->id(),
+                    'submission_status' => 'submitted',
+                    'submitted_at' => now(),
+                    'submitted_to' => auth()->id(),
+                    'updated_at' => now(),
+                ]);
+
+            $pipeline = app(ApplicationPipelineService::class);
+            $exam_session->applicants()->with('application')->get()->each(function (Applicant $applicant) use ($pipeline, $exam_session) {
+                if ($applicant->application) {
+                    $pipeline->transition($applicant->application, 'scheduled', ['session_id' => $exam_session->id]);
+                    $pipeline->transition($applicant->application, 'attended', ['session_id' => $exam_session->id]);
+                    $pipeline->transition($applicant->application, 'submitted', ['session_id' => $exam_session->id]);
+                }
+            });
+
+            $exam_session->update([
+                'status' => ExamSession::STATUS_COMPLETED,
+                'closed_at' => now(),
+            ]);
+
+            app(AuditService::class)->log('exam_session.completed', ExamSession::class, $exam_session->id);
+        });
+
+        // Auto-open a grading session so the admin can go straight to scoring
+        $gradingSession = $exam_session->gradingSession
+            ?? app(GradingSessionService::class)->openForExamSession($exam_session->fresh(['applicants']), auth()->user());
+
+        return redirect()->route('admin.grading.sessions.show', $gradingSession->id)
+            ->with('success', 'Session backtracked. Grading session is ready — start entering scores.');
     }
 
     public function removeApplicant(Request $request, ExamSession $exam_session): RedirectResponse
@@ -428,7 +552,17 @@ class ExamSessionController extends Controller
         $this->authorize('update', $exam_session);
         $data = $request->validate(['session_applicant_id' => 'required|integer']);
         $pivotId = (int) $data['session_applicant_id'];
-        DB::table('exam_session_applicant')->where('id', $pivotId)->where('exam_session_id', $exam_session->id)->delete();
+
+        $pivot = DB::table('exam_session_applicant')->where('id', $pivotId)->where('exam_session_id', $exam_session->id)->first();
+        if ($pivot) {
+            $applicantId = $pivot->applicant_id;
+            DB::table('exam_session_applicant')->where('id', $pivotId)->delete();
+
+            $applicant = Applicant::with('application')->find($applicantId);
+            if ($applicant && $applicant->application) {
+                app(ApplicationPipelineService::class)->syncStatus($applicant->application);
+            }
+        }
 
         app(AuditService::class)->log('exam_session.applicant_removed', ExamSession::class, $exam_session->id, [], [
             'applicant_pivot_id' => $pivotId,
@@ -532,8 +666,7 @@ class ExamSessionController extends Controller
 
     /**
      * Cancel an in-progress exam session.
-     */
-    public function cancel(ExamSession $exam_session): RedirectResponse
+     */    public function cancel(ExamSession $exam_session): RedirectResponse
     {
         if ($exam_session->status !== ExamSession::STATUS_IN_PROGRESS) {
             return redirect()->route('admin.exam-scheduling.show', $exam_session)
@@ -548,6 +681,14 @@ class ExamSessionController extends Controller
             fn ($applicant) => $applicant->notify(new ExamSessionCancelled($exam_session))
         );
 
+        // Re-sync applicant pipeline statuses
+        $pipeline = app(ApplicationPipelineService::class);
+        $exam_session->applicants()->with('application')->get()->each(function ($applicant) use ($pipeline) {
+            if ($applicant->application) {
+                $pipeline->syncStatus($applicant->application);
+            }
+        });
+
         // Notify assigned proctors and test_admins on cancel
         $recipients = $exam_session->proctors;
         $testAdmins = User::whereHas('roles', fn ($q) => $q->where('name', 'test_administrator'))->get();
@@ -560,6 +701,7 @@ class ExamSessionController extends Controller
 
         return redirect()->route('admin.exam-scheduling.index')->with('success', 'Session cancelled.');
     }
+
 
     public function start(ExamSession $exam_session): RedirectResponse
     {
@@ -614,7 +756,12 @@ class ExamSessionController extends Controller
 
         app(AuditService::class)->log('exam_session.completed', ExamSession::class, $exam_session->id);
 
-        return back()->with('success', 'Session completed.');
+        // Auto-open a grading session if one doesn't already exist
+        $gradingSession = $exam_session->gradingSession
+            ?? app(GradingSessionService::class)->openForExamSession($exam_session->fresh(['applicants']), auth()->user());
+
+        return redirect()->route('admin.grading.sessions.show', $gradingSession->id)
+            ->with('success', 'Session completed. Grading session is ready.');
     }
 
     /**

@@ -23,6 +23,7 @@
     first_name: 'first_name',
     last_name: 'last_name',
     email: 'email',
+    applicant_number: 'applicant_number',
     middle_name: 'middle_name',
     suffix: 'suffix',
     birthdate: 'birthdate',
@@ -120,11 +121,14 @@
 
       <GuideNote variant="tip" title="Tips">
         <ul class="list-disc pl-4 space-y-1 text-xs text-muted-foreground">
-          <li>First row must contain column headers — spaces are fine (e.g. "first name" works)</li>
+          <li>First row must contain column headers — spaces, dashes, and capitalization are handled automatically</li>
           <li>Supports CSV, XLSX, and XLS files up to 10MB</li>
           <li>Email addresses must be unique per academic year</li>
-          <li>Course preferences use course codes (e.g. BSCS), not full names</li>
-          <li>Unrecognized columns are safely ignored</li>
+          <li>Course preferences accept course codes (e.g. BSCS) or numeric IDs</li>
+          <li>Unrecognized columns are safely ignored (e.g. "Notes" is skipped)</li>
+          <li><strong>Alternate column names are auto-detected</strong> — e.g. "Family Name" → last name, "Middle Initial" / "MI" → middle name, "Course Applied" → 1st preference, "Strand/Prev Course" → strand, "Gender" → sex</li>
+          <li>Sex accepts: <code>male</code>, <code>female</code>, <code>m</code>, <code>f</code></li>
+          <li>Birthdate, Sex, GWA, and Course preference are all optional — missing values are safely skipped</li>
         </ul>
       </GuideNote>
     </GuidePanel>

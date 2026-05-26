@@ -17,8 +17,67 @@ class SpreadsheetParser
     public const SUPPORTED_EXTENSIONS = ['csv', 'xlsx', 'xls', 'txt'];
 
     /**
+     * Well-known column alias map: normalized alias → internal field name.
+     * Allows spreadsheets from external systems (e.g. enrolment sheets) to be
+     * imported without renaming columns manually.
+     */
+    public const COLUMN_ALIASES = [
+        // Name variants
+        'family_name'            => 'last_name',
+        'lastname'               => 'last_name',
+        'surname'                => 'last_name',
+        'firstname'              => 'first_name',
+        'given_name'             => 'first_name',
+        'middle_name'            => 'middle_name',
+        'middle_initial'         => 'middle_name',
+        'middlename'             => 'middle_name',
+        'mi'                     => 'middle_name',
+        // Sex / gender
+        'gender'                 => 'sex',
+        // GWA
+        'general_weighted_average' => 'gwa',
+        'weighted_average'       => 'gwa',
+        'grade_point_average'    => 'gwa',
+        'gpa'                    => 'gwa',
+        // Course applied / preferences
+        'course_applied'         => 'course_preference_1',
+        'course'                 => 'course_preference_1',
+        'program_applied'        => 'course_preference_1',
+        'course_preference'      => 'course_preference_1',
+        '1st_choice'             => 'course_preference_1',
+        '2nd_choice'             => 'course_preference_2',
+        '3rd_choice'             => 'course_preference_3',
+        // Strand / previous course
+        'strand_prev_course'     => 'strand',
+        'prev_course'            => 'strand',
+        'previous_course'        => 'strand',
+        'shs_strand'             => 'strand',
+        // School
+        'school'                 => 'last_school_enrolled',
+        'last_school'            => 'last_school_enrolled',
+        'school_name'            => 'last_school_enrolled',
+        'school_origin'          => 'last_school_enrolled',
+        // Applicant type
+        'classification'         => 'applicant_type',
+        'applicant_classification' => 'applicant_type',
+        'type'                   => 'applicant_type',
+        // Reference / Applicant Number mapping
+        'applicant_no'           => 'applicant_number',
+        'applicant_number'       => 'applicant_number',
+        'reference_no'           => 'applicant_number',
+        'reference_number'       => 'applicant_number',
+        'ref_no'                 => 'applicant_number',
+        // Columns to silently ignore (map to special marker)
+        'no'                     => '__ignore__',
+        'seq'                    => '__ignore__',
+        'sequence'               => '__ignore__',
+        '#'                      => '__ignore__',
+    ];
+
+    /**
      * Normalize a header string: lowercase, replace spaces/dashes/dots with underscores,
      * strip non-alphanumeric/underscore characters, and collapse multiple underscores.
+     * Then resolve any known aliases to their canonical field names.
      */
     public static function normalizeHeader(string $header): string
     {
@@ -26,8 +85,10 @@ class SpreadsheetParser
         $header = preg_replace('/[\s\-\.]+/', '_', $header);
         $header = preg_replace('/[^a-z0-9_]/', '', $header);
         $header = preg_replace('/_+/', '_', $header);
+        $header = trim($header, '_');
 
-        return trim($header, '_');
+        // Resolve alias → canonical field name
+        return self::COLUMN_ALIASES[$header] ?? $header;
     }
 
     /**
@@ -317,7 +378,14 @@ class SpreadsheetParser
                 throw new \InvalidArgumentException('Excel file is empty.');
             }
 
-            $headers = array_map(fn ($h) => self::normalizeHeader((string) $h), array_shift($rows));
+            $rawHeaders = array_shift($rows);
+            $headers = array_map(fn ($h) => self::normalizeHeader((string) $h), $rawHeaders);
+            // Drop __ignore__ columns by replacing with a unique placeholder
+            foreach ($headers as $i => $h) {
+                if ($h === '__ignore__') {
+                    $headers[$i] = '__ignore_col_'.$i.'__';
+                }
+            }
 
             $records = [];
             foreach ($rows as $row) {
@@ -359,6 +427,12 @@ class SpreadsheetParser
         }
 
         $headers = array_map(fn ($h) => self::normalizeHeader((string) $h), $rawHeaders);
+        // Drop __ignore__ columns by replacing with a unique placeholder
+        foreach ($headers as $i => $h) {
+            if ($h === '__ignore__') {
+                $headers[$i] = '__ignore_col_'.$i.'__';
+            }
+        }
         $headerCount = count($headers);
 
         $records = [];

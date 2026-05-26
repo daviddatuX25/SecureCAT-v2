@@ -31,8 +31,8 @@ class ResultSheetTemplateSeeder extends Seeder
       <div class="font-semibold" style="color:#14532d; font-size:0.8rem;">{{applicant_name}}</div>
     </div>
     <div>
-      <div style="color:#6b7280; font-size:0.6rem; text-transform:uppercase; letter-spacing:0.06em; font-weight:600;">Reference No.</div>
-      <div class="font-semibold" style="color:#14532d; font-size:0.8rem;">{{applicant_reference}}</div>
+      <div style="color:#6b7280; font-size:0.6rem; text-transform:uppercase; letter-spacing:0.06em; font-weight:600;">Applicant No.</div>
+      <div class="font-semibold" style="color:#14532d; font-size:0.8rem;">{{applicant_number}}</div>
     </div>
     <div>
       <div style="color:#6b7280; font-size:0.6rem; text-transform:uppercase; letter-spacing:0.06em; font-weight:600;">Exam Date</div>
