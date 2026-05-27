@@ -30,3 +30,7 @@ Thumbs.db
 .dolt/
 *.db
 .beads-credential-key
+
+# Graphify
+/graphify-out/cache/
+
