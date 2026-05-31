@@ -1,254 +1,571 @@
-# TEAM META-GUIDE: Chapter 1 & 2 Collaborative Drafting
+# TEAM META-GUIDE: Chapter 1 & 2 — Task Inventory & Team Coordination
 
-## SecureCAT-v2 Capstone — Research Leader's Operations Manual
+## SecureCAT-v2 Capstone — Collaborative Drafting Document
 
-This document is the **single source of truth** for how the 3-person team will draft Chapters 1 and 2 of the SecureCAT-v2 capstone manuscript. It combines the 5 official formatting/content guides into actionable work packets with ready-to-use prompts, guardrails, and quality checks.
+This document serves three purposes:
 
-**Phase 0 (Capability Assessment) must be completed before any task assignments are made.**
+1. **List every task** needed to complete Chapters 1 and 2, with the skills required for each task.
+2. **Provide self-assessment checklists** for each team member to fill out independently.
+3. **Provide an empty assignment matrix** to be filled after collecting all self-assessments.
 
-**READ THIS ENTIRE DOCUMENT BEFORE WRITING A SINGLE WORD.**
-
----
-
-## Table of Contents
-
-1. Team Roster & Capability Assessment (Phase 0)
-2. Open Questions & Decisions Tracker
-3. The Golden Rules (from All 5 Guides)
-4. Manuscript Formatting Cheat Sheet (Guide 1)
-5. Chapter 1 — Section-by-Section Work Packets
-6. Chapter 2 — Section-by-Section Work Packets
-7. Master Task Pool (Unassigned — Awaiting Capability Results)
-8. Workflow & Integration Protocol
-9. Research Prompt Library
-10. Quality Gates & Submission Checklist
-11. Appendix: Blending Strategy & Title Mapping
+**No roles are pre-assigned.** Members select tasks based on their own assessed capabilities. Final assignments are decided collaboratively after all checklists are collected.
 
 ---
 
-## 1. Team Roster & Capability Assessment (Phase 0)
+## Part 1: Task Inventory
 
-### 1.1 Team Overview
-
-```
-+-------------------+
-|   TEAM LEADER     |  <-- Research Leader
-|                   |      Primary developer of the existing
-|   (You)           |      SecureCAT codebase. Leads direction,
-+---------+---------+      quality control, integration, defense
-          |                  strategy. Handles the highest-judgment
-   +------+------+          writing tasks.
-   |             |
-+--+--+       +--+--+
-| MEMBER A    | MEMBER B
-|             |
-+--+--+       +--+--+
-   |              |
- More technical,   Less technical,
- but sometimes     can handle
- busy; schedule    formatting,
- TBD               utility support,
-                   non-coding tasks
-```
-
-**The Team:**
-
-- **Team Leader** — Primary contributor to the existing SecureCAT project. Deep system knowledge. Leads research direction, quality control, and defense strategy.
-- **Member A** — More technical capability, but availability is variable (sometimes busy). Can handle research-heavy and technically demanding tasks when available.
-- **Member B** — Less technical. Strong at detail work, formatting checks, and utility support tasks outside of coding (document formatting, logistics, etc.).
-
-### 1.2 Individual Capability Checklist
-
-Each member fills out this checklist independently. The Team Leader collects results and uses them to assign tasks from the Master Task Pool (Section 7).
-
-**Instructions:** For each skill, rate yourself honestly using:
-
-- **YES** = I can do this confidently and independently
-- **MAYBE** = I can do this with some guidance or with more time
-- **NO** = I cannot do this or would need significant help
+Every task below includes:
+- **Task ID** — unique identifier
+- **Task Description** — what needs to be done
+- **Deliverable** — what the output looks like
+- **Required Skills** — capabilities needed to complete this task
+- **Estimated Effort** — rough time commitment
+- **Dependencies** — tasks that must be done first (if any)
+- **Assigned To** — to be filled after self-assessments are collected
 
 ---
 
-#### Team Leader — Capability Self-Assessment
+### Chapter 1 Tasks
 
-| # | Skill / Capability | Rating (YES / MAYBE / NO) | Notes |
-|---|---|---|---|
-| L1 | I can write formal academic paragraphs (synthesis, analysis, clinching statements) | | |
-| L2 | I can evaluate whether a paragraph synthesizes vs. summarizes literature | | |
-| L3 | I understand the SecureCAT system architecture deeply enough to write about it | | |
-| L4 | I can identify and enforce the formatting rules from Guide 1 | | |
-| L5 | I can review and unify the voice/tone across multiple sections written by different people | | |
-| L6 | I can lead the panel defense strategy and handle panel questions | | |
-| L7 | I can commit consistent hours per week for the drafting period | | Estimated hours/week: ___ |
-| L8 | I am available for synchronous review sessions with the team | | Preferred times: ___ |
+#### Background of the Study
+
+##### TASK-C1-01: Background Paragraph 1 — Core Problem Statement
+
+| Field | Details |
+|-------|---------|
+| **Task ID** | TASK-C1-01 |
+| **Description** | Write the opening paragraph of the Background of the Study. Name the exact problem SecureCAT solves. Start with observable symptoms (manual admission workflows, fragmented scoring, paper-based OMR, lack of audit trails), then pivot to the technical root cause (absence of a unified, cryptographically-secured, role-based digital platform). |
+| **Deliverable** | 1 paragraph, 8-12 sentences, academic tone |
+| **Required Skills** | Academic paragraph writing, understanding of IT problem framing, ability to write formally without citations |
+| **Restrictions** | NO citations allowed. Own words only. No bullet points. No bold body text. |
+| **Estimated Effort** | 2-3 hours |
+| **Dependencies** | None (can start immediately) |
+| **Assigned To** | _________ |
+
+##### TASK-C1-02: Background Paragraph 2 — Global Context
+
+| Field | Details |
+|-------|---------|
+| **Task ID** | TASK-C1-02 |
+| **Description** | Write the global context paragraph covering how admission testing systems are handled internationally. Cover: digital transformation of higher education admissions, automated testing and scoring platforms, RBAC in educational systems, computer-vision-based OMR scanning, AI-assisted administrative operations, offline-first architectures, zero-trust security models. |
+| **Deliverable** | 1 paragraph, 12-15 sentences, minimum 5 APA citations (all 2022-2026) |
+| **Required Skills** | Literature search (Google Scholar, ResearchGate), source credibility evaluation, APA 7th Edition citation formatting, academic paragraph writing, synthesis of multiple sources into cohesive narrative |
+| **Restrictions** | Synthesized writing only — no "Author A says X. Author B says Y." patterns. All sources must be 2022-2026. |
+| **Estimated Effort** | 4-6 hours (includes research time) |
+| **Dependencies** | None (can start immediately) |
+| **Assigned To** | _________ |
+
+##### TASK-C1-03: Background Paragraph 3 — National Context (Philippines)
+
+| Field | Details |
+|-------|---------|
+| **Task ID** | TASK-C1-03 |
+| **Description** | Write the Philippine national context paragraph. Cover: CHED policies on admission testing, RA 10173 (Data Privacy Act of 2012) compliance for student data, digitalization efforts in SUCs, government e-governance initiatives, connectivity challenges in Philippine higher education. |
+| **Deliverable** | 1 paragraph, 12-15 sentences, minimum 5 APA citations (all 2022-2026) |
+| **Required Skills** | Literature search, knowledge of Philippine education policies (or ability to research them), APA citation formatting, synthesis of policy documents and academic sources |
+| **Restrictions** | Must name specific legislation, agencies, or programs (no vague references). All sources 2022-2026. |
+| **Estimated Effort** | 4-6 hours (includes research time) |
+| **Dependencies** | None (can start immediately) |
+| **Assigned To** | _________ |
+
+##### TASK-C1-04: Background Paragraph 4 — Local Context (ISPSC Tagudin)
+
+| Field | Details |
+|-------|---------|
+| **Task ID** | TASK-C1-04 |
+| **Description** | Write the local context paragraph describing ISPSC Tagudin Campus specifically. Cover: current manual admission workflow, infrastructure constraints (WiFi reliability, limited IT staff, computer labs), Guidance and Registrar office operational challenges during peak admission periods, compliance pressures specific to the institution. |
+| **Deliverable** | 1 paragraph, 12-15 sentences, minimum 5 APA citations (all 2022-2026) |
+| **Required Skills** | Familiarity with ISPSC Tagudin operations (or ability to research comparable SUCs), academic paragraph writing, ability to find studies from same region or comparable institutions |
+| **Restrictions** | Must describe actual operational environment. If direct ISPSC studies unavailable, use comparable SUCs. All sources 2022-2026. |
+| **Estimated Effort** | 3-5 hours |
+| **Dependencies** | None (can start immediately) |
+| **Assigned To** | _________ |
+
+##### TASK-C1-05: Background Paragraph 5 — Synthesis and Gap Identification
+
+| Field | Details |
+|-------|---------|
+| **Task ID** | TASK-C1-05 |
+| **Description** | Draw from the citations in paragraphs 2-4 to synthesize findings and explicitly name the research gap. Show what existing systems do vs. what SecureCAT introduces. Use synthesis patterns: "While [finding A], [contrasting finding B]..." |
+| **Deliverable** | 1 paragraph, 10-12 sentences |
+| **Required Skills** | High-level synthesis ability, ability to group findings by theme rather than by author, understanding of research gap identification, deep knowledge of SecureCAT's contribution vs. existing systems |
+| **Restrictions** | Must synthesize — FORBIDDEN to list authors one by one. Must explicitly name the research gap in 2-3 sentences. |
+| **Estimated Effort** | 3-4 hours |
+| **Dependencies** | TASK-C1-02, TASK-C1-03, TASK-C1-04 must be completed first |
+| **Assigned To** | _________ |
+
+##### TASK-C1-06: Background Paragraph 6 — Clinching Statement
+
+| Field | Details |
+|-------|---------|
+| **Task ID** | TASK-C1-06 |
+| **Description** | Write the closing paragraph with 3 mandatory components: (1) How the reviewed literature assisted in structuring the study, (2) Why this research topic was selected (direct observation at ISPSC Tagudin), (3) Why SecureCAT is the critical solution. Optional: connect to SDG 4 or SDG 16. |
+| **Deliverable** | 1 paragraph, 8-10 sentences, 3 explicit components |
+| **Required Skills** | Strategic writing, ability to connect literature to system design decisions, personal motivation framing, understanding of SDGs |
+| **Estimated Effort** | 2-3 hours |
+| **Dependencies** | TASK-C1-02 through TASK-C1-05 should be completed first |
+| **Assigned To** | _________ |
+
+#### Conceptual Framework
+
+##### TASK-C1-07: Conceptual Framework — IPO Diagram
+
+| Field | Details |
+|-------|---------|
+| **Task ID** | TASK-C1-07 |
+| **Description** | Design the Input-Process-Output (IPO) diagram for SecureCAT. Input: numbered list of data/config the system receives (applicant data, exam configs, OMR images, role credentials, QR scans, NL queries). Process: full system title. Output: numbered list of what the system produces (status tracking, schedules, score reports, audit logs, result sheets, consultation summaries, copilot responses, offline records, statistical reports). |
+| **Deliverable** | IPO diagram as figure with proper caption |
+| **Required Skills** | Understanding of SecureCAT system architecture, ability to distinguish inputs (data received) from outputs (things produced), formatting of numbered lists |
+| **Restrictions** | Inputs must be THINGS the system receives. Outputs must be THINGS the system produces. No process verbs in either list. No bullet points — numbered lists only. |
+| **Estimated Effort** | 2-3 hours |
+| **Dependencies** | Must reference SYSTEM_FEATURES.md and drafts/Existing_and_Planned_Features.md |
+| **Assigned To** | _________ |
+
+##### TASK-C1-08: Conceptual Framework — Narrative Paragraphs
+
+| Field | Details |
+|-------|---------|
+| **Task ID** | TASK-C1-08 |
+| **Description** | Write exactly 2 narrative paragraphs. Paragraph 1: explain what each input is and why it is necessary. Paragraph 2: explain how inputs are transformed into outputs through role-based access control, automated scoring, offline-resilient proctoring, AI-assisted operations, and cryptographic verification. |
+| **Deliverable** | Exactly 2 paragraphs, academic tone |
+| **Required Skills** | Technical writing, understanding of system transformation mechanisms, ability to describe both existing and planned features as one unified process |
+| **Estimated Effort** | 2-3 hours |
+| **Dependencies** | TASK-C1-07 (IPO diagram must exist first) |
+| **Assigned To** | _________ |
+
+#### Objectives of the Study
+
+##### TASK-C1-09: Objectives of the Study
+
+| Field | Details |
+|-------|---------|
+| **Task ID** | TASK-C1-09 |
+| **Description** | Write the General Objective (1 paragraph naming the system and overarching purpose) and Specific Objectives (exactly 3 numbered items following Identify → Develop → Evaluate structure). Objective 3 must say "usability" only (not "acceptability") since SUS measures usability. |
+| **Deliverable** | 1 general objective paragraph + 3 numbered specific objectives |
+| **Required Skills** | Strategic alignment, understanding of standard 3-objective capstone structure, knowledge of SUS instrument, ability to name system by full title correctly |
+| **Restrictions** | Objective 3 says "usability" only. Specific objectives must be numbered (not bulleted). General objective must name system by full title. |
+| **Estimated Effort** | 2-3 hours |
+| **Dependencies** | None |
+| **Assigned To** | _________ |
+
+#### Research Questions
+
+##### TASK-C1-10: Research Questions
+
+| Field | Details |
+|-------|---------|
+| **Task ID** | TASK-C1-10 |
+| **Description** | Formulate research questions aligned with the objectives. Questions should cover operational needs, role-based access needs, security needs, and operational resilience needs. Must correspond one-to-one with the specific objectives. |
+| **Deliverable** | Numbered list of research questions |
+| **Required Skills** | Ability to derive questions from objectives, understanding of research question formulation |
+| **Estimated Effort** | 1-2 hours |
+| **Dependencies** | TASK-C1-09 (objectives must be finalized first) |
+| **Assigned To** | _________ |
+
+#### Scope and Delimitations
+
+##### TASK-C1-11: Scope and Delimitations
+
+| Field | Details |
+|-------|---------|
+| **Task ID** | TASK-C1-11 |
+| **Description** | Write the scope (what is included: both existing system modules and planned research modules) and delimitations (what is excluded and why). Include explicit delimitations that allow advanced features to appear as research contributions rather than out-of-scope expansion. |
+| **Deliverable** | Paragraph form (no bullets), covering scope and delimitations |
+| **Required Skills** | Understanding of what is in/out of scope, ability to write boundary statements in paragraph form, knowledge of both existing and planned features |
+| **Restrictions** | Must be in paragraph form only — no bullets, no numbered lists. |
+| **Estimated Effort** | 2-3 hours |
+| **Dependencies** | Must reference SYSTEM_FEATURES.md |
+| **Assigned To** | _________ |
+
+#### Significance of the Study
+
+##### TASK-C1-12: Significance of the Study
+
+| Field | Details |
+|-------|---------|
+| **Task ID** | TASK-C1-12 |
+| **Description** | Write significance mapping by stakeholder group: Registrar Office, Guidance Office, Proctors, Test Administrators, Applicants, ISPSC administration, future researchers. Highlight DPA compliance, operational continuity, institutional reporting value. |
+| **Deliverable** | Paragraph form, mapping significance per beneficiary group |
+| **Required Skills** | Descriptive writing, ability to articulate impact per stakeholder, understanding of DPA and institutional context |
+| **Restrictions** | Must be in paragraph form only — no bullets. |
+| **Estimated Effort** | 2-3 hours |
+| **Dependencies** | None |
+| **Assigned To** | _________ |
 
 ---
 
-#### Member A — Capability Self-Assessment
+### Chapter 2 Tasks
 
-| # | Skill / Capability | Rating (YES / MAYBE / NO) | Notes |
-|---|---|---|---|
-| A1 | I can search for academic literature using Google Scholar, ResearchGate, or similar databases | | |
-| A2 | I can evaluate whether a source is credible and peer-reviewed | | |
-| A3 | I can format citations in APA 7th Edition | | |
-| A4 | I can write 10-15 sentence academic paragraphs with proper in-text citations | | |
-| A5 | I understand concepts like RBAC, zero-trust security, OMR, PWA, AI/RAG at a level sufficient to write about them | | |
-| A6 | I can synthesize multiple sources into a cohesive narrative (not just list what each author said) | | |
-| A7 | I can commit consistent hours per week for the drafting period | | Estimated hours/week: ___ |
-| A8 | My schedule allows me to work on heavy research tasks (these have longer time requirements) | | When am I most available: ___ |
-| A9 | I can handle technically demanding writing (e.g., describing AIDLC phases, research design, data analysis methods) | | |
-| A10 | I can cross-check citations against a reference list for completeness | | |
+#### Review of Related Literature
 
----
+##### TASK-C2-01: Literature — RBAC and Zero-Trust Security
 
-#### Member B — Capability Self-Assessment
+| Field | Details |
+|-------|---------|
+| **Task ID** | TASK-C2-01 |
+| **Description** | Write a synthesized literature review covering Role-Based Access Control models, zero-trust security architectures, and cryptographic data integrity mechanisms (HMAC) in educational or assessment platforms. |
+| **Deliverable** | 1-2 paragraphs, minimum 5 APA citations (all 2022-2026) |
+| **Required Skills** | Literature search, understanding of RBAC and zero-trust concepts, APA citation formatting, synthesis writing |
+| **Estimated Effort** | 4-6 hours |
+| **Dependencies** | None |
+| **Assigned To** | _________ |
 
-| # | Skill / Capability | Rating (YES / MAYBE / NO) | Notes |
-|---|---|---|---|
-| B1 | I can follow detailed formatting rules (margins, fonts, spacing, caption placement) precisely | | |
-| B2 | I can write clear, formal paragraphs describing beneficiary groups or institutional contexts | | |
-| B3 | I can compile and organize a reference list in alphabetical order | | |
-| B4 | I can proofread text for formatting violations (bullet points where there shouldn't be, bold in wrong places, etc.) | | |
-| B5 | I can create or format tables with proper borders, captions, and alignment | | |
-| B6 | I can commit consistent hours per week for the drafting period | | Estimated hours/week: ___ |
-| B7 | I can handle logistics and coordination tasks (scheduling, reminders, document organization) | | |
-| B8 | I can do web searches to find specific information (institution details, respondent counts, calendar dates) | | |
-| B9 | I feel comfortable writing sections that are more descriptive and less technically complex | | |
-| B10 | I am willing to learn basic APA citation format if given a reference guide | | |
+##### TASK-C2-02: Literature — Automated Scoring and OMR Technologies
 
----
+| Field | Details |
+|-------|---------|
+| **Task ID** | TASK-C2-02 |
+| **Description** | Write a synthesized literature review covering automated test scoring methods, optical mark recognition (OMR), computer vision-based answer sheet processing, and accuracy comparisons between manual and automated scoring. |
+| **Deliverable** | 1-2 paragraphs, minimum 5 APA citations (all 2022-2026) |
+| **Required Skills** | Literature search, understanding of OMR and computer vision concepts, synthesis writing |
+| **Estimated Effort** | 4-6 hours |
+| **Dependencies** | None |
+| **Assigned To** | _________ |
 
-### 1.3 Capability-to-Task Mapping Guide
+##### TASK-C2-03: Literature — AI Assistants and RAG in Education
 
-After collecting all three checklists, the Team Leader uses this mapping to decide assignments:
+| Field | Details |
+|-------|---------|
+| **Task ID** | TASK-C2-03 |
+| **Description** | Write a synthesized literature review covering AI-powered chatbots and assistants in educational administration, retrieval-augmented generation (RAG) architectures, natural language interfaces for database querying in academic settings. |
+| **Deliverable** | 1-2 paragraphs, minimum 5 APA citations (all 2022-2026) |
+| **Required Skills** | Literature search, understanding of AI/RAG concepts, synthesis writing |
+| **Estimated Effort** | 4-6 hours |
+| **Dependencies** | None |
+| **Assigned To** | _________ |
 
-| Task Category | Key Capabilities Needed | Ideal Candidate Profile |
-|---|---|---|
-| Heavy research + citation paragraphs | A1, A2, A3, A4, A6 | Someone with mostly YES on Member A checklist |
-| Technical writing (AIDLC, research design, data analysis) | A5, A9, A6 | Someone who understands the tech stack and methodology |
-| Synthesis + strategic paragraphs | L1, L2, L5 | Team Leader (these require the most judgment) |
-| Descriptive / beneficiary writing | B2, B9 | Someone with MAYBE or YES on B2 and B9 |
-| Formatting QA + reference compilation | B1, B3, B4, B5 | Someone with YES on B1 and B4 |
-| Logistics + coordination | B7, B8 | Anyone available and willing |
-| Final integration review | L3, L5, L6 | Team Leader (requires full system knowledge) |
+##### TASK-C2-04: Literature — Offline-Resilient and PWA Systems
 
----
+| Field | Details |
+|-------|---------|
+| **Task ID** | TASK-C2-04 |
+| **Description** | Write a synthesized literature review covering Progressive Web Apps (PWA), service workers, offline-first architectures, IndexedDB for local caching, and background sync mechanisms in critical operational environments. |
+| **Deliverable** | 1-2 paragraphs, minimum 5 APA citations (all 2022-2026) |
+| **Required Skills** | Literature search, understanding of PWA and offline architecture concepts, synthesis writing |
+| **Estimated Effort** | 4-6 hours |
+| **Dependencies** | None |
+| **Assigned To** | _________ |
 
-### 1.4 Assignment Decision Process
+##### TASK-C2-05: Literature — Philippine Data Privacy Act and Multi-Tenancy
 
-```
-STEP 1: All three members complete their capability checklists
-         (this document, Section 1.2)
+| Field | Details |
+|-------|---------|
+| **Task ID** | TASK-C2-05 |
+| **Description** | Write a synthesized literature review covering the Philippine Data Privacy Act (RA 10173) compliance in educational software, multi-tenant database architecture patterns, data isolation strategies for SUC systems. |
+| **Deliverable** | 1-2 paragraphs, minimum 5 APA citations (all 2022-2026) |
+| **Required Skills** | Literature search, knowledge of RA 10173 or ability to research it, understanding of multi-tenancy concepts, synthesis writing |
+| **Estimated Effort** | 3-5 hours |
+| **Dependencies** | None |
+| **Assigned To** | _________ |
 
-STEP 2: Team Leader collects and reviews all checklists
-         - Identify who has YES on heavy research capabilities
-         - Identify who has YES on formatting/detail capabilities
-         - Identify availability constraints (hours/week, busy periods)
+#### Review of Related Systems
 
-STEP 3: Team Leader proposes initial task assignments using
-         the Master Task Pool (Section 7)
-         - Match tasks to capabilities, not to predefined roles
-         - Respect availability constraints
-         - Balance load based on each person's actual capacity
+##### TASK-C2-06: Review of Related Systems
 
-STEP 4: Team meeting to discuss and finalize assignments
-         - Each member reviews their proposed tasks
-         - Raise concerns about tasks they're unsure about
-         - Identify any tasks where no one feels confident
-         - Flag tasks that may need the Team Leader to handle personally
+| Field | Details |
+|-------|---------|
+| **Task ID** | TASK-C2-06 |
+| **Description** | Review existing admission systems (local and international), electronic assessment platforms, OMR grading systems, and document generation systems in academic workflows. Compare features, strengths, and weaknesses against SecureCAT. |
+| **Deliverable** | 2-3 paragraphs with feature comparison table, minimum 5 APA citations (all 2022-2026) |
+| **Required Skills** | Web research for existing systems, ability to create comparison tables, synthesis of system features |
+| **Estimated Effort** | 4-6 hours |
+| **Dependencies** | None |
+| **Assigned To** | _________ |
 
-STEP 5: Document final assignments in Section 7 (fill in the Owner column)
-         - This becomes the active assignment sheet
-         - Can be revised later if circumstances change
-```
+#### Technical Framework
 
----
+##### TASK-C2-07: Technical Framework
 
-## 2. Open Questions & Decisions Tracker
+| Field | Details |
+|-------|---------|
+| **Task ID** | TASK-C2-07 |
+| **Description** | Write the technical framework covering: Laravel 12 / Inertia v2 / Svelte 5 / Tailwind 4 stack, HMAC security model, vector embeddings for RAG, PWA service worker architecture, multi-tenant database isolation concepts, DOMPDF/PHPWord document generation pipeline. |
+| **Deliverable** | 1-2 paragraphs with technical architecture diagram |
+| **Required Skills** | Deep understanding of the tech stack, ability to describe architectural decisions in academic language, diagram creation |
+| **Estimated Effort** | 3-4 hours |
+| **Dependencies** | Must reference SYSTEM_FEATURES.md |
+| **Assigned To** | _________ |
 
-This section captures unresolved questions that need team input before assignments can be finalized. The Team Leader should bring these to the first team meeting.
+#### Conceptual Framework (Chapter 2 Expansion)
 
-### 2.1 Questions for All Members
+##### TASK-C2-08: Conceptual Framework Prose
 
-| # | Question | Who Answers | Answer | Status |
-|---|---|-------------|--------|--------|
-| Q1 | What is each member's realistic weekly hour commitment for capstone writing? | Each member | ___ hours/week | Open |
-| Q2 | What are each member's blocked/unavailable dates over the next 3 weeks? | Each member | ___ | Open |
-| Q3 | Has each member read all 5 Guides (GUIDE-1 through GUIDE-5)? | Each member | Yes / No / Partial | Open |
-| Q4 | Does each member have access to Google Scholar or any academic database? | Each member | Yes / No | Open |
-| Q5 | Is each member comfortable using the team's chosen communication channel for async updates? | Each member | Yes / No | Open |
-
-### 2.2 Questions for Member A
-
-| # | Question | Answer | Status |
-|---|---|--------|--------|
-| QA1 | Are you available for heavy research tasks (Background paragraphs 2-4) that require finding and citing 15+ academic sources? | | Open |
-| QA2 | Are you comfortable writing about technical concepts (AIDLC, research design, data analysis) in academic language? | | Open |
-| QA3 | How many days notice do you need before a deadline due to your busy schedule? | | Open |
-| QA4 | Would you prefer fewer but harder tasks, or more but simpler tasks? | | Open |
-
-### 2.3 Questions for Member B
-
-| # | Question | Answer | Status |
-|---|---|--------|--------|
-| QB1 | Would you be comfortable doing formatting QA checks across the entire manuscript? (You would be the final formatting gatekeeper.) | | Open |
-| QB2 | Would you be willing to learn basic APA citation format to help with the References list? | | Open |
-| QB3 | Are you comfortable writing descriptive paragraphs (e.g., beneficiary groups, locale description)? | | Open |
-| QB4 | Would you prefer writing tasks or formatting/logistics tasks? | | Open |
-| QB5 | Are there any non-writing, non-coding support tasks you would prefer to focus on? (e.g., organizing files, scheduling meetings, printing, logistics) | | Open |
-
-### 2.4 Decisions to Make as a Team
-
-| # | Decision | Options | Decision | Date Decided |
-|---|----------|---------|----------|--------------|
-| D1 | Which software model to use | RAD (4 phases, traditional) vs. AIDLC (3 phases, AI-assisted) | AIDLC (recommended, see Guide 4) | Pre-decided |
-| D2 | Which evaluation instrument to use | SUS (usability) vs. custom survey (acceptability) | SUS (recommended) | Pre-decided |
-| D3 | Communication channel for async updates | Messenger / GC / Discord / other | | Open |
-| D4 | File sharing and collaboration method | Google Docs / Git repo / other | | Open |
-| D5 | Drafting timeline start date | | | Open |
-| D6 | Deadline for capability checklist completion | | | Open |
-| D7 | Date for assignment finalization meeting | | | Open |
-
-### 2.5 Capability Checklist Submission Tracker
-
-| Member | Checklist Submitted? | Date Submitted | Key Findings (Team Leader fills this) |
-|---|---|---|---|
-| Team Leader | Pending | | |
-| Member A | Pending | | |
-| Member B | Pending | | |
+| Field | Details |
+|-------|---------|
+| **Task ID** | TASK-C2-08 |
+| **Description** | Expand the Chapter 1 conceptual framework into a fuller narrative for Chapter 2. Describe the system workflow stages in detail, connecting inputs through processing to outputs with both existing and planned features. |
+| **Deliverable** | 2-3 paragraphs expanding the IPO into narrative |
+| **Required Skills** | Technical writing, understanding of system workflow, ability to connect IPO items to real processing stages |
+| **Estimated Effort** | 2-3 hours |
+| **Dependencies** | TASK-C1-07, TASK-C1-08 (Chapter 1 framework must exist first) |
+| **Assigned To** | _________ |
 
 ---
 
-## 3. The Golden Rules (Distilled from All 5 Guides)
+### Cross-Cutting Tasks
 
-These rules apply to EVERY section of BOTH chapters. Violate any of these and the manuscript will be flagged.
+##### TASK-CC-01: References List Compilation
+
+| Field | Details |
+|-------|---------|
+| **Task ID** | TASK-CC-01 |
+| **Description** | Compile all in-text citations from Chapters 1 and 2 into a single APA 7th Edition References list. Alphabetize, verify completeness (every citation has a reference, every reference has a citation), format correctly. |
+| **Deliverable** | Complete References list in APA 7th format |
+| **Required Skills** | APA 7th Edition formatting, attention to detail, ability to cross-check citations against text |
+| **Estimated Effort** | 3-4 hours |
+| **Dependencies** | All writing tasks must be substantially complete |
+| **Assigned To** | _________ |
+
+##### TASK-CC-02: Formatting QA Review
+
+| Field | Details |
+|-------|---------|
+| **Task ID** | TASK-CC-02 |
+| **Description** | Review the entire manuscript (both chapters) against GUIDE-1 formatting rules. Check: font, spacing, margins, no bullets, no bold body text, paragraph indents, table formatting, figure caption placement, page numbering. |
+| **Deliverable** | Annotated manuscript with formatting corrections marked |
+| **Required Skills** | Attention to formatting detail, ability to follow strict formatting rules precisely, proofreading |
+| **Estimated Effort** | 2-3 hours |
+| **Dependencies** | All writing tasks must be complete |
+| **Assigned To** | _________ |
+
+##### TASK-CC-03: Narrative Consistency Review and Integration
+
+| Field | Details |
+|-------|---------|
+| **Task ID** | TASK-CC-03 |
+| **Description** | Read both chapters end-to-end. Unify voice and tone across sections written by different people. Ensure transitions between sections are smooth. Verify that existing features and planned features are presented as one coherent system story. |
+| **Deliverable** | Final integrated manuscript with unified voice |
+| **Required Skills** | Strong writing judgment, ability to unify different writing voices, deep understanding of the system and research narrative |
+| **Estimated Effort** | 4-6 hours |
+| **Dependencies** | All writing tasks must be complete |
+| **Assigned To** | _________ |
+
+##### TASK-CC-04: Citation Cross-Check
+
+| Field | Details |
+|-------|---------|
+| **Task ID** | TASK-CC-04 |
+| **Description** | Verify that every in-text citation appears in the References list and vice versa. Flag any orphaned citations or unused references. Verify all sources are 2022-2026. |
+| **Deliverable** | Cross-check report with flagged issues |
+| **Required Skills** | Attention to detail, APA citation format familiarity |
+| **Estimated Effort** | 1-2 hours |
+| **Dependencies** | All writing tasks must be substantially complete |
+| **Assigned To** | _________ |
+
+---
+
+### Task Summary
+
+| Task ID | Task Name | Required Skills Summary | Effort | Dependencies |
+|---------|-----------|----------------------|--------|--------------|
+| TASK-C1-01 | Background P1 — Core Problem | Academic writing, IT problem framing | 2-3h | None |
+| TASK-C1-02 | Background P2 — Global Context | Lit search, APA, synthesis, 5+ citations | 4-6h | None |
+| TASK-C1-03 | Background P3 — National Context | Lit search, PH policy knowledge, APA | 4-6h | None |
+| TASK-C1-04 | Background P4 — Local Context | ISPSC familiarity, academic writing | 3-5h | None |
+| TASK-C1-05 | Background P5 — Synthesis | High-level synthesis, gap identification | 3-4h | C1-02, C1-03, C1-04 |
+| TASK-C1-06 | Background P6 — Clinching | Strategic writing, SDG connection | 2-3h | C1-02 to C1-05 |
+| TASK-C1-07 | Conceptual Framework — IPO | System architecture understanding | 2-3h | None |
+| TASK-C1-08 | Conceptual Framework — Narrative | Technical writing, system process understanding | 2-3h | C1-07 |
+| TASK-C1-09 | Objectives of the Study | Strategic alignment, SUS knowledge | 2-3h | None |
+| TASK-C1-10 | Research Questions | Question formulation from objectives | 1-2h | C1-09 |
+| TASK-C1-11 | Scope and Delimitations | Scope boundary writing, paragraph form | 2-3h | None |
+| TASK-C1-12 | Significance of the Study | Descriptive writing, stakeholder impact | 2-3h | None |
+| TASK-C2-01 | Lit Review — RBAC/Zero-Trust | Lit search, RBAC knowledge, synthesis | 4-6h | None |
+| TASK-C2-02 | Lit Review — OMR/CV Scoring | Lit search, OMR/CV knowledge, synthesis | 4-6h | None |
+| TASK-C2-03 | Lit Review — AI/RAG in Education | Lit search, AI/RAG knowledge, synthesis | 4-6h | None |
+| TASK-C2-04 | Lit Review — PWA/Offline Systems | Lit search, PWA knowledge, synthesis | 4-6h | None |
+| TASK-C2-05 | Lit Review — DPA/Multi-Tenancy | Lit search, RA 10173, synthesis | 3-5h | None |
+| TASK-C2-06 | Review of Related Systems | Web research, comparison tables | 4-6h | None |
+| TASK-C2-07 | Technical Framework | Tech stack knowledge, diagram creation | 3-4h | None |
+| TASK-C2-08 | Conceptual Framework Prose | Technical writing, IPO expansion | 2-3h | C1-07, C1-08 |
+| TASK-CC-01 | References List Compilation | APA formatting, cross-checking | 3-4h | All writing |
+| TASK-CC-02 | Formatting QA Review | Formatting precision, proofreading | 2-3h | All writing |
+| TASK-CC-03 | Narrative Consistency Review | Writing judgment, voice unification | 4-6h | All writing |
+| TASK-CC-04 | Citation Cross-Check | Attention to detail, APA familiarity | 1-2h | All writing |
+
+**Total estimated effort: ~75-100 hours across all tasks**
+
+---
+
+## Part 2: Self-Assessment Checklists
+
+Each team member fills out their own checklist independently. Do not discuss answers with other members before submitting. The Team Leader collects all completed checklists and uses them to propose task assignments.
+
+---
+
+### Member Self-Assessment Form
+
+**Name:** ________________________
+
+**Date:** ________________________
+
+**Hours per week available for capstone writing:** _________ hours
+
+**Unavailable dates over the next 3 weeks:** ________________________
+
+---
+
+#### A. Academic Writing Skills
+
+| # | Skill | Can Do? (YES / MAYBE / NO) | Notes |
+|---|-------|---------------------------|-------|
+| A1 | Write formal academic paragraphs (10-15 sentences, proper structure) | ☐ YES  ☐ MAYBE  ☐ NO | |
+| A2 | Synthesize multiple sources into a cohesive narrative (NOT author-by-author listing) | ☐ YES  ☐ MAYBE  ☐ NO | |
+| A3 | Format citations in APA 7th Edition | ☐ YES  ☐ MAYBE  ☐ NO | |
+| A4 | Identify and name a research gap from reviewed literature | ☐ YES  ☐ MAYBE  ☐ NO | |
+| A5 | Write clinching/concluding paragraphs that connect literature to the study | ☐ YES  ☐ MAYBE  ☐ NO | |
+
+---
+
+#### B. Research Skills
+
+| # | Skill | Can Do? (YES / MAYBE / NO) | Notes |
+|---|-------|---------------------------|-------|
+| B1 | Search for academic literature using Google Scholar, ResearchGate, or similar | ☐ YES  ☐ MAYBE  ☐ NO | |
+| B2 | Evaluate whether a source is credible and peer-reviewed | ☐ YES  ☐ MAYBE  ☐ NO | |
+| B3 | Find sources specific to the Philippine education context (CHED, DPA, SUCs) | ☐ YES  ☐ MAYBE  ☐ NO | |
+| B4 | Find sources about ISPSC Tagudin or comparable Philippine SUCs | ☐ YES  ☐ MAYBE  ☐ NO | |
+| B5 | Access and use Google Scholar or any academic database | ☐ YES  ☐ MAYBE  ☐ NO | |
+
+---
+
+#### C. Technical Knowledge
+
+| # | Skill | Can Do? (YES / MAYBE / NO) | Notes |
+|---|-------|---------------------------|-------|
+| C1 | Explain RBAC (Role-Based Access Control) in writing | ☐ YES  ☐ MAYBE  ☐ NO | |
+| C2 | Explain zero-trust security and HMAC in writing | ☐ YES  ☐ MAYBE  ☐ NO | |
+| C3 | Explain OMR and computer vision scoring in writing | ☐ YES  ☐ MAYBE  ☐ NO | |
+| C4 | Explain PWA, service workers, and offline-first architecture in writing | ☐ YES  ☐ MAYBE  ☐ NO | |
+| C5 | Explain AI/RAG and natural language database querying in writing | ☐ YES  ☐ MAYBE  ☐ NO | |
+| C6 | Describe the Laravel/Inertia/Svelte tech stack in writing | ☐ YES  ☐ MAYBE  ☐ NO | |
+| C7 | Explain multi-tenant database architecture in writing | ☐ YES  ☐ MAYBE  ☐ NO | |
+| C8 | Understand the SecureCAT system architecture deeply enough to write about it | ☐ YES  ☐ MAYBE  ☐ NO | |
+
+---
+
+#### D. Formatting and Detail Skills
+
+| # | Skill | Can Do? (YES / MAYBE / NO) | Notes |
+|---|-------|---------------------------|-------|
+| D1 | Follow detailed formatting rules (margins, fonts, spacing) precisely | ☐ YES  ☐ MAYBE  ☐ NO | |
+| D2 | Proofread text for formatting violations (bullets where there shouldn't be, bold in wrong places) | ☐ YES  ☐ MAYBE  ☐ NO | |
+| D3 | Create and format tables with proper borders, captions, and alignment | ☐ YES  ☐ MAYBE  ☐ NO | |
+| D4 | Compile and organize a reference list in alphabetical order | ☐ YES  ☐ MAYBE  ☐ NO | |
+| D5 | Cross-check citations against a reference list for completeness | ☐ YES  ☐ MAYBE  ☐ NO | |
+
+---
+
+#### E. Logistics and Coordination
+
+| # | Skill | Can Do? (YES / MAYBE / NO) | Notes |
+|---|-------|---------------------------|-------|
+| E1 | Handle scheduling, reminders, and document organization | ☐ YES  ☐ MAYBE  ☐ NO | |
+| E2 | Do web searches to find specific information (institution details, dates, statistics) | ☐ YES  ☐ MAYBE  ☐ NO | |
+| E3 | Willing to learn APA citation format if given a reference guide | ☐ YES  ☐ MAYBE  ☐ NO | |
+
+---
+
+#### F. Self-Description
+
+In 2-3 sentences, describe your strengths and what kind of work you feel most confident doing for this capstone:
+
+__________________________________________________________________________
+
+__________________________________________________________________________
+
+__________________________________________________________________________
+
+Is there anything you would specifically prefer NOT to do?
+
+__________________________________________________________________________
+
+Would you prefer fewer but harder tasks, or more but simpler tasks?
+
+☐ Fewer but harder     ☐ More but simpler     ☐ No preference
+
+---
+
+## Part 3: Assignment Matrix
+
+Fill this section AFTER all self-assessments are collected and reviewed.
+
+### Instructions
+
+1. Collect all 3 completed self-assessment checklists.
+2. For each task in Part 1, identify which member(s) have YES or MAYBE on the required skills.
+3. Assign each task to the best-fit member based on:
+   - Skill match (highest YES count on required skills)
+   - Availability (hours/week capacity)
+   - Preference (from self-description)
+   - Balance (avoid overloading any single member)
+4. Record the assignment in the matrix below.
+5. Hold a team meeting to discuss and confirm assignments.
+
+### Assignment Matrix
+
+| Task ID | Task Name | Required Skills | Member 1 Match | Member 2 Match | Member 3 Match | Assigned To |
+|---------|-----------|----------------|----------------|----------------|----------------|-------------|
+| TASK-C1-01 | Background P1 — Core Problem | Academic writing | | | | _________ |
+| TASK-C1-02 | Background P2 — Global Context | Lit search, APA, synthesis | | | | _________ |
+| TASK-C1-03 | Background P3 — National Context | Lit search, PH policy, APA | | | | _________ |
+| TASK-C1-04 | Background P4 — Local Context | ISPSC knowledge, writing | | | | _________ |
+| TASK-C1-05 | Background P5 — Synthesis | Synthesis, gap identification | | | | _________ |
+| TASK-C1-06 | Background P6 — Clinching | Strategic writing | | | | _________ |
+| TASK-C1-07 | Conceptual Framework — IPO | System architecture | | | | _________ |
+| TASK-C1-08 | Conceptual Framework — Narrative | Technical writing | | | | _________ |
+| TASK-C1-09 | Objectives of the Study | Strategic alignment | | | | _________ |
+| TASK-C1-10 | Research Questions | Question formulation | | | | _________ |
+| TASK-C1-11 | Scope and Delimitations | Scope writing | | | | _________ |
+| TASK-C1-12 | Significance of the Study | Descriptive writing | | | | _________ |
+| TASK-C2-01 | Lit — RBAC/Zero-Trust | Lit search, synthesis | | | | _________ |
+| TASK-C2-02 | Lit — OMR/CV Scoring | Lit search, synthesis | | | | _________ |
+| TASK-C2-03 | Lit — AI/RAG in Education | Lit search, synthesis | | | | _________ |
+| TASK-C2-04 | Lit — PWA/Offline Systems | Lit search, synthesis | | | | _________ |
+| TASK-C2-05 | Lit — DPA/Multi-Tenancy | Lit search, synthesis | | | | _________ |
+| TASK-C2-06 | Review of Related Systems | Web research, comparison | | | | _________ |
+| TASK-C2-07 | Technical Framework | Tech stack, diagrams | | | | _________ |
+| TASK-C2-08 | Conceptual Framework Prose | Technical writing | | | | _________ |
+| TASK-CC-01 | References Compilation | APA, cross-checking | | | | _________ |
+| TASK-CC-02 | Formatting QA | Formatting precision | | | | _________ |
+| TASK-CC-03 | Narrative Consistency | Writing judgment | | | | _________ |
+| TASK-CC-04 | Citation Cross-Check | Attention to detail | | | | _________ |
+
+### Workload Summary (fill after assignment)
+
+| Member | Tasks Assigned | Total Estimated Hours | Notes |
+|--------|---------------|----------------------|-------|
+| Member 1 | ___ tasks | ___ hours | |
+| Member 2 | ___ tasks | ___ hours | |
+| Member 3 | ___ tasks | ___ hours | |
+
+---
+
+## Part 4: Reference Rules
+
+### Golden Rules (from All 5 Guides)
 
 | # | Rule | Source |
 |---|------|--------|
-| 1 | **Times New Roman, 12pt, double-spaced, justified** — no exceptions for any body text | Guide 1 |
-| 2 | **No bullet points anywhere in the manuscript** — use numbered lists only where explicitly allowed (IPO boxes, specific objectives) | Guide 1 |
-| 3 | **Bold is ONLY for**: chapter headings, subheadings, figure captions, table captions — never for body text emphasis | Guide 1 |
-| 4 | **Paragraph indent = exactly 5 spaces** at start of every paragraph | Guide 1 |
+| 1 | **Times New Roman, 12pt, double-spaced, justified** — no exceptions | Guide 1 |
+| 2 | **No bullet points anywhere** — numbered lists only where explicitly allowed (IPO boxes, specific objectives) | Guide 1 |
+| 3 | **Bold is ONLY for**: chapter headings, subheadings, figure captions, table captions | Guide 1 |
+| 4 | **Paragraph indent = exactly 5 spaces** | Guide 1 |
 | 5 | **Left margin = 1.5 inches**; all other margins = 1 inch | Guide 1 |
 | 6 | **Table captions: left-aligned, above the table, bold** | Guide 1 |
 | 7 | **Figure captions: below the figure, bold** | Guide 1 |
-| 8 | **All cited literature must be 2022-2026** — flag anything outside this range | Guide 2 |
-| 9 | **Every in-text citation MUST appear in the References list** — cross-check before submission | Guide 2 |
-| 10 | **Paragraph form only** for Scope, Limitations, Importance of the Study, and ALL Methodology sections | Guide 2 |
-| 11 | **Objective 3 uses ONE precise term** — "usability" (if using SUS) or "acceptability" — never both | Guide 2 |
-| 12 | **Page numbers on every page EXCEPT the first page of each chapter** | Guide 1 |
-| 13 | **Header/footer borders must fit entirely within the 1-inch margins** | Guide 1 |
-| 14 | **No extra spacing between paragraphs** — set space before/after to 0pt | Guide 1 |
+| 8 | **All cited literature must be 2022-2026** | Guide 2 |
+| 9 | **Every in-text citation MUST appear in References list** | Guide 2 |
+| 10 | **Paragraph form only** for Scope, Limitations, Importance, Methodology | Guide 2 |
+| 11 | **Objective 3 uses ONE term** — "usability" (SUS) or "acceptability" — never both | Guide 2 |
+| 12 | **Page numbers on every page EXCEPT first page of each chapter** | Guide 1 |
+| 13 | **Header/footer borders within 1-inch margins** | Guide 1 |
+| 14 | **No extra spacing between paragraphs** — space before/after = 0pt | Guide 1 |
 
----
-
-## 4. Manuscript Formatting Cheat Sheet (Quick Reference)
-
-When formatting any section, verify against this checklist:
+### Format Pre-Flight Checklist
 
 ```
-FORMAT PRE-FLIGHT CHECKLIST (Apply to EVERY draft before submission)
-==============================================================
+Apply to EVERY draft before submission:
 [ ] Font: Times New Roman 12pt
 [ ] Line spacing: Double
 [ ] Paragraph indent: 5 spaces
@@ -259,95 +576,12 @@ FORMAT PRE-FLIGHT CHECKLIST (Apply to EVERY draft before submission)
 [ ] Left margin: 1.5" | Right/Top/Bottom: 1.0"
 ```
 
----
+### Related Documents
 
-## 5. Chapter 1 — Section-by-Section Work Packets
-
-Each work packet below contains: the owner, the guide rules, what to write, research prompts, and acceptance criteria.
-
----
-
-### 5.1 Background of the Study
-
-**Structure: Exactly 6 paragraphs, funnel format (broad to specific)**
-
-#### PARAGRAPH 1 — Core Problem (NO CITATIONS)
-
-- **Suggested capability profile:** A4, A9, A1 (academic writing + methodology understanding)
-- **Rules:** Own words only. No citations. Focus on IT problem framing, not admin/management framing.
-- **Length:** 1 solid paragraph (8-12 sentences)
-
-**What to write:**
-
-Name the exact problem SecureCAT solves. Start with observable symptoms (manual admission workflows, fragmented scoring, paper-based OMR, lack of audit trails), then pivot to the underlying technical root cause (absence of a unified, cryptographically-secured, role-based digital platform that enforces data integrity and operational continuity).
-
-**Research Prompt to expand or use as starting point:**
-
-> Write a 10-12 sentence paragraph in academic tone describing the core IT problem that SecureCAT addresses. The paragraph must:
-> - Name the system: "SecureCAT: A Role-Based College Admission Testing System for the Guidance and Registrar Offices at ISPSC Tagudin"
-> - Describe observable symptoms: manual applicant intake, paper-based testing workflows, fragmented scoring processes, absence of real-time status tracking, lack of audit mechanisms
-> - Pivot to the technical root cause: the absence of a unified, cryptographically-secured, role-based digital admission platform with automated score verification, offline resilience, and AI-assisted operations
-> - Frame this as an IT/architectural gap, not an administrative inconvenience
-> - Use present tense, formal academic language
-> - Do NOT use any citations — this is entirely in your own words
-> - Do NOT use bullet points or bold text
-
-**Acceptance Criteria:**
-
-- [ ] Written entirely in own words — zero citations
-- [ ] Names the system and its exact problem
-- [ ] Frames the gap as a technical/IT problem (not management or governance)
-- [ ] Moves from symptoms to root cause within the paragraph
-- [ ] No bullet points, no bold text in body
-
----
-
-#### PARAGRAPH 2 — Global Context (Minimum 5 citations, all 2022-2026)
-
-- **Suggested capability profile:** A1, A4, A9 (literature search + academic writing)
-- **Rules:** International scope. Market trends, efficiency findings, architectural debates, adoption patterns. 5+ sources all 2022-2026.
-
-**What to write:**
-
-Discuss how admission testing systems are handled globally. Cover: digital transformation of higher education admissions, automated testing and scoring platforms, role-based access control in educational systems, computer-vision-based OMR scanning, AI-assisted administrative operations in universities, offline-first application architectures, zero-trust security models in academic software.
-
-**Research Prompt:**
-
-> Research and write a 12-15 sentence paragraph providing the global context for role-based college admission testing systems. The paragraph must:
-> - Cover at least 3 of these global themes: (1) digital transformation of university admissions, (2) automated test scoring technologies including OMR and computer vision, (3) role-based access control and zero-trust security in educational platforms, (4) AI-powered administrative assistants in higher education, (5) offline-capable web applications for exam proctoring
-> - Cite a minimum of 5 academic/industry sources, all published between 2022-2026
-> - Synthesize findings — do NOT list authors one by one (no "Author A says X. Author B says Y.")
-> - Use parenthetical APA citations: (Author, Year)
-> - End by establishing that the global trend supports integrated, secure, AI-augmented admission platforms
-> - Write in formal academic paragraph form, justified, no bullets
-
-**Suggested research starting points (verify these exist and find the actual sources):**
-
-- UNESCO or World Bank reports on digital transformation in education (2022-2025)
-- IEEE/ACM papers on automated test scoring and OMR (2023-2026)
-- Industry reports on zero-trust architecture adoption (2023-2025)
-- Studies on AI chatbots in university administration (2023-2026)
-- Papers on PWA/offline-first architectures for critical operations (2022-2025)
-
-**Acceptance Criteria:**
-
-- [ ] Minimum 5 citations, all 2022-2026
-- [ ] International/global scope
-- [ ] Synthesized (not author-by-author summary)
-- [ ] All citations will appear in References list
-- [ ] Paragraph form, no bullets, no bold body text
-
----
-
-## Note
-
-This is a condensed, clean version of the TEAM_META_GUIDE. The full original content was 557 lines with very long lines causing display issues. This reformatted version uses proper markdown formatting and line breaks for better readability on all devices.
-
-For the complete section-by-section work packets for Chapters 1 and 2, including all research prompts and acceptance criteria, please refer to the individual chapter guides:
-
-- `../guides/GUIDE-2-CHAPTER1-CONTENT.md`
-- `../guides/GUIDE-3-CHAPTER2-CONTENT.md`
-- `../guides/GUIDE-4-AIDLC-DEFENSE.md`
-- `../guides/GUIDE-5-CHECKLIST.md`
-
-This TEAM_META_GUIDE focuses on team organization, capability assessment, and workflow coordination.
+- `../guides/GUIDE-1-FORMATTING.md` — Full formatting rules
+- `../guides/GUIDE-2-CHAPTER1-CONTENT.md` — Chapter 1 content requirements
+- `../guides/GUIDE-3-CHAPTER2-CONTENT.md` — Chapter 2 content requirements
+- `../guides/GUIDE-4-AIDLC-DEFENSE.md` — AIDLC model defense strategy
+- `../guides/GUIDE-5-CHECKLIST.md` — Pre-submission checklist
+- `../drafts/Existing_and_Planned_Features.md` — Existing vs. planned features
+- `../ROADMAP.md` — Overall timeline and milestones
