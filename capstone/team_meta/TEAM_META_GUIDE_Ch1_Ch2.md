@@ -10,6 +10,10 @@ This document serves three purposes:
 
 **No roles are pre-assigned.** Members select tasks based on their own assessed capabilities. Final assignments are decided collaboratively after all checklists are collected.
 
+> **⏰ HARD DEADLINE: June 10, 2026 — Chapters 1 & 2 must be complete.**
+>
+> Keep this date in mind when choosing tasks. There are **24 tasks** across Chapters 1, 2, and cross-chapter work. With 3 members and ~2 weeks remaining, each person should realistically take on **6–8 tasks**. Prioritize tasks you can finish within your availability — it's better to commit to fewer and deliver well than to overcommit and stall the team.
+
 ---
 
 ## Part 1: Task Inventory
