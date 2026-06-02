@@ -1,8 +1,8 @@
 # Chapter 1 & 2 Task Distribution Plan
 ## SecureCAT-v2 Capstone | Deadline: June 10, 2026
 
-> **Last Updated:** June 1, 2026
-> **Status:** Final Assignment Distribution
+> **Last Updated:** June 2, 2026
+> **Status:** Final Assignment Distribution (Post-Reassignment)
 
 ---
 
@@ -10,24 +10,25 @@
 
 | Member | Role | Email/Discord | Claimed Hours | Available Capacity |
 |--------|------|--------------|---------------|-------------------|
-| **David** | Team Leader / Product Owner / Lead Developer | daviddatu_ | 33-46h | ~55h total |
-| **Christine** | Team Member — Local Literature & Significance | Christine | 6-9h | TBD |
-| **Jaypee** | Team Member — Background & QA Tasks | Jaypee | 20-30h (assigned) | TBD |
+| **David** | Team Leader / Product Owner / Lead Developer | daviddatu_ | 45-55h | ~55h total |
+| **Christine** | Team Member — OMR/CV Literature & Significance | Christine | 6-9h | TBD |
+| **Jaypee** | Team Member — Local Context, Systems, Research & References | Jaypee | 20-30h | TBD |
 
 ---
 
 ## Assignment Strategy
 
 **Distribution Principles:**
-1. **David** — Technical architecture, literature reviews (RBAC, AI, PWA, DPA), framework tasks, narrative consistency
-2. **Christine** — Local context research (ISPSC), significance, automated scoring/OMR literature review
-3. **Jaypee** — Background paragraphs (core problem, global, national), research questions, related systems review, formatting QA, citations
+1. **David** — Technical architecture, background paragraphs (P1-P3), literature reviews (RBAC, AI, PWA, DPA), framework tasks, narrative consistency, formatting QA
+2. **Christine** — Automated scoring/OMR literature review, significance of the study
+3. **Jaypee** — Local context (ISPSC), research questions, related systems review, references compilation, citation cross-check
 
-**Assumptions for Jaypee (Member 3):**
-- Standard BSIT student with basic academic writing capability
-- Can perform web research and follow formatting guides
-- Needs detailed direction for each task (will create specific guides)
-- Assigned 20-30 hours (reasonable for completing unassigned tasks)
+**June 2 Reassignment:**
+- Jaypee prefers focused, detail-oriented tasks (systems review, references, citations)
+- Jaypee takes: C1-04 (Local Context), C1-10 (Research Qs), C2-06 (Related Systems), CC-01 (References), CC-04 (Citation Cross-Check)
+- Jaypee gives up: C1-01, C1-02, C1-03 (background paragraphs), CC-02 (Formatting QA) → moved to David
+- Christine gives up: C1-04 (Local Context), CC-01 (References) → moved to Jaypee
+- David takes on: C1-01, C1-02, C1-03, CC-02 to balance workload
 
 ---
 
@@ -37,10 +38,10 @@
 
 | Task ID | Task Name | Assigned | Est. Hours | Deadline | Dependencies |
 |---------|-----------|----------|------------|----------|--------------|
-| C1-01 | Background P1 — Core Problem Statement | **Jaypee** | 2-3h | Jun 4 | None |
-| C1-02 | Background P2 — Global Context | **Jaypee** | 4-6h | Jun 5 | None |
-| C1-03 | Background P3 — National Context (PH) | **Jaypee** | 4-6h | Jun 5 | None |
-| C1-04 | Background P4 — Local Context (ISPSC) | **Christine** | 3-5h | Jun 5 | None |
+| C1-01 | Background P1 — Core Problem Statement | **David** | 2-3h | Jun 4 | None |
+| C1-02 | Background P2 — Global Context | **David** | 4-6h | Jun 5 | None |
+| C1-03 | Background P3 — National Context (PH) | **David** | 4-6h | Jun 5 | None |
+| C1-04 | Background P4 — Local Context (ISPSC) | **Jaypee** | 3-5h | Jun 5 | None |
 | C1-05 | Background P5 — Synthesis & Gap | **David** | 3-4h | Jun 6 | C1-02, C1-03, C1-04 |
 | C1-06 | Background P6 — Clinching Statement | **David** | 2-3h | Jun 7 | C1-02, C1-03, C1-04 |
 | C1-07 | Conceptual Framework — IPO Diagram | **David** | 2-3h | Jun 3 | None |
@@ -67,8 +68,8 @@
 
 | Task ID | Task Name | Assigned | Est. Hours | Deadline | Dependencies |
 |---------|-----------|----------|------------|----------|--------------|
-| CC-01 | References List Compilation | **Christine** | 3-4h | Jun 8 | All writing tasks |
-| CC-02 | Formatting QA Review | **Jaypee** | 2-3h | Jun 8 | All writing tasks |
+| CC-01 | References List Compilation | **Jaypee** | 3-4h | Jun 8 | All writing tasks |
+| CC-02 | Formatting QA Review | **David** | 2-3h | Jun 8 | All writing tasks |
 | CC-03 | Narrative Consistency Review | **David** | 4-6h | Jun 9 | All writing tasks |
 | CC-04 | Citation Cross-Check | **Jaypee** | 1-2h | Jun 8 | All writing tasks |
 
@@ -78,11 +79,16 @@
 
 | Member | Total Tasks | Total Hours | Utilization | Status |
 |--------|-------------|-------------|--------------|--------|
-| **David** | 11 tasks | 33-46h | 60-84% of 55h | ✅ Balanced |
-| **Christine** | 3 tasks | 9-12h | TBD capacity | ✅ Focused |
-| **Jaypee** | 5 tasks | 15-23h | TBD capacity | ✅ Assignments complete |
+| **David** | 15 tasks | 45-55h | 82-100% of 55h | ✅ Full capacity |
+| **Christine** | 2 tasks | 6-9h | TBD capacity | ✅ Focused |
+| **Jaypee** | 5 tasks | 14-22h | TBD capacity | ✅ Balanced |
 
-**Total Project Effort:** ~57-81 hours across all members
+**Total Project Effort:** ~65-86 hours across all members
+
+**Summary of June 2 Reassignment:**
+- **David** adds C1-01, C1-02, C1-03 (background paragraphs), CC-02 (Formatting QA) → 15 tasks, 45-55h
+- **Christine** keeps C1-12 (Significance), C2-02 (OMR/CV Review) → 2 tasks, 6-9h
+- **Jaypee** keeps C1-10 (Research Qs), C2-06 (Related Systems), CC-04 (Citation Cross-Check); takes C1-04 (Local Context), CC-01 (References) → 5 tasks, 14-22h
 
 ---
 
@@ -90,7 +96,7 @@
 
 ### Chapter 1 — Background of the Study
 
-#### C1-01: Background P1 — Core Problem Statement (Jaypee)
+#### C1-01: Background P1 — Core Problem Statement (David)
 **Effort:** 2-3 hours
 **Due:** June 4
 **Dependencies:** None
@@ -119,7 +125,7 @@
 
 ---
 
-#### C1-02: Background P2 — Global Context (Jaypee)
+#### C1-02: Background P2 — Global Context (David)
 **Effort:** 4-6 hours
 **Due:** June 5
 **Dependencies:** None
@@ -158,7 +164,7 @@
 
 ---
 
-#### C1-03: Background P3 — National Context — Philippines (Jaypee)
+#### C1-03: Background P3 — National Context — Philippines (David)
 **Effort:** 4-6 hours
 **Due:** June 5
 **Dependencies:** None
@@ -195,7 +201,7 @@
 
 ---
 
-#### C1-04: Background P4 — Local Context — ISPSC Tagudin (Christine)
+#### C1-04: Background P4 — Local Context — ISPSC Tagudin (Jaypee)
 **Effort:** 3-5 hours
 **Due:** June 5
 **Dependencies:** None
@@ -203,7 +209,7 @@
 
 **Detailed Subtasks:**
 1. **Document ISPSC Tagudin Context (60 min)**
-   - Leverage first-hand knowledge as enrolled student
+   - Coordinate with Christine (enrolled student) for first-hand knowledge
    - Identify: Guidance Office processes, Registrar workflows, current admission testing practices
    - Note infrastructure realities (internet connectivity, computer availability, WiFi reliability, limited IT staff, computer labs)
    - Document operational challenges during peak admission periods
@@ -224,7 +230,7 @@
 
 4. **Compile Draft References (30 min)**
    - Create APA 7 references for all sources
-   - Save for CC-01
+   - Save for CC-01 (you will compile final list)
 
 **Deliverable:** One 12-15 sentence paragraph with minimum 5 citations (all 2022-2026), specific to ISPSC Tagudin
 

@@ -1,10 +1,10 @@
 # Member Task Direction — Jaypee
-## Team Member — Background, Research Questions, Related Systems & QA
+## Team Member — Local Context, Systems Review, References & Citations
 
-> **Role:** Background paragraphs (core problem, global context, national context), research questions, related systems review, formatting QA, citation cross-check
-> **Total Assigned Tasks:** 7 tasks (C1-01, C1-02, C1-03, C1-10, C2-06, CC-02, CC-04)
-> **Estimated Effort:** 15-23 hours
-> **Focus:** Academic writing, web research, quality assurance
+> **Role:** Local context (ISPSC Tagudin), research questions, related systems review, references compilation, citation cross-check
+> **Total Assigned Tasks:** 5 tasks (C1-04, C1-10, C2-06, CC-01, CC-04)
+> **Estimated Effort:** 14-22 hours
+> **Focus:** Detail-oriented tasks requiring research, organization, and quality assurance
 > **Hard Deadline:** June 10, 2026
 
 ---
@@ -14,9 +14,7 @@
 ### Chapter 1
 | Task ID | Task | Sentences | Citations | Hours | Due | Dependencies |
 |---------|------|-----------|-----------|-------|-----|--------------|
-| C1-01 | Background P1 — Core Problem Statement | **8-12** | **None** | 2-3h | Jun 4 | None |
-| C1-02 | Background P2 — Global Context | **12-15** | **Min 5 APA** | 4-6h | Jun 5 | None |
-| C1-03 | Background P3 — National Context (PH) | **12-15** | **Min 5 APA** | 4-6h | Jun 5 | None |
+| C1-04 | Background P4 — Local Context (ISPSC Tagudin) | **12-15** | **Min 5 APA** | 3-5h | Jun 5 | None |
 | C1-10 | Research Questions | — | None | 1-2h | Jun 4 | C1-09 (David) |
 
 ### Chapter 2
@@ -27,7 +25,7 @@
 ### Cross-Cutting
 | Task ID | Task | Hours | Due | Dependencies |
 |---------|------|-------|-----|--------------|
-| CC-02 | Formatting QA Review | 2-3h | Jun 8 | All writing tasks |
+| CC-01 | References List Compilation | 3-4h | Jun 8 | All writing tasks |
 | CC-04 | Citation Cross-Check | 1-2h | Jun 8 | All writing tasks, CC-01 |
 
 ---
@@ -35,9 +33,7 @@
 ## ⚠️ CRITICAL RULES — Read Before Starting Any Task
 
 1. **Paragraph sentence counts are FIXED.** Do not deviate:
-   - C1-01: exactly **8-12 sentences** (NOT 10-15)
-   - C1-02: exactly **12-15 sentences**
-   - C1-03: exactly **12-15 sentences**
+   - C1-04: exactly **12-15 sentences** (NOT 10-15, NOT 15-20)
    - If someone tells you "10-15 sentences," ignore them. Follow this guide.
 
 2. **No bullet points ANYWHERE in any manuscript text.** All content must be in paragraph form.
@@ -48,206 +44,76 @@
 
 5. **Synthesize, never summarize.** FORBIDDEN pattern: "Author A says X. Author B says Y." Weave findings into themes instead.
 
+6. **For CC-01 (References):** You must collect references from ALL team members (David, Christine, yourself) and compile one final alphabetized APA 7 list.
+
 ---
 
 ## Detailed Task Directions
 
----
+### Week 1 (June 1-5): Local Context & Research Questions
 
-### C1-01: Background P1 — Core Problem Statement (June 4)
+#### C1-04: Background P4 — Local Context (ISPSC Tagudin) (June 5)
 
-**Priority:** HIGH — First paragraph of Chapter 1, sets the tone for the entire manuscript
-
-**Target:** 1 paragraph, **8-12 sentences**, citation-free
-
-#### Step 1: Understand the Core Problem (30 min)
-
-Read `SYSTEM_FEATURES.md` and `drafts/Existing_and_Planned_Features.md` to understand what SecureCAT does.
-
-The core problem is this: ISPSC Tagudin currently handles admission testing through manual, paper-based workflows with no unified digital platform. Specifically:
-
-- **Manual admission workflows:** Test papers are physically routed between the Guidance Office and Registrar with no digital coordination.
-- **Fragmented scoring:** Scores are computed manually using answer keys; there is no automated scoring pipeline.
-- **Paper-based OMR:** Answer sheets are processed by hand (no computer-vision or automated OMR scanning).
-- **Lack of audit trails:** No record of who accessed what data, who changed a score, or when an action was performed.
-- **No role-based access control:** Anyone with system access can view or modify anything — no permission boundaries between offices.
-
-The **technical root cause** is the **absence of a unified, cryptographically-secured, role-based digital platform** for admission testing.
-
-#### Step 2: Write the Problem Paragraph (60-90 min)
-
-Write **8-12 sentences** in your own words. **NO CITATIONS ALLOWED** — this is the only citation-free paragraph.
-
-**Structure:**
-- **Sentences 1-4:** Name the observable symptoms — manual admission workflows, paper-based test routing between Guidance Office and Registrar, manual scoring using answer keys, fragmented processes, no audit trails, no role-based access.
-- **Sentences 5-8:** Pivot to the technical root cause — the absence of a unified, cryptographically-secured, role-based digital platform. Explain why the current manual approach creates vulnerabilities in test security, delays in result processing, and no accountability mechanism.
-- **Sentences 9-12 (if needed):** State what technical intervention is needed — a role-based admission testing system with automated scoring, offline resilience, and cryptographic data integrity.
-
-**Key terms to include:**
-- "manual admission testing"
-- "role-based access control"
-- "Guidance Office"
-- "Registrar"
-- "test security"
-- "audit trail"
-- "cryptographically-secured"
-- "unified digital platform"
-
-**Critical framing rule:** Make it sound like an **IT/system paper**, NOT a public administration or management paper. State the actual technical gap.
-
-**Example opening pattern:** "The current admission testing process at ISPSC Tagudin relies on manual coordination between the Guidance Office and Registrar, with test papers physically routed between offices and scoring performed manually without role-based access controls or audit trails."
-
-#### Step 3: Review & Refine (30 min)
-
-- [ ] Count sentences: must be **8-12** (not 7, not 13)
-- [ ] Verify NO citations — P1 is the only citation-free paragraph
-- [ ] Verify IT/system framing (not management/admin framing)
-- [ ] Verify no bullet points or bold body text
-- [ ] Verify the paragraph names the specific problem SecureCAT solves
-
-**Deliverable:** `C1-01_Jaypee_Core_Problem.md` — 1 paragraph, 8-12 sentences, citation-free
-
----
-
-### C1-02: Background P2 — Global Context (June 5)
-
-**Priority:** HIGH — Global foundation with 5+ citations
+**Priority:** HIGH — Local foundation for the study
 
 **Target:** 1 paragraph, **12-15 sentences**, minimum 5 APA citations (all 2022-2026)
 
-#### Step 1: Research Global Admission Testing (90 min)
+#### Step 1: Get ISPSC Context from Christine (30 min)
 
-Go to **Google Scholar** (scholar.google.com). Search terms:
-- "digital transformation higher education admissions"
-- "automated testing and scoring platforms education"
-- "role-based access control educational systems"
-- "computer vision OMR scanning assessment"
-- "AI-assisted administrative operations universities"
-- "offline-first architecture web applications"
-- "zero-trust security models education"
+- Ask Christine for first-hand knowledge of ISPSC Tagudin
+- What you need to know:
+  - Guidance Office processes: How do they schedule tests? What do they do manually?
+  - Registrar workflows: How do they record scores? How do they process results?
+  - Infrastructure: How reliable is WiFi? Are there enough computers? How many IT staff?
+  - Peak admission challenges: What bottlenecks happen when hundreds of applicants arrive?
+  - Compliance pressures: Does ISPSC need to follow RA 10173? How do they handle student data privacy?
 
-**Filter:** Date 2022-2026, peer-reviewed articles only.
+#### Step 2: Research Comparable Regional Institutions (60 min)
 
-**Target:** 5-7 sources covering ALL of these topics (per TEAM_META_GUIDE):
-- Digital transformation of higher education admissions
-- Automated testing and scoring platforms
-- RBAC in educational systems
-- Computer-vision-based OMR scanning
-- AI-assisted administrative operations
-- Offline-first architectures
-- Zero-trust security models
+- Go to **Google Scholar** (scholar.google.com). Search terms:
+  - "Ilocos Region university admission systems"
+  - "Philippine SUC guidance office automation"
+  - "state university admission testing Philippines"
+  - "manual admission workflow Philippine higher education"
 
-#### Step 2: Extract Key Findings (60 min)
+- Filter: Date 2022-2026, peer-reviewed articles.
 
-For each source, extract:
-- Main finding
-- Methodology
-- Relevance to SecureCAT
-- Full citation details (author, year, journal, DOI/URL)
+- If regional studies are scarce, broaden to:
+  - "Philippine university admission processes"
+  - "guidance office information systems Philippines"
+  - "digital transformation Philippine SUCs"
 
-Group findings by theme (NOT by author):
-- Theme 1: Efficiency gains from automated admission systems
-- Theme 2: Security architectures (RBAC, zero-trust, cryptographic integrity)
-- Theme 3: Emerging technologies (CV-based OMR, AI assistants, offline-first PWA)
+- Target: **5 or more sources** on comparable institutions or regional ICT in education.
 
-#### Step 3: Write Global Context Paragraph (90-120 min)
+#### Step 3: Write Local Context Paragraph (90-120 min)
 
-Write **12-15 sentences** synthesizing global patterns. Include **minimum 5 in-text citations** (Author, Year).
+Write **12-15 sentences** describing ISPSC Tagudin's specific operational environment.
 
 **Structure:**
-- **Sentences 1-3:** Global trends in digital transformation of higher education admissions (2-3 citations)
-- **Sentences 4-7:** Automated testing/scoring platforms, RBAC in education, zero-trust security models (2-3 citations)
-- **Sentences 8-11:** Emerging technologies — CV-based OMR, AI-assisted operations, offline-first architectures (1-2 citations)
-- **Sentences 12-15:** How global context sets the stage for local implementation needs (optional citations)
+- **Sentences 1-3:** ISPSC Tagudin context — location, student population, programs offered, institutional mandate.
+- **Sentences 4-7:** Current manual processes in the Guidance Office and Registrar Office — describe the actual admission testing workflow, paper-based scheduling, manual score recording, disconnected systems between offices, and the lack of audit trails.
+- **Sentences 8-11:** Operational constraints — WiFi reliability issues, limited IT staff, computer lab availability, and how these constraints compound during peak admission periods when both offices face heavy workloads simultaneously.
+- **Sentences 12-15:** Compliance pressures and precedent from comparable institutions — RA 10173 compliance challenges with manual data handling, and what other Philippine SUCs are doing to modernize admission testing.
 
-**FORBIDDEN pattern:**
-- ❌ "Author A says X. Author B says Y. Author C says Z."
+**Include minimum 5 in-text citations** (Author, Year) — mix of local/regional sources.
 
-**Required synthesis pattern:**
-- ✅ "Global studies demonstrate that automated admission testing systems reduce processing time significantly compared to manual methods (Author A, 2024; Author B, 2023), while role-based access controls have become a standard security practice for test administration (Author C, 2025; Author D, 2024)."
+**Be specific:** Name actual processes, constraints, and institutions.
+
+**Example sentence:** "At ISPSC Tagudin, the Guidance Office manually schedules admission tests using paper forms, while the Registrar separately records scores in spreadsheets, a process that results in delayed results and no audit trail (Author, 2024)."
 
 #### Step 4: Compile Draft References (30 min)
 
-Create APA 7 draft references for all 5+ sources. Format:
-`Author, A. A. (Year). Title. *Source*, vol(issue), pages. DOI/URL`
+- Create APA 7 draft references for all sources.
+- Format: `Author, A. A. (Year). Title. *Source*, vol(issue), pages. DOI/URL`
+- Save these for CC-01 (you will compile the final list yourself).
 
-Save draft references for CC-01 (Christine will compile the final list).
+**Reference docs:** `guides/GUIDE-2-CHAPTER1-CONTENT.md` Section 1, Paragraph 4; `SYSTEM_FEATURES.md` for system context
 
-**Reference docs:** `guides/GUIDE-2-CHAPTER1-CONTENT.md` Section 1 Paragraph 2
-
-**Deliverable:** `C1-02_Jaypee_Global_Context.md` — 1 paragraph (12-15 sentences, 5+ APA citations, all 2022-2026) + draft APA reference entries
-
----
-
-### C1-03: Background P3 — National Context (Philippines) (June 5)
-
-**Priority:** HIGH — Philippine context with 5+ citations
-
-**Target:** 1 paragraph, **12-15 sentences**, minimum 5 APA citations (all 2022-2026)
-
-#### Step 1: Research Philippine Education & Admission Systems (90 min)
-
-Go to **Google Scholar**. Search terms:
-- "CHED policies admission testing Philippines"
-- "RA 10173 Data Privacy Act education"
-- "state universities and colleges ICT systems Philippines"
-- "digitalization SUCs Philippines"
-- "e-governance initiatives Philippine higher education"
-- "connectivity challenges Philippine higher education"
-
-**Filter:** Date 2022-2026.
-
-**Target:** 5-7 sources covering ALL of these topics (per TEAM_META_GUIDE):
-- CHED policies on admission testing
-- RA 10173 (Data Privacy Act of 2012) compliance for student data
-- Digitalization efforts in SUCs (State Universities and Colleges)
-- Government e-governance initiatives
-- Connectivity challenges in Philippine higher education
-
-#### Step 2: Extract Policy & Implementation Details (60 min)
-
-For each source, extract:
-- Specific mandates: CHED memoranda, RA citations, agency directives
-- Current practices: How do Philippine SUCs handle admissions?
-- Implementation gaps: What's not being done yet?
-- Privacy/compliance: How is RA 10173 applied in educational contexts?
-
-**MUST NAME SPECIFIC LEGISLATION, AGENCIES, OR PROGRAMS** — no vague references. Examples:
-- "CHED Memorandum Order No. XX-2023"
-- "Republic Act 10173 (Data Privacy Act of 2012)"
-- "National Economic and Development Authority (NEDA)"
-- "Department of Information and Communications Technology (DICT)"
-- Specific government digital transformation programs
-
-#### Step 3: Write National Context Paragraph (90-120 min)
-
-Write **12-15 sentences** connecting policy to practice. Include **minimum 5 in-text citations**.
-
-**Structure:**
-- **Sentences 1-4:** National mandates and policies (CHED directives, RA 10173, government e-governance programs) (2-3 citations)
-- **Sentences 5-8:** Current SUC practices and digitalization efforts (1-2 citations)
-- **Sentences 9-11:** Connectivity challenges and infrastructure constraints in Philippine higher education (1-2 citations)
-- **Sentences 12-15:** How national context creates the need for SecureCAT at ISPSC (bridge to local context)
-
-**Be specific about policies:**
-- "CHED Memorandum Order emphasizes digital transformation in SUC operations..."
-- "Republic Act 10173 (Data Privacy Act of 2012) mandates that student data must be..."
-- "The Department of Information and Communications Technology (DICT) has directed..."
-
-#### Step 4: Compile Draft References (30 min)
-
-Create APA 7 references. For government sources use:
-`Agency Name. (Year). *Title* (Publication No.). Publisher. URL`
-
-Save draft references for CC-01.
-
-**Reference docs:** `guides/GUIDE-2-CHAPTER1-CONTENT.md` Section 1 Paragraph 3
-
-**Deliverable:** `C1-03_Jaypee_National_Context.md` — 1 paragraph (12-15 sentences, 5+ APA citations, all 2022-2026) + draft APA reference entries
+**Deliverable:** `C1-04_Jaypee_Local_Context.md` — 1 paragraph (12-15 sentences, 5+ APA citations, all 2022-2026) + draft APA reference entries
 
 ---
 
-### C1-10: Research Questions (June 4)
+#### C1-10: Research Questions (June 4)
 
 **Priority:** MEDIUM — Aligns with specific objectives
 
@@ -286,7 +152,9 @@ Read David's C1-09 specific objectives (typically 3 objectives in Identify → D
 
 ---
 
-### C2-06: Review of Related Systems (June 6)
+### Week 2 (June 6): Related Systems
+
+#### C2-06: Review of Related Systems (June 6)
 
 **Priority:** MEDIUM — Demonstrates awareness of existing solutions vs. SecureCAT
 
@@ -345,71 +213,77 @@ Write **2-3 paragraphs** with minimum 5 APA citations:
 
 ---
 
-### CC-02: Formatting QA Review (June 8)
+### Week 2 (June 8): References & Citations
 
-**Priority:** HIGH — Final formatting check before submission
+#### CC-01: References List Compilation (June 8)
 
-**Target:** Annotated manuscript with formatting corrections marked
+**Priority:** HIGH — Final references for all chapters
 
-#### Step 1: Review GUIDE-1 Formatting Rules (30 min)
+**Target:** Complete alphabetized APA 7th Edition References list
 
-Read `guides/GUIDE-1-FORMATTING.md` thoroughly. Here are the **exact rules** you must verify:
+#### Step 1: Collect All References from Team (60 min)
 
-| Rule | Correct Value | Common Mistake |
-|------|--------------|----------------|
-| **Left margin** | **1.5 inches** | ❌ 1 inch — WRONG |
-| **Right margin** | **1.0 inch** | — |
-| **Top margin** | **1.0 inch** | — |
-| **Bottom margin** | **1.0 inch** | — |
-| **Font** | Times New Roman, 12pt | — |
-| **Line spacing** | Double throughout | — |
-| **Paragraph indent** | **Exactly 5 spaces** | ❌ Tab or 3 spaces |
-| **Alignment** | Justified | — |
-| **Bullet points** | **NONE anywhere** | ❌ Bullets in scope/significance |
-| **Bold body text** | **NONE** — bold ONLY for headings, subheadings, figure captions, table captions | ❌ Bold for emphasis |
-| **Table captions** | **Above** table, **left-aligned**, **bold** | ❌ Below or centered |
-| **Figure captions** | **Below** figure, **bold** | ❌ Above figure |
-| **Table borders** | 1pt line width | ❌ 0.5pt or no borders |
-| **Page numbers** | Every page **except** first page of each chapter | ❌ Missing or on chapter first page |
-| **Header/footer borders** | Must sit entirely within 1-inch top/bottom margins | ❌ Bleeding outside margins |
-| **Extra spacing between paragraphs** | **0pt** space before/after | ❌ Extra blank lines between paragraphs |
+You need to gather draft references from ALL team members:
+- **David:** C1-01, C1-02, C1-03 (background paragraphs), C2-01 (RBAC), C2-03 (AI/RAG), C2-04 (PWA), C2-05 (DPA)
+- **Christine:** C2-02 (OMR/CV Scoring)
+- **Yourself:** C1-04 (Local Context), C2-06 (Related Systems)
 
-#### Step 2: Check All Formatting Rules (60-90 min)
+**Ask team members to submit their draft references by June 7.**
 
-Go through the entire manuscript and verify every rule:
+Create a master list of all sources.
 
-- [ ] **Margins:** Left 1.5", Right 1.0", Top 1.0", Bottom 1.0" on ALL pages
-- [ ] **Font:** All text is Times New Roman 12pt (headings can be bold/italic but same font and size)
-- [ ] **Spacing:** Double-spaced, NO extra space between paragraphs (space before/after = 0pt)
-- [ ] **Paragraph indent:** Exactly 5 spaces at the start of every paragraph
-- [ ] **No bullets:** Zero bullet points anywhere in the manuscript — numbered lists ONLY in IPO boxes and specific objectives
-- [ ] **No bold body text:** Bold ONLY for chapter headings, subheadings, figure captions, table captions
-- [ ] **Tables:** 1pt borders, caption above (left-aligned, bold)
-- [ ] **Figures:** Caption below (bold, "Figure X. Title")
-- [ ] **Page numbers:** Top-right, continuous, hidden on first page of each chapter
-- [ ] **Headers/footers:** Borders within margin boundaries
+#### Step 2: Format All References in APA 7th Edition (90-120 min)
 
-#### Step 3: Create Formatting Report (15-30 min)
+- **Alphabetical order:** Sort by first author's surname (A-Z).
+- **APA 7 Format templates:**
+  - **Journal Article:** Author, A. A., and Author, B. B. (Year). Title of article. *Title of Periodical, xx*(x), pp-pp. https://doi.org/xxxxx
+  - **Book:** Author, A. A. (Year). *Title of work*. Publisher. DOI/URL
+  - **Website:** Author, A. A. (Year). *Title of work*. Site Name. URL
+- **Hanging indent:** First line flush left, subsequent lines indented.
+- **Italics:** Italicize journal titles, volume numbers, and book titles.
+- **Capitalization:** Sentence case for article titles, title case for journal and book titles.
 
-List every violation found with location and correction needed:
-- "Page 5: Extra space between paragraphs — remove (set space after to 0pt)"
-- "Table 2: Border is 0.5pt — change to 1pt"
-- "Section 2.3: Bullet points used in scope paragraph — convert to paragraph form"
-- "Page 12: Left margin is 1.0" — change to 1.5""
+#### Step 3: Cross-Check Citations Against References (30-60 min)
 
-**Deliverable:** `CC-02_Jaypee_Formatting_QA.md` — complete formatting checklist with violations and corrections
+**Check 1 — Every citation has a reference:**
+- Take each in-text citation and find its matching entry in the References list
+- Flag: "Chapter 1, P3: (Doe, 2023) cited but no reference entry — MISSING REFERENCE"
+
+**Check 2 — Every reference has a citation:**
+- Go through References list alphabetically
+- For each entry, search the manuscript for its in-text citation
+- Flag: "References list: (Lee, 2022) exists but never cited in text — ORPHANED REFERENCE"
+
+**Check 3 — Year and name consistency:**
+- Verify author names match exactly between citation and reference
+- Verify years match exactly
+- Flag: "Chapter 2: (Smith, 2024) in text but reference says (Smith, 2023) — YEAR MISMATCH"
+
+**Check 4 — All sources are 2022-2026:**
+- Flag any source outside this range
+- Example: "Reference (Johnson, 2021) is outside 2022-2026 range — REPLACE"
+
+#### Step 4: Create Final References List (30 min)
+
+- Compile all verified references into a single alphabetized list.
+- Save as `CC-01_References_List.md`.
+- This will be inserted into the final manuscript.
+
+**Reference:** `guides/GUIDE-1-FORMATTING.md` (APA 7 reference formatting); `guides/GUIDE-3-CHAPTER2-CONTENT.md` (References section requirements)
+
+**Deliverable:** `CC-01_Jaypee_References_Compiled.md` with complete alphabetized APA 7th Edition References list
 
 ---
 
-### CC-04: Citation Cross-Check (June 8)
+#### CC-04: Citation Cross-Check (June 8)
 
 **Priority:** MEDIUM — Ensures citation-reference integrity
 
 **Target:** Cross-check report with flagged issues
 
-#### Step 1: Wait for Christine's CC-01 (References) (due June 8)
+#### Step 1: Wait for CC-01 Completion
 
-Christine will compile the final References list. Get the final version from her before starting this task.
+CC-04 should be done AFTER CC-01, since you'll use the references list you just compiled.
 
 #### Step 2: Extract All In-Text Citations (30-45 min)
 
@@ -459,20 +333,19 @@ Organize findings into categories:
 
 ## Your Week-by-Week Schedule
 
-### Week 1 (June 1-4): Foundation Tasks
-- [ ] **June 1-2:** C1-01 (Core Problem) — write 8-12 sentence citation-free paragraph
+### Week 1 (June 1-5): Local Context & Research Questions
+- [ ] **June 1-2:** Get ISPSC context from Christine
+- [ ] **June 2-3:** Research regional institutions for C1-04
+- [ ] **June 3-4:** Write C1-04 (Local Context) — 12-15 sentences with 5+ citations
 - [ ] **June 2-3:** Wait for David's C1-09 (Objectives)
 - [ ] **June 3-4:** C1-10 (Research Questions) — convert objectives to questions covering all 4 dimensions
-- [ ] **June 3-4:** C1-02 (Global Context) — research and write 12-15 sentences with 5+ citations
-
-### Week 1 (June 4-5): Context Tasks
-- [ ] **June 4-5:** C1-03 (National Context) — research and write 12-15 sentences with 5+ citations
 
 ### Week 2 (June 6): Related Systems
 - [ ] **June 5-6:** C2-06 (Related Systems) — identify 3-5 systems, create comparison table, write 2-3 paragraphs with 5+ citations
 
-### Week 2 (June 8): QA Tasks
-- [ ] **June 8 (morning):** CC-02 (Formatting QA) — check ALL formatting rules per GUIDE-1 (1.5" left margin!)
+### Week 2 (June 8): References & Citations
+- [ ] **June 7:** Collect draft references from David and Christine
+- [ ] **June 8 (morning):** CC-01 (References Compilation) — format in APA 7, cross-check, finalize
 - [ ] **June 8 (afternoon):** CC-04 (Citation Cross-Check) — verify every citation has a reference and vice versa
 
 ---
@@ -481,92 +354,77 @@ Organize findings into categories:
 
 1. **Daily Progress Updates:**
    - Post brief updates in group Discord
-   - Example: "Finished C1-01 core problem paragraph (10 sentences, no citations). Starting C1-02 global research."
+   - Example: "Finished C1-04 local context paragraph (14 sentences, 6 citations). Starting C1-10 research questions."
    - Flag blockers immediately
 
-2. **Coordinate with David:**
+2. **Coordinate with Christine:**
+   - Ask Christine for ISPSC context by June 2 (she's enrolled there)
+   - What you need: Guidance Office processes, Registrar workflows, infrastructure constraints, peak admission challenges
+
+3. **Coordinate with David:**
    - Wait for David's C1-09 (Objectives) before starting C1-10 (Research Questions)
    - Ask David for objectives by June 3
    - Ask David for help if unsure about task directions
 
-3. **Submit Draft References:**
-   - Your draft references for C1-02, C1-03, and C2-06 should be ready by June 6
-   - Send these to Christine for CC-01 (References Compilation)
+4. **Collect References for CC-01:**
+   - Ask David and Christine for their draft references by June 7
+   - David has: C1-01, C1-02, C1-03, C2-01, C2-03, C2-04, C2-05
+   - Christine has: C2-02
+   - You have: C1-04, C2-06
 
-4. **Ask for Help Early:**
+5. **Ask for Help Early:**
    - If you're stuck finding sources, ask David or Christine for search term suggestions
-   - If unsure about APA formatting, consult `guides/GUIDE-1-FORMATTING.md` or ask Christine
+   - If unsure about APA formatting, consult `guides/GUIDE-1-FORMATTING.md` or ask David
    - Don't guess — ask and get it right the first time
 
 ---
 
 ## Your Strengths (Lean Into These)
 
-- **Academic writing:** C1-01, C1-02, C1-03 all require paragraph-level writing
-- **Web research:** C1-02, C1-03, C2-06 all require finding and evaluating sources
-- **Attention to detail:** CC-02 and CC-04 require meticulous checking
-- **Synthesis skills:** C1-02 and C1-03 require synthesizing multiple sources into cohesive narratives
+Based on your preferred tasks:
 
-**Focus on:** Quality writing, thorough research, careful QA
+- **Detail-oriented work:** You prefer focused tasks with clear deliverables (systems comparison, references, citations)
+- **Research skills:** You can use Google Scholar and evaluate sources
+- **Organization:** You can compile and alphabetize reference lists systematically
+- **Quality assurance:** You can spot inconsistencies in citations and references
 
----
-
-## Key Writing Tips
-
-### 1. Synthesize, Don't Summarize
-- ❌ BAD: "Author A says X. Author B says Y. Author C says Z."
-- ✅ GOOD: "While global studies confirm that automated systems reduce processing time by 60% (Author A, 2024; Author B, 2023), local contexts face infrastructure barriers that demand offline-first architectures (Author C, 2025), creating a gap that SecureCAT addresses."
-
-### 2. Paragraph Sentence Counts — Memorize These
-| Task | Target | Citations |
-|------|--------|-----------|
-| C1-01 Core Problem | **8-12** | None |
-| C1-02 Global Context | **12-15** | Min 5 |
-| C1-03 National Context | **12-15** | Min 5 |
-| C1-06 Clinching (David's task, for reference) | 8-10 | None required |
-
-### 3. Follow Paragraph Structure (Funnel)
-- Background paragraphs follow: broad → specific → gap
-- C1-01 is the only citation-free paragraph
-- Every other background paragraph needs minimum 5 citations from 2022-2026
-
-### 4. Formatting Must-Memorize Rules
-- Left margin: **1.5"** (NOT 1")
-- No bullets anywhere
-- Table captions: above, left-aligned, bold
-- Figure captions: below, bold
-- No bold body text
-- Page numbers on every page except chapter first pages
-- Paragraph indent: exactly 5 spaces
+Focus on what you're good at: research, organization, and quality checks.
 
 ---
 
-## Quick Reference: Your Guide Documents
+## What to Avoid (Tasks Assigned to Others)
 
-- **Formatting:** `capstone/guides/GUIDE-1-FORMATTING.md` (especially for CC-02)
-- **Chapter 1 Content:** `capstone/guides/GUIDE-2-CHAPTER1-CONTENT.md` (Background structure, research questions)
-- **Chapter 2 Content:** `capstone/guides/GUIDE-3-CHAPTER2-CONTENT.md` (related systems pattern)
-- **System Features:** `capstone/SYSTEM_FEATURES.md` (to understand what SecureCAT does)
-- **Existing vs Planned:** `capstone/drafts/Existing_and_Planned_Features.md` (feature details)
-- **Task Distribution:** `capstone/team_meta/TASK_DISTRIBUTION_PLAN.md` (who's doing what)
-- **Official Task Inventory:** `capstone/team_meta/TEAM_META_GUIDE_Ch1_Ch2.md` (the authoritative source for all task specs)
+- Background global and national context paragraphs — David's tasks now
+- Formatting QA — David's task (CC-02)
+- Technical literature reviews on RBAC, AI/RAG, PWA, DPA — David's tasks
+- IPO diagram, objectives, scope, synthesis, clinching statement — David's tasks
+- OMR/CV literature review, significance — Christine's tasks
 
----
-
-## Success Criteria
-
-- [ ] C1-01 (Core Problem) completed by June 4 — **8-12 sentences**, citation-free
-- [ ] C1-02 (Global Context) completed by June 5 — **12-15 sentences**, minimum 5 APA citations (2022-2026)
-- [ ] C1-03 (National Context) completed by June 5 — **12-15 sentences**, minimum 5 APA citations (2022-2026), specific legislation/agencies named
-- [ ] C1-10 (Research Questions) completed by June 4 — numbered list, one-to-one with objectives, covering operational + role-based + security + resilience dimensions
-- [ ] C2-06 (Related Systems) completed by June 6 — 2-3 paragraphs + comparison table, minimum 5 APA citations (2022-2026)
-- [ ] CC-02 (Formatting QA) completed by June 8 — checklist with all GUIDE-1 rules verified (especially 1.5" left margin)
-- [ ] CC-04 (Citation Cross-Check) completed by June 8 — cross-check report with all issues flagged
-- [ ] All draft references submitted to Christine by June 7
-- [ ] All sources are 2022-2026 only
-- [ ] No bullet points in any manuscript text
-- [ ] No bold body text in any manuscript text
+Your focus: Local context (with Christine's guidance), research questions, related systems, references compilation, citation cross-check.
 
 ---
 
-**You're the research and QA anchor. Your background paragraphs set the global and national context, and your QA tasks ensure the final manuscript is polished. Take your time with research, synthesize carefully, and be thorough in formatting checks.**
+## Quick Reference: Your Guides
+
+- Formatting: `guides/GUIDE-1-FORMATTING.md` (especially APA 7 references, margins, paragraph rules)
+- Chapter 1 Content: `guides/GUIDE-2-CHAPTER1-CONTENT.md` (Background P4, Research Questions)
+- Chapter 2 Content: `guides/GUIDE-3-CHAPTER2-CONTENT.md` (Related Systems, References)
+- System Features: `SYSTEM_FEATURES.md` (to understand SecureCAT's impact on ISPSC)
+- Existing vs Planned: `drafts/Existing_and_Planned_Features.md` (baseline and research features)
+- Task Distribution: `TASK_DISTRIBUTION_PLAN.md`
+
+---
+
+## Success Criteria for You
+
+- C1-04 (Local Context) completed by June 5 — 12-15 sentences, 5+ APA citations, covers manual workflow, infrastructure constraints, Guidance/Registrar challenges, compliance pressures.
+- C1-10 (Research Questions) completed by June 4 — numbered list covering all 4 dimensions (operational, role-based, security, resilience).
+- C2-06 (Related Systems) completed by June 6 — 2-3 paragraphs with feature comparison table, minimum 5 APA citations.
+- Draft references submitted by June 7 (from yourself, David, Christine).
+- CC-01 (References Compilation) completed by June 8 — APA 7th Edition, alphabetized, every citation matched to a reference and vice versa, all sources 2022-2026.
+- CC-04 (Citation Cross-Check) completed by June 8 — cross-check report organized by issue category.
+- No bullet points, no bold body text, paragraph indent 5 spaces in any deliverable.
+
+---
+
+You are the local context researcher, systems reviewer, and references specialist. Your attention to detail will ensure the References list is complete and accurate, and your ability to compare related systems will demonstrate exactly what makes SecureCAT unique. Coordinate with Christine for ISPSC context, and collect references from all team members for CC-01.
