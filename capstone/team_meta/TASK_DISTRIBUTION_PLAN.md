@@ -2,7 +2,7 @@
 ## SecureCAT-v2 Capstone | Deadline: June 10, 2026
 
 > **Last Updated:** June 2, 2026
-> **Status:** Final Assignment Distribution (Post-Reassignment)
+> **Status:** Final Assignment Distribution (Post-Reassignment Round 2)
 > **Note:** Chapter 2 follows the BSIT Capstone Template and GUIDE-3 — it is titled "METHODOLOGY" (not "Review of Related Literature"). Literature previously planned for lit review sections feeds into Chapter 1 Background paragraphs P2-P4.
 
 ---
@@ -11,27 +11,35 @@
 
 | Member | Role | Email/Discord | Claimed Hours | Available Capacity |
 |--------|------|--------------|---------------|-------------------|
-| **David** | Team Leader / Product Owner / Lead Developer | daviddatu_ | 45-55h | ~55h total |
-| **Christine** | Team Member — Population & Locale of the Study | Christine | 2-3h | TBD |
-| **Jaypee** | Team Member — Local Context, Research Questions, Significance, References & Citations | Jaypee | 10-16h | TBD |
+| **David** | Team Leader / Product Owner / Lead Developer | daviddatu_ | 27-40h | ~55h total |
+| **Christine** | Team Member — Project Plan, Project Assignment, Research Instruments, Formatting QA, Population & Locale of the Study | Christine | 10-15h | TBD |
+| **Jaypee** | Team Member — Framework (IPO Diagram, Narrative), Objectives, Local Context, Research Questions, Significance, References & Citations | Jaypee | 16-24h | TBD |
 
 ---
 
 ## Assignment Strategy
 
 **Distribution Principles:**
-1. **David** — Technical architecture, background paragraphs (P1-P3, P5-P6), methodology sections (research design, software model, project plan, project assignment, research instruments, data analysis), conceptual framework, narrative consistency, formatting QA
-2. **Christine** — Population and Locale of the Study
-3. **Jaypee** — Local context (ISPSC), research questions, significance of the study, references compilation, citation cross-check
+1. **David** — Technical architecture, background paragraphs (P1-P3, P5-P6), methodology sections (research design, software model, data analysis), scope and delimitations, narrative consistency review
+2. **Christine** — Project plan (Gantt chart), project assignment, research instruments, population and locale of the study, formatting QA review
+3. **Jaypee** — Conceptual framework (IPO diagram + narrative), objectives of the study, local context (ISPSC), research questions, significance of the study, references compilation, citation cross-check
 
 > **Note on Literature Integration:** The literature originally planned for lit review tasks (RBAC, Zero-Trust, Automated Scoring/OMR, AI/RAG, PWA/Offline, DPA/Multi-Tenancy, Related Systems) is NOT lost. It feeds directly into Chapter 1 Background paragraphs P2 (Global Context) and P3 (National Context), and to a lesser extent P4 (Local Context). The research conducted for those topics provides the citations and evidence needed in those paragraphs.
 
-**June 2 Reassignment (and alignment):**
+**June 2 Reassignment Round 1 (initial alignment):**
 - Jaypee takes: C1-04 (Local Context), C1-10 (Research Qs), C1-12 (Significance of the Study), CC-01 (References), CC-04 (Citation Cross-Check)
 - Jaypee gives up: C1-01, C1-02, C1-03 (background paragraphs), CC-02 (Formatting QA) → moved to David
 - Christine gives up: C1-04 (Local Context), CC-01 (References) → moved to Jaypee
 - Christine gives up: C1-12 (Significance of the Study) → moved to Jaypee to align with technical capabilities (as C1-12 requires detailing complex technical features like offline PWA caching, AI chatbot, multi-tenant DB isolation, and HMAC signatures)
 - David takes on: C1-01, C1-02, C1-03, CC-02 to balance workload
+
+**June 2 Reassignment Round 2 (workload rebalancing):**
+- Jaypee takes from David: C1-07 (IPO Diagram), C1-08 (Conceptual Framework Narrative), C1-09 (Objectives of the Study)
+  - C1-09 previously blocked Jaypee's C1-10 (Research Questions) — now both are Jaypee's tasks, reducing coordination risk
+- Christine takes from David: C2-03 (Project Plan Gantt Chart), C2-04 (Project Assignment), C2-06 (Research Instruments), CC-02 (Formatting QA Review)
+  - C2-03 depends on David's C2-02 (Software Model) — Christine must wait for David's deliverable
+  - CC-02 (Formatting QA) moves from David to Christine, freeing David for CC-03 (Narrative Consistency)
+- **Post-reassignment totals:** David 10 tasks (27-40h) | Jaypee 8 tasks (16-24h) | Christine 5 tasks (10-15h)
 
 ---
 
@@ -47,9 +55,9 @@
 | C1-04 | Background P4 — Local Context (ISPSC) | **Jaypee** | 3-5h | Jun 5 | None |
 | C1-05 | Background P5 — Synthesis & Gap | **David** | 3-4h | Jun 6 | C1-02, C1-03, C1-04 |
 | C1-06 | Background P6 — Clinching Statement | **David** | 2-3h | Jun 7 | C1-02, C1-03, C1-04 |
-| C1-07 | Conceptual Framework — IPO Diagram | **David** | 2-3h | Jun 3 | None |
-| C1-08 | Conceptual Framework — Narrative | **David** | 2-3h | Jun 4 | C1-07 |
-| C1-09 | Objectives of the Study | **David** | 2-3h | Jun 3 | None |
+| C1-07 | Conceptual Framework — IPO Diagram | **Jaypee** | 2-3h | Jun 3 | None |
+| C1-08 | Conceptual Framework — Narrative | **Jaypee** | 2-3h | Jun 4 | C1-07 |
+| C1-09 | Objectives of the Study | **Jaypee** | 2-3h | Jun 3 | None |
 | C1-10 | Research Questions | **Jaypee** | 1-2h | Jun 4 | C1-09 |
 | C1-11 | Scope and Delimitations | **David** | 2-3h | Jun 4 | None |
 | C1-12 | Significance of the Study | **Jaypee** | 2-3h | Jun 5 | None |
@@ -62,10 +70,10 @@
 |---------|-----------|----------|------------|----------|--------------|
 | C2-01 | Research Design | **David** | 3-4h | Jun 5 | None |
 | C2-02 | Software Model (RAD or AIDLC) | **David** | 4-6h | Jun 5 | None |
-| C2-03 | Project Plan (Gantt Chart) | **David** | 2-3h | Jun 6 | C2-02 |
-| C2-04 | Project Assignment | **David** | 1-2h | Jun 5 | None |
+| C2-03 | Project Plan (Gantt Chart) | **Christine** | 2-3h | Jun 6 | C2-02 |
+| C2-04 | Project Assignment | **Christine** | 1-2h | Jun 5 | None |
 | C2-05 | Population and Locale of the Study | **Christine** | 2-3h | Jun 5 | None |
-| C2-06 | Research Instruments | **David** | 2-3h | Jun 6 | None |
+| C2-06 | Research Instruments | **Christine** | 2-3h | Jun 6 | None |
 | C2-07 | Data Analysis | **David** | 2-3h | Jun 6 | C1-09, C2-06 |
 
 ### Cross-Cutting Assignments
@@ -73,7 +81,7 @@
 | Task ID | Task Name | Assigned | Est. Hours | Deadline | Dependencies |
 |---------|-----------|----------|------------|----------|--------------|
 | CC-01 | References List Compilation | **Jaypee** | 3-4h | Jun 8 | All writing tasks |
-| CC-02 | Formatting QA Review | **David** | 2-3h | Jun 8 | All writing tasks |
+| CC-02 | Formatting QA Review | **Christine** | 2-3h | Jun 8 | All writing tasks |
 | CC-03 | Narrative Consistency Review | **David** | 4-6h | Jun 9 | All writing tasks |
 | CC-04 | Citation Cross-Check | **Jaypee** | 1-2h | Jun 8 | All writing tasks |
 
@@ -83,16 +91,16 @@
 
 | Member | Total Tasks | Total Hours | Utilization | Status |
 |--------|-------------|-------------|--------------|--------|
-| **David** | 17 tasks | 43-64h | 78-116% of 55h | ✅ Full capacity |
-| **Christine** | 1 task | 2-3h | TBD capacity | ✅ Focused |
-| **Jaypee** | 5 tasks | 10-16h | TBD capacity | ✅ Balanced |
+| **David** | 10 tasks | 27-40h | 49-73% of 55h | ✅ Balanced |
+| **Christine** | 5 tasks | 10-15h | TBD capacity | ✅ Balanced |
+| **Jaypee** | 8 tasks | 16-24h | TBD capacity | ✅ Balanced |
 
-**Total Project Effort:** ~55-83 hours across all members
+**Total Project Effort:** ~53-79 hours across all members
 
 **Task Distribution Breakdown:**
-- **David** — 9 Ch1 tasks + 6 Ch2 tasks + 2 CC tasks = 17 tasks, 43-64h
-- **Christine** — 1 Ch2 task = 1 task, 2-3h
-- **Jaypee** — 3 Ch1 tasks + 2 CC tasks = 5 tasks, 10-16h
+- **David** — 6 Ch1 tasks + 3 Ch2 tasks + 1 CC task = 10 tasks, 27-40h
+- **Christine** — 4 Ch2 tasks + 1 CC task = 5 tasks, 10-15h
+- **Jaypee** — 6 Ch1 tasks + 2 CC tasks = 8 tasks, 16-24h
 
 ---
 
@@ -302,7 +310,7 @@
 
 ### Chapter 1 — Conceptual Framework
 
-#### C1-07: Conceptual Framework — IPO Diagram (David)
+#### C1-07: Conceptual Framework — IPO Diagram (Jaypee)
 **Effort:** 2-3 hours
 **Due:** June 3
 **Dependencies:** Must reference SYSTEM_FEATURES.md and research/Existing_and_Planned_Features.md
@@ -346,7 +354,7 @@
 
 ---
 
-#### C1-08: Conceptual Framework — Narrative (David)
+#### C1-08: Conceptual Framework — Narrative (Jaypee)
 **Effort:** 2-3 hours
 **Due:** June 4
 **Dependencies:** C1-07
@@ -378,7 +386,7 @@
 
 ### Chapter 1 — Objectives & Research Questions
 
-#### C1-09: Objectives of the Study (David)
+#### C1-09: Objectives of the Study (Jaypee)
 **Effort:** 2-3 hours
 **Due:** June 3
 **Dependencies:** None
@@ -401,6 +409,8 @@
    - Ensure objectives align with Chapter 2 methodology
    - Check that Objective 3 uses SUS terminology correctly
    - Verify general objective names system by full title
+
+> **Dependency Note:** C1-09 unblocks C1-10 (Research Questions) which is also assigned to Jaypee. Since both tasks are now with the same person, coordination risk is eliminated — Jaypee can proceed directly from objectives to research questions without waiting on another team member.
 
 **Deliverable:** One general objective paragraph + 3-item numbered specific objectives list
 
@@ -574,10 +584,10 @@
 
 ---
 
-#### C2-03: Project Plan — Gantt Chart (David)
+#### C2-03: Project Plan — Gantt Chart (Christine)
 **Effort:** 2-3 hours
 **Due:** June 6
-**Dependencies:** C2-02 (Software Model must be finalized to plan phases)
+**Dependencies:** C2-02 (Software Model — must wait for David's deliverable to plan phases)
 
 **Detailed Subtasks:**
 1. **Identify Project Phases and Activities (45-60 min)**
@@ -604,11 +614,13 @@
    - Ensure all phases from the software model (C2-02) are represented
    - Check date ranges are realistic
 
+> **Dependency Note:** C2-03 depends on David's C2-02 (Software Model). Christine must coordinate with David to receive the finalized software model before building the Gantt chart. Plan to start after David delivers C2-02 by June 5.
+
 **Deliverable:** Gantt chart (formatted table or visual) showing all project phases with timeline, plus 1 paragraph narrative description
 
 ---
 
-#### C2-04: Project Assignment (David)
+#### C2-04: Project Assignment (Christine)
 **Effort:** 1-2 hours
 **Due:** June 5
 **Dependencies:** None
@@ -671,7 +683,7 @@
 
 ---
 
-#### C2-06: Research Instruments (David)
+#### C2-06: Research Instruments (Christine)
 **Effort:** 2-3 hours
 **Due:** June 6
 **Dependencies:** None
@@ -738,6 +750,8 @@
    - Create APA 7 references for all data analysis sources
    - Save for CC-01
 
+> **Dependency Note:** C2-07 depends on C2-06 (now Christine's Research Instruments). David must coordinate with Christine to receive her finalized instruments before completing data analysis methodology.
+
 **Deliverable:** 1-2 paragraph Data Analysis section describing analysis methods for each instrument and research question, minimum 2 APA citations (2022-2026)
 
 ---
@@ -769,7 +783,7 @@
 
 ---
 
-#### CC-02: Formatting QA Review (David)
+#### CC-02: Formatting QA Review (Christine)
 **Effort:** 2-3 hours
 **Due:** June 8
 **Dependencies:** All writing tasks
@@ -864,29 +878,31 @@
 
 ## Timeline Overview
 
-> **Note:** Reflects June 2 realigned assignment. David — 17 tasks | Christine — 1 task | Jaypee — 5 tasks.
+> **Note:** Reflects June 2 realigned assignment (Round 2). David — 10 tasks | Christine — 5 tasks | Jaypee — 8 tasks.
 
 ### Week 1: June 1-3 (Foundation)
 - **Focus:** Framework, objectives, early methodology
-- **David:** C1-07 (IPO Diagram), C1-09 (Objectives)
-- **Jaypee:** Begin ISPSC context research for C1-04; wait for C1-09 before starting C1-10; start C1-12 draft (Significance) — 6 system-specific beneficiary paragraphs
-- **Christine:** Review C2-05 requirements
+- **Jaypee:** C1-07 (IPO Diagram), C1-09 (Objectives) — both due Jun 3
+- **David:** Begin C1-01 (Core Problem Statement)
+- **Christine:** Review C2-05 requirements; start C2-04 (Project Assignment)
 
 ### Week 1: June 4-5 (Background + Methodology)
 - **Focus:** Background paragraphs, methodology sections
-- **David:** C1-01, C1-02, C1-03 (Core Problem, Global Context, National Context); C1-08, C1-11 (Framework Narrative, Scope); C2-01, C2-02, C2-04 (Research Design, Software Model, Project Assignment)
-- **Jaypee:** C1-04 (Local Context, ISPSC); C1-10 (Research Questions — after C1-09); C1-12 finalize (Significance)
+- **David:** C1-01, C1-02, C1-03 (Core Problem, Global Context, National Context); C1-11 (Scope); C2-01, C2-02 (Research Design, Software Model)
+- **Jaypee:** C1-04 (Local Context, ISPSC); C1-08 (Framework Narrative — after C1-07); C1-10 (Research Questions — after C1-09); C1-12 finalize (Significance)
+- **Christine:** C2-04 (Project Assignment); C2-05 (Population and Locale)
 
 ### Week 2: June 6-7 (Remaining Methodology + Synthesis)
 - **Focus:** Background synthesis, remaining methodology sections
-- **David:** C1-05, C1-06 (Synthesis, Clinching); C2-03, C2-06, C2-07 (Project Plan/Gantt, Research Instruments, Data Analysis)
+- **David:** C1-05, C1-06 (Synthesis, Clinching); C2-07 (Data Analysis — after C2-06)
+- **Christine:** C2-03 (Project Plan/Gantt — after David's C2-02); C2-06 (Research Instruments)
 - **All members:** Submit draft references to Jaypee by June 7
 
 ### Week 2: June 8 (QA & References)
 - **Focus:** Appendices, references, QA
-- **David:** Appendix B (Use Case Diagram); CC-02 (Formatting QA)
+- **Christine:** CC-02 (Formatting QA Review)
 - **Jaypee:** CC-01 (References Compilation), CC-04 (Citation Cross-Check)
-- **Christine:** C2-05 (Population and Locale of the Study)
+- **David:** Appendix B (Use Case Diagram)
 
 ### Week 2: June 9 (Final Review)
 - **Focus:** Narrative consistency, docuCheck run
@@ -905,15 +921,15 @@
 - Share draft references as they're created
 
 ### Milestone Reviews
-- **June 3:** Framework & Objectives complete (David)
+- **June 3:** Framework & Objectives complete (Jaypee: C1-07, C1-09)
 - **June 5:** Background paragraphs + Methodology foundations complete (David/Christine/Jaypee)
-- **June 6:** All Methodology sections complete (David)
+- **June 6:** All Methodology sections complete (David/Christine)
 - **June 8:** QA tasks begin (Christine/Jaypee)
 - **June 9:** Final review (David)
 
 ### File Sharing
 - Deliverable naming convention: `[TaskID]_[Member]_Draft.md`
-- Example: `C1-01_David_Core_Problem.md`, `C1-04_Jaypee_Local_Context.md`
+- Example: `C1-01_David_Core_Problem.md`, `C1-04_Jaypee_Local_Context.md`, `C1-07_Jaypee_IPO_Diagram.md`, `C2-03_Christine_Gantt_Chart.md`
 - Share files with team via Discord or Google Drive; no specific `drafts/` subdirectory required
 
 ---
@@ -947,10 +963,12 @@
 | Risk | Mitigation | Owner |
 |------|------------|-------|
 | Jaypee unclear on task directions | Create detailed per-member DIRECTION.md files | David |
-| Christine overloaded / Not technical | Keep her focused on 1 non-technical task only (Population/Locale) | David |
+| Christine overloaded / Not technical | Keep her focused on structured tasks with clear templates (Gantt chart, assignment table, SUS description, formatting checklist) | David |
+| C2-03 blocked by David's C2-02 | David prioritizes C2-02 completion by Jun 5; Christine starts C2-04/C2-05 while waiting | David/Christine |
+| C2-07 blocked by Christine's C2-06 | Christine prioritizes C2-06 by Jun 6; David uses C2-06 SUS details for analysis methodology | Christine/David |
 | Literature search returns few 2022-2026 sources | Use broader search terms, supplement with earlier sources if justified | All |
 | References compilation becomes chaotic | All members submit draft references with their tasks | Jaypee |
-| Formatting violations discovered late | Jaypee runs formatting QA early (June 8) with correct GUIDE-1 rules | Jaypee |
+| Formatting violations discovered late | Christine runs formatting QA on Jun 8 with correct GUIDE-1 rules | Christine |
 | Paragraph lengths don't match spec | Verify sentence counts during CC-03 narrative review | David |
 
 ---
@@ -996,5 +1014,6 @@
 **Next Steps:**
 1. ✅ Create per-member DIRECTION.md files (with detailed task directions)
 2. ✅ Create interactive Gantt chart HTML
-3. Share this plan with team members
-4. Begin Week 1 tasks immediately
+3. ✅ Update DIRECTION.md files to reflect Round 2 reassignment
+4. Share this plan with team members
+5. Begin Week 1 tasks immediately

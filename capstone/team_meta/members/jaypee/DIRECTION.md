@@ -1,24 +1,36 @@
 # Member Task Direction — Jaypee
-## Team Member — Local Context, Research Questions, References & Citations
+## Team Member — Local Context, Conceptual Framework, Objectives, Research Questions, References & Citations
 
-> **Role:** Local context (ISPSC Tagudin), research questions, significance of the study, references compilation, citation cross-check
-> **Total Assigned Tasks:** 5 tasks (C1-04, C1-10, C1-12, CC-01, CC-04)
-> **Estimated Effort:** 10-16 hours
-> **Focus:** Detail-oriented tasks requiring research, organization, analytical significance framing, and quality assurance
+> **Role:** Local context (ISPSC Tagudin), conceptual framework (IPO diagram & narrative), objectives of the study, research questions, significance of the study, references compilation, citation cross-check
+> **Total Assigned Tasks:** 8 tasks (C1-04, C1-07, C1-08, C1-09, C1-10, C1-12, CC-01, CC-04)
+> **Estimated Effort:** 16-24 hours
+> **Focus:** Detail-oriented tasks requiring research, organization, analytical significance framing, conceptual framework design, and quality assurance
 > **Hard Deadline:** June 10, 2026
+
+---
+
+> [!IMPORTANT]
+> **REASSIGNMENT ALERT (June 2):** Three tasks have been reassigned from **David** to **Jaypee** to balance workload:
+> - **C1-07 (Conceptual Framework — IPO Diagram):** Due Jun 3, no dependencies
+> - **C1-08 (Conceptual Framework — Narrative):** Due Jun 4, depends on C1-07
+> - **C1-09 (Objectives of the Study):** Due Jun 3, no dependencies
+>
+> These tasks were previously assigned to David but are now YOUR responsibility. Deliverable filenames use your name (e.g., `C1-07_Jaypee_IPO_Diagram.md`).
+>
+> Additionally, **C1-12 (Significance of the Study)** was previously reassigned from **Christine** to you.
 
 ---
 
 ## Your Tasks at a Glance
 
-> [!IMPORTANT]
-> **REASSIGNMENT ALERT (June 2):** Task **C1-12 (Significance of the Study)** has been reassigned from **Christine** to you to balance workload and align tasks with technical strengths. C1-12 requires detailing system-specific features such as PWA offline-first caching, RAG AI chatbot, multi-tenant DB isolation, and cryptographic HMAC integrity. Please follow the instructions below to draft this section.
-
 ### Chapter 1
 | Task ID | Task | Sentences | Citations | Hours | Due | Dependencies |
 |---------|------|-----------|-----------|-------|-----|--------------|
 | C1-04 | Background P4 — Local Context (ISPSC Tagudin) | **12-15** | **Min 5 APA** | 3-5h | Jun 5 | None |
-| C1-10 | Research Questions | — | None | 1-2h | Jun 4 | C1-09 (David) |
+| C1-07 | Conceptual Framework — IPO Diagram | — | None | 2-3h | Jun 3 | None |
+| C1-08 | Conceptual Framework — Narrative | **2 paragraphs** | None | 2-3h | Jun 4 | C1-07 |
+| C1-09 | Objectives of the Study | — | None | 2-3h | Jun 3 | None |
+| C1-10 | Research Questions | — | None | 1-2h | Jun 4 | C1-09 (yourself) |
 | C1-12 | Significance of the Study | — | None | 2-3h | Jun 5 | None |
 
 ### Cross-Cutting
@@ -51,7 +63,120 @@
 
 ## Detailed Task Directions
 
-### Week 1 (June 1-5): Local Context & Research Questions
+### Week 1 (June 1-5): IPO Diagram, Objectives, Framework Narrative, Local Context & Significance
+
+#### C1-07: Conceptual Framework — IPO Diagram (June 3)
+
+**Priority:** HIGH — Foundation for C1-08 narrative
+**Effort:** 2-3 hours
+**Dependencies:** Must reference `SYSTEM_FEATURES.md` and `research/Existing_and_Planned_Features.md`
+
+##### Step 1: List System Inputs (30-45 min)
+
+- Use **numbered list** (NOT bullets)
+- Identify ONLY what the system actually receives (data/config the system receives):
+  1. Applicant data
+  2. Exam configurations
+  3. OMR images/scans
+  4. Role credentials
+  5. QR scans
+  6. Natural language queries
+- Reference `SYSTEM_FEATURES.md` and `TEAM_META_GUIDE` C1-07 description exactly
+
+##### Step 2: Define Process (15-30 min)
+
+- Process box text: **"SecureCAT: A Role-Based College Admission Testing System for the Guidance and Registrar Offices at ISPSC Tagudin"** (full system title)
+
+##### Step 3: List System Outputs (30-45 min)
+
+- Use **numbered list** (NOT bullets)
+- Identify ONLY what the system produces (things the system produces):
+  1. Status tracking displays
+  2. Exam schedules
+  3. Score reports
+  4. Audit logs
+  5. Result sheets/PDFs
+  6. Consultation summaries
+  7. AI Companion responses (course recommendations, applicant inquiries)
+  8. Offline-cached records
+  9. Statistical reports
+- Reference `SYSTEM_FEATURES.md` and `TEAM_META_GUIDE` C1-07 description exactly
+
+##### Step 4: Format Diagram (30-45 min)
+
+- Create three-box diagram: Input → Process → Output
+- Ensure readable on standard page
+- Use simple formatting (boxes, arrows, numbered lists inside)
+- Figure caption placed BELOW the figure, **bold**
+
+**Deliverable:** `C1-07_Jaypee_IPO_Diagram.md` — Clean, readable IPO diagram with Input (numbered, 6 items) → Process (full system title) → Output (numbered, 9 items)
+
+---
+
+#### C1-09: Objectives of the Study (June 3)
+
+**Priority:** HIGH — C1-10 (Research Questions) depends on this
+**Effort:** 2-3 hours
+**Dependencies:** None
+
+##### Step 1: Write General Objective (30-45 min)
+
+- One paragraph naming SecureCAT by full title and overarching purpose
+- Include: system name, target offices (Guidance & Registrar), main goal
+- General objective must name system by full title
+
+##### Step 2: Write Specific Objectives (60-90 min)
+
+- Use **numbered list** (NOT bullets)
+- Standard three-objective structure:
+  1. **Identify** — existing processes, gaps, requirements at ISPSC Tagudin
+  2. **Develop** — SecureCAT with specific features (name key features from both existing and planned)
+  3. **Evaluate — usability** using System Usability Scale (SUS)
+- **⚠️ CRITICAL:** Use ONLY "evaluate the usability" (NOT "usability and acceptability") — SUS measures usability only
+
+##### Step 3: Verify Objective Alignment (15-30 min)
+
+- Ensure objectives align with Chapter 2 methodology
+- Check that Objective 3 uses SUS terminology correctly
+- Verify general objective names system by full title
+
+**Deliverable:** `C1-09_Jaypee_Objectives.md` — One general objective paragraph + 3-item numbered specific objectives list
+
+---
+
+#### C1-08: Conceptual Framework — Narrative (June 4)
+
+**Priority:** HIGH — Depends on C1-07
+**Effort:** 2-3 hours
+**Dependencies:** C1-07 (your IPO Diagram)
+**Target:** Exactly **2 paragraphs**
+
+##### Step 1: Write Paragraph 1 — Inputs (45-60 min)
+
+- Explain what each input component from C1-07 is and why it is necessary
+- Cover all 6 inputs: applicant data, exam configurations, OMR images/scans, role credentials, QR scans, natural language queries
+- Connect inputs to SecureCAT's role-based design
+
+##### Step 2: Write Paragraph 2 — Process & Output (45-60 min)
+
+- Explain how inputs are transformed into outputs through:
+  - Role-based access control
+  - Automated scoring
+  - Offline-resilient proctoring
+  - AI-assisted operations
+  - Cryptographic verification
+- Make the mechanical connection explicit — not just "inputs go in and outputs come out" but how the transformation happens
+- Describe each output and its purpose
+- Present both existing and planned features as one unified process
+
+##### Step 3: Review Against Diagram (15-30 min)
+
+- Verify narrative matches IPO diagram exactly
+- Ensure no new inputs/outputs introduced in text that are not in the diagram
+
+**Deliverable:** `C1-08_Jaypee_Framework_Narrative.md` — Exactly 2 paragraphs explaining inputs (P1) and process→outputs (P2)
+
+---
 
 #### C1-04: Background P4 — Local Context (ISPSC Tagudin) (June 5)
 
@@ -120,14 +245,15 @@ Write **12-15 sentences** describing ISPSC Tagudin's specific operational enviro
 
 **Target:** Numbered list of research questions
 
-#### Step 1: Wait for David's C1-09 (Objectives) (due June 3)
+#### Step 1: Use Your Own C1-09 (Objectives) (due June 3)
 
-- Ask David for his completed C1-09 specific objectives.
+- Since C1-09 is now YOUR task, you do NOT need to wait for David.
+- Complete C1-09 first, then use your own specific objectives for C1-10.
 - Each specific objective must have a **one-to-one corresponding** research question.
 
 #### Step 2: Convert Objectives to Questions (30-60 min)
 
-Read David's C1-09 specific objectives (typically 3 objectives in Identify → Develop → Evaluate structure). Convert each to question form.
+Read your C1-09 specific objectives (typically 3 objectives in Identify → Develop → Evaluate structure). Convert each to question form.
 
 **Per TEAM_META_GUIDE, your questions MUST cover these four dimensions:**
 1. **Operational needs:** What are the existing processes, gaps, and requirements?
@@ -218,9 +344,9 @@ Read David's C1-09 specific objectives (typically 3 objectives in Identify → D
 #### Step 1: Collect All References from Team (60 min)
 
 You need to gather draft references from ALL team members:
-- **David:** C1-01, C1-02, C1-03 (background paragraphs), C2-01 through C2-04, C2-06, C2-07 (Chapter 2 METHODOLOGY tasks)
+- **David:** C1-01, C1-02, C1-03 (background paragraphs), C1-05 (synthesis), C1-06 (clinching statement), C1-11 (scope), C2-01 through C2-04, C2-06, C2-07 (Chapter 2 METHODOLOGY tasks)
 - **Christine:** C2-05 (Population and Locale)
-- **Yourself:** C1-04 (Local Context), C1-10 (Research Questions)
+- **Yourself:** C1-04 (Local Context), C1-07 (IPO Diagram), C1-08 (Framework Narrative), C1-09 (Objectives), C1-10 (Research Questions), C1-12 (Significance)
 
 **Ask team members to submit their draft references by June 7.**
 
@@ -325,17 +451,21 @@ Organize findings into categories:
 
 ---
 
-### Week 1 (June 1-5): Local Context, Research Questions & Significance
+## Schedule: Week-by-Week
+
+### Week 1 (June 1-5): IPO Diagram, Objectives, Framework Narrative, Local Context & Significance
 - [ ] **June 1-2:** Get ISPSC context from Christine
 - [ ] **June 2-3:** Research regional institutions for C1-04
-- [ ] **June 3-4:** Write C1-04 (Local Context) — 12-15 sentences with 5+ citations
-- [ ] **June 2-3:** Wait for David's C1-09 (Objectives)
-- [ ] **June 3-4:** C1-10 (Research Questions) — convert objectives to questions covering all 4 dimensions
+- [ ] **June 2-3:** C1-07 (IPO Diagram) — numbered inputs (6), process (full title), numbered outputs (9)
+- [ ] **June 2-3:** C1-09 (Objectives) — general objective paragraph + 3 numbered specific objectives
+- [ ] **June 3-4:** C1-08 (Framework Narrative) — 2 paragraphs (inputs, process→outputs), review against C1-07
+- [ ] **June 3-4:** C1-10 (Research Questions) — convert your own C1-09 objectives to questions covering all 4 dimensions
+- [ ] **June 3-5:** Write C1-04 (Local Context) — 12-15 sentences with 5+ citations
 - [ ] **June 4-5:** C1-12 (Significance of the Study) — draft 6 beneficiary paragraphs in paragraph form
-- [ ] **June 5:** Final review and polish of C1-04, C1-10, and C1-12
+- [ ] **June 5:** Final review and polish of all Week 1 deliverables
 
 ### Week 2 (June 6-8): References & Citations
-- [ ] **June 6:** Light day — review C1-04 and C1-10, begin organizing any sources found during research
+- [ ] **June 6:** Light day — review all Week 1 deliverables, begin organizing sources
 - [ ] **June 7:** Collect draft references from David and Christine
 - [ ] **June 8 (morning):** CC-01 (References Compilation) — format in APA 7, cross-check, finalize
 - [ ] **June 8 (afternoon):** CC-04 (Citation Cross-Check) — verify every citation has a reference and vice versa
@@ -346,7 +476,7 @@ Organize findings into categories:
 
 1. **Daily Progress Updates:**
    - Post brief updates in group Discord
-   - Example: "Finished C1-04 local context paragraph (14 sentences, 6 citations). Starting C1-10 research questions."
+   - Example: "Finished C1-07 IPO diagram (6 inputs, 9 outputs). Starting C1-09 objectives."
    - Flag blockers immediately
 
 2. **Coordinate with Christine:**
@@ -354,17 +484,22 @@ Organize findings into categories:
    - What you need: Guidance Office processes, Registrar workflows, infrastructure constraints, peak admission challenges
 
 3. **Coordinate with David:**
-   - Wait for David's C1-09 (Objectives) before starting C1-10 (Research Questions)
-   - Ask David for objectives by June 3
+   - David no longer owns C1-07, C1-08, or C1-09 — those are now YOUR tasks
    - Ask David for help if unsure about task directions
+   - David still owns: C1-01, C1-02, C1-03, C1-05, C1-06, C1-11, all C2 tasks
 
-4. **Collect References for CC-01:**
+4. **C1-09 → C1-10 Self-Coordination:**
+   - Since you now own BOTH C1-09 (Objectives) and C1-10 (Research Questions), you do NOT need to wait for David
+   - Complete C1-09 first (due Jun 3), then immediately use it for C1-10 (due Jun 4)
+   - No inter-person coordination needed for this dependency
+
+5. **Collect References for CC-01:**
    - Ask David and Christine for their draft references by June 7
-   - David has: C1-01, C1-02, C1-03, C2-01, C2-02, C2-03, C2-04, C2-06, C2-07
+   - David has: C1-01, C1-02, C1-03, C1-05, C1-06, C1-11, C2-01, C2-02, C2-03, C2-04, C2-06, C2-07
    - Christine has: C2-05 (Population and Locale of the Study)
-   - You have: C1-04, C1-10, C1-12
+   - You have: C1-04, C1-07, C1-08, C1-09, C1-10, C1-12
 
-5. **Ask for Help Early:**
+6. **Ask for Help Early:**
    - If you're stuck finding sources, ask David or Christine for search term suggestions
    - If unsure about APA formatting, consult `guides/GUIDE-1-FORMATTING.md` or ask David
    - Don't guess — ask and get it right the first time
@@ -372,6 +507,23 @@ Organize findings into categories:
 ---
 
 ## Teammate Awareness: Who Has What
+
+### Chapter 1 Tasks
+
+| Task | Assigned To |
+|------|-------------|
+| C1-01 Background P1 — Introduction | **David** |
+| C1-02 Background P2 — Global Context | **David** |
+| C1-03 Background P3 — National Context | **David** |
+| C1-04 Background P4 — Local Context (ISPSC) | **Jaypee** (you) |
+| C1-05 Background P5 — Synthesis & Gap | **David** |
+| C1-06 Background P6 — Clinching Statement | **David** |
+| C1-07 Conceptual Framework — IPO Diagram | **Jaypee** (you) |
+| C1-08 Conceptual Framework — Narrative | **Jaypee** (you) |
+| C1-09 Objectives of the Study | **Jaypee** (you) |
+| C1-10 Research Questions | **Jaypee** (you) |
+| C1-11 Scope and Delimitations | **David** |
+| C1-12 Significance of the Study | **Jaypee** (you) |
 
 ### Chapter 2 METHODOLOGY Tasks (NOT your responsibility)
 
@@ -392,40 +544,45 @@ You do NOT need to write anything for Chapter 2. However, any research you previ
 
 Based on your preferred tasks:
 
-- **Detail-oriented work:** You prefer focused tasks with clear deliverables (references, citations)
+- **Detail-oriented work:** You prefer focused tasks with clear deliverables (references, citations, diagrams, objectives)
 - **Research skills:** You can use Google Scholar and evaluate sources
 - **Organization:** You can compile and alphabetize reference lists systematically
 - **Quality assurance:** You can spot inconsistencies in citations and references
+- **Structured thinking:** IPO diagrams and objectives require clear logical structure — your strength
 
-Focus on what you're good at: research, organization, and quality checks.
+Focus on what you're good at: research, organization, structured analysis, and quality checks.
 
 ---
 
 ## What to Avoid (Tasks Assigned to Others)
 
-- Background global and national context paragraphs — David's tasks now
+- Background global and national context paragraphs — David's tasks (C1-01, C1-02, C1-03)
+- Background synthesis and clinching statement — David's tasks (C1-05, C1-06)
+- Scope and delimitations — David's task (C1-11)
 - Formatting QA — David's task (CC-02)
 - All Chapter 2 METHODOLOGY tasks — David (C2-01 through C2-04, C2-06, C2-07) and Christine (C2-05)
-- IPO diagram, objectives, scope, synthesis, clinching statement — David's tasks
 - OMR/CV literature review — Christine's tasks
 
-Your focus: Local context (with Christine's guidance), research questions, significance of the study, references compilation, citation cross-check.
+**Your tasks NOW include:** IPO diagram (C1-07), framework narrative (C1-08), objectives (C1-09), local context (C1-04), research questions (C1-10), significance (C1-12), references compilation (CC-01), citation cross-check (CC-04).
 
 ---
 
 ## Quick Reference: Your Guides
 
 - Formatting: `guides/GUIDE-1-FORMATTING.md` (especially APA 7 references, margins, paragraph rules)
-- Chapter 1 Content: `guides/GUIDE-2-CHAPTER1-CONTENT.md` (Background P4, Research Questions)
+- Chapter 1 Content: `guides/GUIDE-2-CHAPTER1-CONTENT.md` (Background P4, Conceptual Framework, Objectives, Research Questions)
 - Chapter 2 Content: `guides/GUIDE-3-CHAPTER2-CONTENT.md` (METHODOLOGY structure, References)
-- System Features: `SYSTEM_FEATURES.md` (to understand SecureCAT's impact on ISPSC)
-- Existing vs Planned: `research/Existing_and_Planned_Features.md` (baseline and research features)
+- System Features: `SYSTEM_FEATURES.md` (to understand SecureCAT's features for IPO diagram, narrative, objectives, and significance)
+- Existing vs Planned: `research/Existing_and_Planned_Features.md` (baseline and research features — essential for C1-07 and C1-08)
 - Task Distribution: `TASK_DISTRIBUTION_PLAN.md`
 
 ---
 
 ## Success Criteria for You
 
+- [ ] C1-07 (IPO Diagram) completed by June 3 — three-box diagram with 6 numbered inputs, full system title as process, 9 numbered outputs, figure caption below in bold.
+- [ ] C1-09 (Objectives) completed by June 3 — general objective paragraph naming SecureCAT by full title + 3 numbered specific objectives (Identify, Develop, Evaluate usability using SUS). Objective 3 says "usability" ONLY, not "usability and acceptability."
+- [ ] C1-08 (Framework Narrative) completed by June 4 — exactly 2 paragraphs (P1: explain all 6 inputs, P2: explain process→outputs), reviewed against C1-07 diagram.
 - [ ] C1-04 (Local Context) completed by June 5 — 12-15 sentences, 5+ APA citations, covers manual workflow, infrastructure constraints, Guidance/Registrar challenges, compliance pressures.
 - [ ] C1-10 (Research Questions) completed by June 4 — numbered list covering all 4 dimensions (operational, role-based, security, resilience).
 - [ ] C1-12 (Significance of the Study) completed by June 5 — 6 paragraphs in paragraph form only, system-specific beneficiary groups (Registrar Office staff, Guidance Office counselors, Proctors/Test Administrators, Applicants/Examinees, ISPSC Administration, Future Researchers), highlights DPA compliance, operational continuity, institutional reporting value.
@@ -450,4 +607,4 @@ Your focus: Local context (with Christine's guidance), research questions, signi
 
 ---
 
-You are the local context researcher, references specialist, and citation quality assurer. Your attention to detail will ensure the References list is complete and accurate. Coordinate with Christine for ISPSC context, and collect references from all team members for CC-01.
+You are the local context researcher, conceptual framework designer, objectives writer, references specialist, and citation quality assurer. Your attention to detail will ensure the conceptual framework is precise, objectives are well-aligned, and the References list is complete and accurate. Coordinate with Christine for ISPSC context, and collect references from all team members for CC-01.
