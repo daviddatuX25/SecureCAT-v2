@@ -39,7 +39,7 @@
 | CC-01 | References List Compilation | 3-4h | Jun 8 | All writing tasks |
 | CC-04 | Citation Cross-Check | 1-2h | Jun 8 | All writing tasks, CC-01 |
 
-> **Note:** Jaypee has NO Chapter 2 tasks. Chapter 2 is titled "METHODOLOGY" (not a literature review) and all its tasks are assigned to David (C2-01 through C2-04, C2-06, C2-07) and Christine (C2-05 Population and Locale).
+> **Note:** Jaypee has NO Chapter 2 tasks. Chapter 2 is titled "METHODOLOGY" — its tasks are assigned to David (C2-01, C2-02, C2-07) and Christine (C2-03, C2-04, C2-05, C2-06).
 
 ---
 

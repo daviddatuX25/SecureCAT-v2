@@ -5,7 +5,7 @@
 
 **Usage:** Find your task ID → Read the arguments listed → Build your paragraph around them.
 
-> **NOTE ON CHAPTER 2 (June 2026 Update):** Chapter 2 has been restructured to match the BSIT Capstone Template and is now titled **METHODOLOGY** (Research Design, Software Model, Project Plan, Project Assignment, Population and Locale, Research Instruments, Data Analysis). The old C2-01 through C2-08 sections below were written for the previous "Review of Related Literature" structure. The arguments and evidence they contain are still valid — use them when writing **Chapter 1 Background paragraphs (P2-P4)** instead. The new METHODOLOGY tasks (C2-01 through C2-07) are described in GUIDE-3, TEAM_META_GUIDE, and your personal DIRECTION.md.
+> **NOTE ON CHAPTER 2 (June 2026 Update):** Chapter 2 has been restructured to match the BSIT Capstone Template and is now titled **METHODOLOGY** (Research Design, Software Model, Project Plan, Project Assignment, Population and Locale, Research Instruments, Data Analysis). The old C2-01 through C2-08 sections that previously covered "Review of Related Literature" topics (RBAC, OMR, AI/RAG, PWA, Data Architecture, Related Systems, Technical Framework, Conceptual Framework Prose) have been removed from this section. Their arguments and evidence are still valid — use them when writing **Chapter 1 Background paragraphs (P2-P4)** instead. Additionally, the old "Related Systems" comparative analysis content is useful for **C1-05 (Synthesis & Gap)**. The new METHODOLOGY tasks (C2-01 through C2-07) are described below.
 
 ---
 
@@ -13,7 +13,7 @@
 
 ---
 
-### C1-01: Core Problem Statement (David)
+### C1-01: Core Problem Statement
 **Goal:** Establish that SUC admission testing is operationally fragmented, insecure, and non-scalable — in 8-12 sentences, no citations.
 
 | # | Argument | Detail |
@@ -31,7 +31,7 @@
 
 ---
 
-### C1-02: Global Context (David)
+### C1-02: Global Context
 **Goal:** 12-15 sentences showing how this problem is addressed internationally. Min 5 APA citations (2022-2026).
 
 | # | Argument | What to cite |
@@ -47,7 +47,7 @@
 
 ---
 
-### C1-03: National Context — Philippines (David)
+### C1-03: National Context — Philippines
 **Goal:** 12-15 sentences on Philippine-specific context. Min 5 APA citations (2022-2026).
 
 | # | Argument | What to cite |
@@ -63,7 +63,7 @@
 
 ---
 
-### C1-04: Local Context — ISPSC Tagudin (Jaypee)
+### C1-04: Local Context — ISPSC Tagudin
 **Goal:** 12-15 sentences on ISPSC Tagudin specifically. Min 5 APA citations (2022-2026).
 
 | # | Argument | Source |
@@ -80,7 +80,7 @@
 
 ---
 
-### C1-05: Synthesis & Gap (David)
+### C1-05: Synthesis & Gap
 **Goal:** 10-12 sentences synthesizing C1-02 through C1-04. NO author-by-author listing.
 
 **The gap statement (the most important sentence in the manuscript):**
@@ -91,12 +91,12 @@
 1. Global literature confirms that digital admission systems improve efficiency — but these are designed for well-resourced institutions, not connectivity-constrained provincial campuses
 2. National policy mandates digitization — but implementation at the SUC level is fragmented
 3. Local observation at ISPSC Tagudin confirms the gap is operational, not just technological
-4. Existing systems (from C2-06) address individual concerns but none integrate all layers
+4. Existing systems (see Related Systems comparative analysis) address individual concerns but none integrate all layers
 5. The absence of role-separated task management, real-time applicant tracking, and tamper-proof scoring creates measurable operational risk
 
 ---
 
-### C1-06: Clinching Statement (David)
+### C1-06: Clinching Statement
 **Goal:** 8-10 sentences with three required components.
 
 | Component | Argument |
@@ -108,7 +108,7 @@
 
 ---
 
-### C1-09: Objectives (David)
+### C1-09: Objectives
 **Standard three-objective structure:**
 
 | Objective | Content | Notes |
@@ -120,7 +120,7 @@
 
 ---
 
-### C1-11: Scope & Delimitations (David)
+### C1-11: Scope & Delimitations
 
 **Scope paragraph must include:**
 - User types: Applicants, Registrar Staff, Guidance Counselors, Proctors, Test Administrators, Super Administrators
@@ -139,7 +139,7 @@
 
 ---
 
-### C1-12: Significance of the Study (Jaypee)
+### C1-12: Significance of the Study
 
 | Beneficiary | Key argument |
 |-------------|-------------|
@@ -152,125 +152,97 @@
 
 ---
 
-## Chapter 2 Arguments
+## Chapter 2 Arguments — Methodology
 
 ---
 
-### C2-01: RBAC + Zero-Trust (David)
-**Flagship section. Should be the longest and most densely cited.**
+### C2-01: Research Design — Descriptive Developmental
+**Goal:** Establish the overall research design and justify why Descriptive-Developmental is appropriate for this capstone. 8-12 sentences.
 
-| Argument thread | What to establish |
-|-----------------|-------------------|
-| RBAC foundations | Role-based access control as the standard security model for institutional systems |
-| RBAC limitations | RBAC alone is insufficient for high-stakes assessment data — it controls *who* accesses data but not *whether data has been altered* |
-| Zero-trust evolution | Zero-trust architecture addresses the "trust but verify" gap — even authenticated users are verified at every transaction |
-| HMAC integrity | HMAC-SHA256 as a proven cryptographic technique for verifying data integrity without exposing the verification key |
-| Audit immutability | Write-only audit logs as a security pattern for forensic accountability |
-| RBAC for operational flexibility | Roles (proctor, counselor, registrar, admin) enable *task delegation* — not just access control. This is an underappreciated benefit. |
-| Application to education | How assessment systems specifically benefit from zero-trust patterns |
-| Gap | No Philippine SUC admission system implements cryptographic score verification or immutable audit trails |
+| # | Argument | Detail |
+|---|----------|--------|
+| 1 | **Descriptive phase** | The study first describes the existing manual admission processes, workflows, and operational pain points at ISPSC Tagudin. This grounds the development in real institutional needs rather than assumed requirements. |
+| 2 | **Developmental phase** | Based on the descriptive findings, the study develops a software solution (SecureCAT) that addresses the identified gaps. The developmental phase is iterative — build, test, refine. |
+| 3 | **Why this design fits** | BSIT capstone projects are applied research — the goal is to solve a real institutional problem, not to test theoretical hypotheses. Descriptive-Developmental is the standard design for tool/system development studies in Philippine HEI capstones. |
+| 4 | **Descriptive instruments** | Observation, interviews, and document analysis of current ISPSC admission workflows feed into the developmental requirements. |
+| 5 | **Developmental output** | The output is a functional, deployable system — not just a prototype or proof-of-concept. SUS evaluation validates the developmental output. |
 
 ---
 
-### C2-02: Automated Scoring / OMR (Christine)
-**Frame broadly — not just "OMR" but "automated assessment technologies."**
+### C2-02: Software Model — RAD or AIDLC
+**Goal:** Justify the software development methodology. 8-10 sentences.
 
-| Argument thread | What to establish |
-|-----------------|-------------------|
-| Manual scoring problems | Error rates in human transcription, time cost, scalability limits |
-| OMR evolution | From dedicated hardware scanners → desktop software → mobile-based solutions |
-| Computer-aided assessment | Broader category including digital test platforms, image recognition, AI-based scoring |
-| Low-resource implementation | How automated scoring is being deployed in developing-country education contexts |
-| Gap | ISPSC Tagudin currently uses manual CSV import as the best available option — no image-based ingestion exists |
-
-**Search terms:** "automated scoring education 2023" "computer-aided assessment developing countries" "optical mark recognition mobile" "image-based answer grading" "digital examination scoring systems"
+| # | Argument | Detail |
+|---|----------|--------|
+| 1 | **RAD (Rapid Application Development)** | If using RAD: emphasize the iterative prototyping cycle, time-boxed development, and user feedback integration. RAD suits projects with clear functional scope and a small, co-located development team. |
+| 2 | **AIDLC (Agile Iterative Development Life Cycle)** | If using AIDLC: emphasize sprint-based iterations, continuous stakeholder feedback, and adaptive planning. AIDLC suits projects where requirements may evolve during development. |
+| 3 | **Justification for the chosen model** | The capstone has a fixed timeline, a small team (3 members), and well-defined functional requirements derived from the descriptive phase. The chosen model must accommodate rapid iteration with limited resources. |
+| 4 | **Phases mapped to project** | Map the chosen model's phases to actual project activities: requirements gathering (descriptive phase), design, implementation (developmental phase), testing, and deployment. |
+| 5 | **Risk mitigation** | The iterative nature of RAD/AIDLC allows early detection of technical risks (OMR accuracy, offline sync, AI response quality) before they compound. |
 
 ---
 
-### C2-03: AI/RAG in Education (David)
-**Easiest section. Abundant literature post-2023.**
+### C2-03: Project Plan — Gantt Chart
+**Goal:** Present the project timeline as a Gantt chart. Brief explanatory paragraph.
 
-| Argument thread | What to establish |
-|-----------------|-------------------|
-| AI chatbots in education | Proliferation of AI assistants in HEI contexts (enrollment, advising, FAQ) |
-| RAG architecture | Retrieval-Augmented Generation as a technique for grounding AI responses in institutional data |
-| Student guidance automation | How AI reduces the repetitive inquiry burden on guidance staff |
-| Personalized recommendations | AI-driven course/program recommendations based on applicant profiles |
-| Gap | Philippine SUC admission offices lack AI-assisted guidance tools |
-
----
-
-### C2-04: PWA & Offline Resilience (David)
-**Lead with the seasonal-user argument, then offline resilience.**
-
-| Argument thread | What to establish |
-|-----------------|-------------------|
-| PWA vs native for seasonal services | For users who interact once or twice, PWA eliminates installation friction, storage overhead, and update maintenance |
-| Lightweight web access | Budget devices in regional areas have limited storage — PWA respects device constraints |
-| Offline resilience | Service Workers + IndexedDB enable functionality during connectivity disruptions |
-| Education context | Campus Wi-Fi congestion during exam days is a real operational constraint |
-| Developing-region infrastructure | PWA is the appropriate architecture for institutions with unreliable connectivity |
-| Gap | No Philippine SUC admission system offers offline-capable proctoring or PWA-based applicant access |
+| # | Argument | Detail |
+|---|----------|--------|
+| 1 | **Phase breakdown** | The Gantt chart must show major phases: requirements gathering, system design, development (by module), testing, SUS evaluation, documentation, and final presentation. |
+| 2 | **Milestone markers** | Key milestones should be clearly marked — design review, alpha build, beta build, SUS administration, manuscript submission. |
+| 3 | **Parallel tracks** | Development tasks may overlap (e.g., frontend and backend modules developed concurrently by different team members). Show task assignments alongside the timeline. |
+| 4 | **Timeframe realism** | The plan must reflect the actual capstone semester timeline, accounting for academic breaks, exam periods, and coordination overhead. |
 
 ---
 
-### C2-05: Scalable Data Architecture & Data Governance (David)
-**Reframed from "DPA/Multi-Tenancy" — now about data silos and institutional scalability.**
+### C2-04: Project Assignment — Table 1
+**Goal:** Present a table showing task-to-team-member assignments. Brief explanatory paragraph.
 
-| Argument thread | What to establish |
-|-----------------|-------------------|
-| Data silos in multi-campus HEIs | When each campus builds its own system, institutional data becomes fragmented and non-interoperable |
-| Centralized vs decentralized student information | Literature on shared vs isolated systems for multi-site universities |
-| Multi-tenancy as engineering solution | Tenant-scoped data access provides both isolation and interoperability |
-| RA 10173 / DPA compliance | Philippine data privacy requirements for educational institutions — multi-tenancy enforces privacy at the architecture level |
-| Future-proofing | Building multi-tenant from Day 1 prevents technical debt when expanding to other campuses |
-| Gap | ISPSC's campuses currently operate as data silos with no path to institutional integration |
-
-**Key framing:** Multi-tenancy is not a feature — it's a *prevention of future technical debt*. The literature should establish why data silos are harmful and how shared architecture solves them.
+| # | Argument | Detail |
+|---|----------|--------|
+| 1 | **Task decomposition** | Break down all capstone tasks (research, development, testing, documentation) and assign each to a specific team member. |
+| 2 | **Balance of workload** | Demonstrate equitable distribution — each member handles research writing AND development tasks. No member is solely a "writer" or "developer." |
+| 3 | **Accountability** | Each task has a clear owner — this prevents overlap and gaps in responsibility. |
+| 4 | **Format** | Use the BSIT Capstone Template "Table 1" format: Task | Assigned To | Role/Responsibility. |
 
 ---
 
-### C2-06: Related Systems (Jaypee)
-**Comparative gap analysis. The integration thesis converges here.**
+### C2-05: Population and Locale of the Study
+**Goal:** Define who will participate in the evaluation and where the study takes place. 8-10 sentences.
 
-**Systems to find and compare:**
-1. A Philippine university admission system (any SUC or private HEI)
-2. An international online admission platform (UCAS, Common App, or equivalent)
-3. An OMR/automated scoring tool (OMRChecker, Scantron, or similar)
-4. An AI-based student guidance system (chatbot or recommendation engine)
-5. An existing Ilocos/Region I institutional system (if available)
-
-**For each system, evaluate:**
-- Does it handle online application intake?
-- Does it provide real-time applicant status tracking?
-- Does it enforce role-based access with security verification?
-- Does it offer automated scoring?
-- Does it include AI-assisted guidance?
-- Does it work offline?
-- Does it support multi-tenant deployment?
-- Does it generate documents automatically?
-
-**The conclusion should be:** "None of the reviewed systems integrates all of these capabilities. SecureCAT addresses this integration gap."
+| # | Argument | Detail |
+|---|----------|--------|
+| 1 | **Population** | Define the target respondents for SUS evaluation — typically ISPSC staff (guidance counselors, registrar staff, proctors) and a sample of applicants/examinees who interact with the system. |
+| 2 | **Locale** | The study is conducted at ISPSC — Main Campus, Tagudin, Ilocos Sur. Specify the offices involved (Guidance Office, Registrar Office). |
+| 3 | **Sampling method** | Justify the sampling approach — purposive sampling is appropriate for usability evaluation since respondents must have direct experience with the system. |
+| 4 | **Sample size** | State the intended number of respondents. For SUS, a minimum of 5-10 respondents provides usable scores, though larger samples improve reliability. |
+| 5 | **Inclusion criteria** | Respondents must have actually used SecureCAT features relevant to their role (e.g., proctor must have used the proctoring module, applicant must have completed the application flow). |
 
 ---
 
-### C2-07: Technical Framework (David)
-**Mechanical description of the stack. Low risk.**
+### C2-06: Research Instruments — SUS
+**Goal:** Describe the System Usability Scale as the evaluation instrument. 8-12 sentences.
 
-Must cover:
-- Laravel 12 / Inertia v2 / Svelte 5 / Tailwind 4 (application stack)
-- RBAC via Laravel policies + middleware (security layer)
-- HMAC-SHA256 score integrity + write-only audit logs (zero-trust layer)
-- Mixedbread vector embeddings + RAG pipeline (AI layer)
-- Computer vision service for OMR ingestion (scoring layer)
-- PWA + Service Workers + IndexedDB (resilience layer)
-- Multi-tenant database with tenant_id partitioning (scalability layer)
-- DOMPDF / PHPWord / FPDI (document generation layer)
+| # | Argument | Detail |
+|---|----------|--------|
+| 1 | **Instrument description** | The System Usability Scale (SUS) is a 10-item Likert-type questionnaire that produces a composite usability score from 0 to 100. It is the most widely used usability questionnaire in industry and academia. |
+| 2 | **Why SUS** | SUS is technology-agnostic, quick to administer, and produces a single quantifiable score — making it ideal for capstone-level evaluation where statistical rigor must be practical. |
+| 3 | **Validity and reliability** | SUS has established validity and reliability across thousands of studies. Cite Brooke (1996) as the original source and subsequent meta-analyses confirming its psychometric properties. |
+| 4 | **Administration protocol** | Describe how SUS will be administered: after respondents complete a structured interaction with SecureCAT, they fill out the 10-item questionnaire. The system should be evaluated in context — not just demonstrated. |
+| 5 | **Scoring interpretation** | SUS scores are interpreted against established benchmarks: below 50 = poor, 50-70 = marginal, 70-85 = good, above 85 = excellent. A score above 68 is considered above average. |
+| 6 | **Adaptation** | If any SUS items are adapted for the admission testing context, document the modifications and justify them. Otherwise, use the standard wording. |
 
 ---
 
-### C2-08: Conceptual Framework Prose (David)
-**Expands the IPO diagram into narrative. Write immediately after C1-08.**
+### C2-07: Data Analysis
+**Goal:** Describe how SUS data will be analyzed and interpreted. 6-8 sentences.
+
+| # | Argument | Detail |
+|---|----------|--------|
+| 1 | **SUS score computation** | Describe the standard SUS scoring formula: sum of odd items (after subtracting 1 from each) plus sum of even items (after subtracting each from 5), multiplied by 2.5. |
+| 2 | **Descriptive statistics** | Report the mean, median, and standard deviation of SUS scores per respondent group (staff vs. applicants, if applicable). |
+| 3 | **Interpretive framework** | Map computed SUS scores to the adjective rating scale (Best Imaginable → Worst Imaginable) and the acceptability ranges (Acceptable / Marginal / Not Acceptable). |
+| 4 | **Qualitative support** | If open-ended feedback is collected alongside SUS, summarize qualitative themes to contextualize the numeric scores. |
+| 5 | **Limitations of analysis** | Acknowledge that with small sample sizes, SUS scores are indicative rather than statistically generalizable. This is acceptable for capstone-level evaluation. |
 
 ---
 
@@ -281,5 +253,5 @@ These are mechanical/quality tasks — no research arguments needed, but the **n
 1. Every section supports the integration thesis
 2. Existing features are present alongside advanced features (not separated)
 3. The proctor role / status tracker / scheduling / bulk ops appear in at least C1-01, C1-04, and C1-12
-4. Multi-tenancy appears in C1-01, C1-11, C2-05, and C2-07
-5. The PWA-vs-native argument appears in C1-01, C1-11, and C2-04
+4. Multi-tenancy appears in C1-01, C1-11, and the methodology where relevant
+5. The PWA-vs-native argument appears in C1-01 and C1-11
