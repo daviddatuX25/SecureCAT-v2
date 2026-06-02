@@ -1306,6 +1306,10 @@
     </div>
 
     <script>
+        // GitHub Repository URL Configuration
+        const GITHUB_REPO_FILE_BASE = 'https://github.com/daviddatuX25/SecureCAT-v2/blob/master/capstone/';
+        const GITHUB_REPO_DIR_BASE = 'https://github.com/daviddatuX25/SecureCAT-v2/tree/master/capstone/';
+
         // Folder tree toggle
         function toggleFolder(header) {
             const folderNode = header.parentElement;
@@ -2109,7 +2113,8 @@
             links.forEach(l => {
                 const linkEl = document.createElement('a');
                 linkEl.className = 'modal-link-item';
-                linkEl.href = l.url;
+                linkEl.href = l.url.startsWith('http') ? l.url : (GITHUB_REPO_FILE_BASE + l.url);
+                linkEl.target = '_blank';
                 linkEl.innerHTML = `
                     <span class="modal-link-icon">${l.icon}</span>
                     <div class="file-link-content">
@@ -2123,6 +2128,7 @@
             toggleModal(true);
         }
 
+        // Modal visibility triggers
         function toggleModal(show) {
             const modal = document.getElementById('taskModal');
             modal.style.display = show ? 'flex' : 'none';
@@ -2135,9 +2141,23 @@
             }
         }
 
-        // Initial paint
+        // Initial paint and link wrapper prefixing
         window.onload = () => {
             renderTasks();
+
+            // Rewrite all relative links in the Document Explorer to point to the GitHub repository wrapper
+            const fileLinks = document.querySelectorAll('.file-link');
+            fileLinks.forEach(link => {
+                const href = link.getAttribute('href');
+                if (href && !href.startsWith('http')) {
+                    if (href.endsWith('/') || href === 'drafts') {
+                        link.href = GITHUB_REPO_DIR_BASE + href;
+                    } else {
+                        link.href = GITHUB_REPO_FILE_BASE + href;
+                    }
+                    link.target = '_blank';
+                }
+            });
         }
     </script>
 </body>
