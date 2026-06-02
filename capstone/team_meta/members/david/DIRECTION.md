@@ -217,7 +217,7 @@
    4. Audit logs
    5. Result sheets/PDFs
    6. Consultation summaries
-   7. Copilot responses
+   7. AI Companion responses (course recommendations, applicant inquiries)
    8. Offline-cached records
    9. Statistical reports
 
@@ -303,26 +303,26 @@
 **What to Do:**
 
 1. **Research (90 min):**
-   - Search: "AI companions education", "RAG knowledge bases", "LLM scheduling assistants", "AI educational chatbots", "natural language interfaces database querying"
+   - Search: "AI companions education", "RAG knowledge bases", "LLM educational chatbots", "AI chatbots for student guidance", "natural language interfaces for applicant inquiries", "course recommendation systems"
    - Filter: **2022-2026 only**, peer-reviewed
-   - Target: 5-7 sources covering AI-powered chatbots in educational administration, RAG architectures, vector embeddings for knowledge retrieval, natural language interfaces for database querying
+   - Target: 5-7 sources covering AI-powered chatbots in educational settings, RAG architectures for student-facing assistants, vector embeddings for knowledge retrieval, course recommendation systems, natural language interfaces for applicant inquiries
 
 2. **Extract Findings (60 min):**
-   - For each source, extract: AI assistant use cases in education, RAG architectures and knowledge bases, embedding strategies (vector databases, semantic search), context management in LLM applications
+   - For each source, extract: AI assistant use cases in education, RAG architectures and knowledge bases, embedding strategies (vector databases, semantic search), course recommendation approaches, applicant-facing chatbot patterns
 
 3. **Write Review (90-120 min):**
    - **Thematic synthesis** (1-2 paragraphs):
      - AI assistants in educational contexts
-     - RAG architectures and knowledge bases
-     - LLM-powered scheduling and information systems
-     - How SecureCAT's RAG Copilot (vector embeddings + natural language querying) fits this literature
+     - RAG architectures for applicant-facing knowledge retrieval
+     - Course recommendation and student guidance systems
+     - How SecureCAT's AI Companion with RAG (Mixedbread vector embeddings + course recommendations + applicant inquiries) fits this literature
    - **Minimum 5 in-text citations (Author, Year)**, all 2022-2026
    - Synthesized writing only — FORBIDDEN pattern: "Author A says X. Author B says Y."
 
 4. **Compile References (30 min):**
    - Create draft APA 7 references for all sources
 
-**Reference:** `SYSTEM_FEATURES.md` for AI Companion and RAG Copilot details
+**Reference:** `SYSTEM_FEATURES.md` for AI Companion with RAG details
 
 **Deliverable:** `C2-03_David_AI_RAG_Review.md` with 1-2 paragraphs + draft references, minimum 5 APA citations (all 2022-2026)
 
@@ -380,7 +380,7 @@
      - AI-assisted operations
      - Cryptographic verification (HMAC)
    - Make the mechanical connection explicit — not just "inputs go in and outputs come out" but how the transformation happens inside the system
-   - Describe each output (all 9: status tracking displays, exam schedules, score reports, audit logs, result sheets/PDFs, consultation summaries, copilot responses, offline-cached records, statistical reports) and its purpose
+   - Describe each output (all 9: status tracking displays, exam schedules, score reports, audit logs, result sheets/PDFs, consultation summaries, AI Companion responses (course recommendations, applicant inquiries), offline-cached records, statistical reports) and its purpose
    - Present both existing and planned features as one unified process
 
 3. **Review Against Diagram (15-30 min):**
@@ -403,8 +403,8 @@
 1. **Write Scope Paragraph (60-90 min):**
    - **Paragraph form ONLY** (no bullets, no numbered lists per GUIDE-1)
    - Must cover BOTH existing system modules AND planned research modules:
-     - **Existing system modules:** application intake, scheduling, roster, grading, OMR CSV import, consultation summaries, result release, document generation, audit logs, notifications, AI companion, AI scheduling assistant
-     - **Planned research modules:** HMAC integrity, CV-based OMR, offline PWA, RAG copilot, auto-scheduling agent, multi-tenant architecture
+     - **Existing system modules:** application intake, scheduling, roster, grading, OMR CSV import, consultation summaries, result release, document generation, audit logs, notifications, AI companion (RAG-powered), AI scheduling assistant
+     - **Planned research modules:** HMAC integrity, CV-based OMR, offline PWA, enhanced AI Companion with external data integration and course recommendations, auto-scheduling agent, multi-tenant architecture
    - Include: authorized user types (Applicants, Registrar Staff, Guidance/Proctors, Test Administrators, Super Administrators), locale (ISPSC Tagudin, Ilocos Sur, Philippines), timeframe of development and deployment, principal variables (test data, student records, role assignments, test configurations)
    - Justification for why these boundaries were chosen
    - Include explicit delimitations that allow advanced features to appear as research contributions rather than out-of-scope expansion
@@ -466,7 +466,7 @@
 1. **Component 1: How Literature Structured the Study (30 min):**
    - Explain how the reviewed literature (P2-P5) assisted in structuring the present study
    - Note which findings influenced system features and research design decisions
-   - Example: studies on PWA for low-connectivity contexts informed the offline-first architecture; RBAC literature guided role-based design; AI/RAG research shaped the Copilot feature
+   - Example: studies on PWA for low-connectivity contexts informed the offline-first architecture; RBAC literature guided role-based design; AI/RAG research shaped the applicant-facing AI Companion feature
 
 2. **Component 2: Why This Topic Was Selected (30 min):**
    - State why you selected this research topic

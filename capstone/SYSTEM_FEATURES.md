@@ -12,7 +12,7 @@ This document defines the baseline of features already built in **SecureCAT-v2**
     `Application Submitted` ➔ `Admitted/Accepted` ➔ `Scheduled for Exam` ➔ `Attendance Confirmed` ➔ `Scores Processed` ➔ `Results Released`.
 *   **Admission Slip Generation:** Direct rendering and PDF download of custom, print-ready Admission Slips.
 *   **Direct Assessment:** Direct-entry option allowing proctors/admins to grade walk-in applicants immediately.
-*   **AI Companion Widget:** Basic conversational assistant inside the applicant portal to guide examinees.
+*   **AI Companion Widget (with RAG):** A retrieval-augmented conversational assistant inside the applicant portal. Powered by local vector embeddings (Mixedbread), it allows applicants to ask questions about admission requirements, course recommendations, exam schedules, and institutional data using natural language.
 
 ### 2. Registrar Portal (Staff & Registrar Admin)
 *   **Application Pipeline:** Automated application submission review, data validation, and approval/rejection pipeline.
@@ -46,9 +46,9 @@ To ensure the system meets high software engineering and research standards unde
 *   **Offline-Resilient Proctor Portal (Edge PWA):**
     *   *Mechanism:* A Progressive Web App (PWA) with Service Workers. If the campus Wi-Fi drops, proctors can continue scanning applicant QR codes at the exam room door offline. The scanned records are cached in IndexedDB and synchronized in the background once internet connectivity is restored.
 
-### 3. "Guidance & Registrar Offices" ➔ AI-Powered Office Operations
-*   **In-Office RAG Copilot:**
-    *   *Mechanism:* A secure, local AI chatbot for guidance counselors and registrar staff. Powered by local vector embeddings, it allows staff to query database statistics using natural language (e.g., *"Show me the count of accepted applicants who failed the English component in Room 101"*).
+### 3. "Guidance & Registrar Offices" ➔ AI-Powered Applicant Guidance and Office Operations
+*   **Enhanced AI Companion with External Data Integration:**
+    *   *Mechanism:* The existing applicant-facing AI Companion is enhanced with retrieval-augmented generation (RAG) using local vector embeddings (Mixedbread). Applicants can query external data sources such as course catalogs, program requirements, admission statistics, and institutional policies. The companion provides intelligent course recommendations based on applicant profiles and test results, and answers applicant questions about exam schedules, required documents, and campus information.
 *   **Automated Scheduling Agent:**
     *   *Mechanism:* An optimization algorithm that automatically schedules examinees to available exam batches based on constraints (room capacity, proctor availability, and time slots).
 

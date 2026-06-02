@@ -24,7 +24,7 @@ SecureCAT-v2 is already implemented as a role-based admission testing system for
 - Real-time application status lifecycle tracking.
 - Admission slip generation with printable PDF rendering.
 - Direct assessment workflow for walk-in grading cases.
-- AI companion chat experience inside the applicant portal.
+- AI companion chat experience inside the applicant portal (RAG-powered with Mixedbread vector embeddings for course recommendations and applicant inquiries).
 
 ### Registrar Portal Features
 - Application pipeline review and approval/rejection ops.
@@ -104,9 +104,11 @@ The following features are planned additions to elevate the system for capstone 
 - QR code scanning at exam room door when network is unavailable.
 - IndexedDB local caching and background sync restoration when connectivity resumes.
 
-### 4. AI Powered Office Copilot
-- RAG based local assistant using vector embeddings.
-- Natural language database querying for guidance and registrar staff.
+### 4. Enhanced AI Companion with External Data Integration
+- RAG-based applicant-facing assistant using vector embeddings (Mixedbread).
+- Natural language querying of course catalogs, program requirements, admission statistics, and institutional policies.
+- Intelligent course recommendations based on applicant profiles and test results.
+- Answers applicant questions about exam schedules, required documents, and campus information.
 
 ### 5. Automated Scheduling Agent
 - Constraint aware optimization for room capacity, proctor availability, time slots.
@@ -125,7 +127,7 @@ The following features are planned additions to elevate the system for capstone 
 |---|---|---|
 | Role-Based | RBAC via policies and routes | Cryptographic integrity, audit immutability |
 | Admission Testing System | Scheduling, roster, grading, direct assessment | OMR computer vision, offline PWA |
-| Guidance and Registrar | Session management, consultation summaries, reporting | AI copilot, auto scheduling agent |
+| Guidance and Registrar | Session management, consultation summaries, reporting | Enhanced AI Companion with RAG for applicant guidance, auto scheduling agent |
 | ISPSC Tagudin | Single campus deployment | Multi-tenant database architecture |
 
 ---

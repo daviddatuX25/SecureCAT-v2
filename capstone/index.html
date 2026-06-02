@@ -220,28 +220,53 @@
 
         .file-link {
             display: flex;
-            align-items: center;
-            gap: 8px;
+            align-items: flex-start;
+            gap: 10px;
             text-decoration: none;
             color: var(--text-muted);
-            padding: 6px 8px;
-            border-radius: 6px;
+            padding: 8px 10px;
+            border-radius: 8px;
             font-size: 0.9rem;
             transition: all 0.2s ease;
+            min-width: 0;
+        }
+
+        .file-link:hover {
+            color: #fff;
+            background: rgba(255, 255, 255, 0.04);
+            transform: translateX(4px);
+        }
+
+        .file-link-content {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            min-width: 0;
+            flex-grow: 1;
+        }
+
+        .file-link-title {
+            font-weight: 500;
+            color: #f1f5f9;
+            font-size: 0.88rem;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
         }
 
-        .file-link:hover {
-            color: #fff;
-            background: rgba(255, 255, 255, 0.05);
-            transform: translateX(4px);
+        .file-link-desc {
+            font-size: 0.72rem;
+            color: var(--text-muted);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
 
         .file-icon {
-            font-size: 0.9rem;
+            font-size: 1rem;
             opacity: 0.7;
+            margin-top: 2px;
+            flex-shrink: 0;
         }
 
         .file-priority-badge {
@@ -806,27 +831,49 @@
             justify-content: center;
         }
 
-        .modal-link-btn {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            background: rgba(99, 102, 241, 0.1);
-            border: 1px solid rgba(99, 102, 241, 0.3);
-            color: #a5b4fc;
-            padding: 10px 16px;
-            border-radius: 10px;
-            font-size: 0.9rem;
-            font-weight: 600;
-            text-decoration: none;
-            transition: all 0.2s ease;
-            margin-top: 10px;
+        .modal-links-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 12px;
+            margin-top: 8px;
         }
 
-        .modal-link-btn:hover {
-            background: var(--primary);
+        .modal-link-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            padding: 12px;
+            border-radius: 10px;
+            text-decoration: none;
+            color: #cbd5e1;
+            font-size: 0.85rem;
+            transition: all 0.2s ease;
+        }
+
+        .modal-link-item:hover {
+            background: rgba(99, 102, 241, 0.08);
+            border-color: rgba(99, 102, 241, 0.3);
             color: #fff;
-            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.2);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .modal-link-icon {
+            font-size: 1.25rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.03);
+            flex-shrink: 0;
+        }
+
+        .modal-link-item:hover .modal-link-icon {
+            background: rgba(99, 102, 241, 0.15);
         }
     </style>
 </head>
@@ -861,19 +908,35 @@
                         </div>
                         <div class="folder-content" style="display: flex;">
                             <a href="README.md" class="file-link">
-                                <span class="file-icon">📄</span> README.md
+                                <span class="file-icon">📄</span>
+                                <div class="file-link-content">
+                                    <span class="file-link-title">README.md</span>
+                                    <span class="file-link-desc">Project details & repository directory map</span>
+                                </div>
                                 <span class="file-priority-badge priority-essential">Essential</span>
                             </a>
                             <a href="ROADMAP.md" class="file-link">
-                                <span class="file-icon">📄</span> ROADMAP.md
+                                <span class="file-icon">📄</span>
+                                <div class="file-link-content">
+                                    <span class="file-link-title">ROADMAP.md</span>
+                                    <span class="file-link-desc">Manuscript milestones & deliverables schedule</span>
+                                </div>
                                 <span class="file-priority-badge priority-essential">Essential</span>
                             </a>
                             <a href="SYSTEM_FEATURES.md" class="file-link">
-                                <span class="file-icon">📄</span> SYSTEM_FEATURES.md
+                                <span class="file-icon">📄</span>
+                                <div class="file-link-content">
+                                    <span class="file-link-title">SYSTEM_FEATURES.md</span>
+                                    <span class="file-link-desc">Matrix mapping system features to database tables</span>
+                                </div>
                                 <span class="file-priority-badge priority-essential">Essential</span>
                             </a>
                             <a href="SecureCAT%20Letter.docx" class="file-link">
-                                <span class="file-icon">📄</span> Client Letter.docx
+                                <span class="file-icon">📄</span>
+                                <div class="file-link-content">
+                                    <span class="file-link-title">Client Letter.docx</span>
+                                    <span class="file-link-desc">Guidance Office official capstone request letter</span>
+                                </div>
                             </a>
                         </div>
                     </div>
@@ -886,25 +949,49 @@
                         </div>
                         <div class="folder-content">
                             <a href="guides/GUIDE-1-FORMATTING.md" class="file-link">
-                                <span class="file-icon">📄</span> Formatting Guide
+                                <span class="file-icon">📄</span>
+                                <div class="file-link-content">
+                                    <span class="file-link-title">Formatting Guide</span>
+                                    <span class="file-link-desc">General guidelines for layout, fonts, margins & citations</span>
+                                </div>
                                 <span class="file-priority-badge priority-guide">Guide</span>
                             </a>
                             <a href="guides/GUIDE-2-CHAPTER1-CONTENT.md" class="file-link">
-                                <span class="file-icon">📄</span> Chapter 1 Guidelines
+                                <span class="file-icon">📄</span>
+                                <div class="file-link-content">
+                                    <span class="file-link-title">Chapter 1 Guidelines</span>
+                                    <span class="file-link-desc">Paragraph-by-paragraph requirements checklist</span>
+                                </div>
                                 <span class="file-priority-badge priority-guide">Guide</span>
                             </a>
                             <a href="guides/GUIDE-3-CHAPTER2-CONTENT.md" class="file-link">
-                                <span class="file-icon">📄</span> Chapter 2 Guidelines
+                                <span class="file-icon">📄</span>
+                                <div class="file-link-content">
+                                    <span class="file-link-title">Chapter 2 Guidelines</span>
+                                    <span class="file-link-desc">Literature review topics & technical framework</span>
+                                </div>
                                 <span class="file-priority-badge priority-guide">Guide</span>
                             </a>
                             <a href="guides/GUIDE-4-AIDLC-DEFENSE.md" class="file-link">
-                                <span class="file-icon">📄</span> Software Model Defense
+                                <span class="file-icon">📄</span>
+                                <div class="file-link-content">
+                                    <span class="file-link-title">Software Model Defense</span>
+                                    <span class="file-link-desc">Justifying AI-DLC development methodology</span>
+                                </div>
                             </a>
                             <a href="guides/GUIDE-5-CHECKLIST.md" class="file-link">
-                                <span class="file-icon">📄</span> Submission Checklist
+                                <span class="file-icon">📄</span>
+                                <div class="file-link-content">
+                                    <span class="file-link-title">Submission Checklist</span>
+                                    <span class="file-link-desc">Final verification audit for drafts submission</span>
+                                </div>
                             </a>
                             <a href="guides/capstone-guides-agnostic.zip" class="file-link">
-                                <span class="file-icon">📦</span> Templates (ZIP)
+                                <span class="file-icon">📦</span>
+                                <div class="file-link-content">
+                                    <span class="file-link-title">Templates (ZIP)</span>
+                                    <span class="file-link-desc">DOCX templates for manuscript preparation</span>
+                                </div>
                             </a>
                         </div>
                     </div>
@@ -917,21 +1004,41 @@
                         </div>
                         <div class="folder-content">
                             <a href="research/RESEARCH_DIRECTION_ANALYSIS.md" class="file-link">
-                                <span class="file-icon">📄</span> Research Direction
+                                <span class="file-icon">📄</span>
+                                <div class="file-link-content">
+                                    <span class="file-link-title">Research Direction</span>
+                                    <span class="file-link-desc">Review of project viability & problem framing</span>
+                                </div>
                                 <span class="file-priority-badge priority-essential">Essential</span>
                             </a>
                             <a href="research/RESEARCH_ARGUMENT_BANK.md" class="file-link">
-                                <span class="file-icon">📄</span> Argument Bank
+                                <span class="file-icon">📄</span>
+                                <div class="file-link-content">
+                                    <span class="file-link-title">Argument Bank</span>
+                                    <span class="file-link-desc">Arguments, evidence, & citations by task ID</span>
+                                </div>
                                 <span class="file-priority-badge priority-essential">Essential</span>
                             </a>
                             <a href="research/SEARCH_TERM_CHEAT_SHEET.md" class="file-link">
-                                <span class="file-icon">📄</span> Search Terms Cheat Sheet
+                                <span class="file-icon">📄</span>
+                                <div class="file-link-content">
+                                    <span class="file-link-title">Search Terms Cheat Sheet</span>
+                                    <span class="file-link-desc">Pre-tested search queries for Google Scholar</span>
+                                </div>
                             </a>
                             <a href="research/Chapter_1_2_Drafting_Plan.md" class="file-link">
-                                <span class="file-icon">📄</span> Blending Plan
+                                <span class="file-icon">📄</span>
+                                <div class="file-link-content">
+                                    <span class="file-link-title">Drafting Plan</span>
+                                    <span class="file-link-desc">Strategy for blending system features with literature</span>
+                                </div>
                             </a>
                             <a href="research/Existing_and_Planned_Features.md" class="file-link">
-                                <span class="file-icon">📄</span> Feature Mapping Table
+                                <span class="file-icon">📄</span>
+                                <div class="file-link-content">
+                                    <span class="file-link-title">Feature Mapping Table</span>
+                                    <span class="file-link-desc">System features mapping to architecture and code</span>
+                                </div>
                             </a>
                         </div>
                     </div>
@@ -944,7 +1051,11 @@
                         </div>
                         <div class="folder-content">
                             <a href="strategy/pre_proposal_defense.md" class="file-link">
-                                <span class="file-icon">📄</span> Pre-Proposal Strategy
+                                <span class="file-icon">📄</span>
+                                <div class="file-link-content">
+                                    <span class="file-link-title">Pre-Proposal Strategy</span>
+                                    <span class="file-link-desc">Potential panel questions & corresponding defenses</span>
+                                </div>
                                 <span class="file-priority-badge priority-strategy">Strategy</span>
                             </a>
                         </div>
@@ -958,35 +1069,71 @@
                         </div>
                         <div class="folder-content">
                             <a href="team_meta/COMPREHENSIVE_TASK_REPORT.md" class="file-link">
-                                <span class="file-icon">📄</span> Comprehensive Task Report
+                                <span class="file-icon">📄</span>
+                                <div class="file-link-content">
+                                    <span class="file-link-title">Comprehensive Task Report</span>
+                                    <span class="file-link-desc">24 sprint tasks with descriptions and deliverables</span>
+                                </div>
                             </a>
                             <a href="team_meta/TASK_DISTRIBUTION_PLAN.md" class="file-link">
-                                <span class="file-icon">📄</span> Task Distribution Plan
+                                <span class="file-icon">📄</span>
+                                <div class="file-link-content">
+                                    <span class="file-link-title">Task Distribution Plan</span>
+                                    <span class="file-link-desc">Assignee allocations, estimates, and task matrices</span>
+                                </div>
                             </a>
                             <a href="team_meta/TEAM_META_GUIDE_Ch1_Ch2.md" class="file-link">
-                                <span class="file-icon">📄</span> Team Meta Guide
+                                <span class="file-icon">📄</span>
+                                <div class="file-link-content">
+                                    <span class="file-link-title">Team Meta Guide</span>
+                                    <span class="file-link-desc">Sprint methodology, Git usage, and timelines</span>
+                                </div>
                             </a>
                             <a href="team_meta/TEAM_TASK_CHECKLIST.md" class="file-link">
-                                <span class="file-icon">📄</span> Team Task Checklist
+                                <span class="file-icon">📄</span>
+                                <div class="file-link-content">
+                                    <span class="file-link-title">Team Task Checklist</span>
+                                    <span class="file-link-desc">Simple status checklist mapping tasks to owners</span>
+                                </div>
                             </a>
                             <a href="team_meta/CAPTAINING_OVERVIEW.md" class="file-link">
-                                <span class="file-icon">📄</span> Captaining Overview
+                                <span class="file-icon">📄</span>
+                                <div class="file-link-content">
+                                    <span class="file-link-title">Captaining Overview</span>
+                                    <span class="file-link-desc">Team leader guidelines for facilitating progress</span>
+                                </div>
                             </a>
                             <a href="team_meta/members/david/DIRECTION.md" class="file-link">
-                                <span class="file-icon">👤</span> David's Direction
+                                <span class="file-icon">👤</span>
+                                <div class="file-link-content">
+                                    <span class="file-link-title">David's Direction</span>
+                                    <span class="file-link-desc">David's personal research focus and assignments</span>
+                                </div>
                             </a>
                             <a href="team_meta/members/christine/DIRECTION.md" class="file-link">
-                                <span class="file-icon">👤</span> Christine's Direction
+                                <span class="file-icon">👤</span>
+                                <div class="file-link-content">
+                                    <span class="file-link-title">Christine's Direction</span>
+                                    <span class="file-link-desc">Christine's personal research focus and assignments</span>
+                                </div>
                             </a>
                             <a href="team_meta/members/jaypee/DIRECTION.md" class="file-link">
-                                <span class="file-icon">👤</span> Jaypee's Direction
+                                <span class="file-icon">👤</span>
+                                <div class="file-link-content">
+                                    <span class="file-link-title">Jaypee's Direction</span>
+                                    <span class="file-link-desc">Jaypee's personal research focus and assignments</span>
+                                </div>
                             </a>
                         </div>
                     </div>
                     
                     <!-- Drafts -->
                     <a href="drafts/" class="file-link">
-                        <span class="file-icon">📁</span> drafts/ (Manuscript Drafts)
+                        <span class="file-icon">📁</span>
+                        <div class="file-link-content">
+                            <span class="file-link-title" style="color: var(--text-muted);">drafts/</span>
+                            <span class="file-link-desc">Manuscript drafts word documents</span>
+                        </div>
                     </a>
                 </div>
             </div>
@@ -1148,9 +1295,12 @@
                     <p id="modalDeliverable" style="font-size: 0.9rem; color: #94a3b8; font-style: italic; border-left: 2px solid var(--primary); padding-left: 10px;"></p>
                 </div>
 
-                <a href="#" class="modal-link-btn" id="modalGuideLink">
-                    <span>📖</span> View Drafting Guide & Framework
-                </a>
+                <div>
+                    <div class="modal-section-title">Related Resources & Quick Access Links</div>
+                    <div class="modal-links-grid" id="modalLinksGrid">
+                        <!-- Dynamic link elements injected here -->
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -1836,8 +1986,139 @@
 
             document.getElementById('modalDeliverable').textContent = task.deliverable;
             
-            // Guide links mapping
-            document.getElementById('modalGuideLink').href = task.guide;
+            // Guide links mapping & related resources
+            const linksGrid = document.getElementById('modalLinksGrid');
+            linksGrid.innerHTML = '';
+
+            const argumentBankAnchors = {
+                'C1-01': '#c1-01-core-problem-statement-david',
+                'C1-02': '#c1-02-global-context-david',
+                'C1-03': '#c1-03-national-context--philippines-david',
+                'C1-04': '#c1-04-local-context--ispsc-tagudin-jaypee',
+                'C1-05': '#c1-05-synthesis--gap-david',
+                'C1-06': '#c1-06-clinching-statement-david',
+                'C1-07': '#c1-07-conceptual-framework--ipo-diagram',
+                'C1-08': '#c1-08-conceptual-framework--narrative',
+                'C1-09': '#c1-09-objectives-david',
+                'C1-11': '#c1-11-scope--delimitations-david',
+                'C1-12': '#c1-12-significance-of-the-study-christine',
+                'C2-01': '#c2-01-rbac--zero-trust-david',
+                'C2-02': '#c2-02-automated-scoring--omr-christine',
+                'C2-03': '#c2-03-airag-in-education-david',
+                'C2-04': '#c2-04-pwa--offline-systems-david',
+                'C2-05': '#c2-05-dpa--multi-tenancy-david',
+                'C2-06': '#c2-06-review-of-related-systems-jaypee',
+                'C2-07': '#c2-07-technical-framework-david',
+                'C2-08': '#c2-08-conceptual-framework-david'
+            };
+
+            const links = [];
+
+            // 1. Primary Drafting Guide
+            if (task.category === 'ch1') {
+                links.push({
+                    title: 'Chapter 1 Drafting Guide',
+                    desc: 'Structure guidelines & section specifications',
+                    url: 'guides/GUIDE-2-CHAPTER1-CONTENT.md',
+                    icon: '📖'
+                });
+            } else if (task.category === 'ch2') {
+                links.push({
+                    title: 'Chapter 2 Drafting Guide',
+                    desc: 'Literature review & technical architecture guide',
+                    url: 'guides/GUIDE-3-CHAPTER2-CONTENT.md',
+                    icon: '📖'
+                });
+            } else {
+                links.push({
+                    title: 'Formatting & Style Guide',
+                    desc: 'Margins, spacing, fonts, & citation rules',
+                    url: 'guides/GUIDE-1-FORMATTING.md',
+                    icon: '📏'
+                });
+            }
+
+            // 2. Submission Checklist (for cross-cutting or late tasks)
+            if (task.category === 'cross' || task.due === 'Jun 8' || task.due === 'Jun 9' || task.due === 'Jun 10') {
+                links.push({
+                    title: 'Submission Checklist',
+                    desc: 'Pre-submission manuscript quality audit',
+                    url: 'guides/GUIDE-5-CHECKLIST.md',
+                    icon: '✅'
+                });
+            }
+
+            // 3. Argument Bank Link (if applicable)
+            if (argumentBankAnchors[task.id]) {
+                links.push({
+                    title: 'Research Argument Bank',
+                    desc: `Citations, evidence & logic for ${task.id}`,
+                    url: `research/RESEARCH_ARGUMENT_BANK.md${argumentBankAnchors[task.id]}`,
+                    icon: '🏦'
+                });
+            }
+
+            // 4. Research Direction Analysis
+            if (task.category === 'ch1' || task.category === 'ch2') {
+                links.push({
+                    title: 'Research Direction Analysis',
+                    desc: 'Unified research validation & problem framing',
+                    url: 'research/RESEARCH_DIRECTION_ANALYSIS.md',
+                    icon: '🧭'
+                });
+            }
+
+            // 5. Search Term Cheat Sheet for Literature Reviews
+            if (['C1-02', 'C1-03', 'C1-04', 'C2-01', 'C2-02', 'C2-03', 'C2-04', 'C2-05', 'C2-06'].includes(task.id)) {
+                links.push({
+                    title: 'Search Term Cheat Sheet',
+                    desc: 'Pre-vetted queries for literature databases',
+                    url: 'research/SEARCH_TERM_CHEAT_SHEET.md',
+                    icon: '🔍'
+                });
+            }
+
+            // 6. Assignee's DIRECTION.md file
+            const assigneeName = task.assignee;
+            links.push({
+                title: `${assigneeName.charAt(0).toUpperCase() + assigneeName.slice(1)}'s Work Direction`,
+                desc: 'Personal validation, scope, and task plan',
+                url: `team_meta/members/${assigneeName}/DIRECTION.md`,
+                icon: '👤'
+            });
+
+            // 7. Comprehensive Task Report
+            links.push({
+                title: 'Comprehensive Task Report',
+                desc: 'Full sprint task breakdown & times',
+                url: 'team_meta/COMPREHENSIVE_TASK_REPORT.md',
+                icon: '📋'
+            });
+
+            // 8. Feature Mapping Table
+            if (['C1-01', 'C1-07', 'C1-08', 'C1-09', 'C1-11', 'C2-01', 'C2-02', 'C2-03', 'C2-04', 'C2-05', 'C2-07', 'C2-08'].includes(task.id)) {
+                links.push({
+                    title: 'Existing & Planned Features',
+                    desc: 'Pillars, system features, and database mapping',
+                    url: 'research/Existing_and_Planned_Features.md',
+                    icon: '🛡️'
+                });
+            }
+
+            // Render links inside the grid
+            links.forEach(l => {
+                const linkEl = document.createElement('a');
+                linkEl.className = 'modal-link-item';
+                linkEl.href = l.url;
+                linkEl.innerHTML = `
+                    <span class="modal-link-icon">${l.icon}</span>
+                    <div class="file-link-content">
+                        <span class="file-link-title" style="color: #fff;">${l.title}</span>
+                        <span class="file-link-desc">${l.desc}</span>
+                    </div>
+                `;
+                linksGrid.appendChild(linkEl);
+            });
 
             toggleModal(true);
         }

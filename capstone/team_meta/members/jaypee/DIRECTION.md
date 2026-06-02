@@ -197,7 +197,7 @@ Create a table with these columns:
 **Key gap to highlight in your analysis:** No existing system combines:
 - Role-based multi-office coordination (Guidance + Registrar)
 - Offline-first PWA architecture
-- AI Companion / RAG Copilot
+- AI Companion with RAG (applicant-facing)
 - Computer-vision-based OMR scanning
 - HMAC cryptographic score integrity
 

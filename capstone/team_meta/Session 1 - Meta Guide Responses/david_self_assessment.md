@@ -54,7 +54,7 @@
 | C2 | Explain zero-trust security and HMAC in writing | YES | |
 | C3 | Explain OMR and computer vision scoring in writing | MAYBE | Familiar but not deep |
 | C4 | Explain PWA, service workers, and offline-first architecture in writing | YES | |
-| C5 | Explain AI Companion (RAG + MixedBread embeddings, knowledge docs) and Registrar AI Assistant (LLM + system context for scheduling/rooms) in writing | MAYBE | Familiar with the concept; not deep on internals |
+| C5 | Explain AI Companion (RAG + MixedBread embeddings, course recommendations, applicant inquiries) in writing | MAYBE | Familiar with the concept; not deep on internals |
 | C6 | Describe the Laravel/Inertia/Svelte tech stack in writing | YES | Primary developer on SecureCAT-v2 |
 | C7 | Explain multi-tenant database architecture in writing | MAYBE | Wants to take this task but acknowledges partial depth |
 | C8 | Understand SecureCAT system architecture deeply enough to write about it | YES | Product owner + lead developer |
@@ -102,7 +102,7 @@ Strong in system architecture, full-stack development (Laravel 12 / Inertia v2 /
 | C1-09 | Objectives of the Study | 2-3h |
 | C1-11 | Scope and Delimitations | 2-3h |
 | C2-01 | Lit Review — RBAC + Zero-Trust Security | 4-6h |
-| C2-03 | Lit Review — AI Companion + Registrar AI Assistant | 4-6h |
+| C2-03 | Lit Review — AI Companion with RAG (Applicant-Facing) | 4-6h |
 | C2-04 | Lit Review — PWA + Offline-First Systems | 4-6h |
 | C2-05 | Lit Review — DPA + Multi-Tenancy | 3-5h |
 | C2-07 | Technical Framework | 3-4h |

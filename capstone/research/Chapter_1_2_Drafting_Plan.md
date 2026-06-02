@@ -53,7 +53,7 @@ Chapter 2 should review related literature and systems relevant to the title, fo
 - Role-Based Access Control.
 - Zero trust and data integrity models for assessments.
 - Admission testing and automated scoring approaches.
-- Natural language interfaces and office copilots.
+- Natural language interfaces and applicant-facing AI assistants.
 - Offline-capable mobile systems and queueing strategies.
 - Philippine Data Privacy Act considerations.
 
@@ -96,7 +96,7 @@ The key requirement is to treat built features and planned research features as 
 
 #### Guidance and Registrar Offices
 - **Existing:** consultation summaries, reports, applicant records, result release.
-- **Planned:** AI copilot and automated scheduling agent.
+- **Planned:** enhanced AI Companion with external data integration and course recommendations.
 - **Blend sentence:** “Office operations are strengthened by optimized reporting and natural-language assistance, reducing manual cognitive load during intake and counseling.”
 
 #### ISPSC Tagudin

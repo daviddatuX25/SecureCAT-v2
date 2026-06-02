@@ -117,7 +117,7 @@ Every task below includes:
 | Field | Details |
 |-------|---------|
 | **Task ID** | TASK-C1-07 |
-| **Description** | Design the Input-Process-Output (IPO) diagram for SecureCAT. Input: numbered list of data/config the system receives (applicant data, exam configs, OMR images, role credentials, QR scans, NL queries). Process: full system title. Output: numbered list of what the system produces (status tracking, schedules, score reports, audit logs, result sheets, consultation summaries, copilot responses, offline records, statistical reports). |
+| **Description** | Design the Input-Process-Output (IPO) diagram for SecureCAT. Input: numbered list of data/config the system receives (applicant data, exam configs, OMR images, role credentials, QR scans, NL queries). Process: full system title. Output: numbered list of what the system produces (status tracking, schedules, score reports, audit logs, result sheets, consultation summaries, AI Companion responses, offline records, statistical reports). |
 | **Deliverable** | IPO diagram as figure with proper caption |
 | **Required Skills** | Understanding of SecureCAT system architecture, ability to distinguish inputs (data received) from outputs (things produced), formatting of numbered lists |
 | **Restrictions** | Inputs must be THINGS the system receives. Outputs must be THINGS the system produces. No process verbs in either list. No bullet points — numbered lists only. |
@@ -231,7 +231,7 @@ Every task below includes:
 | Field | Details |
 |-------|---------|
 | **Task ID** | TASK-C2-03 |
-| **Description** | Write a synthesized literature review covering AI-powered chatbots and assistants in educational administration, retrieval-augmented generation (RAG) architectures, natural language interfaces for database querying in academic settings. |
+| **Description** | Write a synthesized literature review covering AI-powered chatbots and assistants in educational settings, retrieval-augmented generation (RAG) architectures for student-facing applications, natural language interfaces for applicant inquiries, and course recommendation systems. |
 | **Deliverable** | 1-2 paragraphs, minimum 5 APA citations (all 2022-2026) |
 | **Required Skills** | Literature search, understanding of AI/RAG concepts, synthesis writing |
 | **Estimated Effort** | 4-6 hours |
@@ -283,7 +283,7 @@ Every task below includes:
 | Field | Details |
 |-------|---------|
 | **Task ID** | TASK-C2-07 |
-| **Description** | Write the technical framework covering: Laravel 12 / Inertia v2 / Svelte 5 / Tailwind 4 stack, HMAC security model, vector embeddings for RAG, PWA service worker architecture, multi-tenant database isolation concepts, DOMPDF/PHPWord document generation pipeline. |
+| **Description** | Write the technical framework covering: Laravel 12 / Inertia v2 / Svelte 5 / Tailwind 4 stack, HMAC security model, vector embeddings for applicant-facing RAG (Mixedbread), PWA service worker architecture, multi-tenant database isolation concepts, DOMPDF/PHPWord document generation pipeline. |
 | **Deliverable** | 1-2 paragraphs with technical architecture diagram |
 | **Required Skills** | Deep understanding of the tech stack, ability to describe architectural decisions in academic language, diagram creation |
 | **Estimated Effort** | 3-4 hours |
@@ -441,7 +441,7 @@ Each team member fills out their own checklist independently. Do not discuss ans
 | C2 | Explain zero-trust security and HMAC in writing | ☐ YES  ☐ MAYBE  ☐ NO | |
 | C3 | Explain OMR and computer vision scoring in writing | ☐ YES  ☐ MAYBE  ☐ NO | |
 | C4 | Explain PWA, service workers, and offline-first architecture in writing | ☐ YES  ☐ MAYBE  ☐ NO | |
-| C5 | Explain AI/RAG and natural language database querying in writing | ☐ YES  ☐ MAYBE  ☐ NO | |
+| C5 | Explain AI/RAG for applicant-facing assistance and course recommendations in writing | ☐ YES  ☐ MAYBE  ☐ NO | |
 | C6 | Describe the Laravel/Inertia/Svelte tech stack in writing | ☐ YES  ☐ MAYBE  ☐ NO | |
 | C7 | Explain multi-tenant database architecture in writing | ☐ YES  ☐ MAYBE  ☐ NO | |
 | C8 | Understand the SecureCAT system architecture deeply enough to write about it | ☐ YES  ☐ MAYBE  ☐ NO | |

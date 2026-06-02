@@ -327,7 +327,7 @@
      4. Audit logs
      5. Result sheets/PDFs
      6. Consultation summaries
-     7. Copilot responses
+     7. AI Companion responses (course recommendations, applicant inquiries)
      8. Offline-cached records
      9. Statistical reports
    - Reference SYSTEM_FEATURES.md and TEAM_META_GUIDE C1-07 description exactly
@@ -440,8 +440,8 @@
 1. **Write Scope Paragraph (60-90 min)**
    - Paragraph form ONLY (no bullets, no numbered lists per GUIDE-1)
    - Must cover BOTH existing system modules AND planned research modules:
-     - **Existing system modules:** application intake, scheduling, roster, grading, OMR CSV import, consultation summaries, result release, document generation, audit logs, notifications, AI companion, AI scheduling assistant
-     - **Planned research modules:** HMAC integrity, CV-based OMR, offline PWA, RAG copilot, auto-scheduling agent, multi-tenant architecture
+     - **Existing system modules:** application intake, scheduling, roster, grading, OMR CSV import, consultation summaries, result release, document generation, audit logs, notifications, AI companion (RAG-powered), AI scheduling assistant
+     - **Planned research modules:** HMAC integrity, CV-based OMR, offline PWA, enhanced AI Companion with external data integration and course recommendations, auto-scheduling agent, multi-tenant architecture
    - Include: authorized user types, locale (ISPSC Tagudin, Ilocos Sur), timeframe, principal variables
    - Justification for boundaries
    - Include explicit delimitations that allow advanced features to appear as research contributions rather than out-of-scope expansion
@@ -480,7 +480,7 @@
    - Each paragraph explains specific benefits to that group
    - DO NOT include generic "new knowledge" paragraph — weave contributions into each group
    - For Registrar Office: streamlined workflows, role-based access, audit trails, operational efficiency
-   - For Guidance Office: consultation summaries, AI copilot, reduced manual cognitive load
+   - For Guidance Office: consultation summaries, enhanced AI Companion for applicant guidance, reduced manual cognitive load
    - For Proctors/Test Administrators: offline-resilient scanning, roster management, QR-based attendance
    - For Applicants/Examinees: improved service, faster results, transparent status tracking
    - For ISPSC Administration: institutional reporting value, DPA compliance, operational continuity
@@ -575,24 +575,25 @@
 
 **Detailed Subtasks:**
 1. **Research AI in Education (90 min)**
-   - Search: "AI companions education", "RAG knowledge bases", "LLM scheduling assistants", "AI educational chatbots", "natural language interfaces database querying"
+   - Search: "AI companions education", "RAG knowledge bases", "LLM educational chatbots", "AI chatbots for student guidance", "natural language interfaces for applicant inquiries", "course recommendation systems"
    - Filter: 2022-2026, peer-reviewed
    - Target: 5-7 sources covering:
-     - AI-powered chatbots and assistants in educational administration
-     - Retrieval-augmented generation (RAG) architectures
-     - Natural language interfaces for database querying in academic settings
+     - AI-powered chatbots and assistants in educational settings
+     - Retrieval-augmented generation (RAG) architectures for student-facing applications
+     - Natural language interfaces for applicant inquiries
      - Vector embeddings for knowledge retrieval
+     - Course recommendation systems in educational contexts
 
 2. **Extract AI Architecture Findings (60 min)**
-   - Identify: RAG patterns, embedding strategies, context management
-   - Note: AI companion use cases in education
-   - Group by theme: AI assistants, RAG architectures, natural language querying
+   - Identify: RAG patterns, embedding strategies, course recommendation approaches
+   - Note: AI companion use cases in applicant-facing education contexts
+   - Group by theme: AI assistants, RAG architectures, course recommendations, applicant inquiries
 
 3. **Write Literature Review (90-120 min)**
    - 1-2 paragraphs, thematic synthesis
-   - Structure: AI in education → RAG architectures → natural language querying
+   - Structure: AI in education → RAG architectures → course recommendations → applicant inquiries
    - Minimum 5 APA citations, all 2022-2026
-   - Explain how SecureCAT's RAG Copilot (vector embeddings + natural language querying) fits this literature
+   - Explain how SecureCAT's AI Companion with RAG (Mixedbread vector embeddings + course recommendations + applicant inquiries) fits this literature
    - Synthesized writing only
 
 4. **Compile Draft References (30 min)**
@@ -692,7 +693,7 @@
 
 3. **Write Narrative (60-90 min)**
    - 2-3 paragraphs summarizing related systems with feature comparison
-   - Highlight gap: no existing system combines PWA + role-based multi-office coordination + AI Companion + CV-based OMR + HMAC integrity
+   - Highlight gap: no existing system combines PWA + role-based multi-office coordination + AI Companion with RAG (applicant-facing) + CV-based OMR + HMAC integrity
    - Include minimum 5 APA citations if sources exist for compared systems (all 2022-2026)
 
 **Deliverable:** 2-3 paragraphs with feature comparison table, minimum 5 APA citations (all 2022-2026)

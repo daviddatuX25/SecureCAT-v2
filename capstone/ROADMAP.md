@@ -55,7 +55,7 @@ gantt
 *   **Tasks:**
     *   Backend multi-tenancy preparation (database isolation per campus/SUC).
     *   Zero-trust security implementation (HMAC score locks and immutable write-only audit trails).
-    *   AI-powered operations (OMR computer-vision scanning, RAG-based office copilot).
+    *   AI-powered operations (OMR computer-vision scanning, enhanced AI Companion with RAG for applicant guidance and course recommendations).
     *   Offline-resilient edge proctor portal (PWA).
 *   **Status:** ⬜ PLANNED
 
