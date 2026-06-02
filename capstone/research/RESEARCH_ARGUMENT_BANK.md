@@ -5,6 +5,8 @@
 
 **Usage:** Find your task ID → Read the arguments listed → Build your paragraph around them.
 
+> **NOTE ON CHAPTER 2 (June 2026 Update):** Chapter 2 has been restructured to match the BSIT Capstone Template and is now titled **METHODOLOGY** (Research Design, Software Model, Project Plan, Project Assignment, Population and Locale, Research Instruments, Data Analysis). The old C2-01 through C2-08 sections below were written for the previous "Review of Related Literature" structure. The arguments and evidence they contain are still valid — use them when writing **Chapter 1 Background paragraphs (P2-P4)** instead. The new METHODOLOGY tasks (C2-01 through C2-07) are described in GUIDE-3, TEAM_META_GUIDE, and your personal DIRECTION.md.
+
 ---
 
 ## Chapter 1 Arguments
@@ -99,7 +101,7 @@
 
 | Component | Argument |
 |-----------|----------|
-| **1. How literature structured the study** | "The reviewed literature established a convergent pattern: secure assessment platforms require role-based governance (C2-01), scoring automation reduces transcription error (C2-02), AI-assisted guidance deflects repetitive inquiries (C2-03), lightweight web access suits seasonal users (C2-04), and multi-campus institutions require scalable data architecture (C2-05). This pattern directly informed the design of SecureCAT as an integrated system addressing all five dimensions." |
+| **1. How literature structured the study** | "The reviewed literature established a convergent pattern: secure assessment platforms require role-based access governance, automated scoring reduces transcription error, AI-assisted guidance deflects repetitive applicant inquiries, lightweight PWA delivery suits seasonal users, and multi-campus institutions require scalable multi-tenant data architecture. This pattern directly informed the design of SecureCAT as an integrated system addressing all dimensions simultaneously." |
 | **2. Why this topic was selected** | "The researchers' direct observation at ISPSC Tagudin during the [specific admission period] revealed [specific problems witnessed] — confirming that the gap identified in literature exists in operational practice." |
 | **3. Why SecureCAT is the critical solution** | "SecureCAT addresses this integrated gap by providing a role-based, zero-trust-secured, AI-enhanced, offline-resilient, multi-tenant admission testing platform — engineered specifically for the operational realities of Philippine state university campuses." |
 | **Optional: SDG tie-in** | SDG 4 (Quality Education) — by reducing administrative friction in the admission pipeline, SecureCAT contributes to more accessible and equitable higher education intake processes |
@@ -137,17 +139,16 @@
 
 ---
 
-### C1-12: Significance of the Study (Christine)
+### C1-12: Significance of the Study (Jaypee)
 
 | Beneficiary | Key argument |
 |-------------|-------------|
-| **The Community** | Applicants gain digital access to admission status, reducing physical visits and wait times |
-| **The Client Institution (ISPSC Tagudin)** | Operational efficiency — bulk processing, automated scheduling, document generation. Staff scalability through proctor role delegation. Multi-tenant architecture as infrastructure investment. |
-| **The Respondents** | Direct experience improvement — real-time tracking, AI-assisted guidance, faster result release |
-| **The College / Department** | Demonstrates practical IT application in solving institutional operational problems |
-| **The Students** | Skills gained: full-stack development, security engineering, AI integration, PWA architecture |
-| **The Researchers** | Competencies across security (HMAC/zero-trust), AI (RAG), computer vision (OMR), and scalable architecture |
-| **Future Researchers** | SecureCAT's multi-tenant foundation provides a baseline for cross-campus features and future expansion studies |
+| **Registrar Office Staff** | Centralized digital pipeline replacing manual paper-based review; automated application processing, bulk import, real-time status tracking, room/course management. Audit logging ensures RA 10173 compliance; role-based access prevents unauthorized data access. |
+| **Guidance Office Counselors** | Streamlined test administration: session roster, proctor assignment, digital attendance. Automated scoring via OMR CSV import (+ planned CV ingestion), consultation summaries, aptitude management. Enhanced AI Companion reduces repetitive applicant inquiries. |
+| **Proctors and Test Administrators** | Real-time session management, QR-based applicant verification, digital attendance confirmation. Offline-resilient PWA allows scanning even when campus WiFi is unreliable — cached data syncs automatically on reconnection. |
+| **Applicants and Examinees** | Real-time status tracker from application through result release; admission slip PDF generation; token-based secure account activation; AI companion for instant guidance. Faster scoring and automated result generation reduce waiting. |
+| **ISPSC Administration** | Institutional-level visibility: audit logs, automated reporting, real-time dashboards. HMAC score integrity (planned) provides tamper-evident records. Multi-tenant isolation (planned) prepares for future campus expansion while maintaining data privacy (RA 10173). |
+| **Future Researchers** | SecureCAT provides a reference implementation for RBAC admission systems in Philippine SUCs — covering zero-trust governance, CV OMR, offline-resilient PWA proctoring, AI Companion with RAG, and multi-tenant isolation. |
 
 ---
 

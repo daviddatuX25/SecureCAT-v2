@@ -3,23 +3,33 @@
 
 Run through every item below before submitting or presenting. Items marked with [→ G#] reference the relevant guide for context.
 
+**Submission Deadline: June 10, 2026 (Google Classroom)**
+
+**Deliverables:**
+- Brandname.docx (manuscript named after your group's brandname)
+- Proof of running the document in the docuCheck system (screenshot)
+
 ---
 
 ## FORMATTING [→ Guide 1]
 
 ### Margins and Page Setup
-- [ ] Left margin: 1.5 inches
-- [ ] Right, Top, Bottom margins: 1 inch each
-- [ ] Header border fits inside the 1-inch top margin — not bleeding above it
-- [ ] Footer border fits inside the 1-inch bottom margin — not bleeding below it
+- [ ] Top margin: 1.5 inches (3.81 cm / 108 pt)
+- [ ] Left margin: 1.5 inches (3.81 cm / 108 pt)
+- [ ] Right margin: 1.0 inch (2.54 cm / 72 pt)
+- [ ] Bottom margin: 1.0 inch (2.54 cm / 72 pt)
+- [ ] Paper size: A4
+- [ ] Header border fits inside the top margin — not bleeding above it
+- [ ] Footer border fits inside the bottom margin — not bleeding below it
 - [ ] Margin and header/footer fix applied to every page of the manuscript
 
 ### Typography
 - [ ] Font: Times New Roman throughout
 - [ ] Font size: 12pt throughout
-- [ ] Line spacing: Double throughout
+- [ ] Line spacing: Double (2.0) throughout
 - [ ] No extra space before or after paragraphs (space before/after = 0pt)
-- [ ] Paragraph indent: 5 spaces at start of each paragraph
+- [ ] Paragraph indent: 5 spaces at start of each body paragraph
+- [ ] No right indent — body text flush to right margin
 - [ ] Alignment: Justified for all body text
 
 ### Page Numbers
@@ -47,6 +57,28 @@ Run through every item below before submitting or presenting. Items marked with 
 - [ ] Bold used ONLY on: subheadings, chapter headings, figure captions, table captions
 - [ ] No bold used in body text for emphasis
 - [ ] No bullet points anywhere in the manuscript
+
+---
+
+## REQUIRED CONTENTS (from Instructor)
+
+Per instructor announcement:
+
+> "To all groups with approved title, construct your manuscript with the following contents:
+> Title page, Table of Contents, Chapter 1, Chapter 2, Appendices (letter to conduct, Use Case Diagram).
+> To check the formatting and template, run your document using your account in the docuCheck system as you have created in Activity 1.
+> Attach here the following: Brandname.docx, Proof of running the document in the docuCheck system."
+
+- [ ] Title Page present and filled in
+- [ ] Table of Contents present (auto-generated from headings)
+- [ ] Chapter 1 complete (all sections)
+- [ ] Chapter 2 complete (all sections)
+- [ ] Appendices present
+  - [ ] APPENDIX A: Scan of Signed Letter to Conduct
+  - [ ] APPENDIX B: Use Case Diagram
+- [ ] File named Brandname.docx
+- [ ] Run through docuCheck system
+- [ ] Screenshot of docuCheck results saved
 
 ---
 
@@ -158,6 +190,17 @@ Run through every item below before submitting or presenting. Items marked with 
 - [ ] All entries fall within 2022–2026 (flag and justify any outside this range)
 - [ ] If AIDLC chosen: Addla (2026) present
 - [ ] If AIDLC chosen: Raja (2025) present
+
+---
+
+## SUBMISSION CHECKLIST
+
+- [ ] Manuscript built from the official BSIT Capstone Template
+- [ ] File named Brandname.docx (your group's brandname)
+- [ ] Run through docuCheck system — all checks pass
+- [ ] Screenshot of docuCheck results saved
+- [ ] Submitted via Google Classroom before June 10, 2026
+- [ ] Physical copy prepared (if required by instructor)
 
 ---
 

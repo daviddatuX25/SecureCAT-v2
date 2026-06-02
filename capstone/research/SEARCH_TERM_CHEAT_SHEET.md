@@ -9,6 +9,8 @@
 - Government circulars and official CHED publications are acceptable for Philippine context
 - When Google Scholar results are thin, try IEEE Xplore, ACM Digital Library, ERIC, or ResearchGate
 
+> **NOTE (June 2026 Update):** The search terms below were originally organized by the old Chapter 2 "Literature Review" task IDs (C2-01 through C2-06). Chapter 2 is now **METHODOLOGY** per the BSIT Capstone Template. These search terms are still valid and should be used when researching **Chapter 1 Background paragraphs (P2-P4)**. Find the topic that matches your assigned paragraph and use those queries.
+
 ---
 
 ## C2-01: RBAC + Zero-Trust + Data Integrity (David)

@@ -1157,8 +1157,10 @@
                     <span class="metric-title">Workload Balance</span>
                     <div class="workload-stat-row">
                         <div class="workload-stat-header">
+                    <div class="workload-stat-row">
+                        <div class="workload-stat-header">
                             <span style="color: var(--color-david)">David</span>
-                            <span>17 tasks (45-55h)</span>
+                            <span>17 tasks (43-64h)</span>
                         </div>
                         <div class="workload-bar-bg">
                             <div class="workload-bar-fill" style="width: 70%; background-color: var(--color-david);"></div>
@@ -1167,19 +1169,19 @@
                     <div class="workload-stat-row">
                         <div class="workload-stat-header">
                             <span style="color: var(--color-jaypee)">Jaypee</span>
-                            <span>5 tasks (14-22h)</span>
+                            <span>5 tasks (10-16h)</span>
                         </div>
                         <div class="workload-bar-bg">
-                            <div class="workload-bar-fill" style="width: 21%; background-color: var(--color-jaypee);"></div>
+                            <div class="workload-bar-fill" style="width: 25%; background-color: var(--color-jaypee);"></div>
                         </div>
                     </div>
                     <div class="workload-stat-row">
                         <div class="workload-stat-header">
                             <span style="color: var(--color-christine)">Christine</span>
-                            <span>2 tasks (6-9h)</span>
+                            <span>1 task (2-3h)</span>
                         </div>
                         <div class="workload-bar-bg">
-                            <div class="workload-bar-fill" style="width: 9%; background-color: var(--color-christine);"></div>
+                            <div class="workload-bar-fill" style="width: 5%; background-color: var(--color-christine);"></div>
                         </div>
                     </div>
                 </div>
@@ -1539,7 +1541,7 @@
                 id: 'C1-12',
                 name: 'Significance of the Study',
                 category: 'ch1',
-                assignee: 'christine',
+                assignee: 'jaypee',
                 due: 'Jun 5',
                 startDay: 4,
                 endDay: 5,
@@ -1561,154 +1563,136 @@
             // Chapter 2 Tasks
             {
                 id: 'C2-01',
-                name: 'Lit Review — RBAC + Zero-Trust',
+                name: 'Research Design',
                 category: 'ch2',
                 assignee: 'david',
                 due: 'Jun 5',
                 startDay: 4,
                 endDay: 5,
-                hours: '4-6h',
-                desc: 'Conduct a literature review on Role-Based Access Control (RBAC), Zero-Trust security principles, and HMAC-based signature checking in educational settings. Cite 5+ sources.',
+                hours: '3-4h',
+                desc: 'Define and write the descriptive-developmental research design section. Incorporate 2022-2026 citations supporting this design and explain its specific application to the SecureCAT project.',
                 subtasks: [
-                    'Search for modern RBAC and Zero-Trust education applications',
-                    'Synthesize findings on internal threats & privilege escalations',
-                    'Write thematic review with 5+ references (2022-2026)'
+                    'Define descriptive developmental design with APA citations',
+                    'Explain developmental component (iterative system building)',
+                    'Detail descriptive component (observing existing manual workflows)'
                 ],
-                deliverable: '1-2 paragraphs literature review (thematic synthesis), 5+ citations.',
+                deliverable: '2 paragraphs descriptive developmental narrative.',
                 deps: 'None',
                 guide: 'guides/GUIDE-3-CHAPTER2-CONTENT.md'
             },
             {
                 id: 'C2-02',
-                name: 'Lit Review — Automated Scoring & OMR',
+                name: 'Software Model (RAD or AIDLC)',
                 category: 'ch2',
-                assignee: 'christine',
+                assignee: 'david',
                 due: 'Jun 5',
                 startDay: 4,
                 endDay: 5,
                 hours: '4-6h',
-                desc: 'Review literature on Optical Mark Recognition (OMR), computer vision techniques for template matching, and scoring algorithms. Cite 5+ sources.',
+                desc: 'Select and justify either the RAD or AIDLC development lifecycle model. Provide a detailed paragraph-form write-up for each phase detailing specific tools, tools usage, and deliverables, plus a lifecycle diagram.',
                 subtasks: [
-                    'Search for computer vision and OMR techniques (OpenCV, template matching)',
-                    'Compare automated grading efficiency and accuracy vs. manual grading',
-                    'Write thematic synthesis with 5+ references (2022-2026)'
+                    'Choose development lifecycle model (RAD or AIDLC)',
+                    'Detail specific activities and tools per lifecycle phase',
+                    'Create model diagram/figure with bold caption below'
                 ],
-                deliverable: '1-2 paragraphs literature review on OMR and automated scoring.',
+                deliverable: 'Multi-paragraph model description + diagram figure.',
                 deps: 'None',
                 guide: 'guides/GUIDE-3-CHAPTER2-CONTENT.md'
             },
             {
                 id: 'C2-03',
-                name: 'Lit Review — AI/RAG in Education',
-                category: 'ch2',
-                assignee: 'david',
-                due: 'Jun 5',
-                startDay: 4,
-                endDay: 5,
-                hours: '4-6h',
-                desc: 'Review literature on AI companions, Retrieval-Augmented Generation (RAG) architectures, and applicant-facing educational chatbots. Cite 5+ sources.',
-                subtasks: [
-                    'Research applicant-facing query resolution using LLMs',
-                    'Evaluate safety, hallucination mitigation, and retrieval accuracy in education',
-                    'Write thematic review with 5+ references (2022-2026)'
-                ],
-                deliverable: '1-2 paragraphs literature review on AI/RAG applicant-facing systems.',
-                deps: 'None',
-                guide: 'guides/GUIDE-3-CHAPTER2-CONTENT.md'
-            },
-            {
-                id: 'C2-04',
-                name: 'Lit Review — PWA/Offline Systems',
+                name: 'Project Plan (Gantt Chart)',
                 category: 'ch2',
                 assignee: 'david',
                 due: 'Jun 6',
                 startDay: 5,
                 endDay: 6,
-                hours: '4-6h',
-                desc: 'Conduct literature review on Progressive Web App (PWA) technologies, offline-first syncing architectures, and service workers in educational web systems. Cite 5+ sources.',
+                hours: '2-3h',
+                desc: 'Develop the project timeline and Gantt chart figure. Ensure Gantt chart phases match software model phases exactly, and write a narrative justifying the calendar weeks/months.',
                 subtasks: [
-                    'Research offline data caching (IndexedDB) and sync algorithms',
-                    'Analyze mobile constraints, intermittent connectivity, and seasonal application loads',
-                    'Write review showcasing PWAs as lightweight alternatives to native mobile apps'
+                    'Design project Gantt chart matching software model phases',
+                    'Write narrative mapping phases to actual calendar dates',
+                    'Detail phase overlaps and timeline justification'
                 ],
-                deliverable: '1-2 paragraphs literature review on PWA/offline-first systems.',
+                deliverable: 'Gantt chart figure + explanatory narrative.',
+                deps: 'C2-02',
+                guide: 'guides/GUIDE-3-CHAPTER2-CONTENT.md'
+            },
+            {
+                id: 'C2-04',
+                name: 'Project Assignment',
+                category: 'ch2',
+                assignee: 'david',
+                due: 'Jun 5',
+                startDay: 4,
+                endDay: 5,
+                hours: '1-2h',
+                desc: 'Create Table 1 mapping the five standard capstone roles (Project Manager, System Analyst, Lead Developer, QA Tester, Technical Writer) to David, Christine, and Jaypee, and write an introducing narrative.',
+                subtasks: [
+                    'Map 5 standard roles (Table 1) to team members',
+                    'Write introductory narrative paragraph (no bullets)',
+                    'Format Table 1 with 1pt border and left-aligned caption above'
+                ],
+                deliverable: 'Table 1 (Project Roles) + introductory paragraph.',
                 deps: 'None',
                 guide: 'guides/GUIDE-3-CHAPTER2-CONTENT.md'
             },
             {
                 id: 'C2-05',
-                name: 'Lit Review — DPA/Multi-Tenancy',
+                name: 'Population and Locale of the Study',
                 category: 'ch2',
-                assignee: 'david',
+                assignee: 'christine',
                 due: 'Jun 5',
                 startDay: 4,
                 endDay: 5,
-                hours: '3-5h',
-                desc: 'Review literature on multi-tenant database models, data segregation, and compliance with the Data Privacy Act of 2012 (RA 10173) in academic settings. Cite 5+ sources.',
+                hours: '2-3h',
+                desc: 'Describe ISPSC Tagudin locale context, detail the purposive sampling technique with a 2022-2026 citation, create Table 2 respondent distribution, and write an interpretive paragraph.',
                 subtasks: [
-                    'Analyze multi-tenant schema patterns (single-db tenant separation)',
-                    'Review security audits, encryption, and anonymization mandates under DPA',
-                    'Draft narrative with 5+ citations'
+                    'Describe ISPSC Tagudin locale & technology constraints',
+                    'Explain purposive sampling technique with citation',
+                    'Construct Table 2 (Respondent counts) with 1pt borders',
+                    'Write interpretive paragraph after Table 2'
                 ],
-                deliverable: '1-2 paragraphs literature review on DPA compliance + multi-tenancy.',
+                deliverable: 'Locale & sampling paragraphs + Table 2 + interpretive paragraph.',
                 deps: 'None',
                 guide: 'guides/GUIDE-3-CHAPTER2-CONTENT.md'
             },
             {
                 id: 'C2-06',
-                name: 'Review of Related Systems',
+                name: 'Research Instruments',
                 category: 'ch2',
-                assignee: 'jaypee',
+                assignee: 'david',
                 due: 'Jun 6',
                 startDay: 5,
                 endDay: 6,
-                hours: '4-6h',
-                desc: 'Examine 3-5 existing college admission systems. Develop a feature matrix comparing security, role-based workflows, automated scoring, AI chatbot, and offline support. Cite 5+ sources.',
+                hours: '2-3h',
+                desc: 'Describe the evaluation instrument, the System Usability Scale (SUS), including its 10 items, 5-point Likert scale, and usability benchmarks, supported by 2022-2026 citations.',
                 subtasks: [
-                    'Identify and analyze 3-5 local or international admission systems',
-                    'Build comparison table mapping features vs. SecureCAT-v2',
-                    'Write narrative highlighting gaps in existing systems (lack of integrated OMR or RAG)'
+                    'Describe 10-item System Usability Scale (SUS)',
+                    'Detail Likert scale, scoring calculation, and 68 benchmark',
+                    'Incorporate 2022-2026 citations validating SUS'
                 ],
-                deliverable: 'Comparison table + 2-3 paragraphs narrative summarizing related systems.',
+                deliverable: '1-2 paragraphs instrument description, citation-supported.',
                 deps: 'None',
                 guide: 'guides/GUIDE-3-CHAPTER2-CONTENT.md'
             },
             {
                 id: 'C2-07',
-                name: 'Technical Framework',
+                name: 'Data Analysis',
                 category: 'ch2',
                 assignee: 'david',
                 due: 'Jun 6',
                 startDay: 5,
                 endDay: 6,
-                hours: '3-4h',
-                desc: 'Describe the technical stack of SecureCAT-v2 (Laravel 12, Inertia v2, Svelte 5, Tailwind 4, SQLite/MySQL, PWA manifest, OpenCV/OMR integration).',
-                subtasks: [
-                    'Define architectural choices and backend stack details',
-                    'Detail Inertia.js v2 and Svelte 5 reactivity advantages',
-                    'Incorporate layout diagram showing system-subsystem boundaries'
-                ],
-                deliverable: '1-2 paragraphs technical framework description + optional architecture diagram.',
-                deps: 'None',
-                guide: 'guides/GUIDE-3-CHAPTER2-CONTENT.md'
-            },
-            {
-                id: 'C2-08',
-                name: 'Conceptual Framework Prose (Ch2)',
-                category: 'ch2',
-                assignee: 'david',
-                due: 'Jun 7',
-                startDay: 6,
-                endDay: 7,
                 hours: '2-3h',
-                desc: 'Expand on the Conceptual Framework diagram and prose for Chapter 2. Connect the IPO inputs and outputs directly to the research methodologies.',
+                desc: 'Explain the analytical approach. Explicitly link analysis methods to each specific research objective (including Table 3 SUS score interpretation), with no significance testing.',
                 subtasks: [
-                    'Review Chapter 1 IPO definition',
-                    'Write expanded conceptual framework prose linking inputs to research design',
-                    'Align variables with evaluation tools'
+                    'Link analysis methods to specific objectives',
+                    'Create Table 3 (SUS Adjective/Grade scale)',
+                    'Explain descriptive metrics (mean, percentage) usage'
                 ],
-                deliverable: '2-3 paragraphs expanded conceptual framework narrative for Chapter 2.',
-                deps: 'C1-07, C1-08',
+                deliverable: 'Analysis paragraphs + Table 3 (SUS scale).',
+                deps: 'C1-09, C2-06',
                 guide: 'guides/GUIDE-3-CHAPTER2-CONTENT.md'
             },
             
@@ -2005,7 +1989,7 @@
                 'C1-08': '#c1-08-conceptual-framework--narrative',
                 'C1-09': '#c1-09-objectives-david',
                 'C1-11': '#c1-11-scope--delimitations-david',
-                'C1-12': '#c1-12-significance-of-the-study-christine',
+                'C1-12': '#c1-12-significance-of-the-study-jaypee',
                 'C2-01': '#c2-01-rbac--zero-trust-david',
                 'C2-02': '#c2-02-automated-scoring--omr-christine',
                 'C2-03': '#c2-03-airag-in-education-david',

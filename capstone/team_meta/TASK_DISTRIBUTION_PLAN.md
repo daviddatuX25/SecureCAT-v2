@@ -1,8 +1,9 @@
-# Chapter 1 & 2 Task Distribution Plan
+# Chapter 1 & 2 (Methodology) Task Distribution Plan
 ## SecureCAT-v2 Capstone | Deadline: June 10, 2026
 
 > **Last Updated:** June 2, 2026
 > **Status:** Final Assignment Distribution (Post-Reassignment)
+> **Note:** Chapter 2 follows the BSIT Capstone Template and GUIDE-3 — it is titled "METHODOLOGY" (not "Review of Related Literature"). Literature previously planned for lit review sections feeds into Chapter 1 Background paragraphs P2-P4.
 
 ---
 
@@ -11,23 +12,25 @@
 | Member | Role | Email/Discord | Claimed Hours | Available Capacity |
 |--------|------|--------------|---------------|-------------------|
 | **David** | Team Leader / Product Owner / Lead Developer | daviddatu_ | 45-55h | ~55h total |
-| **Christine** | Team Member — OMR/CV Literature & Significance | Christine | 6-9h | TBD |
-| **Jaypee** | Team Member — Local Context, Systems, Research & References | Jaypee | 20-30h | TBD |
+| **Christine** | Team Member — Population & Locale of the Study | Christine | 2-3h | TBD |
+| **Jaypee** | Team Member — Local Context, Research Questions, Significance, References & Citations | Jaypee | 10-16h | TBD |
 
 ---
 
 ## Assignment Strategy
 
 **Distribution Principles:**
-1. **David** — Technical architecture, background paragraphs (P1-P3), literature reviews (RBAC, AI, PWA, DPA), framework tasks, narrative consistency, formatting QA
-2. **Christine** — Automated scoring/OMR literature review, significance of the study
-3. **Jaypee** — Local context (ISPSC), research questions, related systems review, references compilation, citation cross-check
+1. **David** — Technical architecture, background paragraphs (P1-P3, P5-P6), methodology sections (research design, software model, project plan, project assignment, research instruments, data analysis), conceptual framework, narrative consistency, formatting QA
+2. **Christine** — Population and Locale of the Study
+3. **Jaypee** — Local context (ISPSC), research questions, significance of the study, references compilation, citation cross-check
 
-**June 2 Reassignment:**
-- Jaypee prefers focused, detail-oriented tasks (systems review, references, citations)
-- Jaypee takes: C1-04 (Local Context), C1-10 (Research Qs), C2-06 (Related Systems), CC-01 (References), CC-04 (Citation Cross-Check)
+> **Note on Literature Integration:** The literature originally planned for lit review tasks (RBAC, Zero-Trust, Automated Scoring/OMR, AI/RAG, PWA/Offline, DPA/Multi-Tenancy, Related Systems) is NOT lost. It feeds directly into Chapter 1 Background paragraphs P2 (Global Context) and P3 (National Context), and to a lesser extent P4 (Local Context). The research conducted for those topics provides the citations and evidence needed in those paragraphs.
+
+**June 2 Reassignment (and alignment):**
+- Jaypee takes: C1-04 (Local Context), C1-10 (Research Qs), C1-12 (Significance of the Study), CC-01 (References), CC-04 (Citation Cross-Check)
 - Jaypee gives up: C1-01, C1-02, C1-03 (background paragraphs), CC-02 (Formatting QA) → moved to David
 - Christine gives up: C1-04 (Local Context), CC-01 (References) → moved to Jaypee
+- Christine gives up: C1-12 (Significance of the Study) → moved to Jaypee to align with technical capabilities (as C1-12 requires detailing complex technical features like offline PWA caching, AI chatbot, multi-tenant DB isolation, and HMAC signatures)
 - David takes on: C1-01, C1-02, C1-03, CC-02 to balance workload
 
 ---
@@ -49,20 +52,21 @@
 | C1-09 | Objectives of the Study | **David** | 2-3h | Jun 3 | None |
 | C1-10 | Research Questions | **Jaypee** | 1-2h | Jun 4 | C1-09 |
 | C1-11 | Scope and Delimitations | **David** | 2-3h | Jun 4 | None |
-| C1-12 | Significance of the Study | **Christine** | 2-3h | Jun 5 | None |
+| C1-12 | Significance of the Study | **Jaypee** | 2-3h | Jun 5 | None |
 
-### Chapter 2 Assignments
+### Chapter 2 Assignments — METHODOLOGY
+
+> Chapter 2 follows the BSIT Capstone Template (GUIDE-3). It contains NO "Review of Related Literature" section. All literature is integrated into Chapter 1 Background paragraphs P2-P4.
 
 | Task ID | Task Name | Assigned | Est. Hours | Deadline | Dependencies |
 |---------|-----------|----------|------------|----------|--------------|
-| C2-01 | Lit Review — RBAC + Zero-Trust | **David** | 4-6h | Jun 5 | None |
-| C2-02 | Lit Review — Automated Scoring & OMR Technologies | **Christine** | 4-6h | Jun 5 | None |
-| C2-03 | Lit Review — AI/RAG in Education | **David** | 4-6h | Jun 5 | None |
-| C2-04 | Lit Review — PWA/Offline Systems | **David** | 4-6h | Jun 6 | None |
-| C2-05 | Lit Review — DPA/Multi-Tenancy | **David** | 3-5h | Jun 5 | None |
-| C2-06 | Review of Related Systems | **Jaypee** | 4-6h | Jun 6 | None |
-| C2-07 | Technical Framework | **David** | 3-4h | Jun 6 | None |
-| C2-08 | Conceptual Framework Prose (Ch2) | **David** | 2-3h | Jun 7 | C1-07, C1-08 |
+| C2-01 | Research Design | **David** | 3-4h | Jun 5 | None |
+| C2-02 | Software Model (RAD or AIDLC) | **David** | 4-6h | Jun 5 | None |
+| C2-03 | Project Plan (Gantt Chart) | **David** | 2-3h | Jun 6 | C2-02 |
+| C2-04 | Project Assignment | **David** | 1-2h | Jun 5 | None |
+| C2-05 | Population and Locale of the Study | **Christine** | 2-3h | Jun 5 | None |
+| C2-06 | Research Instruments | **David** | 2-3h | Jun 6 | None |
+| C2-07 | Data Analysis | **David** | 2-3h | Jun 6 | C1-09, C2-06 |
 
 ### Cross-Cutting Assignments
 
@@ -79,16 +83,16 @@
 
 | Member | Total Tasks | Total Hours | Utilization | Status |
 |--------|-------------|-------------|--------------|--------|
-| **David** | 15 tasks | 45-55h | 82-100% of 55h | ✅ Full capacity |
-| **Christine** | 2 tasks | 6-9h | TBD capacity | ✅ Focused |
-| **Jaypee** | 5 tasks | 14-22h | TBD capacity | ✅ Balanced |
+| **David** | 17 tasks | 43-64h | 78-116% of 55h | ✅ Full capacity |
+| **Christine** | 1 task | 2-3h | TBD capacity | ✅ Focused |
+| **Jaypee** | 5 tasks | 10-16h | TBD capacity | ✅ Balanced |
 
-**Total Project Effort:** ~65-86 hours across all members
+**Total Project Effort:** ~55-83 hours across all members
 
-**Summary of June 2 Reassignment:**
-- **David** adds C1-01, C1-02, C1-03 (background paragraphs), CC-02 (Formatting QA) → 15 tasks, 45-55h
-- **Christine** keeps C1-12 (Significance), C2-02 (OMR/CV Review) → 2 tasks, 6-9h
-- **Jaypee** keeps C1-10 (Research Qs), C2-06 (Related Systems), CC-04 (Citation Cross-Check); takes C1-04 (Local Context), CC-01 (References) → 5 tasks, 14-22h
+**Task Distribution Breakdown:**
+- **David** — 9 Ch1 tasks + 6 Ch2 tasks + 2 CC tasks = 17 tasks, 43-64h
+- **Christine** — 1 Ch2 task = 1 task, 2-3h
+- **Jaypee** — 3 Ch1 tasks + 2 CC tasks = 5 tasks, 10-16h
 
 ---
 
@@ -301,7 +305,7 @@
 #### C1-07: Conceptual Framework — IPO Diagram (David)
 **Effort:** 2-3 hours
 **Due:** June 3
-**Dependencies:** Must reference SYSTEM_FEATURES.md and drafts/Existing_and_Planned_Features.md
+**Dependencies:** Must reference SYSTEM_FEATURES.md and research/Existing_and_Planned_Features.md
 
 **Detailed Subtasks:**
 1. **List System Inputs (30-45 min)**
@@ -459,7 +463,7 @@
 
 ---
 
-#### C1-12: Significance of the Study (Christine)
+#### C1-12: Significance of the Study (Jaypee)
 **Effort:** 2-3 hours
 **Due:** June 5
 **Dependencies:** None
@@ -496,273 +500,251 @@
 
 ---
 
-### Chapter 2 — Literature Reviews
+### Chapter 2 — METHODOLOGY
 
-#### C2-01: Lit Review — RBAC and Zero-Trust Security (David)
-**Effort:** 4-6 hours
-**Due:** June 5
-**Dependencies:** None
+> **Note:** Per the BSIT Capstone Template (GUIDE-3), Chapter 2 is titled "METHODOLOGY" and contains the following sections: Research Design, Software Model, Project Plan, Project Assignment, Population and Locale of the Study, Research Instruments, and Data Analysis. There is NO "Review of Related Literature" section. All literature is woven into Chapter 1 Background paragraphs P2-P4.
 
-**Detailed Subtasks:**
-1. **Research RBAC & Zero-Trust Literature (90 min)**
-   - Search: "role-based access control education systems", "RBAC multi-tenant applications", "zero-trust security educational software", "HMAC authentication web applications"
-   - Filter: 2022-2026, peer-reviewed
-   - Target: 5-7 sources covering:
-     - RBAC principles and implementations
-     - Zero-trust security models
-     - Cryptographic data integrity mechanisms (HMAC)
-     - Multi-tenant security architectures
-     - Security in educational or assessment platforms
-
-2. **Extract Technical Findings (60 min)**
-   - For each source: RBAC patterns, security practices, threat models
-   - Group by theme: authorization, authentication, multi-tenancy
-
-3. **Write Literature Review (90-120 min)**
-   - 1-2 paragraphs, thematic synthesis (not author-by-author)
-   - Minimum 5 APA citations, all 2022-2026
-   - Connect findings to SecureCAT's role-based design and HMAC integrity model
-   - Synthesized writing only — FORBIDDEN pattern: "Author A says X. Author B says Y."
-
-4. **Compile Draft References (30 min)**
-   - APA 7 references for all sources
-   - Save for CC-01
-
-**Deliverable:** 1-2 paragraph literature review on RBAC and zero-trust security, minimum 5 APA citations (all 2022-2026)
-
----
-
-#### C2-02: Lit Review — Automated Scoring and OMR Technologies (Christine)
-**Effort:** 4-6 hours
-**Due:** June 5
-**Dependencies:** None
-
-**Detailed Subtasks:**
-1. **Research Automated Scoring & OMR Literature (90 min)**
-   - Search: "automated test scoring methods", "optical mark recognition OMR", "computer vision answer sheet processing", "automated vs manual scoring accuracy", "image-based OMR grading"
-   - Filter: 2022-2026, peer-reviewed
-   - Target: 5-7 sources covering:
-     - Automated test scoring methods
-     - Optical mark recognition (OMR) technologies
-     - Computer vision-based answer sheet processing
-     - Accuracy comparisons between manual and automated scoring
-     - Bubble detection and answer extraction techniques
-
-2. **Extract Technical Findings (60 min)**
-   - For each source: scoring methodology, accuracy metrics, OMR/CV techniques
-   - Group by theme: scoring automation, accuracy, computer vision approaches
-   - Note relevance to SecureCAT's planned CV-based OMR feature
-
-3. **Write Literature Review (90-120 min)**
-   - 1-2 paragraphs, thematic synthesis
-   - Focus on automated scoring methods, OMR technologies, computer vision-based answer sheet processing, and accuracy comparisons between manual and automated scoring
-   - Minimum 5 APA citations, all 2022-2026
-   - Connect to SecureCAT's planned CV-based OMR answer sheet ingestion
-   - Synthesized writing only — do not list authors one-by-one
-
-4. **Compile Draft References (30 min)**
-   - APA 7 references for all sources
-   - Save for CC-01
-
-**Deliverable:** 1-2 paragraph literature review on automated scoring and OMR technologies, minimum 5 APA citations (all 2022-2026)
-
----
-
-#### C2-03: Lit Review — AI Assistants and RAG in Education (David)
-**Effort:** 4-6 hours
-**Due:** June 5
-**Dependencies:** None
-
-**Detailed Subtasks:**
-1. **Research AI in Education (90 min)**
-   - Search: "AI companions education", "RAG knowledge bases", "LLM educational chatbots", "AI chatbots for student guidance", "natural language interfaces for applicant inquiries", "course recommendation systems"
-   - Filter: 2022-2026, peer-reviewed
-   - Target: 5-7 sources covering:
-     - AI-powered chatbots and assistants in educational settings
-     - Retrieval-augmented generation (RAG) architectures for student-facing applications
-     - Natural language interfaces for applicant inquiries
-     - Vector embeddings for knowledge retrieval
-     - Course recommendation systems in educational contexts
-
-2. **Extract AI Architecture Findings (60 min)**
-   - Identify: RAG patterns, embedding strategies, course recommendation approaches
-   - Note: AI companion use cases in applicant-facing education contexts
-   - Group by theme: AI assistants, RAG architectures, course recommendations, applicant inquiries
-
-3. **Write Literature Review (90-120 min)**
-   - 1-2 paragraphs, thematic synthesis
-   - Structure: AI in education → RAG architectures → course recommendations → applicant inquiries
-   - Minimum 5 APA citations, all 2022-2026
-   - Explain how SecureCAT's AI Companion with RAG (Mixedbread vector embeddings + course recommendations + applicant inquiries) fits this literature
-   - Synthesized writing only
-
-4. **Compile Draft References (30 min)**
-   - APA 7 references for all sources
-   - Save for CC-01
-
-**Deliverable:** 1-2 paragraph literature review on AI assistants and RAG in education, minimum 5 APA citations (all 2022-2026)
-
----
-
-#### C2-04: Lit Review — Offline-Resilient and PWA Systems (David)
-**Effort:** 4-6 hours
-**Due:** June 6
-**Dependencies:** None
-
-**Detailed Subtasks:**
-1. **Research PWA/Offline-First (90 min)**
-   - Search: "progressive web apps education", "offline-first web applications", "PWA service worker strategies", "IndexedDB local caching", "background sync mechanisms"
-   - Filter: 2022-2026, peer-reviewed
-   - Target: 5-7 sources covering:
-     - Progressive Web Apps (PWA)
-     - Service workers
-     - Offline-first architectures
-     - IndexedDB for local caching
-     - Background sync mechanisms in critical operational environments
-
-2. **Extract Technical Patterns (60 min)**
-   - Identify: PWA features, sync strategies, connectivity handling
-   - Note relevance to Philippine/ISPSC context (low-connectivity environments)
-
-3. **Write Literature Review (90-120 min)**
-   - 1-2 paragraphs, thematic synthesis
-   - Structure: PWA benefits → offline-first patterns → service worker strategies → SecureCAT's PWA architecture
-   - Minimum 5 APA citations, all 2022-2026
-   - Connect to SecureCAT's offline-resilient proctor portal
-
-4. **Compile Draft References (30 min)**
-   - APA 7 references for all sources
-   - Save for CC-01
-
-**Deliverable:** 1-2 paragraph literature review on PWA/offline-first systems, minimum 5 APA citations (all 2022-2026)
-
----
-
-#### C2-05: Lit Review — Philippine Data Privacy Act and Multi-Tenancy (David)
-**Effort:** 3-5 hours
-**Due:** June 5
-**Dependencies:** None
-
-**Detailed Subtasks:**
-1. **Research Data Privacy & Multi-Tenancy (60 min)**
-   - Search: "Data Privacy Act education Philippines", "RA 10173 compliance educational software", "multi-tenant database architecture", "tenant isolation SaaS", "data isolation strategies SUC"
-   - Filter: 2022-2026, peer-reviewed
-   - Target: 5-7 sources covering:
-     - Philippine Data Privacy Act (RA 10173) compliance in educational software
-     - Multi-tenant database architecture patterns
-     - Data isolation strategies for SUC systems
-
-2. **Extract Compliance & Architecture (45 min)**
-   - Identify: DPA requirements for educational data
-   - Note: multi-tenant architectural patterns and tenant isolation strategies
-   - Group by theme: legal compliance, architecture patterns
-
-3. **Write Literature Review (60-90 min)**
-   - 1-2 paragraphs, thematic synthesis
-   - Structure: DPA compliance → multi-tenant patterns → data isolation → SecureCAT's architecture
-   - Minimum 5 APA citations, all 2022-2026
-   - Explain how SecureCAT complies with RA 10173 and implements multi-tenant data isolation
-
-4. **Compile Draft References (30 min)**
-   - APA 7 references for all sources
-   - Save for CC-01
-
-**Deliverable:** 1-2 paragraph literature review on DPA compliance and multi-tenancy, minimum 5 APA citations (all 2022-2026)
-
----
-
-### Chapter 2 — Related Systems & Frameworks
-
-#### C2-06: Review of Related Systems (Jaypee)
-**Effort:** 4-6 hours
-**Due:** June 6
-**Dependencies:** None
-
-**Detailed Subtasks:**
-1. **Identify Related Systems (60-90 min)**
-   - Search for existing admission systems (local and international), electronic assessment platforms, OMR grading systems, and document generation systems in academic workflows
-   - Find 3-5 systems (commercial or academic)
-   - Target: systems with comparable features (admission testing, role-based access, educational use, OMR scoring)
-
-2. **Create Comparison Table (60-90 min)**
-   - Columns: System Name, Features, Technology, Limitations
-   - Include SecureCAT in comparison
-   - Identify what SecureCAT does differently
-   - Table caption: left-aligned, above the table, bold (per GUIDE-1)
-   - Border: 1pt line width
-
-3. **Write Narrative (60-90 min)**
-   - 2-3 paragraphs summarizing related systems with feature comparison
-   - Highlight gap: no existing system combines PWA + role-based multi-office coordination + AI Companion with RAG (applicant-facing) + CV-based OMR + HMAC integrity
-   - Include minimum 5 APA citations if sources exist for compared systems (all 2022-2026)
-
-**Deliverable:** 2-3 paragraphs with feature comparison table, minimum 5 APA citations (all 2022-2026)
-
----
-
-#### C2-07: Technical Framework (David)
+#### C2-01: Research Design (David)
 **Effort:** 3-4 hours
-**Due:** June 6
-**Dependencies:** Must reference SYSTEM_FEATURES.md
+**Due:** June 5
+**Dependencies:** None
 
 **Detailed Subtasks:**
-1. **Define Technical Stack (45-60 min)**
-   - Document the full technology stack per TEAM_META_GUIDE:
-     - Laravel 12 / Inertia v2 / Svelte 5 / Tailwind 4
-   - HMAC security model
-   - Vector embeddings for RAG
-   - PWA service worker architecture
-   - Multi-tenant database isolation concepts
-   - DOMPDF/PHPWord document generation pipeline
-   - Explain architectural decisions (why PWA, why offline-first, why multi-tenant, why HMAC)
+1. **Research Appropriate Methodologies (60-90 min)**
+   - Review GUIDE-3 requirements for Research Design section
+   - Identify the correct research paradigm for a software development capstone (e.g., descriptive-developmental, applied research)
+   - Search for similar BSIT capstone methodology references
+   - Target: 3-5 sources supporting the chosen research design
+   - Ensure alignment with the three specific objectives (identify, develop, evaluate)
 
-2. **Describe System Architecture (60-90 min)**
-   - Frontend: Svelte 5 components, Tailwind 4 styling, shadcn-svelte
-   - Backend: Laravel 12 controllers, policies, middleware, form request validation
-   - Database: Multi-tenant schema, tenant isolation, Eloquent ORM
-   - PWA: Service worker, offline-first sync, IndexedDB caching
-   - AI: Vector embeddings (MixedBread), RAG pattern, natural language querying
-   - Security: HMAC signature locks, immutable audit logs, Laravel Policy route gating
-   - Document Generation: DOMPDF for PDF rendering, PHPWord/FPDI for DOCX generation
+2. **Write Research Design Section (60-90 min)**
+   - Describe the research design used in the study
+   - Explain why this design is appropriate for developing SecureCAT
+   - Reference the objectives: identify requirements → develop system → evaluate usability (SUS)
+   - Include citations for methodology references (minimum 3 APA citations, 2022-2026)
+   - Use formal academic language appropriate for a BSIT capstone
+   - Structure: research type → justification → alignment with objectives
 
-3. **Write Technical Framework (60-90 min)**
-   - 1-2 paragraphs explaining architecture in academic language
-   - Include technical architecture diagram
-   - Figure caption: placed below the figure, bold (per GUIDE-1)
-   - Reference specific features in SYSTEM_FEATURES.md
-   - Ensure DOMPDF/PHPWord document generation pipeline is explicitly covered
+3. **Review Against Objectives (30 min)**
+   - Verify research design aligns with C1-09 (Objectives of the Study)
+   - Ensure the methodology supports all three specific objectives
+   - Confirm terminology matches GUIDE-3 expectations
 
-**Deliverable:** 1-2 paragraph technical framework covering Laravel 12 / Inertia v2 / Svelte 5 / Tailwind 4 stack, HMAC security model, vector embeddings for RAG, PWA service worker architecture, multi-tenant database isolation, and DOMPDF/PHPWord document generation pipeline, with technical architecture diagram
+4. **Compile Draft References (15 min)**
+   - Create APA 7 references for all methodology sources
+   - Save for CC-01 (References Compilation)
+
+**Deliverable:** 1-2 paragraph Research Design section explaining the study's research paradigm, justification, and alignment with objectives, minimum 3 APA citations (2022-2026)
 
 ---
 
-#### C2-08: Conceptual Framework Prose — Chapter 2 Expansion (David)
-**Effort:** 2-3 hours
-**Due:** June 7
-**Dependencies:** C1-07, C1-08
+#### C2-02: Software Model — RAD or AIDLC (David)
+**Effort:** 4-6 hours
+**Due:** June 5
+**Dependencies:** None
 
 **Detailed Subtasks:**
-1. **Review Chapter 1 Conceptual Framework (30 min)**
-   - Read C1-07 (IPO diagram) and C1-08 (narrative)
-   - Ensure Chapter 2 prose is consistent but expanded
+1. **Select Software Development Model (60 min)**
+   - Evaluate appropriate models for this capstone: Rapid Application Development (RAD) vs. Agile Iterative Development Life Cycle (AIDLC)
+   - Consider: project timeline, team size, iterative nature of SecureCAT development
+   - Review GUIDE-3 for any model preference or requirements
+   - Search for sources supporting the chosen model in educational software development contexts
+   - Target: 3-5 sources
 
-2. **Write Expanded Framework Narrative (60-90 min)**
-   - 2-3 paragraphs expanding the IPO into narrative for Chapter 2
-   - Describe the system workflow stages in detail
-   - Connect inputs through processing to outputs with both existing and planned features
-   - Connect framework to research design and methodology
+2. **Describe the Software Model (60-90 min)**
+   - Explain the chosen software development life cycle model in detail
+   - Describe each phase/stage of the model as it applies to SecureCAT
+   - For RAD: requirements planning → user design → rapid construction → cutover
+   - For AIDLC: iteration planning → design → build → test → review → repeat
+   - Map each phase to SecureCAT's actual development activities
+   - Include minimum 3 APA citations (2022-2026)
 
-3. **Align with Methodology (15-30 min)**
-   - Ensure framework aligns with Chapter 2 methodology sections
-   - Verify IPO items map to real processing stages
+3. **Write Software Model Section (60-90 min)**
+   - Draft 1-2 paragraphs explaining the model and its application
+   - Structure: model selection rationale → phase descriptions → mapping to SecureCAT
+   - Include a visual representation if GUIDE-3 requires it (diagram of the model phases)
+   - Use formal academic language
+   - Ensure the model supports iterative development of both existing and planned features
 
-**Deliverable:** 2-3 paragraph expanded conceptual framework narrative for Chapter 2, connecting inputs through processing to outputs with both existing and planned features
+4. **Compile Draft References (15 min)**
+   - Create APA 7 references for all software model sources
+   - Save for CC-01
+
+**Deliverable:** 1-2 paragraph Software Model section with detailed phase descriptions mapped to SecureCAT, minimum 3 APA citations (2022-2026), optional model diagram
+
+---
+
+#### C2-03: Project Plan — Gantt Chart (David)
+**Effort:** 2-3 hours
+**Due:** June 6
+**Dependencies:** C2-02 (Software Model must be finalized to plan phases)
+
+**Detailed Subtasks:**
+1. **Identify Project Phases and Activities (45-60 min)**
+   - Based on the chosen software model from C2-02, list all development phases
+   - Break down into specific activities/tasks with realistic durations
+   - Include: requirements gathering, design, development (per module), testing, deployment, evaluation
+   - Map to SecureCAT's actual feature development timeline
+
+2. **Create Gantt Chart (45-60 min)**
+   - Build a Gantt chart showing all project phases and activities
+   - Include: task names, start dates, end dates, durations, milestones
+   - Use a clear, readable format (table or visual chart)
+   - Table caption: left-aligned, above the table, bold (per GUIDE-1)
+   - Table borders: 1pt line width
+   - Ensure the timeline is realistic and aligns with the capstone deadline
+
+3. **Write Accompanying Narrative (30-45 min)**
+   - Write 1 paragraph briefly describing the project timeline and key milestones
+   - Reference the Gantt chart
+   - Explain any overlapping phases or iterative cycles
+
+4. **Format and Review (15-30 min)**
+   - Verify Gantt chart formatting matches GUIDE-1 requirements
+   - Ensure all phases from the software model (C2-02) are represented
+   - Check date ranges are realistic
+
+**Deliverable:** Gantt chart (formatted table or visual) showing all project phases with timeline, plus 1 paragraph narrative description
+
+---
+
+#### C2-04: Project Assignment (David)
+**Effort:** 1-2 hours
+**Due:** June 5
+**Dependencies:** None
+
+**Detailed Subtasks:**
+1. **Document Team Member Roles (30-45 min)**
+   - List all team members with their assigned roles in the project
+   - Map each member to specific tasks/modules they are responsible for
+   - Include: David (Lead Developer / Team Leader), Christine, Jaypee
+   - Reference the actual module assignments from SecureCAT development
+
+2. **Write Project Assignment Section (30-45 min)**
+   - Write 1 paragraph describing how responsibilities are distributed
+   - Include a table showing member → role → assigned modules/features
+   - Table caption: left-aligned, above the table, bold (per GUIDE-1)
+   - Table borders: 1pt line width
+   - Structure: member names → roles → specific task assignments
+
+3. **Review and Format (15-30 min)**
+   - Verify formatting matches GUIDE-1 requirements
+   - Ensure table is clean and readable
+   - Check that all team members and their roles are accurately represented
+
+**Deliverable:** 1 paragraph with assignment table showing team members, roles, and module/feature responsibilities
+
+---
+
+#### C2-05: Population and Locale of the Study (Christine)
+**Effort:** 2-3 hours
+**Due:** June 5
+**Dependencies:** None
+
+**Detailed Subtasks:**
+1. **Research Population and Locale Requirements (30-45 min)**
+   - Review GUIDE-3 requirements for this section
+   - Identify the study population: who will participate in system evaluation (e.g., ISPSC staff, Guidance Office personnel, Registrar Office staff, proctors, IT personnel)
+   - Identify the locale: ISPSC Tagudin Campus, Ilocos Sur
+   - Determine sampling method and sample size (if applicable, e.g., purposive sampling)
+   - Search for sources on evaluation populations for similar systems
+   - Target: 2-3 supporting sources
+
+2. **Write Population Section (45-60 min)**
+   - Describe the study participants and their characteristics
+   - Explain why this population is appropriate for evaluating SecureCAT
+   - Include: number of respondents, their roles, selection criteria
+   - Describe the locale in detail (ISPSC Tagudin Campus location, context)
+   - Structure: locale description → population description → sampling rationale
+   - Include minimum 2 APA citations (2022-2026)
+
+3. **Review Against Objectives (15-30 min)**
+   - Verify population aligns with C1-09 Objective 3 (evaluate usability using SUS)
+   - Ensure respondents match the system's target users
+   - Confirm locale description is specific and accurate
+
+4. **Compile Draft References (15 min)**
+   - Create APA 7 references for all sources
+   - Save for CC-01 (References Compilation)
+
+**Deliverable:** 1-2 paragraph Population and Locale section describing study participants, locale, and sampling approach, minimum 2 APA citations (2022-2026)
+
+---
+
+#### C2-06: Research Instruments (David)
+**Effort:** 2-3 hours
+**Due:** June 6
+**Dependencies:** None
+
+**Detailed Subtasks:**
+1. **Identify Research Instruments (45-60 min)**
+   - Determine the primary instrument for data collection: System Usability Scale (SUS)
+   - Review SUS questionnaire structure and scoring methodology
+   - Identify any supplementary instruments (e.g., interview guides, observation checklists)
+   - Search for sources validating SUS in software evaluation contexts
+   - Target: 3-5 sources on SUS methodology and similar evaluation instruments
+   - Ensure instruments align with research questions and objectives
+
+2. **Describe Each Instrument (45-60 min)**
+   - Write detailed description of SUS: 10-item questionnaire, 5-point Likert scale, scoring formula
+   - Explain how the instrument will be administered (online survey, paper-based, etc.)
+   - Describe how results will be interpreted (SUS score ranges: poor → excellent)
+   - If supplementary instruments are used, describe each with equal detail
+   - Structure: instrument name → description → administration → scoring → interpretation
+   - Include minimum 3 APA citations (2022-2026)
+
+3. **Write Research Instruments Section (30-45 min)**
+   - Draft 1-2 paragraphs describing all instruments
+   - Ensure clear connection between each instrument and its corresponding research question
+   - Use formal academic language
+   - Reference the instrument's validity and reliability where applicable
+
+4. **Compile Draft References (15 min)**
+   - Create APA 7 references for all instrument sources
+   - Save for CC-01
+
+**Deliverable:** 1-2 paragraph Research Instruments section describing SUS and any supplementary instruments, minimum 3 APA citations (2022-2026)
+
+---
+
+#### C2-07: Data Analysis (David)
+**Effort:** 2-3 hours
+**Due:** June 6
+**Dependencies:** C1-09 (Objectives — to know what is being analyzed), C2-06 (Research Instruments — to know how data is collected)
+
+**Detailed Subtasks:**
+1. **Determine Data Analysis Methods (45-60 min)**
+   - Based on research instruments (C2-06) and objectives (C1-09), identify analysis methods
+   - For SUS: compute SUS scores, interpret using established benchmarks
+   - Determine if additional statistical methods are needed (e.g., mean, standard deviation, frequency counts)
+   - Search for sources on SUS data analysis methodology
+   - Target: 2-3 sources on data analysis for usability studies
+   - Map each research question to its corresponding analysis method
+
+2. **Write Data Analysis Section (45-60 min)**
+   - Describe how data from each instrument will be analyzed
+   - For SUS: explain scoring formula, score interpretation (0-100 scale with benchmarks)
+   - For qualitative data (if any): describe thematic analysis or content analysis approach
+   - Structure: data preparation → analysis method per instrument → interpretation framework
+   - Include minimum 2 APA citations (2022-2026)
+   - Ensure analysis methods align with all three specific objectives
+
+3. **Review Against Research Questions (15-30 min)**
+   - Verify each research question from C1-10 has a corresponding analysis approach
+   - Ensure data analysis supports answering all research questions
+   - Confirm methodology is appropriate for the data type (quantitative vs. qualitative)
+
+4. **Compile Draft References (15 min)**
+   - Create APA 7 references for all data analysis sources
+   - Save for CC-01
+
+**Deliverable:** 1-2 paragraph Data Analysis section describing analysis methods for each instrument and research question, minimum 2 APA citations (2022-2026)
 
 ---
 
 ### Cross-Cutting Tasks
 
-#### CC-01: References List Compilation (Christine)
+#### CC-01: References List Compilation (Jaypee)
 **Effort:** 3-4 hours
 **Due:** June 8
 **Dependencies:** All writing tasks
@@ -787,7 +769,7 @@
 
 ---
 
-#### CC-02: Formatting QA Review (Jaypee)
+#### CC-02: Formatting QA Review (David)
 **Effort:** 2-3 hours
 **Due:** June 8
 **Dependencies:** All writing tasks
@@ -796,9 +778,10 @@
 1. **Review Formatting Guide (30 min)**
    - Read GUIDE-1-FORMATTING.md thoroughly
    - Key rules to verify:
-     - Left margin: 1.5 inches (NOT 1 inch)
-     - Right margin: 1.0 inch
-     - Top/Bottom margins: 1.0 inch
+     - Top margin: 1.5 inches (for binding)
+     - Left margin: 1.5 inches
+     - Right/Bottom margins: 1.0 inch
+     - Paper size: A4
      - Font: Times New Roman, 12pt
      - Spacing: Double-spaced, no extra spaces between paragraphs
      - Page numbers: top-right, continuous (except first page of each chapter)
@@ -810,7 +793,7 @@
    - **Table captions: left-aligned, above the table, bold**
    - **Figure captions: below the figure, bold**
    - **Tables: 1pt border line width**
-   - **Header/footer borders must sit entirely within the 1-inch top/bottom margins**
+   - **Header/footer borders must sit entirely within the 1-inch bottom margin**
    - **No extra spacing between paragraphs** — space before/after = 0pt
 
 3. **Create Formatting Checklist (15-30 min)**
@@ -830,12 +813,15 @@
 **Detailed Subtasks:**
 1. **Read All Chapters End-to-End (60-90 min)**
    - Chapter 1: Background → Framework → Objectives → Research Questions → Scope → Significance
-   - Chapter 2: Literature Reviews → Related Systems → Technical Framework → Conceptual Framework Prose
+   - Chapter 2: Research Design → Software Model → Project Plan → Project Assignment → Population and Locale → Research Instruments → Data Analysis
 
 2. **Check Consistency Across Sections (90-120 min)**
    - Background problem aligns with objectives
    - Objectives align with research questions
-   - Framework aligns with methodology
+   - Research questions align with methodology (Chapter 2)
+   - Research design supports the chosen software model
+   - Research instruments match the evaluation approach in objectives
+   - Data analysis methods answer all research questions
    - Scope aligns with features described
    - Existing features and planned features are presented as one coherent system story
    - Citations are consistent (author/year matches references)
@@ -845,7 +831,7 @@
    - Unify voice and tone across sections written by different people
    - Ensure transitions between sections are smooth
    - Align terminology throughout
-   - Ensure logical progression from problem → solution → evaluation
+   - Ensure logical progression from problem → solution → methodology → evaluation
 
 **Deliverable:** Final integrated manuscript with unified voice, consistent narrative, and smooth transitions
 
@@ -878,34 +864,36 @@
 
 ## Timeline Overview
 
+> **Note:** Reflects June 2 realigned assignment. David — 17 tasks | Christine — 1 task | Jaypee — 5 tasks.
+
 ### Week 1: June 1-3 (Foundation)
-- **Focus:** Framework, objectives, early background
-- David: C1-07, C1-09 (IPO Diagram, Objectives)
-- Jaypee: C1-01 (Core Problem — 8-12 sentences)
-- Christine: C1-12 draft (Significance)
+- **Focus:** Framework, objectives, early methodology
+- **David:** C1-07 (IPO Diagram), C1-09 (Objectives)
+- **Jaypee:** Begin ISPSC context research for C1-04; wait for C1-09 before starting C1-10; start C1-12 draft (Significance) — 6 system-specific beneficiary paragraphs
+- **Christine:** Review C2-05 requirements
 
-### Week 1: June 4-5 (Background + Literature)
-- **Focus:** Background paragraphs, literature reviews
-- Jaypee: C1-02, C1-03, C1-10 (Global Context 12-15 sentences, National Context 12-15 sentences, Research Questions)
-- Christine: C1-04, C2-02 (Local Context 12-15 sentences, Automated Scoring & OMR Technologies)
-- David: C1-08, C1-11, C2-01, C2-03, C2-05 (Narrative, Scope, Lit reviews)
+### Week 1: June 4-5 (Background + Methodology)
+- **Focus:** Background paragraphs, methodology sections
+- **David:** C1-01, C1-02, C1-03 (Core Problem, Global Context, National Context); C1-08, C1-11 (Framework Narrative, Scope); C2-01, C2-02, C2-04 (Research Design, Software Model, Project Assignment)
+- **Jaypee:** C1-04 (Local Context, ISPSC); C1-10 (Research Questions — after C1-09); C1-12 finalize (Significance)
 
-### Week 2: June 6-7 (Synthesis + Framework)
-- **Focus:** Background synthesis, conceptual framework, technical framework
-- David: C1-05, C1-06, C2-04, C2-07, C2-08 (Synthesis 10-12 sentences, Clinching 8-10 sentences, PWA Lit, Technical Framework incl. DOMPDF/PHPWord, Ch2 Prose)
-- Jaypee: C2-06 (Related Systems)
+### Week 2: June 6-7 (Remaining Methodology + Synthesis)
+- **Focus:** Background synthesis, remaining methodology sections
+- **David:** C1-05, C1-06 (Synthesis, Clinching); C2-03, C2-06, C2-07 (Project Plan/Gantt, Research Instruments, Data Analysis)
+- **All members:** Submit draft references to Jaypee by June 7
 
 ### Week 2: June 8 (QA & References)
-- **Focus:** References, formatting, citations
-- Christine: CC-01 (References)
-- Jaypee: CC-02, CC-04 (Formatting QA per GUIDE-1 with 1.5" left margin, Citations)
+- **Focus:** Appendices, references, QA
+- **David:** Appendix B (Use Case Diagram); CC-02 (Formatting QA)
+- **Jaypee:** CC-01 (References Compilation), CC-04 (Citation Cross-Check)
+- **Christine:** C2-05 (Population and Locale of the Study)
 
 ### Week 2: June 9 (Final Review)
-- **Focus:** Narrative consistency
-- David: CC-03 (Consistency review)
+- **Focus:** Narrative consistency, docuCheck run
+- **David:** CC-03 (Narrative Consistency Review); assemble Brandname.docx; run docuCheck
 
 ### Deadline: June 10
-- **Final submission**
+- **Submit:** Brandname.docx + docuCheck proof screenshot via Google Classroom
 
 ---
 
@@ -918,15 +906,15 @@
 
 ### Milestone Reviews
 - **June 3:** Framework & Objectives complete (David)
-- **June 5:** Background paragraphs complete (Jaypee/Christine)
-- **June 7:** Literature reviews complete (David/Christine)
+- **June 5:** Background paragraphs + Methodology foundations complete (David/Christine/Jaypee)
+- **June 6:** All Methodology sections complete (David)
 - **June 8:** QA tasks begin (Christine/Jaypee)
 - **June 9:** Final review (David)
 
 ### File Sharing
-- All drafts stored in: `capstone/drafts/chapter1_2/`
-- Naming convention: `[TaskID]_[Member]_Draft.md`
-- Example: `C1-02_Jaypee_Draft.md`
+- Deliverable naming convention: `[TaskID]_[Member]_Draft.md`
+- Example: `C1-01_David_Core_Problem.md`, `C1-04_Jaypee_Local_Context.md`
+- Share files with team via Discord or Google Drive; no specific `drafts/` subdirectory required
 
 ---
 
@@ -934,10 +922,11 @@
 
 | Rule | Value |
 |------|-------|
+| Top margin | 1.5 inches |
 | Left margin | 1.5 inches |
 | Right margin | 1.0 inch |
-| Top margin | 1.0 inch |
 | Bottom margin | 1.0 inch |
+| Paper size | A4 |
 | Font | Times New Roman, 12pt |
 | Line spacing | Double throughout |
 | Paragraph indent | Exactly 5 spaces |
@@ -958,9 +947,9 @@
 | Risk | Mitigation | Owner |
 |------|------------|-------|
 | Jaypee unclear on task directions | Create detailed per-member DIRECTION.md files | David |
-| Christine overloaded (ISPSC enrollment) | Keep her focused on local context tasks (3 tasks only) | David |
+| Christine overloaded / Not technical | Keep her focused on 1 non-technical task only (Population/Locale) | David |
 | Literature search returns few 2022-2026 sources | Use broader search terms, supplement with earlier sources if justified | All |
-| References compilation becomes chaotic | All members submit draft references with their tasks | Christine |
+| References compilation becomes chaotic | All members submit draft references with their tasks | Jaypee |
 | Formatting violations discovered late | Jaypee runs formatting QA early (June 8) with correct GUIDE-1 rules | Jaypee |
 | Paragraph lengths don't match spec | Verify sentence counts during CC-03 narrative review | David |
 
@@ -981,8 +970,8 @@
 
 ## Success Criteria
 
-- ✅ All 21 tasks assigned with clear deadlines
-- ✅ All tasks have detailed subtasks (4-6 steps each)
+- ✅ All 23 tasks assigned with clear deadlines
+- ✅ All tasks have detailed subtasks (3-6 steps each)
 - ✅ Workload balanced across team members
 - ✅ Dependencies mapped and respected
 - ✅ Clear deliverables defined for each task
@@ -991,11 +980,16 @@
 - ✅ Paragraph lengths match TEAM_META_GUIDE exactly
 - ✅ IPO inputs/outputs grounded in SYSTEM_FEATURES.md
 - ✅ Significance beneficiaries are system-specific (not generic)
-- ✅ C2-02 correctly covers Automated Scoring & OMR Technologies
-- ✅ Technical Framework includes DOMPDF/PHPWord pipeline
+- ✅ Chapter 2 follows BSIT Capstone Template (GUIDE-3) — METHODOLOGY, not Literature Review
+- ✅ Research Design aligns with Objectives (identify, develop, evaluate)
+- ✅ Software Model mapped to SecureCAT development phases
+- ✅ Research Instruments centered on SUS evaluation
+- ✅ Data Analysis methods answer all research questions
+- ✅ Population and Locale specific to ISPSC Tagudin
 - ✅ Scope covers both existing and planned features
 - ✅ Research questions cover operational, role-based, security, and resilience dimensions
-- ✅ Formatting rules match GUIDE-1 exactly (1.5" left margin, no bullets, 5-space indent)
+- ✅ Formatting rules match GUIDE-1 exactly (1.5" top + left margins, A4 paper, no bullets, 5-space indent)
+- ✅ Literature integrated into Chapter 1 Background P2-P4 (not lost)
 
 ---
 

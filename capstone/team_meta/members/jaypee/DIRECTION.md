@@ -1,26 +1,25 @@
 # Member Task Direction — Jaypee
-## Team Member — Local Context, Systems Review, References & Citations
+## Team Member — Local Context, Research Questions, References & Citations
 
-> **Role:** Local context (ISPSC Tagudin), research questions, related systems review, references compilation, citation cross-check
-> **Total Assigned Tasks:** 5 tasks (C1-04, C1-10, C2-06, CC-01, CC-04)
-> **Estimated Effort:** 14-22 hours
-> **Focus:** Detail-oriented tasks requiring research, organization, and quality assurance
+> **Role:** Local context (ISPSC Tagudin), research questions, significance of the study, references compilation, citation cross-check
+> **Total Assigned Tasks:** 5 tasks (C1-04, C1-10, C1-12, CC-01, CC-04)
+> **Estimated Effort:** 10-16 hours
+> **Focus:** Detail-oriented tasks requiring research, organization, analytical significance framing, and quality assurance
 > **Hard Deadline:** June 10, 2026
 
 ---
 
 ## Your Tasks at a Glance
 
+> [!IMPORTANT]
+> **REASSIGNMENT ALERT (June 2):** Task **C1-12 (Significance of the Study)** has been reassigned from **Christine** to you to balance workload and align tasks with technical strengths. C1-12 requires detailing system-specific features such as PWA offline-first caching, RAG AI chatbot, multi-tenant DB isolation, and cryptographic HMAC integrity. Please follow the instructions below to draft this section.
+
 ### Chapter 1
 | Task ID | Task | Sentences | Citations | Hours | Due | Dependencies |
 |---------|------|-----------|-----------|-------|-----|--------------|
 | C1-04 | Background P4 — Local Context (ISPSC Tagudin) | **12-15** | **Min 5 APA** | 3-5h | Jun 5 | None |
 | C1-10 | Research Questions | — | None | 1-2h | Jun 4 | C1-09 (David) |
-
-### Chapter 2
-| Task ID | Task | Format | Citations | Hours | Due | Dependencies |
-|---------|------|--------|-----------|-------|-----|--------------|
-| C2-06 | Review of Related Systems | 2-3 paras + table | **Min 5 APA** | 4-6h | Jun 6 | None |
+| C1-12 | Significance of the Study | — | None | 2-3h | Jun 5 | None |
 
 ### Cross-Cutting
 | Task ID | Task | Hours | Due | Dependencies |
@@ -28,9 +27,11 @@
 | CC-01 | References List Compilation | 3-4h | Jun 8 | All writing tasks |
 | CC-04 | Citation Cross-Check | 1-2h | Jun 8 | All writing tasks, CC-01 |
 
+> **Note:** Jaypee has NO Chapter 2 tasks. Chapter 2 is titled "METHODOLOGY" (not a literature review) and all its tasks are assigned to David (C2-01 through C2-04, C2-06, C2-07) and Christine (C2-05 Population and Locale).
+
 ---
 
-## ⚠️ CRITICAL RULES — Read Before Starting Any Task
+## CRITICAL RULES — Read Before Starting Any Task
 
 1. **Paragraph sentence counts are FIXED.** Do not deviate:
    - C1-04: exactly **12-15 sentences** (NOT 10-15, NOT 15-20)
@@ -152,64 +153,57 @@ Read David's C1-09 specific objectives (typically 3 objectives in Identify → D
 
 ---
 
-### Week 2 (June 6): Related Systems
+#### C1-12: Significance of the Study (June 5)
+**Priority:** HIGH — Beneficiary impact description
 
-#### C2-06: Review of Related Systems (June 6)
+**What to Do:**
 
-**Priority:** MEDIUM — Demonstrates awareness of existing solutions vs. SecureCAT
+1. **Identify Beneficiary Groups** (30 min):
+   - The beneficiary groups are system-specific and directly tied to SecureCAT's operational context. These are the ONLY groups to include:
+     - Registrar Office staff
+     - Guidance Office counselors
+     - Proctors and Test Administrators
+     - Applicants and Examinees
+     - ISPSC Administration
+     - Future Researchers
+   - Do NOT include generic groups such as "The Community," "The College/Department," "The Students," or "The Researchers."
+   - Do NOT include a generic "new knowledge" paragraph — weave contributions into each group's paragraph instead.
 
-**Target:** 2-3 paragraphs + comparison table, minimum 5 APA citations (all 2022-2026)
+2. **Write One Paragraph Per Beneficiary Group** (90-120 min):
+   - Exactly 6 paragraphs, one per beneficiary group listed above.
+   - Each paragraph must be in paragraph form only — no bullets, no numbered lists, no bold body text.
+   - Each paragraph structure:
+     - First sentence: Name the beneficiary group specifically.
+     - Middle sentences: Explain specific benefits they receive from SecureCAT, grounded in system features.
+     - Last sentence: Connect to broader impact or institutional value.
+   - Key themes to weave across paragraphs:
+     - DPA compliance — how SecureCAT's role-based access, audit logging, and data handling support RA 10173 requirements.
+     - Operational continuity — how the system ensures admission workflows continue functioning even under infrastructure constraints (offline PWA, cached data).
+     - Institutional reporting value — how automated scoring, audit trails, and real-time dashboards improve reporting and decision-making.
 
-#### Step 1: Identify Related Systems (60-90 min)
+   - Content guidance per group:
 
-Search for existing systems similar to SecureCAT. Per TEAM_META_GUIDE, review these categories:
-- **Admission systems** (local and international)
-- **Electronic assessment platforms**
-- **OMR grading systems**
-- **Document generation systems** in academic workflows
+     **Registrar Office staff.** SecureCAT provides a centralized digital application pipeline replacing manual paper-based review and approval workflows. Staff benefit from automated application processing, bulk import capabilities, real-time status tracking, and room and course management tools. The system's audit logging ensures accountability and compliance with RA 10173, while role-based access prevents unauthorized data access. This reduces manual data entry errors, accelerates processing during peak admission periods, and provides a verifiable record trail for institutional reporting.
 
-Search terms:
-- "college admission testing system"
-- "electronic assessment platform university"
-- "OMR grading system software"
-- "academic document generation system"
-- "computer-based testing software education"
+     **Guidance Office counselors.** The system streamlines test administration through session roster management, proctor assignment, and digital attendance tracking. Counselors benefit from automated scoring via OMR CSV import (and planned computer vision ingestion), consultation summary documentation, and aptitude area management. The enhanced AI Companion (planned) will provide applicants with course recommendations and admission guidance via natural language, reducing repetitive applicant inquiries and allowing counselors to focus on student guidance rather than administrative overhead.
 
-**Target:** 3-5 systems (commercial or academic). For each system, identify:
-- System name and origin (local or international)
-- Key features (what it does)
-- Technology/approach (what it's built with)
-- Limitations (what it doesn't do — this is critical)
+     **Proctors and Test Administrators.** SecureCAT equips proctors with real-time session management tools, digital attendance confirmation, and QR-based applicant verification. The planned offline-resilient PWA allows proctors to continue scanning applicant QR codes at exam room doors even when campus WiFi is unreliable, with data cached locally and synchronized automatically upon reconnection. Computer vision-based OMR answer sheet processing (planned) will enable instant automated scoring, eliminating manual grading and reducing turnaround time for result release.
 
-#### Step 2: Create Comparison Table (60-90 min)
+     **Applicants and Examinees.** Applicants benefit from a transparent, real-time status tracker showing their progression from application submission through exam scheduling, attendance, score processing, and result release. The system provides admission slip generation with printable PDF rendering, reducing the need for physical office visits. Token-based account activation ensures secure access to personal records, while the AI companion chatbot provides instant guidance on application status and requirements. Faster score processing and automated result generation mean applicants receive outcomes more quickly and reliably.
 
-Create a table with these columns:
+     **ISPSC Administration.** The administration gains institutional-level visibility into admission operations through automated reporting, audit logs, and real-time dashboards. The system's role-based architecture ensures data governance aligned with RA 10173, while cryptographic score integrity (planned HMAC signatures) provides tamper-evident records for institutional accountability. Multi-tenant database isolation (planned) prepares the institution for future campus expansion without compromising data privacy. These capabilities strengthen the institution's capacity for evidence-based decision-making, regulatory compliance, and operational reporting.
 
-| System Name | Key Features | Technology/Approach | Strengths | Limitations |
-|-------------|-------------|---------------------|-----------|-------------|
+     **Future Researchers.** SecureCAT serves as a reference implementation for role-based admission testing systems in Philippine state universities. The system's architecture — including RBAC with zero-trust data governance, computer vision OMR processing, offline-resilient PWA proctoring, applicant-facing AI Companion with RAG, and multi-tenant database isolation — provides a comprehensive baseline for future studies in educational technology, automated assessment, and institutional digital transformation. Future researchers can build upon the design patterns, security models, and architectural decisions documented in this study.
 
-**Table formatting rules (per GUIDE-1):**
-- Table caption: **left-aligned**, **above** the table, **bold**
-- Example: `Table 1. Comparison of Related Admission and Assessment Systems`
-- Border: **1pt line width**
-- Include **SecureCAT** as the last row in the comparison
+3. **Review for Compliance** (15-30 min):
+   - Verify all 6 paragraphs are in paragraph form only — no bullets, no bold body text.
+   - Verify each paragraph names a specific, direct beneficiary group.
+   - Verify DPA compliance, operational continuity, and institutional reporting value are addressed across the paragraphs.
+   - Remove any vague or indirect beneficiaries.
 
-**Key gap to highlight in your analysis:** No existing system combines:
-- Role-based multi-office coordination (Guidance + Registrar)
-- Offline-first PWA architecture
-- AI Companion with RAG (applicant-facing)
-- Computer-vision-based OMR scanning
-- HMAC cryptographic score integrity
+**Reference:** `GUIDE-2-CHAPTER1-CONTENT.md` Section 5; `SYSTEM_FEATURES.md`; `Existing_and_Planned_Features.md`
 
-#### Step 3: Write Narrative (60-90 min)
-
-Write **2-3 paragraphs** with minimum 5 APA citations:
-
-- **Paragraph 1:** Summarize existing admission systems and assessment platforms — their capabilities, technologies, and target markets. Cite sources where possible.
-- **Paragraph 2:** Identify gaps — what are existing systems NOT doing? What features are missing across the board? Compare strengths and weaknesses against SecureCAT's feature set.
-- **Paragraph 3:** How SecureCAT fills the gap. Position SecureCAT's unique combination of features as the differentiator.
-
-**Deliverable:** `C2-06_Jaypee_Related_Systems.md` — 2-3 paragraphs with feature comparison table, minimum 5 APA citations (all 2022-2026)
+**Deliverable:** `C1-12_Jaypee_Significance.md` with 6 paragraphs (one per beneficiary group, paragraph form only)
 
 ---
 
@@ -224,9 +218,9 @@ Write **2-3 paragraphs** with minimum 5 APA citations:
 #### Step 1: Collect All References from Team (60 min)
 
 You need to gather draft references from ALL team members:
-- **David:** C1-01, C1-02, C1-03 (background paragraphs), C2-01 (RBAC), C2-03 (AI/RAG), C2-04 (PWA), C2-05 (DPA)
-- **Christine:** C2-02 (OMR/CV Scoring)
-- **Yourself:** C1-04 (Local Context), C2-06 (Related Systems)
+- **David:** C1-01, C1-02, C1-03 (background paragraphs), C2-01 through C2-04, C2-06, C2-07 (Chapter 2 METHODOLOGY tasks)
+- **Christine:** C2-05 (Population and Locale)
+- **Yourself:** C1-04 (Local Context), C1-10 (Research Questions)
 
 **Ask team members to submit their draft references by June 7.**
 
@@ -331,19 +325,17 @@ Organize findings into categories:
 
 ---
 
-## Your Week-by-Week Schedule
-
-### Week 1 (June 1-5): Local Context & Research Questions
+### Week 1 (June 1-5): Local Context, Research Questions & Significance
 - [ ] **June 1-2:** Get ISPSC context from Christine
 - [ ] **June 2-3:** Research regional institutions for C1-04
 - [ ] **June 3-4:** Write C1-04 (Local Context) — 12-15 sentences with 5+ citations
 - [ ] **June 2-3:** Wait for David's C1-09 (Objectives)
 - [ ] **June 3-4:** C1-10 (Research Questions) — convert objectives to questions covering all 4 dimensions
+- [ ] **June 4-5:** C1-12 (Significance of the Study) — draft 6 beneficiary paragraphs in paragraph form
+- [ ] **June 5:** Final review and polish of C1-04, C1-10, and C1-12
 
-### Week 2 (June 6): Related Systems
-- [ ] **June 5-6:** C2-06 (Related Systems) — identify 3-5 systems, create comparison table, write 2-3 paragraphs with 5+ citations
-
-### Week 2 (June 8): References & Citations
+### Week 2 (June 6-8): References & Citations
+- [ ] **June 6:** Light day — review C1-04 and C1-10, begin organizing any sources found during research
 - [ ] **June 7:** Collect draft references from David and Christine
 - [ ] **June 8 (morning):** CC-01 (References Compilation) — format in APA 7, cross-check, finalize
 - [ ] **June 8 (afternoon):** CC-04 (Citation Cross-Check) — verify every citation has a reference and vice versa
@@ -368,9 +360,9 @@ Organize findings into categories:
 
 4. **Collect References for CC-01:**
    - Ask David and Christine for their draft references by June 7
-   - David has: C1-01, C1-02, C1-03, C2-01, C2-03, C2-04, C2-05
-   - Christine has: C2-02
-   - You have: C1-04, C2-06
+   - David has: C1-01, C1-02, C1-03, C2-01, C2-02, C2-03, C2-04, C2-06, C2-07
+   - Christine has: C2-05 (Population and Locale of the Study)
+   - You have: C1-04, C1-10, C1-12
 
 5. **Ask for Help Early:**
    - If you're stuck finding sources, ask David or Christine for search term suggestions
@@ -379,11 +371,28 @@ Organize findings into categories:
 
 ---
 
+## Teammate Awareness: Who Has What
+
+### Chapter 2 METHODOLOGY Tasks (NOT your responsibility)
+
+All Chapter 2 tasks are now METHODOLOGY tasks (not literature review). These are assigned as follows:
+
+- **David:** C2-01 (Research Design), C2-02 (Software Model), C2-03 (Project Plan), C2-04 (Project Assignment), C2-06 (Research Instruments), C2-07 (Data Analysis)
+- **Christine:** C2-05 (Population and Locale of the Study)
+
+You do NOT need to write anything for Chapter 2. However, any research you previously gathered for related systems review can still be useful — see the note below.
+
+### Reusing Previous Related Systems Research
+
+> If you previously began researching related admission systems, comparison platforms, or assessment tools for what was formerly C2-06, do not discard that work. Relevant findings about ISPSC's operational environment, comparable Philippine SUCs, or regional ICT adoption can be woven into **C1-04 (Background P4 — Local Context)** as supporting evidence in sentences 12-15. This strengthens the local context paragraph by showing awareness of what similar institutions are doing.
+
+---
+
 ## Your Strengths (Lean Into These)
 
 Based on your preferred tasks:
 
-- **Detail-oriented work:** You prefer focused tasks with clear deliverables (systems comparison, references, citations)
+- **Detail-oriented work:** You prefer focused tasks with clear deliverables (references, citations)
 - **Research skills:** You can use Google Scholar and evaluate sources
 - **Organization:** You can compile and alphabetize reference lists systematically
 - **Quality assurance:** You can spot inconsistencies in citations and references
@@ -396,11 +405,11 @@ Focus on what you're good at: research, organization, and quality checks.
 
 - Background global and national context paragraphs — David's tasks now
 - Formatting QA — David's task (CC-02)
-- Technical literature reviews on RBAC, AI/RAG, PWA, DPA — David's tasks
+- All Chapter 2 METHODOLOGY tasks — David (C2-01 through C2-04, C2-06, C2-07) and Christine (C2-05)
 - IPO diagram, objectives, scope, synthesis, clinching statement — David's tasks
-- OMR/CV literature review, significance — Christine's tasks
+- OMR/CV literature review — Christine's tasks
 
-Your focus: Local context (with Christine's guidance), research questions, related systems, references compilation, citation cross-check.
+Your focus: Local context (with Christine's guidance), research questions, significance of the study, references compilation, citation cross-check.
 
 ---
 
@@ -408,23 +417,37 @@ Your focus: Local context (with Christine's guidance), research questions, relat
 
 - Formatting: `guides/GUIDE-1-FORMATTING.md` (especially APA 7 references, margins, paragraph rules)
 - Chapter 1 Content: `guides/GUIDE-2-CHAPTER1-CONTENT.md` (Background P4, Research Questions)
-- Chapter 2 Content: `guides/GUIDE-3-CHAPTER2-CONTENT.md` (Related Systems, References)
+- Chapter 2 Content: `guides/GUIDE-3-CHAPTER2-CONTENT.md` (METHODOLOGY structure, References)
 - System Features: `SYSTEM_FEATURES.md` (to understand SecureCAT's impact on ISPSC)
-- Existing vs Planned: `drafts/Existing_and_Planned_Features.md` (baseline and research features)
+- Existing vs Planned: `research/Existing_and_Planned_Features.md` (baseline and research features)
 - Task Distribution: `TASK_DISTRIBUTION_PLAN.md`
 
 ---
 
 ## Success Criteria for You
 
-- C1-04 (Local Context) completed by June 5 — 12-15 sentences, 5+ APA citations, covers manual workflow, infrastructure constraints, Guidance/Registrar challenges, compliance pressures.
-- C1-10 (Research Questions) completed by June 4 — numbered list covering all 4 dimensions (operational, role-based, security, resilience).
-- C2-06 (Related Systems) completed by June 6 — 2-3 paragraphs with feature comparison table, minimum 5 APA citations.
-- Draft references submitted by June 7 (from yourself, David, Christine).
-- CC-01 (References Compilation) completed by June 8 — APA 7th Edition, alphabetized, every citation matched to a reference and vice versa, all sources 2022-2026.
-- CC-04 (Citation Cross-Check) completed by June 8 — cross-check report organized by issue category.
-- No bullet points, no bold body text, paragraph indent 5 spaces in any deliverable.
+- [ ] C1-04 (Local Context) completed by June 5 — 12-15 sentences, 5+ APA citations, covers manual workflow, infrastructure constraints, Guidance/Registrar challenges, compliance pressures.
+- [ ] C1-10 (Research Questions) completed by June 4 — numbered list covering all 4 dimensions (operational, role-based, security, resilience).
+- [ ] C1-12 (Significance of the Study) completed by June 5 — 6 paragraphs in paragraph form only, system-specific beneficiary groups (Registrar Office staff, Guidance Office counselors, Proctors/Test Administrators, Applicants/Examinees, ISPSC Administration, Future Researchers), highlights DPA compliance, operational continuity, institutional reporting value.
+- [ ] Draft references submitted by June 7 (from yourself, David, Christine).
+- [ ] CC-01 (References Compilation) completed by June 8 — APA 7th Edition, alphabetized, every citation matched to a reference and vice versa, all sources 2022-2026.
+- [ ] CC-04 (Citation Cross-Check) completed by June 8 — cross-check report organized by issue category.
+- [ ] No bullet points, no bold body text, paragraph indent 5 spaces in any deliverable.
 
 ---
 
-You are the local context researcher, systems reviewer, and references specialist. Your attention to detail will ensure the References list is complete and accurate, and your ability to compare related systems will demonstrate exactly what makes SecureCAT unique. Coordinate with Christine for ISPSC context, and collect references from all team members for CC-01.
+## Instructor Submission Instructions
+
+> To all groups with approved title, construct your manuscript with the following contents:
+> Title page, Table of Contents, Chapter 1, Chapter 2, Appendices (letter to conduct, Use Case Diagram).
+> To check the formatting and template, run your document using your account in the docuCheck system as you have created in Activity 1.
+> Attach here the following: Brandname.docx, Proof of running the document in the docuCheck system.
+>
+> **Deadline:** June 10, 2026
+> **Mode:** Google Classroom (or physical copy)
+> **Margins:** Top 1.5", Left 1.5", Right/Bottom 1.0"
+> **Paper:** A4
+
+---
+
+You are the local context researcher, references specialist, and citation quality assurer. Your attention to detail will ensure the References list is complete and accurate. Coordinate with Christine for ISPSC context, and collect references from all team members for CC-01.

@@ -1,5 +1,7 @@
 # Chapter 1 and Chapter 2 Drafting Plan
 
+> **NOTE (June 2026 Update):** This document was written before Chapter 2 was restructured. Chapter 2 is now **METHODOLOGY** (per the BSIT Capstone Template) — it no longer contains "Review of Related Literature" sections. The narrative structure below for Chapter 1 remains valid. Chapter 2 content follows GUIDE-3; see TEAM_META_GUIDE_Ch1_Ch2.md and your personal DIRECTION.md for current task assignments.
+
 This document defines the drafting sequence, narrative structure, and blending strategy for Chapter 1 and Chapter 2. It is intended to ensure that existing built features and planned research features are presented side by side without creating a structural mismatch.
 
 ## Drafting Objective

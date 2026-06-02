@@ -3,26 +3,31 @@
 
 ---
 
+Source of truth: The official BSIT Capstone Template (`capstone/BSIT Capstone Template.docx`) and the docuCheck system. When in doubt, match the template.
+
+---
+
 ## Page Setup
 
 | Setting | Value |
 |---|---|
-| Paper | A4 or US Letter (match institution default) |
-| Left margin | **1.5 inches** |
-| Right margin | **1.0 inch** |
-| Top margin | **1.0 inch** |
-| Bottom margin | **1.0 inch** |
+| Paper | **A4** (8.27 x 11.69 in) |
+| Top margin | **1.5 inches** (3.81 cm / 108 pt) |
+| Bottom margin | **1.0 inch** (2.54 cm / 72 pt) |
+| Left margin | **1.5 inches** (3.81 cm / 108 pt) |
+| Right margin | **1.0 inch** (2.54 cm / 72 pt) |
 | Font | **Times New Roman** |
 | Font size | **12pt** |
-| Line spacing | **Double** throughout — no extra space between paragraphs |
-| Paragraph indent | **Exactly 5 spaces** at start of each paragraph |
+| Line spacing | **Double (2.0)** throughout — no extra space between paragraphs |
+| Paragraph indent | **5 spaces** at start of each body paragraph (flush to margins otherwise) |
+| Right indent | **None** — body text is flush to the right margin |
 | Alignment | **Justified** for all body text |
 
 ---
 
 ## Header and Footer
 
-- All header and footer content and their borders must sit **entirely within the 1-inch top/bottom margins**.
+- All header and footer content and their borders must sit **entirely within the top/bottom margins**.
 - If a border line renders outside the margin, shrink the header/footer distance from the edge.
 - Apply this fix to **every page of the entire manuscript**.
 
@@ -88,9 +93,58 @@ Table 2. Respondents
 
 ## Lists and Paragraph Form Rules
 
-- Use **numbered lists** (1, 2, 3...) inside IPO boxes for Input and Output items.
+- Use **numbered lists** (1, 2, 3...) inside IPO boxes for Input and Output items, and for Specific Objectives.
 - **No bullet points** anywhere in the manuscript.
 - Scope, Limitations, Importance of the Study, and all Methodology sections must be written in **paragraph form only** — no bullets, no numbered lists.
+
+---
+
+## Document Section Order (from Template)
+
+Follow this order exactly:
+
+1. Title Page
+2. Table of Contents
+3. Chapter 1 — INTRODUCTION
+   - Background of the Study
+   - Conceptual Framework of the Study
+   - Objectives of the Study
+   - Scope and Limitation of the Study
+   - Importance of the Study
+4. Chapter 2 — METHODOLOGY
+   - Research Design
+   - Software Model
+   - Project Plan
+   - Project Assignment
+   - Population and Locale of the Study
+   - Research Instruments
+   - Data Analysis
+5. Chapter 3 — RESULTS AND DISCUSSION (advance — see GUIDE-6)
+   - Findings
+   - Conclusion
+   - Recommendations
+6. GLOSSARY
+7. REFERENCES
+8. APPENDICES
+   - APPENDIX A (Scan of Signed Letter to Conduct)
+   - APPENDIX B (Use Case Diagram)
+9. BIOGRAPHICAL SKETCH
+
+---
+
+## Submission Requirements (Current Round)
+
+Per instructor announcement, the current submission requires:
+
+1. **Brandname.docx** — the manuscript file named after your group's brandname
+2. **Proof of running the document in the docuCheck system** — screenshot
+
+The manuscript must contain at minimum:
+- Title Page
+- Table of Contents
+- Chapter 1 (all sections)
+- Chapter 2 (all sections)
+- Appendices (Scan of Signed Letter to Conduct, Use Case Diagram)
 
 ---
 
@@ -103,3 +157,4 @@ Table 2. Respondents
 - Bold used in body text for emphasis
 - Table captions placed below the table or centered
 - Figure captions placed above the figure
+- Wrong margins — top and left must be 1.5 inches (not 1.0)

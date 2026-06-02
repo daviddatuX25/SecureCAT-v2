@@ -12,7 +12,7 @@ This document serves three purposes:
 
 > **⏰ HARD DEADLINE: June 10, 2026 — Chapters 1 & 2 must be complete.**
 >
-> Keep this date in mind when choosing tasks. There are **24 tasks** across Chapters 1, 2, and cross-chapter work. With 3 members and ~2 weeks remaining, each person should realistically take on **6–8 tasks**. Prioritize tasks you can finish within your availability — it's better to commit to fewer and deliver well than to overcommit and stall the team.
+> Keep this date in mind when choosing tasks. There are **19 tasks** across Chapters 1, 2, and cross-chapter work. With 3 members and ~2 weeks remaining, each person should realistically take on **5-7 tasks**. Prioritize tasks you can finish within your availability — it's better to commit to fewer and deliver well than to overcommit and stall the team.
 
 ---
 
@@ -122,7 +122,7 @@ Every task below includes:
 | **Required Skills** | Understanding of SecureCAT system architecture, ability to distinguish inputs (data received) from outputs (things produced), formatting of numbered lists |
 | **Restrictions** | Inputs must be THINGS the system receives. Outputs must be THINGS the system produces. No process verbs in either list. No bullet points — numbered lists only. |
 | **Estimated Effort** | 2-3 hours |
-| **Dependencies** | Must reference SYSTEM_FEATURES.md and drafts/Existing_and_Planned_Features.md |
+| **Dependencies** | Must reference SYSTEM_FEATURES.md and research/Existing_and_Planned_Features.md |
 | **Assigned To** | _________ |
 
 ##### TASK-C1-08: Conceptual Framework — Narrative Paragraphs
@@ -198,110 +198,92 @@ Every task below includes:
 
 ---
 
-### Chapter 2 Tasks
+### Chapter 2 Tasks — METHODOLOGY
 
-#### Review of Related Literature
+> **IMPORTANT:** Chapter 2 is titled **"METHODOLOGY"** (per the BSIT Capstone Template). It does NOT contain a "Review of Related Literature" section. The sections follow the template structure exactly: Research Design, Software Model, Project Plan, Project Assignment, Population and Locale, Research Instruments, Data Analysis. See GUIDE-3 for full content requirements.
 
-##### TASK-C2-01: Literature — RBAC and Zero-Trust Security
+##### TASK-C2-01: Research Design
 
 | Field | Details |
 |-------|---------|
 | **Task ID** | TASK-C2-01 |
-| **Description** | Write a synthesized literature review covering Role-Based Access Control models, zero-trust security architectures, and cryptographic data integrity mechanisms (HMAC) in educational or assessment platforms. |
-| **Deliverable** | 1-2 paragraphs, minimum 5 APA citations (all 2022-2026) |
-| **Required Skills** | Literature search, understanding of RBAC and zero-trust concepts, APA citation formatting, synthesis writing |
-| **Estimated Effort** | 4-6 hours |
+| **Description** | Define "descriptive developmental research design" with citations (Siedlecki 2020 for descriptive; find 2022-2026 source for developmental). Write a second paragraph applying the design specifically to SecureCAT. |
+| **Deliverable** | 2 paragraphs, academic tone, APA citations |
+| **Required Skills** | Literature search, understanding of research design terminology, APA citation formatting |
+| **Estimated Effort** | 3-4 hours |
 | **Dependencies** | None |
 | **Assigned To** | _________ |
 
-##### TASK-C2-02: Literature — Automated Scoring and OMR Technologies
+##### TASK-C2-02: Software Model
 
 | Field | Details |
 |-------|---------|
 | **Task ID** | TASK-C2-02 |
-| **Description** | Write a synthesized literature review covering automated test scoring methods, optical mark recognition (OMR), computer vision-based answer sheet processing, and accuracy comparisons between manual and automated scoring. |
-| **Deliverable** | 1-2 paragraphs, minimum 5 APA citations (all 2022-2026) |
-| **Required Skills** | Literature search, understanding of OMR and computer vision concepts, synthesis writing |
+| **Description** | Choose RAD or AIDLC and write all phases in paragraph form. Each phase: "Phase Name. In this phase, [specific tasks and tools used]..." Include a figure of the model. Name specific technologies from the stack. |
+| **Deliverable** | Multi-paragraph section + model figure with caption |
+| **Required Skills** | Understanding of RAD or AIDLC phases, ability to name actual tools and technologies used, diagram creation |
 | **Estimated Effort** | 4-6 hours |
 | **Dependencies** | None |
 | **Assigned To** | _________ |
 
-##### TASK-C2-03: Literature — AI Assistants and RAG in Education
+##### TASK-C2-03: Project Plan (Gantt Chart)
 
 | Field | Details |
 |-------|---------|
 | **Task ID** | TASK-C2-03 |
-| **Description** | Write a synthesized literature review covering AI-powered chatbots and assistants in educational settings, retrieval-augmented generation (RAG) architectures for student-facing applications, natural language interfaces for applicant inquiries, and course recommendation systems. |
-| **Deliverable** | 1-2 paragraphs, minimum 5 APA citations (all 2022-2026) |
-| **Required Skills** | Literature search, understanding of AI/RAG concepts, synthesis writing |
-| **Estimated Effort** | 4-6 hours |
-| **Dependencies** | None |
+| **Description** | Present a Gantt Chart as a figure. Phases must match the Software Model section exactly. Write a narrative paragraph below mapping each phase to calendar weeks/months. |
+| **Deliverable** | Gantt Chart figure + narrative paragraph |
+| **Required Skills** | Ability to create Gantt Charts, timeline mapping, academic writing |
+| **Estimated Effort** | 2-3 hours |
+| **Dependencies** | TASK-C2-02 (Software Model phases must be finalized first) |
 | **Assigned To** | _________ |
 
-##### TASK-C2-04: Literature — Offline-Resilient and PWA Systems
+##### TASK-C2-04: Project Assignment
 
 | Field | Details |
 |-------|---------|
 | **Task ID** | TASK-C2-04 |
-| **Description** | Write a synthesized literature review covering Progressive Web Apps (PWA), service workers, offline-first architectures, IndexedDB for local caching, and background sync mechanisms in critical operational environments. |
-| **Deliverable** | 1-2 paragraphs, minimum 5 APA citations (all 2022-2026) |
-| **Required Skills** | Literature search, understanding of PWA and offline architecture concepts, synthesis writing |
-| **Estimated Effort** | 4-6 hours |
+| **Description** | Create Table 1 (Project Roles and Responsibilities) with all 5 standard roles: Project Manager, System Analyst and Designer, Lead Developer and Programmer, QA Tester, Technical Writer. Assign names from the team. |
+| **Deliverable** | Table with 1pt border, caption left-aligned above table |
+| **Required Skills** | Table formatting, understanding of project roles |
+| **Estimated Effort** | 1-2 hours |
 | **Dependencies** | None |
 | **Assigned To** | _________ |
 
-##### TASK-C2-05: Literature — Philippine Data Privacy Act and Multi-Tenancy
+##### TASK-C2-05: Population and Locale of the Study
 
 | Field | Details |
 |-------|---------|
 | **Task ID** | TASK-C2-05 |
-| **Description** | Write a synthesized literature review covering the Philippine Data Privacy Act (RA 10173) compliance in educational software, multi-tenant database architecture patterns, data isolation strategies for SUC systems. |
-| **Deliverable** | 1-2 paragraphs, minimum 5 APA citations (all 2022-2026) |
-| **Required Skills** | Literature search, knowledge of RA 10173 or ability to research it, understanding of multi-tenancy concepts, synthesis writing |
-| **Estimated Effort** | 3-5 hours |
+| **Description** | Describe ISPSC Tagudin locale in paragraph form. Describe purposive sampling technique. Create Table 2 (Distribution of Respondents) with respondent groups and counts. |
+| **Deliverable** | 2 paragraphs + table with 1pt border, caption left-aligned above table |
+| **Required Skills** | Descriptive writing, understanding of sampling techniques, table formatting |
+| **Estimated Effort** | 2-3 hours |
 | **Dependencies** | None |
 | **Assigned To** | _________ |
 
-#### Review of Related Systems
-
-##### TASK-C2-06: Review of Related Systems
+##### TASK-C2-06: Research Instruments
 
 | Field | Details |
 |-------|---------|
 | **Task ID** | TASK-C2-06 |
-| **Description** | Review existing admission systems (local and international), electronic assessment platforms, OMR grading systems, and document generation systems in academic workflows. Compare features, strengths, and weaknesses against SecureCAT. |
-| **Deliverable** | 2-3 paragraphs with feature comparison table, minimum 5 APA citations (all 2022-2026) |
-| **Required Skills** | Web research for existing systems, ability to create comparison tables, synthesis of system features |
-| **Estimated Effort** | 4-6 hours |
+| **Description** | Describe the System Usability Scale (SUS): 10 items, 5-point Likert, composite 0-100, benchmark above 68. Write in paragraph form. Cite Brooke (1996) supplemented with 2022-2026 sources. |
+| **Deliverable** | 1-2 paragraphs, APA citations (all 2022-2026 where possible) |
+| **Required Skills** | Literature search, understanding of SUS instrument, paragraph writing |
+| **Estimated Effort** | 2-3 hours |
 | **Dependencies** | None |
 | **Assigned To** | _________ |
 
-#### Technical Framework
-
-##### TASK-C2-07: Technical Framework
+##### TASK-C2-07: Data Analysis
 
 | Field | Details |
 |-------|---------|
 | **Task ID** | TASK-C2-07 |
-| **Description** | Write the technical framework covering: Laravel 12 / Inertia v2 / Svelte 5 / Tailwind 4 stack, HMAC security model, vector embeddings for applicant-facing RAG (Mixedbread), PWA service worker architecture, multi-tenant database isolation concepts, DOMPDF/PHPWord document generation pipeline. |
-| **Deliverable** | 1-2 paragraphs with technical architecture diagram |
-| **Required Skills** | Deep understanding of the tech stack, ability to describe architectural decisions in academic language, diagram creation |
-| **Estimated Effort** | 3-4 hours |
-| **Dependencies** | Must reference SYSTEM_FEATURES.md |
-| **Assigned To** | _________ |
-
-#### Conceptual Framework (Chapter 2 Expansion)
-
-##### TASK-C2-08: Conceptual Framework Prose
-
-| Field | Details |
-|-------|---------|
-| **Task ID** | TASK-C2-08 |
-| **Description** | Expand the Chapter 1 conceptual framework into a fuller narrative for Chapter 2. Describe the system workflow stages in detail, connecting inputs through processing to outputs with both existing and planned features. |
-| **Deliverable** | 2-3 paragraphs expanding the IPO into narrative |
-| **Required Skills** | Technical writing, understanding of system workflow, ability to connect IPO items to real processing stages |
+| **Description** | Link each research objective to a named analysis method. Include SUS score interpretation table (Table 3). State that statistical significance testing is not employed. All in paragraph form. |
+| **Deliverable** | Paragraphs + Table 3 (SUS Score Interpretation) with 1pt border |
+| **Required Skills** | Understanding of descriptive statistics, ability to link objectives to methods, table formatting |
 | **Estimated Effort** | 2-3 hours |
-| **Dependencies** | TASK-C1-07, TASK-C1-08 (Chapter 1 framework must exist first) |
+| **Dependencies** | TASK-C1-09 (objectives must be finalized), TASK-C2-06 (instruments must be named) |
 | **Assigned To** | _________ |
 
 ---
@@ -374,20 +356,19 @@ Every task below includes:
 | TASK-C1-10 | Research Questions | Question formulation from objectives | 1-2h | C1-09 |
 | TASK-C1-11 | Scope and Delimitations | Scope boundary writing, paragraph form | 2-3h | None |
 | TASK-C1-12 | Significance of the Study | Descriptive writing, stakeholder impact | 2-3h | None |
-| TASK-C2-01 | Lit Review — RBAC/Zero-Trust | Lit search, RBAC knowledge, synthesis | 4-6h | None |
-| TASK-C2-02 | Lit Review — OMR/CV Scoring | Lit search, OMR/CV knowledge, synthesis | 4-6h | None |
-| TASK-C2-03 | Lit Review — AI/RAG in Education | Lit search, AI/RAG knowledge, synthesis | 4-6h | None |
-| TASK-C2-04 | Lit Review — PWA/Offline Systems | Lit search, PWA knowledge, synthesis | 4-6h | None |
-| TASK-C2-05 | Lit Review — DPA/Multi-Tenancy | Lit search, RA 10173, synthesis | 3-5h | None |
-| TASK-C2-06 | Review of Related Systems | Web research, comparison tables | 4-6h | None |
-| TASK-C2-07 | Technical Framework | Tech stack knowledge, diagram creation | 3-4h | None |
-| TASK-C2-08 | Conceptual Framework Prose | Technical writing, IPO expansion | 2-3h | C1-07, C1-08 |
+| TASK-C2-01 | Research Design | Lit search, APA, research design | 3-4h | None |
+| TASK-C2-02 | Software Model (RAD or AIDLC) | RAD/AIDLC knowledge, diagram | 4-6h | None |
+| TASK-C2-03 | Project Plan (Gantt Chart) | Gantt Chart, timeline mapping | 2-3h | C2-02 |
+| TASK-C2-04 | Project Assignment | Table formatting, project roles | 1-2h | None |
+| TASK-C2-05 | Population and Locale | Descriptive writing, sampling | 2-3h | None |
+| TASK-C2-06 | Research Instruments | SUS knowledge, lit search | 2-3h | None |
+| TASK-C2-07 | Data Analysis | Descriptive stats, table formatting | 2-3h | C1-09, C2-06 |
 | TASK-CC-01 | References List Compilation | APA formatting, cross-checking | 3-4h | All writing |
 | TASK-CC-02 | Formatting QA Review | Formatting precision, proofreading | 2-3h | All writing |
 | TASK-CC-03 | Narrative Consistency Review | Writing judgment, voice unification | 4-6h | All writing |
 | TASK-CC-04 | Citation Cross-Check | Attention to detail, APA familiarity | 1-2h | All writing |
 
-**Total estimated effort: ~75-100 hours across all tasks**
+**Total estimated effort: ~65-85 hours across all tasks**
 
 ---
 
@@ -522,14 +503,13 @@ Fill this section AFTER all self-assessments are collected and reviewed.
 | TASK-C1-10 | Research Questions | Question formulation | | | | _________ |
 | TASK-C1-11 | Scope and Delimitations | Scope writing | | | | _________ |
 | TASK-C1-12 | Significance of the Study | Descriptive writing | | | | _________ |
-| TASK-C2-01 | Lit — RBAC/Zero-Trust | Lit search, synthesis | | | | _________ |
-| TASK-C2-02 | Lit — OMR/CV Scoring | Lit search, synthesis | | | | _________ |
-| TASK-C2-03 | Lit — AI/RAG in Education | Lit search, synthesis | | | | _________ |
-| TASK-C2-04 | Lit — PWA/Offline Systems | Lit search, synthesis | | | | _________ |
-| TASK-C2-05 | Lit — DPA/Multi-Tenancy | Lit search, synthesis | | | | _________ |
-| TASK-C2-06 | Review of Related Systems | Web research, comparison | | | | _________ |
-| TASK-C2-07 | Technical Framework | Tech stack, diagrams | | | | _________ |
-| TASK-C2-08 | Conceptual Framework Prose | Technical writing | | | | _________ |
+| TASK-C2-01 | Research Design | Lit search, APA | | | | _________ |
+| TASK-C2-02 | Software Model (RAD or AIDLC) | RAD/AIDLC, diagram | | | | _________ |
+| TASK-C2-03 | Project Plan (Gantt Chart) | Gantt, timeline | | | | _________ |
+| TASK-C2-04 | Project Assignment | Table, roles | | | | _________ |
+| TASK-C2-05 | Population and Locale | Descriptive, sampling | | | | _________ |
+| TASK-C2-06 | Research Instruments | SUS, lit search | | | | _________ |
+| TASK-C2-07 | Data Analysis | Stats, table formatting | | | | _________ |
 | TASK-CC-01 | References Compilation | APA, cross-checking | | | | _________ |
 | TASK-CC-02 | Formatting QA | Formatting precision | | | | _________ |
 | TASK-CC-03 | Narrative Consistency | Writing judgment | | | | _________ |
@@ -555,7 +535,7 @@ Fill this section AFTER all self-assessments are collected and reviewed.
 | 2 | **No bullet points anywhere** — numbered lists only where explicitly allowed (IPO boxes, specific objectives) | Guide 1 |
 | 3 | **Bold is ONLY for**: chapter headings, subheadings, figure captions, table captions | Guide 1 |
 | 4 | **Paragraph indent = exactly 5 spaces** | Guide 1 |
-| 5 | **Left margin = 1.5 inches**; all other margins = 1 inch | Guide 1 |
+| 5 | **Top margin = 1.5 inches; Left margin = 1.5 inches; Right/Bottom = 1.0 inch** (A4 paper) | Guide 1 |
 | 6 | **Table captions: left-aligned, above the table, bold** | Guide 1 |
 | 7 | **Figure captions: below the figure, bold** | Guide 1 |
 | 8 | **All cited literature must be 2022-2026** | Guide 2 |
@@ -577,7 +557,7 @@ Apply to EVERY draft before submission:
 [ ] No bold in body text (only headings/captions)
 [ ] No bullet points (numbered lists only where allowed)
 [ ] No extra space between paragraphs
-[ ] Left margin: 1.5" | Right/Top/Bottom: 1.0"
+[ ] Left margin: 1.5" | Top margin: 1.5" | Right/Bottom: 1.0" | Paper: A4
 ```
 
 ### Related Documents
@@ -587,5 +567,23 @@ Apply to EVERY draft before submission:
 - `../guides/GUIDE-3-CHAPTER2-CONTENT.md` — Chapter 2 content requirements
 - `../guides/GUIDE-4-AIDLC-DEFENSE.md` — AIDLC model defense strategy
 - `../guides/GUIDE-5-CHECKLIST.md` — Pre-submission checklist
-- `../drafts/Existing_and_Planned_Features.md` — Existing vs. planned features
+- `../guides/GUIDE-6-CHAPTER3-ADVANCE.md` — Chapter 3 advance guide
+- `../BSIT Capstone Template.docx` — Official manuscript template (docuCheck reference)
+- `../research/Existing_and_Planned_Features.md` — Existing vs. planned features
 - `../ROADMAP.md` — Overall timeline and milestones
+
+---
+
+## Instructor Submission Instructions (Verbatim)
+
+> "To all groups with approved title, construct your manuscript with the following contents:
+> Title page, Table of Contents, Chapter 1, Chapter 2, Appendices (letter to conduct, Use Case Diagram).
+> To check the formatting and template, run your document using your account in the docuCheck system as you have created in Activity 1.
+> Attach here the following: Brandname.docx, Proof of running the document in the docuCheck system."
+
+**Deadline: June 10, 2026**
+**Mode of submission: Google Classroom (or physical copy if required)**
+
+**Deliverables:**
+1. Brandname.docx — the manuscript file named after your group's brandname
+2. Proof of running the document in the docuCheck system (screenshot)

@@ -1,10 +1,24 @@
 # Member Task Direction — David
 ## Team Leader / Product Owner / Lead Developer
 
-> **Role:** Technical architecture, background paragraphs (P1-P3), literature reviews (RBAC, AI, PWA, DPA), framework tasks, narrative consistency, formatting QA
-> **Total Claimed Tasks:** 15 tasks
-> **Estimated Effort:** 45-55 hours (out of ~55h available)
-> **Focus:** Full workload — technical writing, literature synthesis, framework design, quality assurance
+> **Role:** Technical architecture, background paragraphs (P1-P3), Chapter 2 METHODOLOGY sections (Research Design, Software Model, Project Plan, Project Assignment, Research Instruments, Data Analysis), narrative consistency, formatting QA
+> **Total Claimed Tasks:** 17 tasks
+> **Estimated Effort:** 43-64 hours (out of ~55h available)
+> **Focus:** Full workload — technical writing, methodology design, project planning, quality assurance
+
+> **IMPORTANT — Literature from Old Lit Reviews:** The literature previously gathered for the old Chapter 2 literature review tasks (RBAC, AI/RAG, PWA, DPA) is NOT lost. It feeds directly into Chapter 1 Background paragraphs P2 (Global Context) and P3 (National Context). Use relevant findings and citations from those research efforts when writing C1-02 and C1-03.
+
+---
+
+## Instructor Submission Instructions
+
+> "To all groups with approved title, construct your manuscript with the following contents:
+> Title page, Table of Contents, Chapter 1, Chapter 2, Appendices (letter to conduct, Use Case Diagram).
+> To check the formatting and template, run your document using your account in the docuCheck system as you have created in Activity 1.
+> Attach here the following: Brandname.docx, Proof of running the document in the docuCheck system."
+>
+> **Deadline:** June 10, 2026. **Mode:** Google Classroom (or physical copy).
+> **Margins:** Top 1.5", Left 1.5", Right/Bottom 1.0". **Paper:** A4.
 
 ---
 
@@ -23,15 +37,15 @@
 | C1-09 | Objectives of the Study | 2-3h | Jun 3 | None |
 | C1-11 | Scope and Delimitations | 2-3h | Jun 4 | None |
 
-### Chapter 2
+### Chapter 2 — METHODOLOGY
 | Task ID | Task | Hours | Due | Dependencies |
 |---------|------|-------|-----|--------------|
-| C2-01 | Lit Review — RBAC and Zero-Trust Security | 4-6h | Jun 5 | None |
-| C2-03 | Lit Review — AI Assistants and RAG in Education | 4-6h | Jun 5 | None |
-| C2-04 | Lit Review — Offline-Resilient and PWA Systems | 4-6h | Jun 6 | None |
-| C2-05 | Lit Review — DPA and Multi-Tenancy | 3-5h | Jun 5 | None |
-| C2-07 | Technical Framework | 3-4h | Jun 6 | None |
-| C2-08 | Conceptual Framework Prose (Chapter 2) | 2-3h | Jun 7 | C1-07, C1-08 |
+| C2-01 | Research Design — Descriptive Developmental | 3-4h | Jun 5 | C1-09 |
+| C2-02 | Software Model — RAD or AIDLC | 3-4h | Jun 5 | None |
+| C2-03 | Project Plan — Gantt Chart | 3-4h | Jun 6 | C2-02 |
+| C2-04 | Project Assignment — Table 1 | 2-3h | Jun 5 | None |
+| C2-06 | Research Instruments — SUS | 3-4h | Jun 6 | C1-09 |
+| C2-07 | Data Analysis — Methods and SUS Interpretation | 3-4h | Jun 6 | C2-06, C1-09 |
 
 ### Cross-Cutting
 | Task ID | Task | Hours | Due | Dependencies |
@@ -49,12 +63,21 @@
 - C1-03 (Background P3 — National Context) — from Jaypee
 - CC-02 (Formatting QA Review) — from Jaypee
 
-**Given up:**
-- None (you now have 15 tasks, 45-55h — full capacity)
+**Chapter 2 restructured (new METHODOLOGY tasks):**
+- C2-01: Research Design (replaces old Lit Review — RBAC)
+- C2-02: Software Model — RAD or AIDLC (new task)
+- C2-03: Project Plan — Gantt Chart (replaces old Lit Review — AI/RAG)
+- C2-04: Project Assignment (replaces old Lit Review — PWA)
+- C2-06: Research Instruments — SUS (replaces old Lit Review — DPA)
+- C2-07: Data Analysis (replaces old Technical Framework)
 
-**Jaypee's new focus:** Local context (C1-04), research questions (C1-10), related systems (C2-06), references (CC-01), citations (CC-04)
+**Old tasks REMOVED:** C2-01 (RBAC lit review), C2-03 (AI/RAG lit review), C2-04 (PWA lit review), C2-05 (DPA lit review), C2-07 (Technical Framework), C2-08 (Conceptual Framework Prose)
 
-**Christine's focus:** OMR/CV literature review (C2-02), significance (C1-12)
+**Literature reuse note:** Literature gathered for the removed lit review tasks feeds into Chapter 1 Background P2 (Global) and P3 (National).
+
+**Jaypee's focus:** Local context (C1-04), research questions (C1-10), significance of the study (C1-12), references (CC-01), citations (CC-04)
+
+**Christine's focus:** Population and Locale of the Study (C2-05 in new scheme)
 
 ---
 
@@ -71,7 +94,7 @@
 **What to Do:**
 
 1. **Identify the Core Problem (30 min):**
-   - Read `SYSTEM_FEATURES.md` and `drafts/Existing_and_Planned_Features.md` to understand what SecureCAT does.
+   - Read `SYSTEM_FEATURES.md` and `research/Existing_and_Planned_Features.md` to understand what SecureCAT does.
    - The core problem: ISPSC Tagudin currently handles admission testing through manual, paper-based workflows with no unified digital platform. Specifically:
      - **Manual admission workflows:** Test papers are physically routed between the Guidance Office and Registrar with no digital coordination.
      - **Fragmented scoring:** Scores are computed manually using answer keys; there is no automated scoring pipeline.
@@ -141,6 +164,7 @@
 4. **Compile Draft References (30 min):**
    - Create APA 7 draft references for all 5+ sources. Format: `Author, A. A. (Year). Title. *Source*, vol(issue), pages. DOI/URL`
    - Save for Jaypee's CC-01 (References Compilation).
+   - **Literature reuse:** Incorporate relevant findings from old RBAC, AI/RAG, PWA, and DPA literature reviews where they fit the global context.
 
 **Reference docs:** `guides/GUIDE-2-CHAPTER1-CONTENT.md` Section 1 Paragraph 2
 
@@ -183,6 +207,7 @@
 4. **Compile Draft References (30 min):**
    - Create APA 7 references for all 5+ sources
    - Save for Jaypee's CC-01
+   - **Literature reuse:** Incorporate relevant DPA/RA 10173 findings from old DPA literature review.
 
 **Reference docs:** `guides/GUIDE-2-CHAPTER1-CONTENT.md` Section 1 Paragraph 3
 
@@ -193,7 +218,7 @@
 ### Week 1 (June 1-3): Foundation Tasks
 
 #### C1-07: Conceptual Framework — IPO Diagram (June 3)
-**Priority:** HIGH — Blocks C1-08 and C2-08
+**Priority:** HIGH — Blocks C1-08
 
 **What to Do:**
 
@@ -229,14 +254,14 @@
 - Outputs must be THINGS the system produces. No process verbs or activities.
 - No bullet points anywhere. Numbered lists only inside IPO boxes.
 
-**Reference:** `SYSTEM_FEATURES.md`, `drafts/Existing_and_Planned_Features.md`
+**Reference:** `SYSTEM_FEATURES.md`, `research/Existing_and_Planned_Features.md`
 
 **Deliverable:** `C1-07_David_IPO_Diagram.md` with Input (6 numbered items) → Process (full title) → Output (9 numbered items)
 
 ---
 
 #### C1-09: Objectives of the Study (June 3)
-**Priority:** HIGH — Blocks C1-10 (Jaypee's task)
+**Priority:** HIGH — Blocks C1-10 (Jaypee's task) and C2-01, C2-06, C2-07
 
 **What to Do:**
 
@@ -261,103 +286,168 @@
 
 ---
 
-### Week 1-2 (June 3-5): Literature Reviews
+### Week 1 (June 3-5): Chapter 2 METHODOLOGY Tasks (Part 1)
 
-#### C2-01: Lit Review — RBAC and Zero-Trust Security (June 5)
-**Priority:** HIGH — Technical foundation
+#### C2-01: Research Design — Descriptive Developmental (June 5)
+**Priority:** HIGH — Opens Chapter 2, sets methodological foundation
 
 **What to Do:**
 
-1. **Research (90 min):**
-   - Search Google Scholar: "role-based access control education systems", "zero-trust security educational software", "HMAC authentication web applications", "multi-tenant security architecture"
-   - Filter: **2022-2026 only**, peer-reviewed journals
-   - Target: 5-7 sources covering RBAC principles, zero-trust models, HMAC mechanisms, multi-tenant security, assessment platform security
+1. **Research Descriptive Developmental Research Design (60-90 min):**
+   - Search Google Scholar for: "descriptive developmental research design", "descriptive developmental methodology IT capstone", "developmental research design software engineering"
+   - Filter: **2022-2026 only**, peer-reviewed journals and methodological references
+   - Target: 3-5 sources covering:
+     - Definition of descriptive developmental research design
+     - Application to software/information technology projects
+     - How descriptive methods pair with developmental outputs
+     - Methodological frameworks for systems development research
 
-2. **Extract Findings (60 min):**
-   - For each source, extract: RBAC implementation patterns, zero-trust security models, cryptographic data integrity mechanisms, multi-tenant isolation strategies
-   - Group findings by theme (not author-by-author)
+2. **Draft Research Design Paragraph (60-90 min):**
+   - Write **1-2 paragraphs** in paragraph form (no bullets, no numbered lists)
+   - **Structure:**
+     - Define "descriptive developmental" research design — cite methodological sources
+     - Explain the "descriptive" component: the study describes the current manual admission testing processes at ISPSC Tagudin to identify operational gaps and requirements
+     - Explain the "developmental" component: the study develops SecureCAT as a software product to address the identified gaps
+     - Connect to the study's three objectives (identify, develop, evaluate) from C1-09
+   - **Minimum 3 in-text citations (Author, Year)**, all 2022-2026
+   - Use synthesis writing — explain how this design applies to SecureCAT specifically
 
-3. **Write Review (90-120 min):**
-   - **Thematic synthesis** (1-2 paragraphs):
-     - RBAC principles in educational and administrative systems
-     - Zero-trust security and cryptographic authentication (HMAC)
-     - Multi-tenant security architectures
-     - How SecureCAT's role-based design and HMAC integrity model aligns with this literature
-   - **Minimum 5 in-text citations (Author, Year)**, all 2022-2026
-   - **DO NOT** summarize author-by-author — synthesize by theme
-   - FORBIDDEN pattern: "Author A says X. Author B says Y."
+3. **Review and Refine (30 min):**
+   - [ ] Paragraph form only — no bullets or numbered lists in body text
+   - [ ] Descriptive component clearly explained with ISPSC context
+   - [ ] Developmental component clearly explained with SecureCAT as the product
+   - [ ] Connections to specific objectives (C1-09) are explicit
+   - [ ] Minimum 3 methodological citations, all 2022-2026
+   - [ ] No bold body text (bold only for section heading)
 
-4. **Compile References (30 min):**
+4. **Compile References (15 min):**
    - Create draft APA 7 references for all sources
    - Save for Jaypee's CC-01 (References Compilation)
 
-**Reference:** `guides/GUIDE-3-CHAPTER2-CONTENT.md` (literature review pattern)
+**Reference:** `guides/GUIDE-3-CHAPTER2-CONTENT.md` (Research Design section)
 
-**Deliverable:** `C2-01_David_RBAC_Review.md` with 1-2 paragraphs + draft references, minimum 5 APA citations (all 2022-2026)
+**Deliverable:** `C2-01_David_Research_Design.md` with 1-2 paragraphs defining descriptive developmental research design, applying it to SecureCAT, minimum 3 APA citations + draft references
 
 ---
 
-#### C2-03: Lit Review — AI Assistants and RAG in Education (June 5)
-**Priority:** HIGH — AI Companion component
+#### C2-02: Software Model — RAD or AIDLC (June 5)
+**Priority:** HIGH — Defines the development methodology and phases for the project
 
 **What to Do:**
 
-1. **Research (90 min):**
-   - Search: "AI companions education", "RAG knowledge bases", "LLM educational chatbots", "AI chatbots for student guidance", "natural language interfaces for applicant inquiries", "course recommendation systems"
-   - Filter: **2022-2026 only**, peer-reviewed
-   - Target: 5-7 sources covering AI-powered chatbots in educational settings, RAG architectures for student-facing assistants, vector embeddings for knowledge retrieval, course recommendation systems, natural language interfaces for applicant inquiries
+1. **Research RAD and AIDLC Models (60-90 min):**
+   - Search Google Scholar for: "Rapid Application Development RAD methodology", "Agile Iterative Development Life Cycle AIDLC", "RAD vs AIDLC software development", "software development models for IT capstone"
+   - Filter: **2022-2026 only**, peer-reviewed journals
+   - Target: 3-5 sources covering:
+     - Rapid Application Development (RAD) — phases, principles, advantages
+     - Agile Iterative Development Life Cycle (AIDLC) — phases, principles, advantages
+     - Comparison of RAD and AIDLC for web application development
+     - Application to educational/institutional software
 
-2. **Extract Findings (60 min):**
-   - For each source, extract: AI assistant use cases in education, RAG architectures and knowledge bases, embedding strategies (vector databases, semantic search), course recommendation approaches, applicant-facing chatbot patterns
+2. **Choose the Software Model (30 min):**
+   - Evaluate both RAD and AIDLC against SecureCAT's characteristics:
+     - SecureCAT has clear modules (scheduling, OMR, AI companion, PWA offline, RBAC)
+     - Development involves iterative feature delivery (existing system + planned modules)
+     - Requirements may evolve during development
+   - Select the model that best fits the project's iterative, module-based nature
+   - Document your rationale in 2-3 sentences
 
-3. **Write Review (90-120 min):**
-   - **Thematic synthesis** (1-2 paragraphs):
-     - AI assistants in educational contexts
-     - RAG architectures for applicant-facing knowledge retrieval
-     - Course recommendation and student guidance systems
-     - How SecureCAT's AI Companion with RAG (Mixedbread vector embeddings + course recommendations + applicant inquiries) fits this literature
-   - **Minimum 5 in-text citations (Author, Year)**, all 2022-2026
-   - Synthesized writing only — FORBIDDEN pattern: "Author A says X. Author B says Y."
+3. **Draft Software Model Description (60-90 min):**
+   - Write **1-2 paragraphs** in paragraph form describing the chosen model and its phases
+   - **Structure:**
+     - Name the chosen model (RAD or AIDLC) and cite the source
+     - Describe each phase of the model in paragraph form:
+       - If RAD: Requirements Planning → User Design → Rapid Construction → Cutover
+       - If AIDLC: Planning → Analysis → Design → Implementation → Testing → Deployment (with iteration)
+     - Explain how each phase applies to SecureCAT's development
+     - Minimum 3 in-text citations (Author, Year), all 2022-2026
+   - **Paragraph form ONLY** — no bullets or numbered lists in body text
+   - FORBIDDEN: listing phases as bullet points or numbered items in body text
 
-4. **Compile References (30 min):**
+4. **Create Software Model Figure (30 min):**
+   - Create a visual diagram showing the phases of the chosen model
+   - Show iteration loops where applicable
+   - Figure caption: **"Figure X. [Model Name] Phases"** — placed BELOW the figure, bold
+   - Keep the diagram clean and readable on A4 paper
+
+5. **Review and Refine (30 min):**
+   - [ ] Model is clearly named and cited
+   - [ ] All phases described in paragraph form (no bullets)
+   - [ ] Each phase is connected to SecureCAT's development activities
+   - [ ] Figure included with correct caption format (below figure, bold)
+   - [ ] Minimum 3 citations, all 2022-2026
+   - [ ] Paragraph form only — no bold body text
+
+6. **Compile References (15 min):**
    - Create draft APA 7 references for all sources
+   - Save for Jaypee's CC-01
 
-**Reference:** `SYSTEM_FEATURES.md` for AI Companion with RAG details
+**Reference:** `guides/GUIDE-3-CHAPTER2-CONTENT.md` (Software Model section), `SYSTEM_FEATURES.md`
 
-**Deliverable:** `C2-03_David_AI_RAG_Review.md` with 1-2 paragraphs + draft references, minimum 5 APA citations (all 2022-2026)
+**Deliverable:** `C2-02_David_Software_Model.md` with 1-2 paragraphs describing chosen model (RAD or AIDLC) in paragraph form, figure showing phases, minimum 3 APA citations + draft references
 
 ---
 
-#### C2-05: Lit Review — Philippine Data Privacy Act and Multi-Tenancy (June 5)
-**Priority:** MEDIUM — Compliance and architecture
+#### C2-04: Project Assignment — Table 1 (June 5)
+**Priority:** MEDIUM — Team role assignments table
 
 **What to Do:**
 
-1. **Research (60 min):**
-   - Search: "Data Privacy Act education Philippines", "RA 10173 compliance educational software", "multi-tenant database architecture", "tenant isolation SaaS", "data isolation strategies SUC"
-   - Filter: **2022-2026 only**, peer-reviewed
-   - Target: 5-7 sources covering Philippine Data Privacy Act (RA 10173) compliance in educational software, multi-tenant database architecture patterns, data isolation strategies for SUC systems
+1. **Review Team Roles and Assignments (30 min):**
+   - Review `TEAM_META_GUIDE.md` for standard capstone role structure
+   - Identify the 5 standard capstone roles:
+     1. Project Manager / Team Leader
+     2. Lead Developer
+     3. Developer
+     4. QA / Tester
+     5. Documentation / Technical Writer
+   - Map each role to the actual team member(s):
+      - David — Project Manager / Team Leader, Lead Developer
+      - Christine — Developer
+      - Jaypee — Developer, QA / Tester, Documentation / Technical Writer
+    - Ensure role assignments match actual contributions to the project
 
-2. **Extract Findings (45 min):**
-   - For each source, extract: RA 10173 requirements for educational data, multi-tenant database patterns, tenant isolation strategies (row-level security, separate schemas), compliance frameworks
+2. **Draft Project Assignment Table (30-45 min):**
+   - Create **Table 1** with the following structure:
 
-3. **Write Review (60-90 min):**
-   - **Thematic synthesis** (1-2 paragraphs):
-     - Data privacy compliance in Philippine education (RA 10173)
-     - Multi-tenant architectural patterns for tenant isolation
-     - How SecureCAT's multi-tenant architecture complies with RA 10173
-   - **Minimum 5 in-text citations (Author, Year)**, all 2022-2026
+     | Name | Role | Task Assignment |
+     |------|------|-----------------|
+     | David | Project Manager / Team Leader | Overall project coordination, technical architecture, Chapter 1 background (P1-P3), Chapter 2 methodology sections (Research Design, Software Model, Project Plan, Project Assignment, Research Instruments, Data Analysis), formatting QA, narrative consistency |
+     | Christine | Developer | Chapter 2 population and locale, system modules development, testing |
+     | Jaypee | Developer / QA | Chapter 1 local context, research questions, Chapter 1 significance of the study, references compilation, testing, documentation |
 
-4. **Compile References (30 min):**
-   - Create draft APA 7 references for all sources
+   - Adjust task assignments to reflect the corrected Chapter 2 METHODOLOGY structure
+   - Ensure all 5 standard roles are represented (even if some members hold multiple roles)
 
-**Reference:** `SYSTEM_FEATURES.md` for multi-tenant architecture details
+3. **Write Narrative Paragraph (30-45 min):**
+   - Write **1 paragraph** in paragraph form introducing Table 1
+   - Describe how roles were assigned based on individual competencies and project needs
+   - Mention that the team follows a collaborative approach with defined responsibilities
+   - Paragraph form only — no bullets or numbered lists
 
-**Deliverable:** `C2-05_David_DPA_MultiTenancy_Review.md` with 1-2 paragraphs + draft references, minimum 5 APA citations (all 2022-2026)
+4. **Format Table (15-30 min):**
+   - Table caption: **"Table 1. Project Assignment"** — placed ABOVE the table, left-aligned, bold
+   - Table borders: 1pt line width
+   - Column headers: bold
+   - Content: Times New Roman 12pt
+   - Ensure table fits within page margins (Left 1.5", Right 1.0")
+
+5. **Review and Refine (15 min):**
+   - [ ] Table 1 contains exactly 5 standard roles (may be held by 3 members)
+   - [ ] All team members are listed with their roles and task assignments
+   - [ ] Task assignments reflect corrected Chapter 2 METHODOLOGY structure
+   - [ ] Table caption is above the table, left-aligned, bold
+   - [ ] Table borders are 1pt
+   - [ ] Narrative paragraph introduces the table
+   - [ ] Paragraph form only — no bullets in body text
+
+**Reference:** `TEAM_META_GUIDE.md`, team member role assignments
+
+**Deliverable:** `C2-04_David_Project_Assignment.md` with 1 narrative paragraph + Table 1 (5 standard roles, team member assignments, task descriptions)
 
 ---
 
-### Week 1-2 (June 3-7): Framework Tasks
+### Week 1-2 (June 3-7): Chapter 1 Framework and Scope Tasks
 
 #### C1-08: Conceptual Framework — Narrative (June 4)
 **Priority:** HIGH — Depends on C1-07
@@ -419,11 +509,173 @@
      - Data privacy: complies with RA 10173 (Data Privacy Act of 2012); system stores only necessary student data; access controlled via role-based permissions; multi-tenant architecture prepares for future campus expansion while maintaining data isolation
    - Write delimitations that frame planned features as research contributions, not as scope violations
 
-**Reference:** `guides/GUIDE-2-CHAPTER1-CONTENT.md` Section 4, `SYSTEM_FEATURES.md`, `drafts/Existing_and_Planned_Features.md`
+**Reference:** `guides/GUIDE-2-CHAPTER1-CONTENT.md` Section 4, `SYSTEM_FEATURES.md`, `research/Existing_and_Planned_Features.md`
 
 **Deliverable:** `C1-11_David_Scope_Delimitations.md` with 2 paragraphs (scope + delimitations), paragraph-form only, covering both existing and planned features
 
 ---
+
+### Week 1-2 (June 5-6): Chapter 2 METHODOLOGY Tasks (Part 2)
+
+#### C2-03: Project Plan — Gantt Chart (June 6)
+**Priority:** HIGH — Shows project timeline, phases must match software model from C2-02
+
+**What to Do:**
+
+1. **Review Software Model Phases (30 min):**
+   - Read your C2-02 (Software Model) output
+   - List the phases of the chosen model (RAD or AIDLC)
+   - These phases MUST be the basis for the Gantt chart timeline
+   - Example if RAD: Requirements Planning → User Design → Rapid Construction → Cutover
+   - Example if AIDLC: Planning → Analysis → Design → Implementation → Testing → Deployment (iterated)
+
+2. **Define Project Timeline and Milestones (45-60 min):**
+   - Define the overall project timeframe (e.g., June 2026 – March 2027, or per academic calendar)
+   - Break down each software model phase into specific activities:
+     - Planning/Requirements: literature review, requirements gathering, system analysis
+     - Design: UI/UX design, database design, architecture design
+     - Development/Construction: frontend development, backend development, integration
+     - Testing: unit testing, integration testing, usability testing (SUS)
+     - Deployment: system deployment, user training, documentation
+   - Assign realistic durations to each activity
+   - Identify milestones and deliverables for each phase
+
+3. **Draft Narrative Paragraph (45-60 min):**
+   - Write **1 paragraph** in paragraph form describing the project plan
+   - Include specific dates or date ranges for each phase
+   - Connect phases to the software model chosen in C2-02
+   - Example: "The project follows a [RAD/AIDLC] approach spanning [X months], beginning with [phase] in [month year] and concluding with [phase] in [month year]. The requirements planning phase, scheduled from [date] to [date], involves..."
+   - **Paragraph form ONLY** — no bullets or numbered lists in body text
+   - Minimum 2-3 sentences describing each major phase with dates
+
+4. **Create Gantt Chart Figure (60-90 min):**
+   - Create a Gantt chart showing:
+     - X-axis: timeline (months or weeks)
+     - Y-axis: project phases and activities
+     - Bars showing duration of each activity
+     - Milestones marked where appropriate
+   - Phases must match the software model from C2-02
+   - Figure caption: **"Figure X. Gantt Chart of Project [Name]"** — placed BELOW the figure, bold
+   - Ensure chart is readable on A4 paper with proper margins
+   - Use a clean, professional layout
+
+5. **Review and Refine (30 min):**
+   - [ ] Gantt chart phases match software model from C2-02
+   - [ ] Narrative paragraph describes each phase with specific dates
+   - [ ] Figure caption is below the figure, bold
+   - [ ] Timeline is realistic for a capstone project
+   - [ ] Paragraph form only — no bullets in body text
+   - [ ] Chart is readable and properly formatted
+
+**Reference:** `guides/GUIDE-3-CHAPTER2-CONTENT.md` (Project Plan section), C2-02 output
+
+**Deliverable:** `C2-03_David_Gantt_Chart.md` with 1 narrative paragraph + Gantt chart figure, phases matching software model from C2-02
+
+---
+
+#### C2-06: Research Instruments — System Usability Scale (June 6)
+**Priority:** HIGH — Defines the evaluation instrument, connects to C1-09 Objective 3
+
+**What to Do:**
+
+1. **Research the System Usability Scale (60-90 min):**
+   - Search Google Scholar for: "System Usability Scale SUS", "SUS usability measurement", "Brooke SUS 1996", "SUS scoring 0-100", "SUS Likert scale usability"
+   - Target: 3-5 sources covering:
+     - Original SUS development by Brooke (1996) — foundational citation
+     - SUS structure: 10 items, 5-point Likert scale (Strongly Disagree to Strongly Agree)
+     - SUS scoring formula: odd items (subtract 1 from user response), even items (subtract 5 from user response), sum and multiply by 2.5 for score range 0-100
+     - SUS interpretation: 0-100 scale with adjective ratings
+     - Application of SUS to educational software and web applications
+   - Include both the original Brooke (1996) reference and recent (2022-2026) applications
+
+2. **Draft Research Instruments Description (60-90 min):**
+   - Write **1-2 paragraphs** in paragraph form describing the SUS instrument
+   - **Structure:**
+     - Introduce the System Usability Scale (SUS) as the chosen instrument for evaluating SecureCAT's usability
+     - Describe the SUS structure: 10 questionnaire items on a 5-point Likert scale (1 = Strongly Disagree, 5 = Strongly Agree)
+     - Explain the SUS scoring procedure: odd-numbered items are scored as (response − 1), even-numbered items as (5 − response); the sum is multiplied by 2.5 to yield a score from 0 to 100
+     - Cite Brooke (1996) as the original source and at least 2 recent applications
+     - Explain why SUS is appropriate for evaluating SecureCAT (brief, validated, widely used for software usability)
+   - **Minimum 3 in-text citations**, including Brooke (1996) and recent sources
+   - **Paragraph form ONLY** — no bullets or numbered lists in body text
+   - **DO NOT** reproduce the full 10 SUS items verbatim (they are copyrighted); describe the structure
+
+3. **Review and Refine (30 min):**
+   - [ ] SUS is described with: 10 items, 5-point Likert, 0-100 scoring range
+   - [ ] Brooke (1996) is cited as the original source
+   - [ ] At least 2 additional recent (2022-2026) citations included
+   - [ ] Scoring procedure is clearly explained in paragraph form
+   - [ ] Connection to Objective 3 (evaluate usability using SUS) is explicit
+   - [ ] Paragraph form only — no bullets, no bold body text
+   - [ ] No verbatim reproduction of SUS items
+
+4. **Compile References (15 min):**
+   - Create draft APA 7 references for all sources (including Brooke, 1996)
+   - Save for Jaypee's CC-01
+
+**Reference:** `guides/GUIDE-3-CHAPTER2-CONTENT.md` (Research Instruments section), C1-09 Objectives
+
+**Deliverable:** `C2-06_David_Research_Instruments.md` with 1-2 paragraphs describing SUS (10 items, 5-point Likert, 0-100 scoring), minimum 3 citations (Brooke 1996 + 2 recent) + draft references
+
+---
+
+#### C2-07: Data Analysis — Methods and SUS Interpretation (June 6)
+**Priority:** HIGH — Links objectives to analysis methods, defines how SUS data is interpreted
+
+**What to Do:**
+
+1. **Map Objectives to Analysis Methods (45-60 min):**
+   - Review C1-09 (Objectives of the Study) — 3 specific objectives
+   - For each objective, define the corresponding data analysis method:
+     - **Objective 1 (Identify):** Qualitative analysis of gathered requirements — describe how needs assessment data, process documentation, and gap analysis results will be organized and analyzed (thematic analysis or descriptive summary)
+     - **Objective 2 (Develop):** Development process documentation — describe how the development process follows the chosen software model (from C2-02) and how outputs are validated against requirements
+     - **Objective 3 (Evaluate):** SUS statistical analysis — describe how SUS scores will be computed and interpreted using the SUS scale
+   - **NO significance testing** — the study uses descriptive interpretation of SUS scores, not hypothesis testing
+
+2. **Draft Data Analysis Description (60-90 min):**
+   - Write **1-2 paragraphs** in paragraph form describing data analysis methods
+   - **Structure:**
+     - Paragraph 1: Link each specific objective to its corresponding analysis method (identify → qualitative description, develop → development validation, evaluate → SUS scoring)
+     - Paragraph 2: Describe the SUS interpretation framework — how raw scores are converted to 0-100 scale and what score ranges mean (reference Table 3)
+   - **Minimum 2-3 in-text citations** for SUS interpretation methodology
+   - **Paragraph form ONLY** — no bullets or numbered lists in body text
+
+3. **Create Table 3 — SUS Interpretation Scale (30-45 min):**
+   - Create **Table 3** showing the SUS score interpretation:
+
+     | SUS Score Range | Adjective Rating | Interpretation |
+     |-----------------|-------------------|----------------|
+     | 0-25 | Worst Imaginable | Not acceptable |
+     | 25-39 | Poor | Marginal |
+     | 39-52 | OK | Marginal |
+     | 52-73 | Good | Acceptable |
+     | 73-85 | Excellent | Acceptable |
+     | 85-100 | Best Imaginable | Acceptable |
+
+   - Adjust ranges based on your cited source (Bangor et al., 2009 or Brooke, 1996)
+   - Table caption: **"Table 3. SUS Score Interpretation"** — placed ABOVE the table, left-aligned, bold
+   - Table borders: 1pt line width
+
+4. **Review and Refine (30 min):**
+   - [ ] Each specific objective (C1-09) is linked to a data analysis method
+   - [ ] SUS interpretation is described in paragraph form with Table 3 reference
+   - [ ] **NO significance testing** mentioned (no t-test, ANOVA, p-values, etc.)
+   - [ ] Table 3 has correct caption format (above, left-aligned, bold) and 1pt borders
+   - [ ] Minimum 2-3 citations for SUS methodology
+   - [ ] Paragraph form only — no bullets in body text
+   - [ ] Descriptive analysis only — SUS scores interpreted via adjective ratings
+
+5. **Compile References (15 min):**
+   - Create draft APA 7 references for all sources
+   - Save for Jaypee's CC-01
+
+**Reference:** `guides/GUIDE-3-CHAPTER2-CONTENT.md` (Data Analysis section), C1-09 Objectives, C2-06 Research Instruments
+
+**Deliverable:** `C2-07_David_Data_Analysis.md` with 1-2 paragraphs linking objectives to analysis methods + Table 3 (SUS interpretation), no significance testing, minimum 2-3 citations + draft references
+
+---
+
+### Week 1-2 (June 5-7): Chapter 1 Synthesis Tasks
 
 #### C1-05: Background P5 — Synthesis and Gap Identification (June 6)
 **Priority:** HIGH — Depends on C1-02, C1-03 (yours) and C1-04 (Jaypee's)
@@ -489,98 +741,6 @@
 
 ---
 
-### Week 1-2 (June 3-6): Literature Reviews (continued)
-
-#### C2-04: Lit Review — Offline-Resilient and PWA Systems (June 6)
-**Priority:** HIGH — PWA architecture
-
-**What to Do:**
-
-1. **Research (90 min):**
-   - Search: "progressive web apps education", "offline-first web applications", "PWA service worker strategies", "IndexedDB local caching", "background sync mechanisms"
-   - Filter: **2022-2026 only**, peer-reviewed
-   - Target: 5-7 sources covering PWA adoption patterns, offline-first architectural patterns, service worker design strategies, IndexedDB for local caching, background sync mechanisms in critical operational environments
-
-2. **Extract Findings (60 min):**
-   - For each source, extract: PWA adoption patterns and benefits, offline-first architectures and service workers, sync strategies for reconnection, relevance to low-connectivity contexts (Philippines/ISPSC)
-
-3. **Write Review (90-120 min):**
-   - **Thematic synthesis** (1-2 paragraphs):
-     - PWA benefits and adoption trends
-     - Offline-first architectures and service workers
-     - PWAs in low-connectivity contexts (relevant to Philippine higher education)
-     - How SecureCAT's PWA architecture enables offline-resilient proctoring
-   - **Minimum 5 in-text citations (Author, Year)**, all 2022-2026
-
-4. **Compile References (30 min):**
-   - Create draft APA 7 references for all sources
-
-**Reference:** `SYSTEM_FEATURES.md` for PWA and offline-resilient portal details
-
-**Deliverable:** `C2-04_David_PWA_Review.md` with 1-2 paragraphs + draft references, minimum 5 APA citations (all 2022-2026)
-
----
-
-#### C2-07: Technical Framework (June 6)
-**Priority:** HIGH — System architecture documentation
-
-**What to Do:**
-
-1. **Define Technical Stack (45-60 min):**
-   Document the full technology stack per TEAM_META_GUIDE C2-07. You MUST include ALL of the following:
-   - **Core stack:** Laravel 12 / Inertia v2 / Svelte 5 / Tailwind 4
-   - **Security model:** HMAC security model (SHA-256 HMAC signature locks for score integrity, tamper detection, immutable audit logs)
-   - **AI pipeline:** Vector embeddings for RAG (MixedBread embeddings, semantic search, RAG pattern for AI Copilot)
-   - **Offline architecture:** PWA service worker architecture (service workers, IndexedDB caching, background sync)
-   - **Database isolation:** Multi-tenant database isolation concepts (tenant data segregation, row-level security or separate schemas)
-   - **Document generation:** DOMPDF/PHPWord document generation pipeline (DOMPDF for PDF rendering, PHPWord/FPDI for DOCX generation)
-
-2. **Describe System Architecture (60-90 min):**
-   Write 1-2 paragraphs explaining architecture in academic language covering:
-   - **Frontend:** Svelte 5 components, Tailwind 4 styling, shadcn-svelte components, Inertia v2 for seamless navigation
-   - **Backend:** Laravel 12 controllers, policies for role-based access, middleware for authentication, form request validation
-   - **Security:** HMAC signature locks (SHA-256 using server-side secret key + Applicant UUID + Test Score + Proctor UUID), immutable write-only audit logs, Laravel Policy route gating
-   - **Database:** Multi-tenant schema, tenant isolation strategies, Eloquent ORM
-   - **PWA:** Service worker for offline-first proctoring, IndexedDB caching, background sync for reconnection
-   - **AI:** MixedBread vector embeddings for semantic search, RAG pattern for AI Copilot knowledge base, natural language querying
-   - **Document generation:** DOMPDF for PDF rendering (admission slips, result sheets), PHPWord/FPDI for DOCX generation (bulk result sheets)
-
-3. **Optional: Create Architecture Diagram:**
-   System architecture figure showing layers (Frontend → Backend → Database → External Services). Figure caption placed below the figure, bold.
-
-**Reference:** `SYSTEM_FEATURES.md`, `AGENTS.md`, `drafts/Existing_and_Planned_Features.md`
-
-**Deliverable:** `C2-07_David_Technical_Framework.md` with 1-2 paragraphs covering ALL required components (Laravel 12 / Inertia v2 / Svelte 5 / Tailwind 4 stack, HMAC security model, vector embeddings for RAG, PWA service worker architecture, multi-tenant database isolation concepts, DOMPDF/PHPWord document generation pipeline), plus optional architecture diagram
-
----
-
-#### C2-08: Conceptual Framework Prose — Chapter 2 Expansion (June 7)
-**Priority:** MEDIUM — Expansion of Chapter 1 framework
-
-**What to Do:**
-
-1. **Review Chapter 1 Conceptual Framework (30 min):**
-   - Read your C1-07 (IPO diagram) and C1-08 (narrative)
-   - Ensure Chapter 2 prose is consistent but expanded
-
-2. **Write Expanded Framework Narrative (60-90 min):**
-   - **2-3 paragraphs** explaining framework in more depth
-   - Paragraph 1: Reiterate IPO framework and how it guides system development
-   - Paragraph 2: Explain how framework connects to research design (objectives → methodology)
-   - Paragraph 3 (optional): Describe how framework ensures SecureCAT meets ISPSC Tagudin's needs
-   - Connect inputs through processing to outputs with both existing and planned features
-   - Describe the system workflow stages in detail
-
-3. **Align with Methodology (15-30 min):**
-   - Ensure framework aligns with Chapter 2 methodology sections (research design, software model)
-   - Verify IPO items map to real processing stages
-
-**Reference:** `guides/GUIDE-3-CHAPTER2-CONTENT.md` (Chapter 2 structure)
-
-**Deliverable:** `C2-08_David_Framework_Prose_Ch2.md` with 2-3 paragraphs expanding the IPO into narrative for Chapter 2, connecting inputs through processing to outputs with both existing and planned features
-
----
-
 ### Week 2 (June 8-9): QA Tasks
 
 #### CC-02: Formatting QA Review (June 8)
@@ -598,7 +758,7 @@
    |------|--------------|----------------|
    | **Left margin** | **1.5 inches** | ❌ 1 inch — WRONG |
    | **Right margin** | **1.0 inch** | — |
-   | **Top margin** | **1.0 inch** | — |
+   | **Top margin** | **1.5 inches** | ❌ 1 inch — WRONG |
    | **Bottom margin** | **1.0 inch** | — |
    | **Font** | Times New Roman, 12pt | — |
    | **Line spacing** | Double throughout | — |
@@ -613,9 +773,12 @@
    | **Header/footer borders** | Must sit entirely within 1-inch top/bottom margins | ❌ Bleeding outside margins |
    | **Extra spacing between paragraphs** | **0pt** space before/after | ❌ Extra blank lines between paragraphs |
 
+   **NOTE:** Per instructor instructions, top margin is **1.5 inches** (not 1.0 inch). Left margin is **1.5 inches**. Right and bottom margins are **1.0 inch**. Paper size: **A4**.
+
 2. **Check All Formatting Rules (60-90 min):**
    Go through the entire manuscript and verify every rule:
-   - [ ] **Margins:** Left 1.5", Right 1.0", Top 1.0", Bottom 1.0" on ALL pages
+   - [ ] **Margins:** Top 1.5", Left 1.5", Right 1.0", Bottom 1.0" on ALL pages
+   - [ ] **Paper size:** A4
    - [ ] **Font:** All text is Times New Roman 12pt (headings can be bold/italic but same font and size)
    - [ ] **Spacing:** Double-spaced, NO extra space between paragraphs (space before/after = 0pt)
    - [ ] **Paragraph indent:** Exactly 5 spaces at the start of every paragraph
@@ -631,7 +794,7 @@
    - "Page 5: Extra space between paragraphs — remove (set space after to 0pt)"
    - "Table 2: Border is 0.5pt — change to 1pt"
    - "Section 2.3: Bullet points used in scope paragraph — convert to paragraph form"
-   - "Page 12: Left margin is 1.0" — change to 1.5""
+   - "Page 12: Left margin is 1.0\" — change to 1.5\""
 
 **Deliverable:** `CC-02_David_Formatting_QA.md` — complete formatting checklist with violations and corrections
 
@@ -645,7 +808,7 @@
 
 1. **Read All Chapters End-to-End (60-90 min):**
    - Chapter 1: Background (P1-P6) → Framework (IPO + Narrative) → Objectives → Research Questions → Scope → Significance
-   - Chapter 2: Research Design → Software Model → Project Plan → Assignments → Population → Instruments → Analysis → Literature Reviews → Related Systems → Technical Framework → Conceptual Framework Prose
+   - Chapter 2: Research Design → Software Model → Project Plan → Project Assignment → Population and Locale → Research Instruments → Data Analysis
    - Read as a continuous narrative, not isolated sections
 
 2. **Check Consistency Across Sections (90-120 min):**
@@ -654,15 +817,21 @@
      - Objectives align with research questions
    - **Framework alignment:**
      - Framework aligns with methodology
-     - IPO inputs/outputs match technical framework
+     - IPO inputs/outputs match system description
+   - **Methodology alignment:**
+     - Research design matches the descriptive-developal approach
+     - Software model phases match Gantt chart phases (C2-02 ↔ C2-03)
+     - Research instruments (SUS) match evaluation objective (C1-09 Objective 3)
+     - Data analysis methods link back to each specific objective
+     - No significance testing mentioned anywhere in data analysis
    - **Scope alignment:**
-     - Scope matches features described in literature reviews
+     - Scope matches features described in methodology
      - Delimitations match what system does and does not do
      - Both existing and planned features presented coherently
    - **Citation consistency:**
      - All (Author, Year) citations match reference entries
      - No orphaned citations or references
-     - All sources within 2022-2026 range
+     - All sources within 2022-2026 range (except foundational like Brooke 1996)
    - **Terminology consistency:**
      - "SecureCAT" used consistently throughout
      - System title consistent across all mentions
@@ -694,30 +863,37 @@
 
 ## Your Week-by-Week Schedule
 
-### Week 1 (June 1-5): Foundation + Background + Literature
+### Week 1 (June 1-3): Foundation Tasks
 - [ ] **June 1-2:** C1-07 (IPO Diagram) — 6 inputs, 9 outputs, numbered lists only
 - [ ] **June 1-2:** C1-09 (Objectives) — general objective + 3 numbered specific objectives
 - [ ] **June 2-3:** C1-01 (Core Problem) — write 8-12 sentence citation-free paragraph
-- [ ] **June 2-4:** C1-02 (Global Context) — 12-15 sentences with 5+ citations
-- [ ] **June 2-4:** C1-03 (National Context) — 12-15 sentences with 5+ citations
+
+### Week 1 (June 3-5): Background + Methodology Foundation
+- [ ] **June 3-4:** C1-02 (Global Context) — 12-15 sentences with 5+ citations (reuse old RBAC/AI/PWA lit)
+- [ ] **June 3-4:** C1-03 (National Context) — 12-15 sentences with 5+ citations (reuse old DPA lit)
 - [ ] **June 3-4:** C1-08 (Framework Narrative) — exactly 2 paragraphs
 - [ ] **June 3-4:** C1-11 (Scope and Delimitations) — 2 paragraphs covering existing AND planned features
-- [ ] **June 3-5:** C2-01 (RBAC Review) — minimum 5 citations, all 2022-2026
-- [ ] **June 3-5:** C2-03 (AI/RAG Review) — minimum 5 citations, all 2022-2026
-- [ ] **June 3-5:** C2-05 (DPA/Multi-Tenancy Review) — minimum 5 citations, all 2022-2026
-- [ ] **June 5:** C1-01, C1-02, C1-03, C2-01, C2-03, C2-05 due
+- [ ] **June 3-5:** C2-01 (Research Design) — define descriptive developmental, 3+ citations
+- [ ] **June 3-5:** C2-02 (Software Model) — choose RAD or AIDLC, describe phases in paragraph form, include figure
+- [ ] **June 3-5:** C2-04 (Project Assignment) — Table 1 with 5 standard roles + narrative paragraph
+- [ ] **June 5:** C1-01, C1-02, C1-03, C1-08, C1-11, C2-01, C2-02, C2-04 due
 
-### Week 1-2 (June 5-7): Synthesis, Clinching, PWA, Framework
-- [ ] **June 5-6:** C2-04 (PWA Review) — minimum 5 citations, all 2022-2026
-- [ ] **June 5-6:** C2-07 (Technical Framework) — 1-2 paragraphs covering ALL required components
+### Week 1-2 (June 5-7): Methodology + Synthesis
+- [ ] **June 5-6:** C2-03 (Project Plan — Gantt Chart) — phases match C2-02, narrative paragraph with dates
+- [ ] **June 5-6:** C2-06 (Research Instruments — SUS) — describe SUS, 10 items, 5-point Likert, 0-100, cite Brooke
+- [ ] **June 5-6:** C2-07 (Data Analysis) — link objectives to methods, Table 3 SUS interpretation, NO significance testing
 - [ ] **June 5-6:** C1-05 (Synthesis and Gap) — 10-12 sentences, wait for Jaypee's C1-04
 - [ ] **June 6-7:** C1-06 (Clinching) — 8-10 sentences with 3 explicit components
-- [ ] **June 6-7:** C2-08 (Framework Prose Ch2) — 2-3 paragraphs expanding IPO
-- [ ] **June 7:** C1-05, C1-06, C2-04, C2-07, C2-08 due
+- [ ] **June 7:** C2-03, C2-06, C2-07, C1-05, C1-06 due
 
 ### Week 2 (June 8-9): QA
-- [ ] **June 8:** CC-02 (Formatting QA) — check ALL formatting rules per GUIDE-1
-- [ ] **June 9:** CC-03 (Narrative Consistency) — read entire manuscript, fix inconsistencies, verify paragraph lengths
+- [ ] **June 8:** CC-02 (Formatting QA) — check ALL formatting rules per GUIDE-1, A4 paper, correct margins
+- [ ] **June 9:** CC-03 (Narrative Consistency) — read entire manuscript, fix inconsistencies, verify methodology alignment
+
+### Week 2 (June 10): Submission
+- [ ] **June 10:** Final manuscript assembled as Brandname.docx
+- [ ] **June 10:** Run document through docuCheck system
+- [ ] **June 10:** Submit via Google Classroom: Brandname.docx + docuCheck proof
 
 ---
 
@@ -725,25 +901,26 @@
 
 1. **Daily Progress Updates:**
    - Post brief updates in group Discord
-   - Example: "Finished C1-01 core problem paragraph (10 sentences, no citations). Starting C1-02 global research."
+   - Example: "Finished C1-01 core problem paragraph (10 sentences, no citations). Starting C2-01 Research Design."
    - Flag blockers immediately
 
 2. **Coordinate with Jaypee:**
    - Provide C1-09 (Objectives) to Jaypee by June 3 for C1-10 (Research Questions)
    - Wait for Jaypee's C1-04 (Local Context) before starting C1-05 (Synthesis)
    - Ask for Jaypee's CC-01 (References) by June 8 for citation checks
+   - Coordinate with Jaypee on C1-12 (Significance of the Study) if he needs technical details on AI Companion or HMAC signatures
 
 3. **Coordinate with Christine:**
-   - Provide ISPSC context to Jaypee if he asks (you know the system features)
-   - Answer technical questions about SecureCAT architecture
+   - Provide Christine with Chapter 2 methodology context for her task (C2-05 Locale/Population)
+   - Ensure C2-05 (Population and Locale — Christine's task) aligns with your C2-01 Research Design
 
 4. **Submit Draft References:**
-   - Your draft references for C1-01, C1-02, C1-03, C2-01, C2-03, C2-04, C2-05 should be ready by June 6
+   - Your draft references for C1-02, C1-03, C2-01, C2-02, C2-06, C2-07 should be ready by June 6
    - Send these to Jaypee for CC-01 (References Compilation)
 
 ---
 
-## Summary of Your 15 Tasks
+## Summary of Your 17 Tasks
 
 **Chapter 1 (9 tasks):**
 - C1-01, C1-02, C1-03: Background paragraphs (P1-P3) — 8-15 sentences each
@@ -754,17 +931,49 @@
 - C1-09: Objectives — general + 3 specific
 - C1-11: Scope and Delimitations — 2 paragraphs
 
-**Chapter 2 (6 tasks):**
-- C2-01, C2-03, C2-04, C2-05: Literature reviews — 1-2 paragraphs each, 5+ citations
-- C2-07: Technical Framework — 1-2 paragraphs covering full stack
-- C2-08: Framework Prose — 2-3 paragraphs
+**Chapter 2 — METHODOLOGY (6 tasks):**
+- C2-01: Research Design — descriptive developmental, 3+ citations
+- C2-02: Software Model — RAD or AIDLC, paragraph form, figure
+- C2-03: Project Plan — Gantt chart, phases match C2-02, narrative with dates
+- C2-04: Project Assignment — Table 1 with 5 standard roles
+- C2-06: Research Instruments — SUS description (10 items, 5-point Likert, 0-100)
+- C2-07: Data Analysis — objectives-to-methods mapping, Table 3 SUS interpretation, no significance testing
 
 **Cross-Cutting (2 tasks):**
-- CC-02: Formatting QA — check all GUIDE-1 rules
-- CC-03: Narrative Consistency — final integration review
+- CC-02: Formatting QA — check all GUIDE-1 rules, A4, correct margins
+- CC-03: Narrative Consistency — final integration review, verify methodology alignment
 
 **Total estimated effort: 45-55 hours** — full capacity
 
 ---
 
-You are carrying the team's full technical and narrative workload. Focus on synthesis, technical accuracy, and narrative consistency. Your role is to ensure all pieces fit together into a coherent manuscript that clearly presents SecureCAT as the solution to ISPSC Tagudin's admission testing challenges.
+## Pre-Submission Checklist
+
+Before June 10 submission:
+
+- [ ] All Chapter 1 tasks complete and reviewed
+- [ ] All Chapter 2 METHODOLOGY tasks complete and reviewed
+- [ ] Software model phases (C2-02) match Gantt chart phases (C2-03)
+- [ ] Research instruments (C2-06 SUS) match evaluation objective (C1-09 Objective 3)
+- [ ] Data analysis methods (C2-07) link back to each specific objective
+- [ ] No significance testing anywhere in data analysis section
+- [ ] Formatting QA complete (CC-02)
+- [ ] Narrative consistency review complete (CC-03)
+- [ ] Title page included
+- [ ] Table of Contents included
+- [ ] Appendices included (Signed Letter to Conduct scan/photo, Use Case Diagram)
+- [ ] Margins: Top 1.5", Left 1.5", Right/Bottom 1.0"
+- [ ] Paper: A4
+- [ ] Font: Times New Roman 12pt, double-spaced
+- [ ] No bullet points anywhere in manuscript
+- [ ] No bold body text
+- [ ] All figure captions below figure, bold
+- [ ] All table captions above table, left-aligned, bold
+- [ ] Document saved as Brandname.docx
+- [ ] Document run through docuCheck system
+- [ ] Proof of docuCheck run captured
+- [ ] Both files attached on Google Classroom
+
+---
+
+You are carrying the team's full technical and narrative workload. Focus on methodology accuracy, technical consistency across chapters, and narrative flow. Your role is to ensure all pieces fit together into a coherent manuscript that clearly presents SecureCAT as the solution to ISPSC Tagudin's admission testing challenges, with a properly structured METHODOLOGY chapter that aligns research design, software model, project plan, and evaluation approach.

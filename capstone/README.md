@@ -4,12 +4,6 @@ This directory serves as the centralized repository for all BSIT Capstone-relate
 
 ---
 
-## 📊 Interactive Dashboard
-For an interactive, mobile-friendly overview of all documents, tasks, and the project schedule, check out the:
-*   **[Interactive Capstone Portal & Task Dashboard](index.html)** (Gantt chart, task breakdowns, and files index)
-
----
-
 ## Directory Structure
 
 All files listed below are clickable links:
@@ -18,12 +12,14 @@ All files listed below are clickable links:
 *   **[ROADMAP.md](ROADMAP.md)** — Chronological milestone tracker from Title Defense to Final Defense
 *   **[SYSTEM_FEATURES.md](SYSTEM_FEATURES.md)** — Canonical list of built vs. planned features
 *   **[SecureCAT Letter.docx](SecureCAT%20Letter.docx)** — Formal client letter
+*   **[BSIT Capstone Template.docx](BSIT%20Capstone%20Template.docx)** — Official docuCheck template (source of truth for formatting)
 *   📁 **[guides/](guides/)** — Official formatting & content guides
-    *   **[GUIDE-1-FORMATTING.md](guides/GUIDE-1-FORMATTING.md)** — Formatting rules (non-negotiable margins, fonts, spacing)
-    *   **[GUIDE-2-CHAPTER1-CONTENT.md](guides/GUIDE-2-CHAPTER1-CONTENT.md)** — Chapter 1 content requirements (Background, Objectives, Scope)
-    *   **[GUIDE-3-CHAPTER2-CONTENT.md](guides/GUIDE-3-CHAPTER2-CONTENT.md)** — Chapter 2 content requirements (Literature, Framework, Methodology)
+    *   **[GUIDE-1-FORMATTING.md](guides/GUIDE-1-FORMATTING.md)** — Formatting rules (margins, fonts, spacing — matches template)
+    *   **[GUIDE-2-CHAPTER1-CONTENT.md](guides/GUIDE-2-CHAPTER1-CONTENT.md)** — Chapter 1 content requirements (Background, Framework, Objectives, Scope)
+    *   **[GUIDE-3-CHAPTER2-CONTENT.md](guides/GUIDE-3-CHAPTER2-CONTENT.md)** — Chapter 2 content requirements (Methodology)
     *   **[GUIDE-4-AIDLC-DEFENSE.md](guides/GUIDE-4-AIDLC-DEFENSE.md)** — Panel defense strategy for AIDLC software model
     *   **[GUIDE-5-CHECKLIST.md](guides/GUIDE-5-CHECKLIST.md)** — Complete pre-submission checklist
+    *   **[GUIDE-6-CHAPTER3-ADVANCE.md](guides/GUIDE-6-CHAPTER3-ADVANCE.md)** — Chapter 3 advance guide (Findings, Conclusion, Recommendations)
     *   **[capstone-guides-agnostic.zip](guides/capstone-guides-agnostic.zip)** — Agnostic template ZIP
 *   📁 **[research/](research/)** — Pre-research materials
     *   **[RESEARCH_DIRECTION_ANALYSIS.md](research/RESEARCH_DIRECTION_ANALYSIS.md)** — Research direction, thesis, and core pillars
@@ -49,7 +45,7 @@ All files listed below are clickable links:
 
 ---
 
-## 📖 Essential Reading Order
+## Essential Reading Order
 
 **For ALL Team Members (before writing):**
 
@@ -66,6 +62,7 @@ All files listed below are clickable links:
 *   **[pre_proposal_defense.md](strategy/pre_proposal_defense.md)** — Defense strategy
 *   **[GUIDE-4-AIDLC-DEFENSE.md](guides/GUIDE-4-AIDLC-DEFENSE.md)** — AIDLC software model defense
 *   **[GUIDE-5-CHECKLIST.md](guides/GUIDE-5-CHECKLIST.md)** — Final submission checklist
+*   **[GUIDE-6-CHAPTER3-ADVANCE.md](guides/GUIDE-6-CHAPTER3-ADVANCE.md)** — Chapter 3 advance reference
 *   **[CAPTAINING_OVERVIEW.md](team_meta/CAPTAINING_OVERVIEW.md)** — Strategic assessment (historical context)
 
 ---
@@ -79,6 +76,7 @@ All files listed below are clickable links:
 | **[ROADMAP.md](ROADMAP.md)** | Chronological milestone tracker from Title Defense to Final Defense |
 | **[SYSTEM_FEATURES.md](SYSTEM_FEATURES.md)** | Built features vs. "Trojan Horse" advanced features |
 | **[SecureCAT Letter.docx](SecureCAT%20Letter.docx)** | Formal client letter to Campus Director |
+| **[BSIT Capstone Template.docx](BSIT%20Capstone%20Template.docx)** | Official manuscript template — docuCheck validates against this |
 
 ### guides/ (Official Guides)
 
@@ -86,9 +84,10 @@ All files listed below are clickable links:
 |------|---------|
 | **[GUIDE-1-FORMATTING.md](guides/GUIDE-1-FORMATTING.md)** | ISPSC manuscript formatting rules (margins, fonts, spacing, tables, figures) |
 | **[GUIDE-2-CHAPTER1-CONTENT.md](guides/GUIDE-2-CHAPTER1-CONTENT.md)** | Chapter 1 content requirements (Background, Framework, Objectives, Scope) |
-| **[GUIDE-3-CHAPTER2-CONTENT.md](guides/GUIDE-3-CHAPTER2-CONTENT.md)** | Chapter 2 content requirements (Literature, Framework, Methodology) |
+| **[GUIDE-3-CHAPTER2-CONTENT.md](guides/GUIDE-3-CHAPTER2-CONTENT.md)** | Chapter 2 content requirements (Methodology sections) |
 | **[GUIDE-4-AIDLC-DEFENSE.md](guides/GUIDE-4-AIDLC-DEFENSE.md)** | Panel defense strategy for AIDLC software model |
 | **[GUIDE-5-CHECKLIST.md](guides/GUIDE-5-CHECKLIST.md)** | Complete pre-submission checklist |
+| **[GUIDE-6-CHAPTER3-ADVANCE.md](guides/GUIDE-6-CHAPTER3-ADVANCE.md)** | Chapter 3 advance guide (Findings, Conclusion, Recommendations) |
 
 ### research/ (Pre-Research Materials)
 
@@ -124,17 +123,37 @@ All files listed below are clickable links:
 
 ---
 
-> [!IMPORTANT]
-> **Agent Directive:** When collaborating on capstone features, always cross-reference `ROADMAP.md` and `SYSTEM_FEATURES.md` to ensure alignment with panelist requirements and the locked title scope.
+## Instructor Submission Requirements
+
+> "To all groups with approved title, construct your manuscript with the following contents:
+> Title page, Table of Contents, Chapter 1, Chapter 2, Appendices (letter to conduct, Use Case Diagram).
+> To check the formatting and template, run your document using your account in the docuCheck system as you have created in Activity 1.
+> Attach here the following: Brandname.docx, Proof of running the document in the docuCheck system."
+
+**Deadline:** June 10, 2026  
+**Mode:** Google Classroom (or physical copy if required)  
+**Deliverables:**
+1. `Brandname.docx` — Complete manuscript named after your group's brandname
+2. docuCheck proof screenshot — Evidence the document passed formatting validation
 
 ---
 
-## ⚡ Quick Access Links
+> [!IMPORTANT]
+> **Chapter 2 is METHODOLOGY** (per the BSIT Capstone Template). It does NOT contain a "Review of Related Literature." The sections are: Research Design, Software Model, Project Plan, Project Assignment, Population and Locale, Research Instruments, Data Analysis. All literature and citations belong in Chapter 1 Background paragraphs.
+
+> [!IMPORTANT]
+> **Agent Directive:** When collaborating on capstone features, always cross-reference `ROADMAP.md` and `SYSTEM_FEATURES.md` to ensure alignment with panelist requirements and the locked title scope. For formatting, the BSIT Capstone Template.docx is the authority.
+
+---
+
+## Quick Access Links
 
 *   **Start Writing:** **[TEAM_META_GUIDE_Ch1_Ch2.md](team_meta/TEAM_META_GUIDE_Ch1_Ch2.md)**
 *   **Formatting Rules:** **[GUIDE-1-FORMATTING.md](guides/GUIDE-1-FORMATTING.md)**
+*   **Official Template:** **[BSIT Capstone Template.docx](BSIT%20Capstone%20Template.docx)**
 *   **Chapter 1 Content:** **[GUIDE-2-CHAPTER1-CONTENT.md](guides/GUIDE-2-CHAPTER1-CONTENT.md)**
 *   **Chapter 2 Content:** **[GUIDE-3-CHAPTER2-CONTENT.md](guides/GUIDE-3-CHAPTER2-CONTENT.md)**
+*   **Chapter 3 Advance:** **[GUIDE-6-CHAPTER3-ADVANCE.md](guides/GUIDE-6-CHAPTER3-ADVANCE.md)**
 *   **Research Direction:** **[RESEARCH_DIRECTION_ANALYSIS.md](research/RESEARCH_DIRECTION_ANALYSIS.md)**
 *   **Search Terms:** **[SEARCH_TERM_CHEAT_SHEET.md](research/SEARCH_TERM_CHEAT_SHEET.md)**
 *   **Your Tasks:** **[COMPREHENSIVE_TASK_REPORT.md](team_meta/COMPREHENSIVE_TASK_REPORT.md)**

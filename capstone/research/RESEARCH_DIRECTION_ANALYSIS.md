@@ -5,6 +5,8 @@
 **Date:** June 2, 2026 (Revised — v2)  
 **Sources reviewed:** COMPREHENSIVE_TASK_REPORT, GUIDE-2/3, SYSTEM_FEATURES, Existing_and_Planned_Features, Chapter_1_2_Drafting_Plan, pre_proposal_defense, CAPTAINING_OVERVIEW, TASK_DISTRIBUTION_PLAN, multi-tenant strategy context, team corrections on ISPSC insider context
 
+> **NOTE (June 2026 Update):** This analysis was written before Chapter 2 was restructured. Chapter 2 is now **METHODOLOGY** (per the BSIT Capstone Template) — it no longer contains literature review sections. The research arguments, themes, and citation strategies below are still valid and should be applied to **Chapter 1 Background paragraphs (P2-P4)**. The old C2-01 through C2-08 task IDs referenced throughout this document correspond to literature topics that now belong in Chapter 1, not Chapter 2.
+
 > [!NOTE]
 > **Revision Notes (v2):** This revision corrects several assessments from v1 based on team input:
 > - Multi-tenancy upgraded from "weak link" to **strong pillar** (data silo prevention for multi-campus ISPSC network)
