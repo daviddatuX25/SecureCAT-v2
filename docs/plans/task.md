@@ -26,5 +26,5 @@
 | P4-B1 | [phase4-service-decomposition](./2026-05-27-scaling-readiness-phase4-service-decomposition.md) | Extract `ReportExportService` pipe classes (Pipeline pattern) | ⬜ TODO |
 | P4-C1 | [phase4-service-decomposition](./2026-05-27-scaling-readiness-phase4-service-decomposition.md) | Extract `DashboardAnalyticsService` query objects | ⬜ TODO |
 | CAP-1 | [capstone-dashboard-design](./2026-06-02-capstone-dashboard-design.md) | Update `capstone/README.md` to reflect new structure | ✅ DONE |
-| CAP-2 | [capstone-dashboard-design](./2026-06-02-capstone-dashboard-design.md) | Create `capstone/index.html` with interactive portal and Gantt visualization | ⏳ IN PROGRESS |
-| CAP-3 | [capstone-dashboard-design](./2026-06-02-capstone-dashboard-design.md) | Remove old `capstone/team_meta/PROJECT_GANTT_CHART.html` | ⬜ TODO |
+| CAP-2 | [capstone-dashboard-design](./2026-06-02-capstone-dashboard-design.md) | Create `capstone/index.html` with interactive portal and Gantt visualization | ✅ DONE |
+| CAP-3 | [capstone-dashboard-design](./2026-06-02-capstone-dashboard-design.md) | Remove old `capstone/team_meta/PROJECT_GANTT_CHART.html` | ⏳ IN PROGRESS |

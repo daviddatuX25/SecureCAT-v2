@@ -1,0 +1,1863 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SecureCAT-v2 Capstone Hub & Task Dashboard</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --bg-dark: #0f172a;
+            --bg-card: rgba(30, 41, 59, 0.7);
+            --bg-card-hover: rgba(30, 41, 59, 0.9);
+            --border-color: rgba(255, 255, 255, 0.08);
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            
+            --primary: #6366f1;
+            --primary-glow: rgba(99, 102, 241, 0.15);
+            --primary-hover: #4f46e5;
+            
+            /* Team Colors */
+            --color-david: #3b82f6;
+            --color-david-glow: rgba(59, 130, 246, 0.2);
+            --color-christine: #10b981;
+            --color-christine-glow: rgba(16, 185, 129, 0.2);
+            --color-jaypee: #f59e0b;
+            --color-jaypee-glow: rgba(245, 158, 11, 0.2);
+            
+            /* Category Colors */
+            --color-ch1: #a855f7;
+            --color-ch2: #ec4899;
+            --color-cross: #06b6d4;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            min-height: 100vh;
+            line-height: 1.5;
+            overflow-x: hidden;
+            background-image: 
+                radial-gradient(circle at 10% 20%, rgba(99, 102, 241, 0.1) 0%, transparent 40%),
+                radial-gradient(circle at 90% 80%, rgba(236, 72, 153, 0.08) 0%, transparent 40%);
+            background-attachment: fixed;
+        }
+
+        header {
+            padding: 40px 20px 20px 20px;
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+        }
+
+        .logo-container {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+
+        .logo-icon {
+            font-size: 2.2rem;
+            filter: drop-shadow(0 0 10px var(--primary));
+            animation: float 4s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-6px); }
+        }
+
+        h1 {
+            font-family: 'Outfit', sans-serif;
+            font-size: 2.4rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #fff 30%, #a5b4fc 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: -0.02em;
+        }
+
+        .subtitle {
+            color: var(--text-muted);
+            font-size: 1.1rem;
+            max-width: 700px;
+            margin-top: 8px;
+            font-weight: 300;
+        }
+
+        .deadline-badge {
+            margin-top: 16px;
+            background: rgba(239, 68, 68, 0.15);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            color: #fca5a5;
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 4px 12px rgba(239, 68, 68, 0.1);
+        }
+
+        main {
+            max-width: 1400px;
+            margin: 0 auto 60px auto;
+            padding: 0 20px;
+            display: grid;
+            grid-template-columns: 320px 1fr;
+            gap: 30px;
+        }
+
+        /* Responsive Dashboard layout */
+        @media (max-width: 1024px) {
+            main {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Left Column: Explorer Portal */
+        .portal-sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+
+        .panel {
+            background: var(--bg-card);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            transition: border-color 0.3s ease;
+        }
+
+        .panel:hover {
+            border-color: rgba(99, 102, 241, 0.25);
+        }
+
+        .panel-title {
+            font-family: 'Outfit', sans-serif;
+            font-size: 1.25rem;
+            font-weight: 700;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: #fff;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 10px;
+        }
+
+        /* Folder Tree explorer styling */
+        .explorer-tree {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .folder-node {
+            margin-bottom: 4px;
+        }
+
+        .folder-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            padding: 6px 8px;
+            border-radius: 8px;
+            transition: all 0.2s ease;
+            font-weight: 600;
+            font-size: 0.95rem;
+            color: #f1f5f9;
+        }
+
+        .folder-header:hover {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .folder-icon {
+            color: var(--primary);
+            transition: transform 0.2s ease;
+        }
+
+        .folder-node.open .folder-icon {
+            transform: rotate(90deg);
+        }
+
+        .folder-content {
+            padding-left: 24px;
+            margin-top: 4px;
+            display: none;
+            flex-direction: column;
+            gap: 6px;
+            border-left: 1px dashed rgba(255, 255, 255, 0.1);
+            margin-left: 14px;
+        }
+
+        .folder-node.open .folder-content {
+            display: flex;
+        }
+
+        .file-link {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            text-decoration: none;
+            color: var(--text-muted);
+            padding: 6px 8px;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            transition: all 0.2s ease;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .file-link:hover {
+            color: #fff;
+            background: rgba(255, 255, 255, 0.05);
+            transform: translateX(4px);
+        }
+
+        .file-icon {
+            font-size: 0.9rem;
+            opacity: 0.7;
+        }
+
+        .file-priority-badge {
+            font-size: 0.7rem;
+            padding: 1px 6px;
+            border-radius: 4px;
+            font-weight: 700;
+            margin-left: auto;
+            text-transform: uppercase;
+        }
+
+        .priority-essential { background: rgba(99, 102, 241, 0.15); color: #a5b4fc; border: 1px solid rgba(99, 102, 241, 0.3); }
+        .priority-strategy { background: rgba(236, 72, 153, 0.15); color: #fbcfe8; border: 1px solid rgba(236, 72, 153, 0.3); }
+        .priority-guide { background: rgba(6, 182, 212, 0.15); color: #a5f3fc; border: 1px solid rgba(6, 182, 212, 0.3); }
+
+        /* Right Column Dashboard elements */
+        .dashboard-content {
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+        }
+
+        /* Metrics grid */
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 20px;
+        }
+
+        .metric-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .metric-card:hover {
+            transform: translateY(-4px);
+            border-color: rgba(255,255,255,0.15);
+        }
+
+        .metric-title {
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+        }
+
+        .metric-value {
+            font-family: 'Outfit', sans-serif;
+            font-size: 1.8rem;
+            font-weight: 800;
+            color: #fff;
+        }
+
+        .metric-footer {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            margin-top: 4px;
+        }
+
+        /* Team Workload metrics layout */
+        .workload-stat-row {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            margin-top: 10px;
+        }
+
+        .workload-stat-header {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+
+        .workload-bar-bg {
+            height: 6px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 3px;
+            overflow: hidden;
+        }
+
+        .workload-bar-fill {
+            height: 100%;
+            border-radius: 3px;
+        }
+
+        /* Task Filters Styles */
+        .filter-controls-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: center;
+            gap: 16px;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 16px 24px;
+        }
+
+        .filter-section {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .filter-label {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text-muted);
+        }
+
+        .filter-btn-group {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .filter-btn {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--border-color);
+            color: var(--text-muted);
+            padding: 6px 14px;
+            border-radius: 30px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .filter-btn:hover {
+            color: #fff;
+            background: rgba(255, 255, 255, 0.08);
+            border-color: rgba(255, 255, 255, 0.2);
+        }
+
+        .filter-btn.active {
+            background: var(--primary);
+            color: #fff;
+            border-color: var(--primary);
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.25);
+        }
+
+        .filter-btn.active.david { background-color: var(--color-david); border-color: var(--color-david); box-shadow: 0 4px 12px var(--color-david-glow); }
+        .filter-btn.active.christine { background-color: var(--color-christine); border-color: var(--color-christine); box-shadow: 0 4px 12px var(--color-christine-glow); }
+        .filter-btn.active.jaypee { background-color: var(--color-jaypee); border-color: var(--color-jaypee); box-shadow: 0 4px 12px var(--color-jaypee-glow); }
+
+        .visible-counter {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+
+        /* Timeline / Gantt Container */
+        .gantt-panel {
+            overflow: hidden;
+            padding: 0;
+        }
+
+        .gantt-header-block {
+            padding: 24px 24px 16px 24px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .gantt-header-title {
+            font-family: 'Outfit', sans-serif;
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .gantt-header-desc {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-top: 4px;
+        }
+
+        /* Grid Gantt chart view (Desktop Only) */
+        .gantt-chart-grid {
+            display: flex;
+            flex-direction: column;
+            padding: 24px;
+            overflow-x: auto;
+        }
+
+        .gantt-wrapper {
+            min-width: 900px;
+        }
+
+        .gantt-timeline-header {
+            display: grid;
+            grid-template-columns: 240px repeat(10, 1fr);
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 12px;
+            margin-bottom: 12px;
+        }
+
+        .gantt-label-col {
+            font-size: 0.8rem;
+            font-weight: 700;
+            color: var(--text-muted);
+            text-transform: uppercase;
+        }
+
+        .gantt-day-col {
+            text-align: center;
+            font-size: 0.8rem;
+            font-weight: 700;
+            color: var(--text-muted);
+            border-right: 1px solid rgba(255, 255, 255, 0.03);
+        }
+
+        .gantt-day-col.today {
+            color: #fca5a5;
+            background: rgba(239, 68, 68, 0.05);
+        }
+
+        .gantt-chapter-header {
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: var(--text-muted);
+            background: rgba(255, 255, 255, 0.02);
+            padding: 8px 12px;
+            margin: 16px 0 8px 0;
+            border-radius: 6px;
+            border-left: 3px solid var(--primary);
+        }
+
+        .gantt-row {
+            display: grid;
+            grid-template-columns: 240px 1fr;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.02);
+            transition: background 0.2s ease;
+            cursor: pointer;
+        }
+
+        .gantt-row:hover {
+            background: rgba(255, 255, 255, 0.02);
+        }
+
+        .gantt-task-meta {
+            padding-right: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .gantt-task-id {
+            font-family: 'Outfit', sans-serif;
+            font-weight: 700;
+            font-size: 0.85rem;
+        }
+
+        .gantt-task-name {
+            font-size: 0.85rem;
+            font-weight: 500;
+            color: #f1f5f9;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .gantt-task-assignee {
+            font-size: 0.75rem;
+            font-weight: 600;
+            margin-top: 2px;
+        }
+
+        .gantt-bar-container {
+            display: grid;
+            grid-template-columns: repeat(10, 1fr);
+            position: relative;
+            height: 28px;
+        }
+
+        .gantt-bar {
+            grid-row: 1;
+            height: 100%;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            padding: 0 12px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: #fff;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .gantt-row:hover .gantt-bar {
+            transform: scale(1.01);
+            box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3);
+        }
+
+        /* Mobile Task Card Timeline View (Hidden on Desktop) */
+        .mobile-timeline-view {
+            display: none;
+            flex-direction: column;
+            gap: 16px;
+            padding: 24px;
+        }
+
+        .mobile-day-group {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .mobile-day-title {
+            font-family: 'Outfit', sans-serif;
+            font-size: 1rem;
+            font-weight: 700;
+            color: var(--text-muted);
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 6px;
+            margin-top: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .mobile-task-card {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 16px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .mobile-task-card:hover {
+            background: rgba(255, 255, 255, 0.04);
+            border-color: rgba(255, 255, 255, 0.15);
+            transform: translateY(-2px);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .card-id {
+            font-family: 'Outfit', sans-serif;
+            font-size: 0.85rem;
+            font-weight: 800;
+        }
+
+        .card-name {
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: #fff;
+        }
+
+        .card-meta-row {
+            display: flex;
+            gap: 10px;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            flex-wrap: wrap;
+        }
+
+        .badge {
+            font-size: 0.75rem;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .badge-david { background: rgba(59, 130, 246, 0.15); color: #93c5fd; border: 1px solid rgba(59, 130, 246, 0.3); }
+        .badge-christine { background: rgba(16, 185, 129, 0.15); color: #6ee7b7; border: 1px solid rgba(16, 185, 129, 0.3); }
+        .badge-jaypee { background: rgba(245, 158, 11, 0.15); color: #fde047; border: 1px solid rgba(245, 158, 11, 0.3); }
+
+        .badge-ch1 { background: rgba(168, 85, 247, 0.15); color: #d8b4fe; border: 1px solid rgba(168, 85, 247, 0.3); }
+        .badge-ch2 { background: rgba(236, 72, 153, 0.15); color: #fbcfe8; border: 1px solid rgba(236, 72, 153, 0.3); }
+        .badge-cross { background: rgba(6, 182, 212, 0.15); color: #a5f3fc; border: 1px solid rgba(6, 182, 212, 0.3); }
+
+        /* Media queries to switch Gantt and list view */
+        @media (max-width: 768px) {
+            .gantt-chart-grid {
+                display: none;
+            }
+            .mobile-timeline-view {
+                display: flex;
+            }
+        }
+
+        /* Detail Modal Overlay */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(15, 23, 42, 0.85);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            z-index: 100;
+            display: none;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .modal-card {
+            background: #1e293b;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            width: 100%;
+            max-width: 650px;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            animation: modalScale 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        @keyframes modalScale {
+            0% { transform: scale(0.9) translateY(20px); opacity: 0; }
+            100% { transform: scale(1) translateY(0); opacity: 1; }
+        }
+
+        .modal-header {
+            padding: 24px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 16px;
+        }
+
+        .modal-title-block {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .modal-title-id {
+            font-family: 'Outfit', sans-serif;
+            font-size: 0.9rem;
+            font-weight: 800;
+            color: var(--primary);
+            text-transform: uppercase;
+        }
+
+        .modal-title {
+            font-family: 'Outfit', sans-serif;
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: #fff;
+            line-height: 1.3;
+        }
+
+        .modal-close-btn {
+            background: rgba(255, 255, 255, 0.05);
+            border: none;
+            color: var(--text-muted);
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            transition: all 0.2s ease;
+        }
+
+        .modal-close-btn:hover {
+            background: rgba(239, 68, 68, 0.2);
+            color: #ef4444;
+        }
+
+        .modal-body {
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .modal-meta-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 16px;
+            background: rgba(15, 23, 42, 0.4);
+            border-radius: 12px;
+            padding: 16px;
+            border: 1px solid var(--border-color);
+        }
+
+        .modal-meta-item {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .modal-meta-label {
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            letter-spacing: 0.05em;
+        }
+
+        .modal-meta-value {
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: #fff;
+        }
+
+        .modal-section-title {
+            font-family: 'Outfit', sans-serif;
+            font-size: 0.95rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            color: #e2e8f0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            padding-bottom: 6px;
+            margin-bottom: 10px;
+            letter-spacing: 0.05em;
+        }
+
+        .subtasks-checklist {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .subtasks-checklist li {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            font-size: 0.9rem;
+            color: #cbd5e1;
+        }
+
+        .checkbox-bullet {
+            width: 16px;
+            height: 16px;
+            border-radius: 4px;
+            border: 1px solid var(--primary);
+            margin-top: 3px;
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-link-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            background: rgba(99, 102, 241, 0.1);
+            border: 1px solid rgba(99, 102, 241, 0.3);
+            color: #a5b4fc;
+            padding: 10px 16px;
+            border-radius: 10px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.2s ease;
+            margin-top: 10px;
+        }
+
+        .modal-link-btn:hover {
+            background: var(--primary);
+            color: #fff;
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.2);
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="logo-container">
+            <span class="logo-icon">🛡️</span>
+            <h1>SecureCAT-v2 Capstone Hub</h1>
+        </div>
+        <p class="subtitle">Central portal, documentation index, and task timeline tracker for Chapter 1 & 2 Manuscript Development.</p>
+        <div class="deadline-badge">
+            <span>📅</span>
+            <span>Final Manuscript Submission: June 10, 2026</span>
+        </div>
+    </header>
+
+    <main>
+        <!-- Left Side: Directory Index Explorer -->
+        <div class="portal-sidebar">
+            <div class="panel">
+                <div class="panel-title">
+                    <span>📁</span> Document Explorer
+                </div>
+                
+                <div class="explorer-tree">
+                    <!-- Root Files -->
+                    <div class="folder-node open">
+                        <div class="folder-header" onclick="toggleFolder(this)">
+                            <span class="folder-icon">▶</span>
+                            <span>Core Root Files</span>
+                        </div>
+                        <div class="folder-content" style="display: flex;">
+                            <a href="README.md" class="file-link">
+                                <span class="file-icon">📄</span> README.md
+                                <span class="file-priority-badge priority-essential">Essential</span>
+                            </a>
+                            <a href="ROADMAP.md" class="file-link">
+                                <span class="file-icon">📄</span> ROADMAP.md
+                                <span class="file-priority-badge priority-essential">Essential</span>
+                            </a>
+                            <a href="SYSTEM_FEATURES.md" class="file-link">
+                                <span class="file-icon">📄</span> SYSTEM_FEATURES.md
+                                <span class="file-priority-badge priority-essential">Essential</span>
+                            </a>
+                            <a href="SecureCAT%20Letter.docx" class="file-link">
+                                <span class="file-icon">📄</span> Client Letter.docx
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- Guides Folder -->
+                    <div class="folder-node">
+                        <div class="folder-header" onclick="toggleFolder(this)">
+                            <span class="folder-icon">▶</span>
+                            <span>guides/ (Official Specifications)</span>
+                        </div>
+                        <div class="folder-content">
+                            <a href="guides/GUIDE-1-FORMATTING.md" class="file-link">
+                                <span class="file-icon">📄</span> Formatting Guide
+                                <span class="file-priority-badge priority-guide">Guide</span>
+                            </a>
+                            <a href="guides/GUIDE-2-CHAPTER1-CONTENT.md" class="file-link">
+                                <span class="file-icon">📄</span> Chapter 1 Guidelines
+                                <span class="file-priority-badge priority-guide">Guide</span>
+                            </a>
+                            <a href="guides/GUIDE-3-CHAPTER2-CONTENT.md" class="file-link">
+                                <span class="file-icon">📄</span> Chapter 2 Guidelines
+                                <span class="file-priority-badge priority-guide">Guide</span>
+                            </a>
+                            <a href="guides/GUIDE-4-AIDLC-DEFENSE.md" class="file-link">
+                                <span class="file-icon">📄</span> Software Model Defense
+                            </a>
+                            <a href="guides/GUIDE-5-CHECKLIST.md" class="file-link">
+                                <span class="file-icon">📄</span> Submission Checklist
+                            </a>
+                            <a href="guides/capstone-guides-agnostic.zip" class="file-link">
+                                <span class="file-icon">📦</span> Templates (ZIP)
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- Research Folder -->
+                    <div class="folder-node">
+                        <div class="folder-header" onclick="toggleFolder(this)">
+                            <span class="folder-icon">▶</span>
+                            <span>research/ (Pre-Research)</span>
+                        </div>
+                        <div class="folder-content">
+                            <a href="research/RESEARCH_DIRECTION_ANALYSIS.md" class="file-link">
+                                <span class="file-icon">📄</span> Research Direction
+                                <span class="file-priority-badge priority-essential">Essential</span>
+                            </a>
+                            <a href="research/RESEARCH_ARGUMENT_BANK.md" class="file-link">
+                                <span class="file-icon">📄</span> Argument Bank
+                                <span class="file-priority-badge priority-essential">Essential</span>
+                            </a>
+                            <a href="research/SEARCH_TERM_CHEAT_SHEET.md" class="file-link">
+                                <span class="file-icon">📄</span> Search Terms Cheat Sheet
+                            </a>
+                            <a href="research/Chapter_1_2_Drafting_Plan.md" class="file-link">
+                                <span class="file-icon">📄</span> Blending Plan
+                            </a>
+                            <a href="research/Existing_and_Planned_Features.md" class="file-link">
+                                <span class="file-icon">📄</span> Feature Mapping Table
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- Strategy Folder -->
+                    <div class="folder-node">
+                        <div class="folder-header" onclick="toggleFolder(this)">
+                            <span class="folder-icon">▶</span>
+                            <span>strategy/ (Defense Tactics)</span>
+                        </div>
+                        <div class="folder-content">
+                            <a href="strategy/pre_proposal_defense.md" class="file-link">
+                                <span class="file-icon">📄</span> Pre-Proposal Strategy
+                                <span class="file-priority-badge priority-strategy">Strategy</span>
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- Team Meta Folder -->
+                    <div class="folder-node">
+                        <div class="folder-header" onclick="toggleFolder(this)">
+                            <span class="folder-icon">▶</span>
+                            <span>team_meta/ (Management)</span>
+                        </div>
+                        <div class="folder-content">
+                            <a href="team_meta/COMPREHENSIVE_TASK_REPORT.md" class="file-link">
+                                <span class="file-icon">📄</span> Comprehensive Task Report
+                            </a>
+                            <a href="team_meta/TASK_DISTRIBUTION_PLAN.md" class="file-link">
+                                <span class="file-icon">📄</span> Task Distribution Plan
+                            </a>
+                            <a href="team_meta/TEAM_META_GUIDE_Ch1_Ch2.md" class="file-link">
+                                <span class="file-icon">📄</span> Team Meta Guide
+                            </a>
+                            <a href="team_meta/TEAM_TASK_CHECKLIST.md" class="file-link">
+                                <span class="file-icon">📄</span> Team Task Checklist
+                            </a>
+                            <a href="team_meta/CAPTAINING_OVERVIEW.md" class="file-link">
+                                <span class="file-icon">📄</span> Captaining Overview
+                            </a>
+                            <a href="team_meta/members/david/DIRECTION.md" class="file-link">
+                                <span class="file-icon">👤</span> David's Direction
+                            </a>
+                            <a href="team_meta/members/christine/DIRECTION.md" class="file-link">
+                                <span class="file-icon">👤</span> Christine's Direction
+                            </a>
+                            <a href="team_meta/members/jaypee/DIRECTION.md" class="file-link">
+                                <span class="file-icon">👤</span> Jaypee's Direction
+                            </a>
+                        </div>
+                    </div>
+                    
+                    <!-- Drafts -->
+                    <a href="drafts/" class="file-link">
+                        <span class="file-icon">📁</span> drafts/ (Manuscript Drafts)
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Side: Dashboard & Task Timeline -->
+        <div class="dashboard-content">
+            <!-- Metrics Cards -->
+            <div class="metrics-grid">
+                <div class="metric-card">
+                    <span class="metric-title">Project Scope</span>
+                    <span class="metric-value">24 Tasks</span>
+                    <span class="metric-footer">Chapters 1 & 2 Breakdown</span>
+                </div>
+                <div class="metric-card">
+                    <span class="metric-title">Estimated Effort</span>
+                    <span class="metric-value">~65-86 hrs</span>
+                    <span class="metric-footer">Across all 3 team members</span>
+                </div>
+                <div class="metric-card">
+                    <span class="metric-title">Workload Balance</span>
+                    <div class="workload-stat-row">
+                        <div class="workload-stat-header">
+                            <span style="color: var(--color-david)">David</span>
+                            <span>17 tasks (45-55h)</span>
+                        </div>
+                        <div class="workload-bar-bg">
+                            <div class="workload-bar-fill" style="width: 70%; background-color: var(--color-david);"></div>
+                        </div>
+                    </div>
+                    <div class="workload-stat-row">
+                        <div class="workload-stat-header">
+                            <span style="color: var(--color-jaypee)">Jaypee</span>
+                            <span>5 tasks (14-22h)</span>
+                        </div>
+                        <div class="workload-bar-bg">
+                            <div class="workload-bar-fill" style="width: 21%; background-color: var(--color-jaypee);"></div>
+                        </div>
+                    </div>
+                    <div class="workload-stat-row">
+                        <div class="workload-stat-header">
+                            <span style="color: var(--color-christine)">Christine</span>
+                            <span>2 tasks (6-9h)</span>
+                        </div>
+                        <div class="workload-bar-bg">
+                            <div class="workload-bar-fill" style="width: 9%; background-color: var(--color-christine);"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Filters -->
+            <div class="filter-controls-container">
+                <div class="filter-section">
+                    <span class="filter-label">Assignee:</span>
+                    <div class="filter-btn-group">
+                        <button class="filter-btn active" onclick="setFilter('assignee', 'all', this)">All</button>
+                        <button class="filter-btn" onclick="setFilter('assignee', 'david', this)" style="border-color: rgba(59, 130, 246, 0.3)">David</button>
+                        <button class="filter-btn" onclick="setFilter('assignee', 'christine', this)" style="border-color: rgba(16, 185, 129, 0.3)">Christine</button>
+                        <button class="filter-btn" onclick="setFilter('assignee', 'jaypee', this)" style="border-color: rgba(245, 158, 11, 0.3)">Jaypee</button>
+                    </div>
+                </div>
+                <div class="filter-section">
+                    <span class="filter-label">Category:</span>
+                    <div class="filter-btn-group">
+                        <button class="filter-btn active" onclick="setFilter('category', 'all', this)">All</button>
+                        <button class="filter-btn" onclick="setFilter('category', 'ch1', this)">Chapter 1</button>
+                        <button class="filter-btn" onclick="setFilter('category', 'ch2', this)">Chapter 2</button>
+                        <button class="filter-btn" onclick="setFilter('category', 'cross', this)">Cross-Cutting</button>
+                    </div>
+                </div>
+                <span class="visible-counter" id="visibleCounter">24 tasks total</span>
+            </div>
+
+            <!-- Tasks Schedule Panel -->
+            <div class="panel gantt-panel">
+                <div class="gantt-header-block">
+                    <div class="gantt-header-title">📊 Task Timeline & Schedule</div>
+                    <div class="gantt-header-desc">Visualizing tasks distributed across the writing sprint (June 1–10, 2026). Click any task bar or card for details.</div>
+                </div>
+
+                <!-- Desktop Grid Gantt Chart -->
+                <div class="gantt-chart-grid">
+                    <div class="gantt-wrapper">
+                        <!-- Days header -->
+                        <div class="gantt-timeline-header">
+                            <div class="gantt-label-col">Task & Owner</div>
+                            <div class="gantt-day-col">Jun 1</div>
+                            <div class="gantt-day-col">Jun 2</div>
+                            <div class="gantt-day-col">Jun 3</div>
+                            <div class="gantt-day-col">Jun 4</div>
+                            <div class="gantt-day-col">Jun 5</div>
+                            <div class="gantt-day-col">Jun 6</div>
+                            <div class="gantt-day-col">Jun 7</div>
+                            <div class="gantt-day-col">Jun 8</div>
+                            <div class="gantt-day-col">Jun 9</div>
+                            <div class="gantt-day-col today">Jun 10</div>
+                        </div>
+
+                        <!-- Tasks Render Container -->
+                        <div id="ganttRowsContainer">
+                            <!-- Dynamic content injected by JavaScript -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Mobile Card Timeline List -->
+                <div class="mobile-timeline-view" id="mobileCardsContainer">
+                    <!-- Dynamic content injected by JavaScript -->
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Modal overlay -->
+    <div class="modal-overlay" id="taskModal" onclick="closeModal(event)">
+        <div class="modal-card">
+            <div class="modal-header">
+                <div class="modal-title-block">
+                    <span class="modal-title-id" id="modalTaskId">C1-01</span>
+                    <h2 class="modal-title" id="modalTitle">Conceptual Framework Prose</h2>
+                </div>
+                <button class="modal-close-btn" onclick="toggleModal(false)">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="modal-meta-grid">
+                    <div class="modal-meta-item">
+                        <span class="modal-meta-label">Assigned To</span>
+                        <span class="modal-meta-value" id="modalAssignee">David</span>
+                    </div>
+                    <div class="modal-meta-item">
+                        <span class="modal-meta-label">Estimated Effort</span>
+                        <span class="modal-meta-value" id="modalHours">3 hours</span>
+                    </div>
+                    <div class="modal-meta-item">
+                        <span class="modal-meta-label">Due Date</span>
+                        <span class="modal-meta-value" id="modalDue">June 4, 2026</span>
+                    </div>
+                    <div class="modal-meta-item">
+                        <span class="modal-meta-label">Dependencies</span>
+                        <span class="modal-meta-value" id="modalDeps">None</span>
+                    </div>
+                </div>
+
+                <div>
+                    <div class="modal-section-title">Task Description</div>
+                    <p id="modalDesc" style="font-size: 0.95rem; color: #cbd5e1; line-height: 1.6;"></p>
+                </div>
+
+                <div>
+                    <div class="modal-section-title">Subtasks Checklist</div>
+                    <ul class="subtasks-checklist" id="modalSubtasks">
+                        <!-- subtasks listed dynamically -->
+                    </ul>
+                </div>
+
+                <div>
+                    <div class="modal-section-title">Expected Deliverable</div>
+                    <p id="modalDeliverable" style="font-size: 0.9rem; color: #94a3b8; font-style: italic; border-left: 2px solid var(--primary); padding-left: 10px;"></p>
+                </div>
+
+                <a href="#" class="modal-link-btn" id="modalGuideLink">
+                    <span>📖</span> View Drafting Guide & Framework
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Folder tree toggle
+        function toggleFolder(header) {
+            const folderNode = header.parentElement;
+            const content = folderNode.querySelector('.folder-content');
+            folderNode.classList.toggle('open');
+            if (folderNode.classList.contains('open')) {
+                content.style.display = 'flex';
+            } else {
+                content.style.display = 'none';
+            }
+        }
+
+        // Expanded 24 Tasks Dataset
+        const tasksDataset = [
+            // Chapter 1 Tasks
+            {
+                id: 'C1-01',
+                name: 'Background P1 — Core Problem Statement',
+                category: 'ch1',
+                assignee: 'david',
+                due: 'Jun 4',
+                startDay: 3, // Starts Jun 3
+                endDay: 4,   // Ends Jun 4
+                hours: '2-3h',
+                desc: 'Write the core problem statement paragraph. Focus on the technical problem: manual admission testing, lack of coordination between Guidance and Registrar, and lack of role-based system rules.',
+                subtasks: [
+                    'Detail Guidance & Registrar manual bottlenecks',
+                    'Flesh out technical gap (no role-based integration)',
+                    'Structure clinching problem sentence (citation-free)'
+                ],
+                deliverable: 'One 8-12 sentence paragraph, citation-free, clearly naming the technical gap.',
+                deps: 'None',
+                guide: 'guides/GUIDE-2-CHAPTER1-CONTENT.md'
+            },
+            {
+                id: 'C1-02',
+                name: 'Background P2 — Global Context',
+                category: 'ch1',
+                assignee: 'david',
+                due: 'Jun 5',
+                startDay: 4,
+                endDay: 5,
+                hours: '4-6h',
+                desc: 'Research and write about global admission testing trends. Group literature findings by theme (e.g. cloud security, scalability) instead of author-by-author summaries. Require 5+ citations.',
+                subtasks: [
+                    'Query literature on international student admission systems',
+                    'Synthesize themes: web scalability & data integrity',
+                    'Write paragraphs with at least 5 APA citations (2022-2026)'
+                ],
+                deliverable: 'One 12-15 sentence paragraph with 5+ citations, draft references.',
+                deps: 'None',
+                guide: 'guides/GUIDE-2-CHAPTER1-CONTENT.md'
+            },
+            {
+                id: 'C1-03',
+                name: 'Background P3 — National Context (PH)',
+                category: 'ch1',
+                assignee: 'david',
+                due: 'Jun 5',
+                startDay: 4,
+                endDay: 5,
+                hours: '4-6h',
+                desc: 'Research and write on national education standards and admission systems in the Philippines. Cite CHED directives, SUC policies, and regional frameworks.',
+                subtasks: [
+                    'Review CHED rules on admission policies',
+                    'Gather literature on Philippine SUC digitized admissions',
+                    'Synthesize local SUC bottlenecks and security requirements'
+                ],
+                deliverable: 'One 12-15 sentence paragraph with 5+ citations, draft references.',
+                deps: 'None',
+                guide: 'guides/GUIDE-2-CHAPTER1-CONTENT.md'
+            },
+            {
+                id: 'C1-04',
+                name: 'Background P4 — Local Context (ISPSC)',
+                category: 'ch1',
+                assignee: 'jaypee',
+                due: 'Jun 5',
+                startDay: 4,
+                endDay: 5,
+                hours: '3-5h',
+                desc: 'Write the local context paragraph. Detail ISPSC Tagudin\'s admission testing environment, physical constraints, infrastructure, and multi-campus requirements.',
+                subtasks: [
+                    'Interview Guidance team for exact campus metrics',
+                    'Incorporate ISPSC Tagudin specific constraints',
+                    'Cite local administrative orders or institutional challenges'
+                ],
+                deliverable: 'One 12-15 sentence paragraph with 5+ citations, specific to ISPSC.',
+                deps: 'None',
+                guide: 'guides/GUIDE-2-CHAPTER1-CONTENT.md'
+            },
+            {
+                id: 'C1-05',
+                name: 'Background P5 — Synthesis & Gap',
+                category: 'ch1',
+                assignee: 'david',
+                due: 'Jun 6',
+                startDay: 5,
+                endDay: 6,
+                hours: '3-4h',
+                desc: 'Synthesize global, national, and local context paragraphs to define the research gap. Explain why existing literature does not address local requirements.',
+                subtasks: [
+                    'Read P2, P3, P4 drafts',
+                    'Draw contrast showing the unique problem of ISPSC Tagudin',
+                    'Define the exact technical gap that SecureCAT-v2 resolves'
+                ],
+                deliverable: 'One 10-12 sentence synthesis paragraph explicitly naming the research gap.',
+                deps: 'C1-02, C1-03, C1-04',
+                guide: 'guides/GUIDE-2-CHAPTER1-CONTENT.md'
+            },
+            {
+                id: 'C1-06',
+                name: 'Background P6 — Clinching Statement',
+                category: 'ch1',
+                assignee: 'david',
+                due: 'Jun 7',
+                startDay: 6,
+                endDay: 7,
+                hours: '2-3h',
+                desc: 'Write the clinching statement that solidifies the thesis. State how literature helped build the framework, why the topic was chosen, and why SecureCAT-v2 is the solution.',
+                subtasks: [
+                    'Formulate transition from gap to solution',
+                    'Detail rationale for choosing SecureCAT-v2',
+                    'Write the final clinching paragraph'
+                ],
+                deliverable: 'One 8-10 sentence clinching paragraph with all three required components.',
+                deps: 'C1-02 through C1-05',
+                guide: 'guides/GUIDE-2-CHAPTER1-CONTENT.md'
+            },
+            {
+                id: 'C1-07',
+                name: 'Conceptual Framework — IPO Diagram',
+                category: 'ch1',
+                assignee: 'david',
+                due: 'Jun 3',
+                startDay: 2,
+                endDay: 3,
+                hours: '2-3h',
+                desc: 'Draft the Input-Process-Output (IPO) diagram. Input must cover 6 items; output must detail 9 items (matching system features).',
+                subtasks: [
+                    'List all system inputs (requirements, exam configurations)',
+                    'Map process (automated scoring, role-based workflows)',
+                    'List all system outputs (score cards, audit logs, reports)'
+                ],
+                deliverable: 'Clean, readable IPO diagram with Input -> Process -> Output boxes.',
+                deps: 'None',
+                guide: 'guides/GUIDE-2-CHAPTER1-CONTENT.md'
+            },
+            {
+                id: 'C1-08',
+                name: 'Conceptual Framework — Narrative',
+                category: 'ch1',
+                assignee: 'david',
+                due: 'Jun 4',
+                startDay: 3,
+                endDay: 4,
+                hours: '2-3h',
+                desc: 'Write the IPO narrative. Explain the components of the IPO diagram in paragraph prose. Exactly 2 paragraphs: P1 (Inputs), P2 (Process and Outputs).',
+                subtasks: [
+                    'Write paragraph 1 detailing inputs',
+                    'Write paragraph 2 detailing the processing cycle and outputs',
+                    'Validate against IPO diagram to ensure 100% alignment'
+                ],
+                deliverable: 'Exactly 2 paragraphs explaining IPO components.',
+                deps: 'C1-07',
+                guide: 'guides/GUIDE-2-CHAPTER1-CONTENT.md'
+            },
+            {
+                id: 'C1-09',
+                name: 'Objectives of the Study',
+                category: 'ch1',
+                assignee: 'david',
+                due: 'Jun 3',
+                startDay: 2,
+                endDay: 3,
+                hours: '2-3h',
+                desc: 'Formulate objectives of the study. Include one general objective paragraph and a 3-item specific objectives list (Identify manual issues, Develop role-based automated scoring system, Evaluate usability).',
+                subtasks: [
+                    'Write general objective emphasizing security & efficiency',
+                    'Draft specific objective 1 (Identify problems)',
+                    'Draft specific objective 2 (Develop SecureCAT-v2)',
+                    'Draft specific objective 3 (Evaluate usability using ISO 25010)'
+                ],
+                deliverable: 'General objective paragraph + 3-item numbered specific objectives list.',
+                deps: 'None',
+                guide: 'guides/GUIDE-2-CHAPTER1-CONTENT.md'
+            },
+            {
+                id: 'C1-10',
+                name: 'Research Questions',
+                category: 'ch1',
+                assignee: 'jaypee',
+                due: 'Jun 4',
+                startDay: 3,
+                endDay: 4,
+                hours: '1-2h',
+                desc: 'Convert objectives of the study into standard research question format. Ensure direct 1-to-1 mapping with objectives.',
+                subtasks: [
+                    'Map Specific Objective 1 to RQ 1 (manual issues)',
+                    'Map Specific Objective 2 to RQ 2 (system specifications)',
+                    'Map Specific Objective 3 to RQ 3 (ISO 25010 metrics)'
+                ],
+                deliverable: '3-item numbered research question list aligned with objectives.',
+                deps: 'C1-09',
+                guide: 'guides/GUIDE-2-CHAPTER1-CONTENT.md'
+            },
+            {
+                id: 'C1-11',
+                name: 'Scope and Delimitations',
+                category: 'ch1',
+                assignee: 'david',
+                due: 'Jun 4',
+                startDay: 3,
+                endDay: 4,
+                hours: '2-3h',
+                desc: 'Write the Scope and Delimitations section. Document what features are built (Guidance dashboard, OMR scanning) and delimitations (no online exam delivery, local intranet focus, RA 10173 privacy scope).',
+                subtasks: [
+                    'Write paragraph 1 outlining scope (modules, roles, features)',
+                    'Write paragraph 2 outlining delimitations (what is NOT included)',
+                    'Explicitly mention RA 10173 (Data Privacy Act) boundary'
+                ],
+                deliverable: 'Two-paragraph scope & delimitations section, paragraph-form only.',
+                deps: 'None',
+                guide: 'guides/GUIDE-2-CHAPTER1-CONTENT.md'
+            },
+            {
+                id: 'C1-12',
+                name: 'Significance of the Study',
+                category: 'ch1',
+                assignee: 'christine',
+                due: 'Jun 5',
+                startDay: 4,
+                endDay: 5,
+                hours: '2-3h',
+                desc: 'Explain the benefits of the study to specific stakeholder groups. Exactly 6 paragraphs, one for each group: Guidance, Registrar, Administrators, Applicants, Proctors, Future Researchers.',
+                subtasks: [
+                    'Write beneficiary paragraph 1: Guidance Office',
+                    'Write beneficiary paragraph 2: Registrar Office',
+                    'Write beneficiary paragraph 3: Administrators',
+                    'Write beneficiary paragraph 4: Applicants',
+                    'Write beneficiary paragraph 5: Proctors (staff load mitigation)',
+                    'Write beneficiary paragraph 6: Future Researchers'
+                ],
+                deliverable: '6 paragraphs, one per beneficiary group, focused on direct benefits.',
+                deps: 'None',
+                guide: 'guides/GUIDE-2-CHAPTER1-CONTENT.md'
+            },
+            
+            // Chapter 2 Tasks
+            {
+                id: 'C2-01',
+                name: 'Lit Review — RBAC + Zero-Trust',
+                category: 'ch2',
+                assignee: 'david',
+                due: 'Jun 5',
+                startDay: 4,
+                endDay: 5,
+                hours: '4-6h',
+                desc: 'Conduct a literature review on Role-Based Access Control (RBAC), Zero-Trust security principles, and HMAC-based signature checking in educational settings. Cite 5+ sources.',
+                subtasks: [
+                    'Search for modern RBAC and Zero-Trust education applications',
+                    'Synthesize findings on internal threats & privilege escalations',
+                    'Write thematic review with 5+ references (2022-2026)'
+                ],
+                deliverable: '1-2 paragraphs literature review (thematic synthesis), 5+ citations.',
+                deps: 'None',
+                guide: 'guides/GUIDE-3-CHAPTER2-CONTENT.md'
+            },
+            {
+                id: 'C2-02',
+                name: 'Lit Review — Automated Scoring & OMR',
+                category: 'ch2',
+                assignee: 'christine',
+                due: 'Jun 5',
+                startDay: 4,
+                endDay: 5,
+                hours: '4-6h',
+                desc: 'Review literature on Optical Mark Recognition (OMR), computer vision techniques for template matching, and scoring algorithms. Cite 5+ sources.',
+                subtasks: [
+                    'Search for computer vision and OMR techniques (OpenCV, template matching)',
+                    'Compare automated grading efficiency and accuracy vs. manual grading',
+                    'Write thematic synthesis with 5+ references (2022-2026)'
+                ],
+                deliverable: '1-2 paragraphs literature review on OMR and automated scoring.',
+                deps: 'None',
+                guide: 'guides/GUIDE-3-CHAPTER2-CONTENT.md'
+            },
+            {
+                id: 'C2-03',
+                name: 'Lit Review — AI/RAG in Education',
+                category: 'ch2',
+                assignee: 'david',
+                due: 'Jun 5',
+                startDay: 4,
+                endDay: 5,
+                hours: '4-6h',
+                desc: 'Review literature on AI companions, Retrieval-Augmented Generation (RAG) architectures, and applicant-facing educational chatbots. Cite 5+ sources.',
+                subtasks: [
+                    'Research applicant-facing query resolution using LLMs',
+                    'Evaluate safety, hallucination mitigation, and retrieval accuracy in education',
+                    'Write thematic review with 5+ references (2022-2026)'
+                ],
+                deliverable: '1-2 paragraphs literature review on AI/RAG applicant-facing systems.',
+                deps: 'None',
+                guide: 'guides/GUIDE-3-CHAPTER2-CONTENT.md'
+            },
+            {
+                id: 'C2-04',
+                name: 'Lit Review — PWA/Offline Systems',
+                category: 'ch2',
+                assignee: 'david',
+                due: 'Jun 6',
+                startDay: 5,
+                endDay: 6,
+                hours: '4-6h',
+                desc: 'Conduct literature review on Progressive Web App (PWA) technologies, offline-first syncing architectures, and service workers in educational web systems. Cite 5+ sources.',
+                subtasks: [
+                    'Research offline data caching (IndexedDB) and sync algorithms',
+                    'Analyze mobile constraints, intermittent connectivity, and seasonal application loads',
+                    'Write review showcasing PWAs as lightweight alternatives to native mobile apps'
+                ],
+                deliverable: '1-2 paragraphs literature review on PWA/offline-first systems.',
+                deps: 'None',
+                guide: 'guides/GUIDE-3-CHAPTER2-CONTENT.md'
+            },
+            {
+                id: 'C2-05',
+                name: 'Lit Review — DPA/Multi-Tenancy',
+                category: 'ch2',
+                assignee: 'david',
+                due: 'Jun 5',
+                startDay: 4,
+                endDay: 5,
+                hours: '3-5h',
+                desc: 'Review literature on multi-tenant database models, data segregation, and compliance with the Data Privacy Act of 2012 (RA 10173) in academic settings. Cite 5+ sources.',
+                subtasks: [
+                    'Analyze multi-tenant schema patterns (single-db tenant separation)',
+                    'Review security audits, encryption, and anonymization mandates under DPA',
+                    'Draft narrative with 5+ citations'
+                ],
+                deliverable: '1-2 paragraphs literature review on DPA compliance + multi-tenancy.',
+                deps: 'None',
+                guide: 'guides/GUIDE-3-CHAPTER2-CONTENT.md'
+            },
+            {
+                id: 'C2-06',
+                name: 'Review of Related Systems',
+                category: 'ch2',
+                assignee: 'jaypee',
+                due: 'Jun 6',
+                startDay: 5,
+                endDay: 6,
+                hours: '4-6h',
+                desc: 'Examine 3-5 existing college admission systems. Develop a feature matrix comparing security, role-based workflows, automated scoring, AI chatbot, and offline support. Cite 5+ sources.',
+                subtasks: [
+                    'Identify and analyze 3-5 local or international admission systems',
+                    'Build comparison table mapping features vs. SecureCAT-v2',
+                    'Write narrative highlighting gaps in existing systems (lack of integrated OMR or RAG)'
+                ],
+                deliverable: 'Comparison table + 2-3 paragraphs narrative summarizing related systems.',
+                deps: 'None',
+                guide: 'guides/GUIDE-3-CHAPTER2-CONTENT.md'
+            },
+            {
+                id: 'C2-07',
+                name: 'Technical Framework',
+                category: 'ch2',
+                assignee: 'david',
+                due: 'Jun 6',
+                startDay: 5,
+                endDay: 6,
+                hours: '3-4h',
+                desc: 'Describe the technical stack of SecureCAT-v2 (Laravel 12, Inertia v2, Svelte 5, Tailwind 4, SQLite/MySQL, PWA manifest, OpenCV/OMR integration).',
+                subtasks: [
+                    'Define architectural choices and backend stack details',
+                    'Detail Inertia.js v2 and Svelte 5 reactivity advantages',
+                    'Incorporate layout diagram showing system-subsystem boundaries'
+                ],
+                deliverable: '1-2 paragraphs technical framework description + optional architecture diagram.',
+                deps: 'None',
+                guide: 'guides/GUIDE-3-CHAPTER2-CONTENT.md'
+            },
+            {
+                id: 'C2-08',
+                name: 'Conceptual Framework Prose (Ch2)',
+                category: 'ch2',
+                assignee: 'david',
+                due: 'Jun 7',
+                startDay: 6,
+                endDay: 7,
+                hours: '2-3h',
+                desc: 'Expand on the Conceptual Framework diagram and prose for Chapter 2. Connect the IPO inputs and outputs directly to the research methodologies.',
+                subtasks: [
+                    'Review Chapter 1 IPO definition',
+                    'Write expanded conceptual framework prose linking inputs to research design',
+                    'Align variables with evaluation tools'
+                ],
+                deliverable: '2-3 paragraphs expanded conceptual framework narrative for Chapter 2.',
+                deps: 'C1-07, C1-08',
+                guide: 'guides/GUIDE-3-CHAPTER2-CONTENT.md'
+            },
+            
+            // Cross-Cutting Tasks
+            {
+                id: 'CC-01',
+                name: 'References List Compilation',
+                category: 'cross',
+                assignee: 'jaypee',
+                due: 'Jun 8',
+                startDay: 7,
+                endDay: 8,
+                hours: '3-4h',
+                desc: 'Collect all citations and compile the complete References list. Ensure 100% adherence to APA 7 style rules and sort alphabetized.',
+                subtasks: [
+                    'Gather draft references from all team members',
+                    'Apply APA 7 capitalization, italicization, and URL link rules',
+                    'Create alphabetized References list'
+                ],
+                deliverable: 'Complete, alphabetized APA 7 References list.',
+                deps: 'All writing tasks',
+                guide: 'guides/GUIDE-1-FORMATTING.md'
+            },
+            {
+                id: 'CC-02',
+                name: 'Formatting QA Review',
+                category: 'cross',
+                assignee: 'david',
+                due: 'Jun 8',
+                startDay: 7,
+                endDay: 8,
+                hours: '2-3h',
+                desc: 'Execute final layout and typography audit. Verify margins (1.5" left, 1" top/bottom/right), font, spacing, and page number formats.',
+                subtasks: [
+                    'Check text formatting against GUIDE-1 specifications',
+                    'Audit headings structure and indentation rules',
+                    'Correct bullet points or spacing violations'
+                ],
+                deliverable: 'Formatting QA report highlighting violations/corrections.',
+                deps: 'All writing tasks',
+                guide: 'guides/GUIDE-1-FORMATTING.md'
+            },
+            {
+                id: 'CC-03',
+                name: 'Narrative Consistency Review',
+                category: 'cross',
+                assignee: 'david',
+                due: 'Jun 9',
+                startDay: 8,
+                endDay: 9,
+                hours: '4-6h',
+                desc: 'Read the full manuscript end-to-end. Ensure logical progression from the problem statement to objectives, framework, and literature.',
+                subtasks: [
+                    'Unify writing style, tone, and terminology across sections',
+                    'Ensure Objectives directly align with Research Questions and framework variables',
+                    'Resolve narrative inconsistencies'
+                ],
+                deliverable: 'Edited manuscript files with unified narrative and vocabulary.',
+                deps: 'All writing tasks',
+                guide: 'guides/GUIDE-5-CHECKLIST.md'
+            },
+            {
+                id: 'CC-04',
+                name: 'Citation Cross-Check',
+                category: 'cross',
+                assignee: 'jaypee',
+                due: 'Jun 8',
+                startDay: 7,
+                endDay: 8,
+                hours: '1-2h',
+                desc: 'Audit every in-text citation against the compiled Reference list to ensure zero orphaned citations or reference list entries.',
+                subtasks: [
+                    'Cross-check every in-text citation (e.g. Smith, 2024)',
+                    'Verify corresponding entry in Reference List',
+                    'Flag discrepancies, missing authors, or duplicate sources'
+                ],
+                deliverable: 'Citation cross-check report with mismatches flagged.',
+                deps: 'All writing tasks, CC-01',
+                guide: 'guides/GUIDE-5-CHECKLIST.md'
+            }
+        ];
+
+        // State filter variables
+        const filters = {
+            assignee: 'all',
+            category: 'all'
+        };
+
+        // Initialize lists and grid views
+        function setFilter(type, value, element) {
+            // Manage UI active buttons
+            const buttonGroup = element.parentElement;
+            const buttons = buttonGroup.querySelectorAll('.filter-btn');
+            buttons.forEach(btn => btn.classList.remove('active'));
+            element.classList.add('active');
+
+            filters[type] = value;
+            renderTasks();
+        }
+
+        function renderTasks() {
+            const ganttContainer = document.getElementById('ganttRowsContainer');
+            const mobileContainer = document.getElementById('mobileCardsContainer');
+            
+            ganttContainer.innerHTML = '';
+            mobileContainer.innerHTML = '';
+
+            // Filter data
+            const filteredTasks = tasksDataset.filter(task => {
+                const matchAssignee = filters.assignee === 'all' || task.assignee === filters.assignee;
+                const matchCategory = filters.category === 'all' || task.category === filters.category;
+                return matchAssignee && matchCategory;
+            });
+
+            // Update Counter
+            document.getElementById('visibleCounter').textContent = `${filteredTasks.length} tasks visible`;
+
+            // Chapter titles definitions for desktop grid organization
+            const chapters = {
+                'ch1': 'Chapter 1 — Background, Framework, & Objectives',
+                'ch2': 'Chapter 2 — Literature Review & Technical Framework',
+                'cross': 'Cross-Cutting & Quality Assurance'
+            };
+
+            // Group tasks by category for structured desktop view
+            const categorized = { ch1: [], ch2: [], cross: [] };
+            filteredTasks.forEach(task => categorized[task.category].push(task));
+
+            // 1. Render Desktop Grid
+            Object.keys(categorized).forEach(cat => {
+                if (categorized[cat].length === 0) return;
+
+                // Add Category Separator Row
+                const catHeader = document.createElement('div');
+                catHeader.className = 'gantt-chapter-header';
+                catHeader.style.borderLeftColor = `var(--color-${cat})`;
+                catHeader.textContent = chapters[cat];
+                ganttContainer.appendChild(catHeader);
+
+                categorized[cat].forEach(task => {
+                    const row = document.createElement('div');
+                    row.className = 'gantt-row';
+                    row.onclick = () => openTaskDetails(task.id);
+
+                    // Name column
+                    const metaCol = document.createElement('div');
+                    metaCol.className = 'gantt-task-meta';
+                    
+                    const idSpan = document.createElement('span');
+                    idSpan.className = 'gantt-task-id';
+                    idSpan.style.color = `var(--color-${task.category})`;
+                    idSpan.textContent = task.id;
+
+                    const nameSpan = document.createElement('span');
+                    nameSpan.className = 'gantt-task-name';
+                    nameSpan.textContent = task.name;
+
+                    const assigneeSpan = document.createElement('span');
+                    assigneeSpan.className = 'gantt-task-assignee';
+                    assigneeSpan.style.color = `var(--color-${task.assignee})`;
+                    assigneeSpan.textContent = task.assignee.charAt(0).toUpperCase() + task.assignee.slice(1);
+
+                    metaCol.appendChild(idSpan);
+                    metaCol.appendChild(nameSpan);
+                    metaCol.appendChild(assigneeSpan);
+                    row.appendChild(metaCol);
+
+                    // Gantt bar container col
+                    const barContainer = document.createElement('div');
+                    barContainer.className = 'gantt-bar-container';
+
+                    // Grid Columns: starts at startDay + 1, ends at endDay + 1
+                    // Spanning across 10 columns (Jun 1 to Jun 10)
+                    const bar = document.createElement('div');
+                    bar.className = 'gantt-bar';
+                    bar.style.gridColumn = `${task.startDay} / ${task.endDay + 1}`;
+                    bar.style.backgroundColor = `var(--color-${task.assignee})`;
+                    bar.style.boxShadow = `0 4px 10px var(--color-${task.assignee}-glow)`;
+                    bar.textContent = task.hours;
+
+                    barContainer.appendChild(bar);
+                    row.appendChild(barContainer);
+
+                    ganttContainer.appendChild(row);
+                });
+            });
+
+            // 2. Render Mobile Card Timeline (Grouped by Due Date)
+            // Sorting tasks by due date
+            const dueGroups = {};
+            filteredTasks.forEach(task => {
+                if (!dueGroups[task.due]) dueGroups[task.due] = [];
+                dueGroups[task.due].push(task);
+            });
+
+            // Days order mapping
+            const daysOrder = ['Jun 3', 'Jun 4', 'Jun 5', 'Jun 6', 'Jun 7', 'Jun 8', 'Jun 9', 'Jun 10'];
+            
+            daysOrder.forEach(day => {
+                if (!dueGroups[day] || dueGroups[day].length === 0) return;
+
+                const dayGroup = document.createElement('div');
+                dayGroup.className = 'mobile-day-group';
+
+                const dayTitle = document.createElement('div');
+                dayTitle.className = 'mobile-day-title';
+                dayTitle.innerHTML = `<span>Due: ${day}, 2026</span> <span style="font-size: 0.8rem; font-weight: normal; color: var(--text-muted);">${dueGroups[day].length} tasks</span>`;
+                dayGroup.appendChild(dayTitle);
+
+                dueGroups[day].forEach(task => {
+                    const card = document.createElement('div');
+                    card.className = 'mobile-task-card';
+                    card.onclick = () => openTaskDetails(task.id);
+
+                    card.innerHTML = `
+                        <div class="card-header">
+                            <span class="card-id" style="color: var(--color-${task.category})">${task.id}</span>
+                            <span class="badge badge-${task.assignee}">${task.assignee}</span>
+                        </div>
+                        <div class="card-name">${task.name}</div>
+                        <div class="card-meta-row">
+                            <span>⏱️ Effort: ${task.hours}</span>
+                            <span class="badge badge-${task.category}">${task.category === 'ch1' ? 'Ch 1' : task.category === 'ch2' ? 'Ch 2' : 'Cross'}</span>
+                        </div>
+                    `;
+                    dayGroup.appendChild(card);
+                });
+
+                mobileContainer.appendChild(dayGroup);
+            });
+
+            // If empty display feedback
+            if (filteredTasks.length === 0) {
+                const emptyMsg = document.createElement('div');
+                emptyMsg.style.padding = '40px';
+                emptyMsg.style.textAlign = 'center';
+                emptyMsg.style.color = 'var(--text-muted)';
+                emptyMsg.textContent = 'No tasks match the active filters.';
+                
+                ganttContainer.appendChild(emptyMsg);
+                
+                const emptyMsgMobile = emptyMsg.cloneNode(true);
+                mobileContainer.appendChild(emptyMsgMobile);
+            }
+        }
+
+        // Modal triggers
+        function openTaskDetails(id) {
+            const task = tasksDataset.find(t => t.id === id);
+            if (!task) return;
+
+            document.getElementById('modalTaskId').textContent = task.id;
+            document.getElementById('modalTaskId').style.color = `var(--color-${task.category})`;
+            
+            document.getElementById('modalTitle').textContent = task.name;
+            
+            // Format assignee
+            const assigneeVal = document.getElementById('modalAssignee');
+            assigneeVal.textContent = task.assignee.charAt(0).toUpperCase() + task.assignee.slice(1);
+            assigneeVal.style.color = `var(--color-${task.assignee})`;
+
+            document.getElementById('modalHours').textContent = task.hours;
+            document.getElementById('modalDue').textContent = `${task.due}, 2026`;
+            
+            const depsEl = document.getElementById('modalDeps');
+            depsEl.textContent = task.deps;
+            depsEl.style.color = task.deps !== 'None' ? '#f59e0b' : '#fff';
+
+            document.getElementById('modalDesc').textContent = task.desc;
+            
+            // Subtasks list rendering
+            const subtasksUl = document.getElementById('modalSubtasks');
+            subtasksUl.innerHTML = '';
+            task.subtasks.forEach(st => {
+                const li = document.createElement('li');
+                li.innerHTML = `<span class="checkbox-bullet"></span><span>${st}</span>`;
+                subtasksUl.appendChild(li);
+            });
+
+            document.getElementById('modalDeliverable').textContent = task.deliverable;
+            
+            // Guide links mapping
+            document.getElementById('modalGuideLink').href = task.guide;
+
+            toggleModal(true);
+        }
+
+        function toggleModal(show) {
+            const modal = document.getElementById('taskModal');
+            modal.style.display = show ? 'flex' : 'none';
+        }
+
+        function closeModal(event) {
+            const overlay = document.getElementById('taskModal');
+            if (event.target === overlay) {
+                toggleModal(false);
+            }
+        }
+
+        // Initial paint
+        window.onload = () => {
+            renderTasks();
+        }
+    </script>
+</body>
+</html>
