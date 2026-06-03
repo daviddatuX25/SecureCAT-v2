@@ -39,7 +39,9 @@ All files listed below are clickable links:
         *   **[David's Execution Plan](team_meta/members/david/DIRECTION.md)**
         *   **[Christine's Execution Plan](team_meta/members/christine/DIRECTION.md)**
         *   **[Jaypee's Execution Plan](team_meta/members/jaypee/DIRECTION.md)**
-*   📁 **[drafts/](drafts/)** — Active chapter drafts (to be populated)
+*   📁 **[drafts/](drafts/)** — Active chapter drafts
+    *   **[C1-07 — IPO Diagram](drafts/C1-07_Jaypee_IPO_Diagram.md)** — Conceptual Framework Input-Process-Output diagram *(Jaypee, Jun 3)*
+    *   **[C1-09 — Objectives of the Study](drafts/C1-09_Jaypee_Objectives.md)** — General & specific objectives with critical evaluation *(Jaypee, Jun 3)*
 *   📁 **[_archive/](_archive/)** — Superseded files (kept for historical context)
     *   **[Task_Division_Chapter1_2.md](_archive/Task_Division_Chapter1_2.md)** — Early task division (superseded)
 

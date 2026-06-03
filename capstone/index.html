@@ -1127,14 +1127,30 @@
                         </div>
                     </div>
                     
-                    <!-- Drafts -->
-                    <a href="drafts/" class="file-link">
-                        <span class="file-icon">📁</span>
-                        <div class="file-link-content">
-                            <span class="file-link-title" style="color: var(--text-muted);">drafts/</span>
-                            <span class="file-link-desc">Manuscript drafts word documents</span>
+                    <!-- Drafts (expandable) -->
+                    <div class="folder-node" data-folder="drafts">
+                        <div class="folder-header" onclick="toggleFolder(this)">
+                            <span class="folder-icon">▶</span>
+                            <span>📁 drafts/</span>
+                            <span class="file-priority-badge priority-essential">NEW</span>
                         </div>
-                    </a>
+                        <div class="folder-content">
+                            <a href="drafts/C1-07_Jaypee_IPO_Diagram.md" class="file-link">
+                                <span class="file-icon">📐</span>
+                                <div class="file-link-content">
+                                    <span class="file-link-title">C1-07 — IPO Diagram</span>
+                                    <span class="file-link-desc">Conceptual Framework Input-Process-Output diagram (Jaypee, Jun 3)</span>
+                                </div>
+                            </a>
+                            <a href="drafts/C1-09_Jaypee_Objectives.md" class="file-link">
+                                <span class="file-icon">🎯</span>
+                                <div class="file-link-content">
+                                    <span class="file-link-title">C1-09 — Objectives of the Study</span>
+                                    <span class="file-link-desc">General & specific objectives with critical evaluation (Jaypee, Jun 3)</span>
+                                </div>
+                            </a>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
