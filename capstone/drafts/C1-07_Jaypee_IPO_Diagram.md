@@ -118,7 +118,7 @@
 | # | Input Item | Type | Justification (Existing / Planned / Both) |
 |---|-----------|------|-------------------------------------------|
 | 1 | Applicant data | Data | **Both** — Application intake exists; GWA/course preferences are existing. Profile data feeds into the AI Companion (planned enhancement). |
-| 2 | Exam configurations | Data | **Both** — Aptitude areas, rating scales, scoring formulas are built. Session parameters and academic year settings are built. Auto-scheduling agent (planned) will consume these configs as constraints. |
+| 2 | Exam configurations | Data | **Both** — Aptitude areas, rating scales, scoring formulas are built. Session parameters and academic year settings are built. Enhanced AI-assisted scheduling (planned) will consume these configs as constraint inputs for suggestion generation. | |
 | 3 | OMR images/scans | Data | **Both** — CSV-based score import exists (machine-readable). Computer-vision image ingestion for physical bubble sheets is planned. Both represent the same input category (score source material) at different automation levels. |
 | 4 | Role credentials | Data | **Both** — Authentication, RBAC via Laravel policies, Google OAuth exist. HMAC signing adds proctor identity binding (planned). Zero-trust enforcement strengthens credential validation (planned). |
 | 5 | QR scans | Data | **Both** — QR code generation exists. Offline PWA QR scanning at exam room doors with IndexedDB caching is planned. Same input, expanded resilience. |
@@ -129,7 +129,7 @@
 | # | Output Item | Type | Justification (Existing / Planned / Both) |
 |---|------------|------|-------------------------------------------|
 | 1 | Status tracking displays | Artifact | **Existing** — Real-time applicant lifecycle tracker from submission through result release. |
-| 2 | Exam schedules | Artifact | **Existing** — Session CRUD, publish/unpublish, assign/remove applicants, monitoring view. Planned auto-scheduling agent will produce optimized schedules automatically. |
+| 2 | Exam schedules | Artifact | **Existing** — Session CRUD, publish/unpublish, assign/remove applicants, monitoring view. Planned enhanced AI-assisted scheduling will generate optimized schedule suggestions for registrar admin approval (human-in-the-loop). | |
 | 3 | Score reports | Artifact | **Both** — Per-applicant score breakdowns exist. HMAC-integrity verification flags on reports are planned. |
 | 4 | Audit logs | Artifact | **Both** — Audit log viewing and export exist. Immutable write-only enforcement with before/after state capture is planned. |
 | 5 | Result sheets/PDFs | Artifact | **Existing** — Template-based rendering in single, bulk PDF, and bulk DOCX with dynamic watermarks. |

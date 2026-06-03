@@ -110,9 +110,12 @@ The following features are planned additions to elevate the system for capstone 
 - Intelligent course recommendations based on applicant profiles and test results.
 - Answers applicant questions about exam schedules, required documents, and campus information.
 
-### 5. Automated Scheduling Agent
-- Constraint aware optimization for room capacity, proctor availability, time slots.
-- Automated assign and reschedule proposals.
+### 5. Enhanced AI-Assisted Scheduling (Human-in-the-Loop)
+- Evolution of the existing AI scheduling chat assistant into a robust suggestion-based system.
+- AI-powered constraint analysis (room capacity, proctor availability, time slots) generates scheduling proposals.
+- Human-in-the-loop: all scheduling suggestions require explicit Registrar Admin approval before execution.
+- Shares Laravel AI SDK infrastructure with the AI Companion for unified, scalable AI integration.
+- Credit/utilization management via libraries like Laravel AI Orbit for API cost tracking across both AI features.
 
 ### 6. Multi-Tenant SaaS Architecture Preparation
 - Isolated database segregation principles supporting per tenant data isolation.
@@ -127,7 +130,7 @@ The following features are planned additions to elevate the system for capstone 
 |---|---|---|
 | Role-Based | RBAC via policies and routes | Cryptographic integrity, audit immutability |
 | Admission Testing System | Scheduling, roster, grading, direct assessment | OMR computer vision, offline PWA |
-| Guidance and Registrar | Session management, consultation summaries, reporting | Enhanced AI Companion with RAG for applicant guidance, auto scheduling agent |
+| Guidance and Registrar | Session management, consultation summaries, reporting | Enhanced AI Companion with RAG for applicant guidance, enhanced AI-assisted scheduling (human-in-the-loop) |
 | ISPSC Tagudin | Single campus deployment | Multi-tenant database architecture |
 
 ---

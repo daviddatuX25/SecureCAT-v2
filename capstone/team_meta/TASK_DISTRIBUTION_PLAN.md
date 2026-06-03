@@ -455,7 +455,7 @@
    - Paragraph form ONLY (no bullets, no numbered lists per GUIDE-1)
    - Must cover BOTH existing system modules AND planned research modules:
      - **Existing system modules:** application intake, scheduling, roster, grading, OMR CSV import, consultation summaries, result release, document generation, audit logs, notifications, AI companion (RAG-powered), AI scheduling assistant
-     - **Planned research modules:** HMAC integrity, CV-based OMR, offline PWA, enhanced AI Companion with external data integration and course recommendations, auto-scheduling agent, multi-tenant architecture
+     - **Planned research modules:** HMAC integrity, CV-based OMR, offline PWA, enhanced AI Companion with external data integration and course recommendations, enhanced AI-assisted scheduling (human-in-the-loop), multi-tenant architecture
    - Include: authorized user types, locale (ISPSC Tagudin, Ilocos Sur), timeframe, principal variables
    - Justification for boundaries
    - Include explicit delimitations that allow advanced features to appear as research contributions rather than out-of-scope expansion

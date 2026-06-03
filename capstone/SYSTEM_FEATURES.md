@@ -49,8 +49,9 @@ To ensure the system meets high software engineering and research standards unde
 ### 3. "Guidance & Registrar Offices" ➔ AI-Powered Applicant Guidance and Office Operations
 *   **Enhanced AI Companion with External Data Integration:**
     *   *Mechanism:* The existing applicant-facing AI Companion is enhanced with retrieval-augmented generation (RAG) using local vector embeddings (Mixedbread). Applicants can query external data sources such as course catalogs, program requirements, admission statistics, and institutional policies. The companion provides intelligent course recommendations based on applicant profiles and test results, and answers applicant questions about exam schedules, required documents, and campus information.
-*   **Automated Scheduling Agent:**
-    *   *Mechanism:* An optimization algorithm that automatically schedules examinees to available exam batches based on constraints (room capacity, proctor availability, and time slots).
+*   **Enhanced AI-Assisted Scheduling (Human-in-the-Loop):**
+    *   *Mechanism:* The existing AI scheduling chat assistant is enhanced into a robust, suggestion-based scheduling system. An AI-powered optimization engine analyzes constraints (room capacity, proctor availability, time slots) and generates scheduling proposals. These suggestions are presented to the Registrar Admin for review and approval — no scheduling action is executed without explicit human confirmation. This maintains human oversight while leveraging AI to reduce cognitive load and scheduling conflicts.
+    *   *Shared Infrastructure:* Both the AI Companion and AI-Assisted Scheduling are unified under the Laravel AI SDK, providing a consistent, scalable, and provider-agnostic AI integration layer across the system.
 
 ### 4. "ISPSC Tagudin" ➔ Multi-Tenant SaaS Architecture
 *   **Isolated Database Segregation:**
