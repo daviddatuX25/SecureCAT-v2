@@ -2,6 +2,8 @@
 
 This document outlines the sequential phases of the BSIT Capstone timeline for **SecureCAT-v2**, helping researchers and AI agents understand past accomplishments and upcoming deliverables.
 
+**Capstone Adviser:** Sir Zeus
+
 ---
 
 ## 📅 Roadmap Overview
@@ -10,7 +12,9 @@ This document outlines the sequential phases of the BSIT Capstone timeline for *
 > As of June 2026, the only confirmed facts are:
 > - Capstone 1 (current subject) runs during the mid-year academic period, commencing May 2026.
 > - Title Defense was completed (confirmed event).
-> - Exact end dates, defense scheduling, and phase boundaries are **projected estimates** subject to change once the panel or institution advises the official academic calendar and defense schedule.
+> - Chapter 1 & Chapter 2 papers are due **June 10, 2026** (confirmed deadline from class).
+> - The **Proposal Defense** follows after Ch1 & Ch2 submission, but its exact date has **not yet been scheduled or advised** by the panel/institution.
+> - Exact end dates, defense scheduling, and phase boundaries beyond the above are **projected estimates** subject to change once the panel or institution advises the official academic calendar and defense schedule.
 >
 > Treat the gantt chart below as a suggested sequencing, not a commitment.
 

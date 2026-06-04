@@ -14,6 +14,7 @@
 | **David** | Team Leader / Product Owner / Lead Developer | daviddatu_ | 27-40h | ~55h total |
 | **Christine** | Team Member — Project Plan, Project Assignment, Research Instruments, Formatting QA, Population & Locale of the Study | Christine | 10-15h | TBD |
 | **Jaypee** | Team Member — Framework (IPO Diagram, Narrative), Objectives, Local Context, Research Questions, Significance, References & Citations | Jaypee | 16-24h | TBD |
+| **Sir Zeus** | Capstone Adviser | — | — | — |
 
 ---
 
