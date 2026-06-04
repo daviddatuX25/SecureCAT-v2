@@ -6,9 +6,17 @@ This document outlines the sequential phases of the BSIT Capstone timeline for *
 
 ## 📅 Roadmap Overview
 
+> **DISCLAIMER — Dates in this roadmap are planning projections, not confirmed deadlines.**
+> As of June 2026, the only confirmed facts are:
+> - Capstone 1 (current subject) runs during the mid-year academic period, commencing May 2026.
+> - Title Defense was completed (confirmed event).
+> - Exact end dates, defense scheduling, and phase boundaries are **projected estimates** subject to change once the panel or institution advises the official academic calendar and defense schedule.
+>
+> Treat the gantt chart below as a suggested sequencing, not a commitment.
+
 ```mermaid
 gantt
-    title SecureCAT Capstone Timeline (2026)
+    title SecureCAT Capstone Timeline (2026) — PROJECTED
     dateFormat  YYYY-MM-DD
     section Academic Milestones
     Title Defense (Completed)     :done, des1, 2026-05-10, 2026-05-24
