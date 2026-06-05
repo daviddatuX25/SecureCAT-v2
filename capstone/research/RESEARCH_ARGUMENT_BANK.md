@@ -18,16 +18,16 @@
 
 | # | Argument | Detail |
 |---|----------|--------|
-| 1 | **Operational fragmentation** | Admission workflows are split across disconnected manual processes — paper forms, spreadsheets, physical rosters, handwritten scores. No single system manages the full lifecycle. |
-| 2 | **Staff task overload without role boundaries** | Guidance counselors currently perform proctoring, attendance, scoring, AND counseling. There are no clear role separations. A counselor supervising an exam cannot simultaneously advise walk-in applicants. |
-| 3 | **Applicant information asymmetry** | Applicants have no way to check their application status without physically visiting the office. This creates unnecessary foot traffic and repetitive inquiries that consume staff time. |
+| 1 | **Operational fragmentation (Historical Manual State)** | Prior to the deployment of the foundational digital platform, admission workflows were split across disconnected manual processes — paper forms, spreadsheets, physical rosters, handwritten scores. No single system managed the full lifecycle, and the subsequent foundational deployment remains architecturally fragmented without resolving core security and scalability gaps. |
+| 2 | **Informal office boundaries with unverified task delineation** | The Registrar Office typically manages admission intake (requirements, submissions, scheduling) and the Guidance Office handles test activities (proctoring, scoring, releasing), but the precise boundaries are informally understood, not systematically enforced. Overlaps and gaps remain unverified — to be formally documented in the descriptive phase. This ambiguity manifests as fragmented communication, duplicated effort, and delayed releases. |
+| 3 | **Guidance staff serve as proctors (consolidated test-side role)** | Guidance personnel handle proctoring, scoring, and result management directly — no delegation to separate proctoring staff. This consolidated test-side responsibility ensures operational security but concentrates workload, creating a bottleneck during peak periods. |
 | 4 | **Scoring vulnerability** | Test scores pass through multiple human transcription points (paper → spreadsheet → record). Each transcription is an error-injection opportunity. There is no cryptographic verification that a score hasn't been altered. |
 | 5 | **Data silo risk for multi-campus institutions** | ISPSC operates multiple campuses. A single-campus standalone system isolates Tagudin's data from the wider institutional network, preventing future cross-campus analytics and capacity sharing. |
 | 6 | **Native app overhead for seasonal users** | Applicants interact with the admission system once or twice in their academic lifetime. Requiring a native mobile app installation for this brief interaction is disproportionate — especially for applicants from rural areas with budget devices and limited storage. |
 | 7 | **Seasonal volume spikes** | Admission periods create predictable but intense surges. Current manual processes cannot absorb these surges without proportional staffing increases, which SUCs rarely have budget for. |
 | 8 | **Lack of document automation** | Admission slips, result sheets, and consultation summaries are prepared manually. This is slow, error-prone, and inconsistent across applicants. |
 
-**Narrative flow:** Start with observable symptoms (1, 2, 3, 7) → pivot to underlying technical root causes (4, 5, 6, 8) → frame as an IT problem, not a public administration problem.
+**Narrative flow:** Start with observable symptoms (1, 2, 3, 7) → pivot to underlying technical root causes (4, 5, 6, 8) → frame as an IT problem, not a public administration problem. **Key framing:** The system solves boundary ambiguity through explicit RBAC — replacing informal conventions with systematic, auditable authorization.
 
 ---
 
@@ -69,12 +69,15 @@
 | # | Argument | Source |
 |---|----------|--------|
 | 1 | **ISPSC's multi-campus structure** | ISPSC has campuses across Ilocos Sur — Tagudin is one of several, each currently operating in isolation |
-| 2 | **Current manual admission workflow** | Paper application → manual review → physical exam scheduling → paper-based proctoring → manual scoring → physical result release |
-| 3 | **Staff multitasking burden** | Guidance counselors handle proctoring, scoring, attendance, AND counseling during admission periods |
-| 4 | **Seasonal applicant volume** | Admission periods create concentrated demand spikes that exceed current staff capacity |
-| 5 | **Campus infrastructure constraints** | Wi-Fi reliability, available computers, physical office space limitations |
-| 6 | **No existing digital admission system** | ISPSC Tagudin does not currently have an integrated admission testing platform |
-| 7 | **Regional institutional context** | Compare with nearby SUCs or Ilocos Sur institutions to establish local precedent |
+| 2 | **Informal office boundaries; task delineation unverified** | The Registrar Office typically manages admission intake (requirements, submissions, scheduling) and the Guidance Office handles test activities (proctoring, scoring, releasing), but precise boundaries are informally understood, not systematically enforced. Overlaps and gaps remain unverified — to be formally documented in the capstone's descriptive phase. This ambiguity manifests as fragmented communication, duplicated effort, and delayed releases. |
+| 3 | **Guidance staff serve as proctors (consolidated test-side role)** | Guidance personnel handle proctoring, scoring, and result management directly — no delegation to separate proctoring staff. This consolidated test-side responsibility ensures operational security but concentrates workload, creating a bottleneck during peaks. |
+| 4 | **Foundational digital system deployed but architecturally limited** | A first-generation digital admission system was developed and deployed at ISPSC Tagudin through prior institutional consultation (Phase 1, see Development Chronology). The Guidance Office has access and has been suggested to use it for result generation, new applications, and direct assessment. However, the system lacks cryptographic score integrity, role-based policy enforcement at system level, offline resilience, and scalable multi-campus architecture. Crucially, the extent of actual adoption versus remaining manual processes requires formal verification through the capstone's descriptive phase. |
+| 5 | **Capstone formally validates the pre-existing institutional initiative** | The foundational system was built by the researcher during 3rd year (pre-capstone) through institutional consultation. The capstone now applies a descriptive-developmental research design to: (a) formally document and validate Phase 1 features through research — proving alignment with best practices, measuring usability, gathering user feedback; and (b) engineer advanced capabilities Phase 1 lacked (HMAC score integrity, immutable audit logging, CV-OMR, offline PWA, enhanced AI scheduling with human-in-the-loop, multi-tenant architecture). This dual function — confirmatory validation + developmental advancement — is the study's methodological core. |
+| 6 | **System solves boundary ambiguity through RBAC (not office conventions)** | The system enforces permissions through explicit role-based access control — defining what each role can access and perform — thereby replacing informal office-based conventions with systematic, auditable authorization. This is a core architectural contribution of SecureCAT. |
+| 7 | **Staff multitasking burden** | Guidance counselors handle proctoring, scoring, attendance, AND counseling during admission periods |
+| 8 | **Seasonal applicant volume** | Admission periods create concentrated demand spikes that exceed current staff capacity |
+| 9 | **Campus infrastructure constraints** | Wi-Fi reliability, available computers, physical office space limitations |
+| 10 | **Regional institutional context** | Compare with nearby SUCs or Ilocos Sur institutions to establish local precedent |
 
 **Note:** All team members are at ISPSC Tagudin — this is your direct observation context. Cite regional studies, ISPSC publications, or comparable Ilocos/Region I institution studies.
 
@@ -102,9 +105,9 @@
 | Component | Argument |
 |-----------|----------|
 | **1. How literature structured the study** | "The reviewed literature established a convergent pattern: secure assessment platforms require role-based access governance, automated scoring reduces transcription error, AI-assisted guidance deflects repetitive applicant inquiries, lightweight PWA delivery suits seasonal users, and multi-campus institutions require scalable multi-tenant data architecture. This pattern directly informed the design of SecureCAT as an integrated system addressing all dimensions simultaneously." |
-| **2. Why this topic was selected** | "The researchers' direct observation at ISPSC Tagudin during the [specific admission period] revealed [specific problems witnessed] — confirming that the gap identified in literature exists in operational practice." |
+| **2. Why this topic was selected** | "The researchers' direct observation at ISPSC Tagudin, including the development and deployment of a foundational digital admission system during the pre-capstone period (3rd year, 2nd semester) through institutional consultation with the Guidance Office, revealed that key operational bottlenecks and security concerns were left unresolved by basic digitization — confirming that the gap identified in literature exists in active operational practice. The capstone now formally validates this pre-existing initiative through descriptive-developmental research: documenting its utilization, measuring usability, and engineering the advanced capabilities it lacks." |
 | **3. Why SecureCAT is the critical solution** | "SecureCAT addresses this integrated gap by providing a role-based, zero-trust-secured, AI-enhanced, offline-resilient, multi-tenant admission testing platform — engineered specifically for the operational realities of Philippine state university campuses." |
-| **Optional: SDG tie-in** | SDG 4 (Quality Education) — by reducing administrative friction in the admission pipeline, SecureCAT contributes to more accessible and equitable higher education intake processes |
+| **Optional: SDG tie-in** | SDG 4 (Quality Education) — by reducing administrative friction in the admission pipeline and streamlining the experience for students (the primary stakeholders), SecureCAT contributes to more accessible and equitable higher education intake processes. The digitization of campus processes directly reduces the queue burden that plagues public institutions, often described by the connotation "basta public ay mahaba pila." |
 
 ---
 
@@ -114,7 +117,7 @@
 | Objective | Content | Notes |
 |-----------|---------|-------|
 | **General** | "To develop SecureCAT, a role-based college admission testing system for the Guidance and Registrar Offices at ISPSC Tagudin" | Must match title exactly |
-| **Specific 1 — Identify** | Document existing manual admission processes, operational gaps, and institutional requirements at ISPSC Tagudin | Covers: current workflows, pain points, staff roles, applicant journey, infrastructure constraints |
+| **Specific 1 — Identify** | Document existing admission processes, operational workflows, manual process dependencies, current utilization and operational limitations of the deployed foundational digital system, and institutional requirements at ISPSC Tagudin | Covers: current workflows, deployed system usage, architectural gaps, pain points, staff roles, applicant journey, infrastructure constraints |
 | **Specific 2 — Develop** | Build the system with RBAC + zero-trust security, AI-assisted guidance, automated scoring capabilities, offline-resilient proctoring, and multi-tenant data architecture | Covers: all six pillars as features |
 | **Specific 3 — Evaluate** | Assess the **usability** of the system using the System Usability Scale (SUS) | Use "usability" only — not "acceptability" — because SUS is a usability instrument |
 
@@ -143,12 +146,12 @@
 
 | Beneficiary | Key argument |
 |-------------|-------------|
-| **Registrar Office Staff** | Centralized digital pipeline replacing manual paper-based review; automated application processing, bulk import, real-time status tracking, room/course management. Audit logging ensures RA 10173 compliance; role-based access prevents unauthorized data access. |
-| **Guidance Office Counselors** | Streamlined test administration: session roster, proctor assignment, digital attendance. Automated scoring via OMR CSV import (+ planned CV ingestion), consultation summaries, aptitude management. Enhanced AI Companion reduces repetitive applicant inquiries. |
-| **Proctors and Test Administrators** | Real-time session management, QR-based applicant verification, digital attendance confirmation. Offline-resilient PWA allows scanning even when campus WiFi is unreliable — cached data syncs automatically on reconnection. |
-| **Applicants and Examinees** | Real-time status tracker from application through result release; admission slip PDF generation; token-based secure account activation; AI companion for instant guidance. Faster scoring and automated result generation reduce waiting. |
+| **Registrar Office Staff** | Centralized digital pipeline replacing manual paper-based review; automated application processing, bulk import, real-time status tracking, room/course management. Audit logging ensures RA 10173 compliance; role-based access prevents unauthorized data access. Digital handoff from Guidance Office eliminates fragmented communication and duplicated effort in result processing. |
+| **Guidance Office Counselors** | Streamlined test administration: session roster, proctor assignment, digital attendance. Automated scoring via OMR CSV import (+ planned CV ingestion), consultation summaries, aptitude management. Enhanced AI Companion reduces repetitive applicant inquiries. Cryptographic score integrity (HMAC) and immutable audit logging provide tamper-evident records for accountability. |
+| **Proctors and Test Administrators** | Real-time session management, QR-based applicant verification, digital attendance confirmation. Offline-resilient PWA allows scanning even when campus WiFi is unreliable — cached data syncs automatically on reconnection. Guidance staff serving as proctors benefit from consolidated tooling that reduces manual workload concentration. |
+| **Applicants and Examinees** | Real-time status tracker from application through result release; admission slip PDF generation; token-based secure account activation; AI companion for instant guidance. Faster scoring and automated result generation reduce waiting. **Digitization of campus admission processes directly streamlines the experience for the primary stakeholders — the students — reducing the queue burden that plagues public institutions, often described by the connotation "basta public ay mahaba pila."** Web-based PWA access eliminates native app installation overhead for these seasonal users. |
 | **ISPSC Administration** | Institutional-level visibility: audit logs, automated reporting, real-time dashboards. HMAC score integrity (planned) provides tamper-evident records. Multi-tenant isolation (planned) prepares for future campus expansion while maintaining data privacy (RA 10173). |
-| **Future Researchers** | SecureCAT provides a reference implementation for RBAC admission systems in Philippine SUCs — covering zero-trust governance, CV OMR, offline-resilient PWA proctoring, AI Companion with RAG, and multi-tenant isolation. |
+| **Future Researchers** | SecureCAT provides a reference implementation for RBAC admission systems in Philippine SUCs — covering zero-trust governance, CV OMR, offline-resilient PWA proctoring, AI Companion with RAG, and multi-tenant isolation. The descriptive-developmental methodology demonstrates how a pre-capstone institutional initiative can be formally validated and advanced through structured research. |
 
 ---
 
@@ -161,7 +164,7 @@
 
 | # | Argument | Detail |
 |---|----------|--------|
-| 1 | **Descriptive phase** | The study first describes the existing manual admission processes, workflows, and operational pain points at ISPSC Tagudin. This grounds the development in real institutional needs rather than assumed requirements. |
+| 1 | **Descriptive phase** | The study describes the existing admission processes, workflows, manual dependencies, current utilization, and operational limitations of the deployed foundational digital system at ISPSC Tagudin. This grounds the development in real institutional needs rather than assumed requirements. |
 | 2 | **Developmental phase** | Based on the descriptive findings, the study develops a software solution (SecureCAT) that addresses the identified gaps. The developmental phase is iterative — build, test, refine. |
 | 3 | **Why this design fits** | BSIT capstone projects are applied research — the goal is to solve a real institutional problem, not to test theoretical hypotheses. Descriptive-Developmental is the standard design for tool/system development studies in Philippine HEI capstones. |
 | 4 | **Descriptive instruments** | Observation, interviews, and document analysis of current ISPSC admission workflows feed into the developmental requirements. |
