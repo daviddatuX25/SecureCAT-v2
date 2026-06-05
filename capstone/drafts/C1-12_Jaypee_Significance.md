@@ -1,0 +1,37 @@
+# C1-12: Significance of the Study
+
+**Task ID:** C1-12
+**Assigned to:** Jaypee
+**Date:** June 5, 2026
+**Dependencies:** C1-09 (Objectives of the Study)
+
+---
+
+## Significance of the study
+
+[indent] The Community. The implementation of SecureCAT benefits the local community of Tagudin and surrounding municipalities in Ilocos Sur, whose residents comprise the primary applicant pool of Ilocos Sur Polytechnic State College (ISPSC) Tagudin Campus. By shifting the college admission testing process from manual, paper-based workflows to a unified role-based digital system, the platform reduces the economic and time burden placed on applicants and their families. Manual queues during peak admission cycles required applicants to make multiple physical visits and endure lengthy wait times to submit requirements, secure exam schedules, and claim results. The digitized system minimizes physical queue bottlenecks and reduces the need for repeated campus visits, making higher education admissions more accessible for the community.
+
+[indent] The Client Institution. The Ilocos Sur Polytechnic State College Tagudin Campus, particularly the Guidance Office and the Registrar Office, benefits from integrating a unified, secure, and offline-resilient admissions platform. The system addresses coordination gaps and manual transcription bottlenecks that have historically slowed the processing of applicant files. By deploying a system that includes automated computer-vision optical mark recognition (OMR) grading, secure score transmission, and automated scheduling, the institution can reduce the total processing timeframe of an admission cycle by approximately [N]% <!-- STEER: Get estimated or desired percentage reduction in processing time from Registrar and Guidance staff | Source: Block A Phase 2 + Block B Phase 2 | Fallback: "by a substantial margin compared to legacy paper-based workflows" -->. The multi-tenant database isolation and zero-trust access control assist the college in complying with the security and data governance standards mandated by the Philippine Data Privacy Act of 2012 (RA 10173), strengthening the institution's administrative integrity and technological compliance.
+
+[indent] The Respondents. The direct participants in this study — including Registrar Office staff, Guidance Office counselors, proctors, test administrators, and the applicants themselves — benefit from operational relief. Guidance counselors and test administrators, who simultaneously serve as proctors, experience a reduction in the mental, physical, and temporal workloads associated with manual exam scheduling, bubble sheet checking, and record filing. The automated grading pipeline reduces the time spent checking exams from several days to a few hours, yielding an expected [N]% reduction in post-exam administrative workload <!-- STEER: Confirm expected workload reduction percentage with Guidance staff during interview | Source: Block B Guidance Phase 1 + 2 | Fallback: "resulting in a marked reduction in post-exam administrative workload as measured by the NASA-TLX workload dimensions" -->. Applicants benefit from a more intuitive registration interface, automated queue scheduling, and rapid result notifications, which cuts typical wait times in enrollment lines from [N] hours to minutes <!-- STEER: Get average manual queue wait time from applicant intercepts | Source: Block B-prep Applicant Intercepts | Fallback: "reduces typical wait times in enrollment lines to a fraction of the time required by the manual queue" -->.
+
+[indent] The College or Department. The Bachelor of Science in Information Technology (BSIT) Department of ISPSC Tagudin Campus benefits from this study as it provides a production-grade demonstration of advanced systems engineering and software design. By incorporating cryptographic ledger verification (HMAC-SHA256), offline progressive web applications with IndexedDB synchronization, and computer-vision-based OMR, the project models how abstract IT theories translate into institutional solutions. This study validates the department's curriculum by showing how modern frameworks like Laravel 12 and Svelte 5 apply to local administrative problems, setting a higher benchmark for future capstone submissions within the college.
+
+[indent] The Students. The students of ISPSC Tagudin Campus, particularly future examinees and applicants, benefit from an equitable and secure testing environment. The cryptographic verification of test scores using HMAC-SHA256 ensures that applicant records are secure from unauthorized administrative tampering, so admission decisions rest on unaltered, verified merit. Automated room scheduling eliminates manual scheduling overlaps, ensuring that students are allocated slots fairly and in an organized manner. Reducing administrative friction lets applicants focus on examination preparation rather than handling bureaucratic queues.
+
+[indent] The Researchers. The researchers benefit from the study by gaining hands-on experience in the entire software development lifecycle, from requirements elicitation through implementation and formal evaluation. By executing this project under the AI-Driven Development Lifecycle (AIDLC) framework, the researchers developed professional competencies in agentic workflows, database scaling, API security, and mobile offline synchronization. The researchers also developed academic research skills by administering standardized evaluation instruments (SUS and NASA-TLX) and conducting descriptive developmental data analysis, preparing them for future careers in systems analysis, software engineering, and data privacy compliance.
+
+[indent] Future Researchers. This study provides a reference and baseline framework for future researchers interested in developing, deploying, or evaluating institutional web applications in resource-constrained educational environments. The documentation of the AIDLC software model, the zero-trust data governance architecture, and the offline proctor synchronization strategies offers a reusable blueprint for multi-campus platforms. The empirical findings and data collected from the usability (SUS) and workload (NASA-TLX) evaluations can be used by future investigators to compare the efficiency of alternative development lifecycles or to study user adoption patterns in regional Philippine state colleges.
+
+---
+
+## Compliance verification
+
+| Rule | Status | Notes |
+|------|--------|-------|
+| One paragraph per beneficiary group | ✅ | Exactly 7 beneficiary paragraphs |
+| Include only direct beneficiaries | ✅ | No vague or indirect groups included |
+| No general "new knowledge" paragraph at the end | ✅ | Direct beneficiaries only |
+| Anchored to C1-09 objectives | ✅ | Paragraphs discuss operational assessment, system development, and SUS/TLX evaluation |
+| STEER markers added to quantitative claims | ✅ | Added on processing time, workload reduction, and queue wait times |
+| Written in paragraph form only (no bullets or numbers) | ✅ | Continuous academic prose |

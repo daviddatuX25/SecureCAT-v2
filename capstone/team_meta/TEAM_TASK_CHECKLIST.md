@@ -34,7 +34,7 @@
 || C1-01 | Background P1 — Core Problem Statement | **David** | 🟢 | Jun 4 | Draft complete. 8-12 sentences, no citations |
 | C1-02 | Background P2 — Global Context | **David** | ⬜ | Jun 5 | Min 5 APA citations (2022-2026), 12-15 sentences |
 | C1-03 | Background P3 — National Context (PH) | **David** | ⬜ | Jun 5 | Min 5 APA citations (2022-2026), 12-15 sentences |
-| C1-04 | Background P4 — Local Context (ISPSC) | **Jaypee** | ⬜ | Jun 5 | Min 5 APA citations; get ISPSC context from Christine |
+|| C1-04 | Background P4 — Local Context (ISPSC) | **Jaypee** | 🟢 | Jun 5 | Min 5 APA citations; get ISPSC context from Christine |
 | C1-05 | Background P5 — Synthesis & Gap | **David** | ⬜ | Jun 6 | Blocked by C1-02, C1-03, C1-04 |
 | C1-06 | Background P6 — Clinching Statement | **David** | ⬜ | Jun 7 | Blocked by C1-02 through C1-05 |
 ||| C1-07 | Conceptual Framework — IPO Diagram | **Jaypee** | 🟢 | Jun 3 | Draft complete. 6 inputs, 9 outputs |
@@ -42,7 +42,7 @@
 ||| C1-09 | Objectives of the Study | **Jaypee** | 🟢 | Jun 3 | Draft complete. Unblocks C1-10, C2-01, C2-06, C2-07 |
 ||| C1-10 | Research Questions | **Jaypee** | 🟢 | Jun 4 | Draft complete. 3 RQs covering all 4 dimensions |
 | C1-11 | Scope and Delimitations | **David** | 🟢 | Jun 4 | Draft complete. Scope + delimitations in paragraph form |
-| C1-12 | Significance of the Study | **Jaypee** | ⬜ | Jun 5 | No deps — 6 paragraphs, system-specific groups |
+|| C1-12 | Significance of the Study | **Jaypee** | 🟢 | Jun 5 | No deps — 6 paragraphs, system-specific groups |
 
 ---
 
@@ -53,11 +53,11 @@
 | Task ID | Task | Assigned | Status | Due | Est. | Deliverable | Notes |
 |---------|------|----------|--------|-----|------|-------------|-------|
 | C2-01 | Research Design | **David** | 🟢 | Jun 5 | 3-4h | 2 paragraphs | Draft complete. Descriptive developmental design with AIDLC |
-| C2-02 | Software Model (RAD or AIDLC) | **David** | ⬜ | Jun 5 | 4-6h | Multi-paragraph + figure | Unblocks C2-03 |
+|| C2-02 | Software Model (RAD or AIDLC) | **David** | 🟢 | Jun 5 | 4-6h | Multi-paragraph + figure | Unblocks C2-03 |
 || C2-03 | Project Plan (Gantt Chart) | **Christine** | ⬜ | Jun 6 | 2-3h | Gantt figure + narrative | Blocked by C2-02 (David) |
-|| C2-04 | Project Assignment | **Christine** | ⬜ | Jun 5 | 1-2h | Table 1 (5 roles) | No deps |
-| C2-05 | Population and Locale | **Christine** | ⬜ | Jun 8 | 3-4h | 2 paragraphs + Table 2 | ISPSC Tagudin locale + purposive sampling |
-|| C2-06 | Research Instruments | **Christine** | ⬜ | Jun 6 | 2-3h | 1-2 paragraphs | SUS; depends C1-09 (Jaypee) |
+|| C2-04 | Project Assignment | **Christine** | 🟢 | Jun 5 | 1-2h | Table 1 (5 roles) | No deps |
+| C2-05 | Population and Locale | **Christine** | 🟢 | Jun 8 | 3-4h | 2 paragraphs + Table 2 | ISPSC Tagudin locale + purposive sampling |
+|| C2-06 | Research Instruments | **Christine** | 🟢 | Jun 6 | 2-3h | 1-2 paragraphs | SUS; depends C1-09 (Jaypee) |
 || C2-07 | Data Analysis | **David** | ⬜ | Jun 6 | 2-3h | Paragraphs + Table 3 | Blocked by C1-09, C2-06 (Christine) |
 
 ---
@@ -109,12 +109,12 @@
 
 | Task | Blocked By | Risk |
 |------|-----------|------|
-| C1-05 (David) | C1-02, C1-03, C1-04 | ⚠️ Jaypee must finish C1-04 by Jun 5 |
+|| C1-05 (David) | C1-02, C1-03, C1-04 | ✅ C1-04 complete — waiting on C1-02, C1-03 |
 || C1-06 (David) | C1-02 through C1-05 | ⚠️ Multiple predecessors |
 || C1-10 (Jaypee) | C1-09 (Jaypee) | Same person — sequential, low risk |
-|| C2-03 (Christine) | C2-02 (David) | ⚠️ Cross-member dependency — MEDIUM risk; David must deliver C2-02 by Jun 5 |
+|| C2-03 (Christine) | C2-02 (David) | ✅ C2-02 complete — Christine can start C2-03 |
 || C2-06 (Christine) | C1-09 (Jaypee) | ⚠️ Cross-member dependency — MEDIUM risk; Jaypee must deliver C1-09 by Jun 3 |
-|| C2-07 (David) | C1-09 (Jaypee), C2-06 (Christine) | ⚠️ Cross-member dependency — MEDIUM risk; two upstream owners |
+|| C2-07 (David) | C1-09 (Jaypee), C2-06 (Christine) | ✅ C1-09 & C2-06 complete — David can start C2-07 |
 || CC-01 (Jaypee) | All writing tasks | All draft refs due to Jaypee by Jun 7 |
 || CC-02 (Christine) | Assembled manuscript | Blocked until David completes CC-03 |
 || CC-03 (David) | All writing tasks | ⚠️ Cannot start until Jun 9 — minimal buffer |
@@ -128,8 +128,8 @@
 - [ ] **Jaypee:** Complete C1-07 (IPO Diagram) by June 3 to unblock C1-08
 - [ ] **Christine:** Provide ISPSC context (Guidance Office, Registrar workflows, WiFi/infrastructure) to Jaypee by June 2
 - [ ] **Christine:** Share OMR/scoring sources with David for C1-02/C1-03 background paragraphs
-- [ ] **David:** Deliver C2-02 (Software Model) to Christine by June 5 so C2-03 (Gantt) can start
-- [ ] **Christine:** Deliver C2-06 (Research Instruments) to David by June 6 so C2-07 (Data Analysis) can start
+- [x] **David:** Deliver C2-02 (Software Model) to Christine by June 5 so C2-03 (Gantt) can start
+- [x] **Christine:** Deliver C2-06 (Research Instruments) to David by June 6 so C2-07 (Data Analysis) can start
 - [ ] **All members:** Submit draft references to Jaypee by June 7 (needed for CC-01)
 - [ ] **David:** Scan and embed/insert signed Letter to Conduct for Appendix A
 - [ ] **David:** Produce Use Case Diagram for Appendix B (by June 8)
