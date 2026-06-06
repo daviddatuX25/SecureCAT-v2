@@ -136,9 +136,13 @@
   .field-row { display: flex; align-items: center; gap: 6px; margin: 4px 0; font-size: 0.75rem; color: var(--text2); flex-wrap: wrap; }
   .field-row label { flex-shrink: 0; min-width: 60px; }
   .checkbox-group { display: flex; gap: 8px; flex-wrap: wrap; }
-  .checkbox-group span { font-size: 0.7rem; padding: 2px 8px; background: rgba(255,255,255,0.05); border-radius: 4px; cursor: pointer; }
+  .checkbox-group span { font-size: 0.7rem; padding: 2px 8px; background: rgba(255,255,255,0.05); border-radius: 4px; cursor: pointer; -webkit-tap-highlight-color: transparent; transition: all 0.15s; border: 1px solid transparent; }
+  .checkbox-group span:active { transform: scale(0.92); }
+  .checkbox-group span.selected { background: rgba(108,140,255,0.2); color: var(--accent); border-color: var(--accent); }
   .rating-row { display: flex; gap: 6px; margin: 4px 0; }
-  .rating-row span { width: 28px; height: 28px; border-radius: 50%; border: 1.5px solid var(--border); display: flex; align-items: center; justify-content: center; font-size: 0.75rem; cursor: pointer; }
+  .rating-row span { width: 28px; height: 28px; border-radius: 50%; border: 1.5px solid var(--border); display: flex; align-items: center; justify-content: center; font-size: 0.75rem; cursor: pointer; -webkit-tap-highlight-color: transparent; transition: all 0.15s; }
+  .rating-row span:active { transform: scale(0.85); }
+  .rating-row span.selected { background: var(--accent); color: #000; border-color: var(--accent); font-weight: 700; }
   .tag-d { background: rgba(108,140,255,0.15); color: var(--accent); }
   .tag-c { background: rgba(244,114,182,0.15); color: var(--pink); }
   .tag-all { background: rgba(52,211,153,0.15); color: var(--green); }
@@ -512,11 +516,11 @@
       </div>
       <div class="field-row">
         <label>Q1 found via:</label>
-        <div class="checkbox-group"><span>School</span><span>Online</span><span>Word</span><span>Other</span></div>
+        <div class="checkbox-group"><span onclick="tapChip(this)">School</span><span onclick="tapChip(this)">Online</span><span onclick="tapChip(this)">Word</span><span onclick="tapChip(this)">Other</span></div>
       </div>
       <div class="field-row">
         <label>Q2 knows status:</label>
-        <div class="checkbox-group"><span>Yes</span><span>No</span><span>Unsure</span></div>
+        <div class="checkbox-group"><span onclick="tapChip(this)">Yes</span><span onclick="tapChip(this)">No</span><span onclick="tapChip(this)">Unsure</span></div>
       </div>
       <div class="field-row">
         <label>Q3 pain:</label>
@@ -524,19 +528,19 @@
       </div>
       <div class="field-row">
         <label>Q4 format:</label>
-        <div class="checkbox-group"><span>Paper</span><span>Online</span><span>Both</span></div>
+        <div class="checkbox-group"><span onclick="tapChip(this)">Paper</span><span onclick="tapChip(this)">Online</span><span onclick="tapChip(this)">Both</span></div>
       </div>
       <div class="field-row">
         <label>Q5 use app:</label>
-        <div class="checkbox-group"><span>Yes</span><span>No</span><span>Maybe</span></div>
+        <div class="checkbox-group"><span onclick="tapChip(this)">Yes</span><span onclick="tapChip(this)">No</span><span onclick="tapChip(this)">Maybe</span></div>
       </div>
       <div class="field-row">
         <label>Q6 rating:</label>
-        <div class="rating-row"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span></div>
+        <div class="rating-row"><span onclick="tapRating(this)">1</span><span onclick="tapRating(this)">2</span><span onclick="tapRating(this)">3</span><span onclick="tapRating(this)">4</span><span onclick="tapRating(this)">5</span></div>
       </div>
       <div class="field-row">
         <label>Consent:</label>
-        <div class="checkbox-group" style="color:var(--green)"><span>✅ Verbal</span></div>
+        <div class="checkbox-group" style="color:var(--green)"><span onclick="tapChip(this)">✅ Verbal</span></div>
       </div>
     </div>
 
@@ -694,6 +698,51 @@ function applyLetterGate() {
 
 function toggleSection(id) { document.getElementById(id).classList.toggle('open'); }
 
+// === INTERCEPT FORM CHIPS & RATINGS ===
+function tapChip(el) {
+  // In a checkbox-group, toggle this one (allow multi-select per row)
+  el.classList.toggle('selected');
+  saveInterceptState();
+}
+
+function tapRating(el) {
+  // In a rating-row, only one can be selected — deselect siblings
+  const row = el.parentElement;
+  row.querySelectorAll('span').forEach(s => s.classList.remove('selected'));
+  el.classList.add('selected');
+  saveInterceptState();
+}
+
+function saveInterceptState() {
+  const state = {};
+  document.querySelectorAll('.checkbox-group span.selected, .rating-row span.selected').forEach(el => {
+    const row = el.closest('.field-row');
+    if (!row) return;
+    const label = row.querySelector('label').textContent.trim();
+    if (!state[label]) state[label] = [];
+    state[label].push(el.textContent.trim());
+  });
+  localStorage.setItem('june8-intercept', JSON.stringify(state));
+}
+
+function loadInterceptState() {
+  try {
+    const state = JSON.parse(localStorage.getItem('june8-intercept') || '{}');
+    document.querySelectorAll('.checkbox-group span').forEach(span => {
+      const row = span.closest('.field-row');
+      if (!row) return;
+      const label = row.querySelector('label').textContent.trim();
+      if (state[label] && state[label].includes(span.textContent.trim())) span.classList.add('selected');
+    });
+    document.querySelectorAll('.rating-row span').forEach(span => {
+      const row = span.closest('.field-row');
+      if (!row) return;
+      const label = row.querySelector('label').textContent.trim();
+      if (state[label] && state[label].includes(span.textContent.trim())) span.classList.add('selected');
+    });
+  } catch(e) {}
+}
+
 function toggleCheck(box) {
   const li = box.closest('li');
   li.classList.toggle('checked');
@@ -739,7 +788,7 @@ document.querySelectorAll('[data-note]').forEach(el => {
   });
 });
 
-loadState(); applyLetterGate(); updateProgress();
+loadState(); loadInterceptState(); applyLetterGate(); updateProgress();
 </script>
 </body>
 </html>
