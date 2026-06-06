@@ -506,47 +506,12 @@
       </ol>
     </div>
 
-    <div class="intercept-card">
-      <h4>📝 Quick Capture — Enrolee/Applicant #__</h4>
-      <div class="field-row">
-        <label>Time:</label>
-        <input type="text" class="notes-area" style="min-height:auto;padding:4px 8px;width:80px" placeholder="10:30">
-        <label>By:</label>
-        <input type="text" class="notes-area" style="min-height:auto;padding:4px 8px;width:60px" placeholder="Name">
-      </div>
-      <div class="field-row">
-        <label>Q1 found via:</label>
-        <div class="checkbox-group"><span onclick="tapChip(this)">School</span><span onclick="tapChip(this)">Online</span><span onclick="tapChip(this)">Word</span><span onclick="tapChip(this)">Other</span></div>
-      </div>
-      <div class="field-row">
-        <label>Q2 knows status:</label>
-        <div class="checkbox-group"><span onclick="tapChip(this)">Yes</span><span onclick="tapChip(this)">No</span><span onclick="tapChip(this)">Unsure</span></div>
-      </div>
-      <div class="field-row">
-        <label>Q3 pain:</label>
-        <input type="text" class="notes-area" style="min-height:auto;padding:4px 8px;flex:1" placeholder="...">
-      </div>
-      <div class="field-row">
-        <label>Q4 format:</label>
-        <div class="checkbox-group"><span onclick="tapChip(this)">Paper</span><span onclick="tapChip(this)">Online</span><span onclick="tapChip(this)">Both</span></div>
-      </div>
-      <div class="field-row">
-        <label>Q5 use app:</label>
-        <div class="checkbox-group"><span onclick="tapChip(this)">Yes</span><span onclick="tapChip(this)">No</span><span onclick="tapChip(this)">Maybe</span></div>
-      </div>
-      <div class="field-row">
-        <label>Q6 rating:</label>
-        <div class="rating-row"><span onclick="tapRating(this)">1</span><span onclick="tapRating(this)">2</span><span onclick="tapRating(this)">3</span><span onclick="tapRating(this)">4</span><span onclick="tapRating(this)">5</span></div>
-      </div>
-      <div class="field-row">
-        <label>Consent:</label>
-        <div class="checkbox-group" style="color:var(--green)"><span onclick="tapChip(this)">✅ Verbal</span></div>
-      </div>
-    </div>
+    <div id="intercept-cards-container"></div>
+    <button class="gate-btn" style="background:var(--accent);color:#000;font-size:0.8rem;padding:8px 16px;margin-top:4px;width:100%;justify-content:center;border-radius:8px" onclick="addInterceptCard()">＋ Add Enrolee / Applicant</button>
 
     <div class="mt-8">
       <label class="notes-label">📝 Intercept tally</label>
-      <textarea class="notes-area" data-note="intercept" placeholder="# intercepted: __&#10;Avg rating: __&#10;Common themes: __"></textarea>
+      <textarea class="notes-area" data-note="intercept" placeholder="# interviewed: __&#10;Avg rating: __&#10;Common themes: __"></textarea>
     </div>
   </div>
 </div>
@@ -634,8 +599,23 @@
   </div>
   <div class="section-body">
     <div class="guide-block">
-      <h4>⚠️ David — Don't say "I already know"</h4>
-      <p>Even though you built the system, the interview must feel like genuine discovery. Say <em>"That's helpful — can you tell me more about [specific detail]?"</em></p>
+      <h4>🎙 Interview Conduct — Everyone</h4>
+      <ul>
+        <li><strong>Don't lead the answers.</strong> Ask open-ended questions. Let them talk. If they pause, wait — don't fill the silence.</li>
+        <li><strong>Don't say "I already know."</strong> Even if you built the system or heard this before, the interview must feel like genuine discovery. Say <em>"That's helpful — can you tell me more about that?"</em></li>
+        <li><strong>Stay in your role.</strong> The interviewer asks, the recorder observes and flags anything missed. Don't switch mid-interview unless agreed.</li>
+        <li><strong>Parallel tasks are okay.</strong> While one block is running (e.g., Registrar interview), another member can do enrolee intercepts in the hallway — just coordinate timing.</li>
+        <li><strong>Note the unexpected.</strong> If they say something surprising or contradicting, write it down immediately — you won't remember later.</li>
+        <li><strong>Between offices:</strong> Quick 30-sec sync — "What did we get? Anything to follow up?" before moving to the next block.</li>
+      </ul>
+    </div>
+    <div class="guide-block">
+      <h4>👥 Role-Specific Notes</h4>
+      <ul>
+        <li><strong>David (Lead Interviewer):</strong> Guide the conversation through the phases. Don't rush — let them finish. If they go off-topic, gently redirect with "That's interesting — going back to the process..."</li>
+        <li><strong>Christine (Audio + Observer):</strong> Keep the recorder running the entire time. Watch for body language cues. Jot key quotes or contradictions. Flag if audio quality drops.</li>
+        <li><strong>Assigned member (Roamer / Process Mapper):</strong> Map physical workflows — where forms go, which desk handles what. Snap photos of any physical artifacts (with permission).</li>
+      </ul>
     </div>
     <div class="guide-block">
       <h4>📝 Evidence Tags</h4>
@@ -699,46 +679,115 @@ function applyLetterGate() {
 function toggleSection(id) { document.getElementById(id).classList.toggle('open'); }
 
 // === INTERCEPT FORM CHIPS & RATINGS ===
+let interceptCount = 0;
+
+function addInterceptCard() {
+  interceptCount++;
+  const n = interceptCount;
+  const container = document.getElementById('intercept-cards-container');
+  const card = document.createElement('div');
+  card.className = 'intercept-card';
+  card.dataset.card = n;
+  card.innerHTML = `
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+      <h4 style="margin:0">📝 Enrolee / Applicant #${n}</h4>
+      <button onclick="this.closest('.intercept-card').remove();saveAllInterceptCards()" style="background:none;border:1px solid var(--border);border-radius:6px;color:var(--red);font-size:0.7rem;padding:2px 8px;cursor:pointer">✕</button>
+    </div>
+    <div class="field-row">
+      <label>Time:</label>
+      <input type="text" class="notes-area" style="min-height:auto;padding:4px 8px;width:80px" placeholder="10:30" onchange="saveAllInterceptCards()">
+      <label>By:</label>
+      <input type="text" class="notes-area" style="min-height:auto;padding:4px 8px;width:60px" placeholder="Name" onchange="saveAllInterceptCards()">
+    </div>
+    <div class="field-row">
+      <label>Q1 found via:</label>
+      <div class="checkbox-group"><span onclick="tapChip(this)">School</span><span onclick="tapChip(this)">Online</span><span onclick="tapChip(this)">Word</span><span onclick="tapChip(this)">Other</span></div>
+    </div>
+    <div class="field-row">
+      <label>Q2 knows status:</label>
+      <div class="checkbox-group"><span onclick="tapChip(this)">Yes</span><span onclick="tapChip(this)">No</span><span onclick="tapChip(this)">Unsure</span></div>
+    </div>
+    <div class="field-row">
+      <label>Q3 pain:</label>
+      <input type="text" class="notes-area" style="min-height:auto;padding:4px 8px;flex:1" placeholder="..." onchange="saveAllInterceptCards()">
+    </div>
+    <div class="field-row">
+      <label>Q4 format:</label>
+      <div class="checkbox-group"><span onclick="tapChip(this)">Paper</span><span onclick="tapChip(this)">Online</span><span onclick="tapChip(this)">Both</span></div>
+    </div>
+    <div class="field-row">
+      <label>Q5 use app:</label>
+      <div class="checkbox-group"><span onclick="tapChip(this)">Yes</span><span onclick="tapChip(this)">No</span><span onclick="tapChip(this)">Maybe</span></div>
+    </div>
+    <div class="field-row">
+      <label>Q6 rating:</label>
+      <div class="rating-row"><span onclick="tapRating(this)">1</span><span onclick="tapRating(this)">2</span><span onclick="tapRating(this)">3</span><span onclick="tapRating(this)">4</span><span onclick="tapRating(this)">5</span></div>
+    </div>
+    <div class="field-row">
+      <label>Consent:</label>
+      <div class="checkbox-group" style="color:var(--green)"><span onclick="tapChip(this)">✅ Verbal</span></div>
+    </div>`;
+  container.appendChild(card);
+  saveAllInterceptCards();
+  // scroll to the new card
+  card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
+
 function tapChip(el) {
-  // In a checkbox-group, toggle this one (allow multi-select per row)
   el.classList.toggle('selected');
-  saveInterceptState();
+  saveAllInterceptCards();
 }
 
 function tapRating(el) {
-  // In a rating-row, only one can be selected — deselect siblings
   const row = el.parentElement;
   row.querySelectorAll('span').forEach(s => s.classList.remove('selected'));
   el.classList.add('selected');
-  saveInterceptState();
+  saveAllInterceptCards();
 }
 
-function saveInterceptState() {
-  const state = {};
-  document.querySelectorAll('.checkbox-group span.selected, .rating-row span.selected').forEach(el => {
-    const row = el.closest('.field-row');
-    if (!row) return;
-    const label = row.querySelector('label').textContent.trim();
-    if (!state[label]) state[label] = [];
-    state[label].push(el.textContent.trim());
-  });
-  localStorage.setItem('june8-intercept', JSON.stringify(state));
-}
-
-function loadInterceptState() {
-  try {
-    const state = JSON.parse(localStorage.getItem('june8-intercept') || '{}');
-    document.querySelectorAll('.checkbox-group span').forEach(span => {
-      const row = span.closest('.field-row');
-      if (!row) return;
-      const label = row.querySelector('label').textContent.trim();
-      if (state[label] && state[label].includes(span.textContent.trim())) span.classList.add('selected');
+function saveAllInterceptCards() {
+  const cards = [];
+  document.querySelectorAll('#intercept-cards-container .intercept-card').forEach(card => {
+    const data = { num: card.dataset.card };
+    // collect inputs
+    card.querySelectorAll('input').forEach(inp => { data[inp.placeholder] = inp.value; });
+    // collect chips
+    card.querySelectorAll('.checkbox-group span.selected').forEach(span => {
+      const label = span.closest('.field-row').querySelector('label').textContent.trim();
+      if (!data[label]) data[label] = [];
+      data[label].push(span.textContent.trim());
     });
-    document.querySelectorAll('.rating-row span').forEach(span => {
-      const row = span.closest('.field-row');
-      if (!row) return;
-      const label = row.querySelector('label').textContent.trim();
-      if (state[label] && state[label].includes(span.textContent.trim())) span.classList.add('selected');
+    // collect rating
+    const rated = card.querySelector('.rating-row span.selected');
+    if (rated) data['Q6 rating'] = rated.textContent.trim();
+    cards.push(data);
+  });
+  localStorage.setItem('june8-intercept-cards', JSON.stringify(cards));
+}
+
+function loadAllInterceptCards() {
+  try {
+    const cards = JSON.parse(localStorage.getItem('june8-intercept-cards') || '[]');
+    cards.forEach(data => {
+      addInterceptCard();
+      const card = document.querySelector(`.intercept-card[data-card="${data.num}"]`);
+      if (!card) return;
+      // restore inputs
+      card.querySelectorAll('input').forEach(inp => {
+        const key = inp.placeholder;
+        if (data[key]) inp.value = data[key];
+      });
+      // restore chips
+      card.querySelectorAll('.checkbox-group span').forEach(span => {
+        const label = span.closest('.field-row').querySelector('label').textContent.trim();
+        if (data[label] && data[label].includes(span.textContent.trim())) span.classList.add('selected');
+      });
+      // restore rating
+      if (data['Q6 rating']) {
+        card.querySelectorAll('.rating-row span').forEach(span => {
+          if (span.textContent.trim() === data['Q6 rating']) span.classList.add('selected');
+        });
+      }
     });
   } catch(e) {}
 }
@@ -788,7 +837,7 @@ document.querySelectorAll('[data-note]').forEach(el => {
   });
 });
 
-loadState(); loadInterceptState(); applyLetterGate(); updateProgress();
+loadState(); loadAllInterceptCards(); applyLetterGate(); updateProgress();
 </script>
 </body>
 </html>
