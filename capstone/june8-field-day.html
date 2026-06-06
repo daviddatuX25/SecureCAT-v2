@@ -22,36 +22,22 @@
     --pink: #f472b6;
     --dim: rgba(255,255,255,0.3);
   }
-
   * { margin: 0; padding: 0; box-sizing: border-box; }
-
   body {
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
-    background: var(--bg);
-    color: var(--text);
-    line-height: 1.5;
-    -webkit-font-smoothing: antialiased;
-    padding-bottom: 80px;
+    background: var(--bg); color: var(--text); line-height: 1.5;
+    -webkit-font-smoothing: antialiased; padding-bottom: 80px;
   }
-
-  /* Header */
   .header {
     background: linear-gradient(135deg, #1e2235 0%, #0f1117 100%);
-    padding: 20px 16px 16px;
-    border-bottom: 1px solid var(--border);
-    position: sticky;
-    top: 0;
-    z-index: 100;
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
+    padding: 20px 16px 16px; border-bottom: 1px solid var(--border);
+    position: sticky; top: 0; z-index: 100;
+    backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
   }
   .header h1 { font-size: 1.25rem; font-weight: 700; letter-spacing: -0.02em; }
   .header .subtitle { font-size: 0.8rem; color: var(--text2); margin-top: 2px; }
   .header .badge-row { display: flex; gap: 6px; margin-top: 8px; flex-wrap: wrap; }
-  .badge {
-    font-size: 0.7rem; padding: 3px 8px; border-radius: 99px;
-    font-weight: 600; display: inline-flex; align-items: center; gap: 4px;
-  }
+  .badge { font-size: 0.7rem; padding: 3px 8px; border-radius: 99px; font-weight: 600; display: inline-flex; align-items: center; gap: 4px; }
   .badge-green { background: rgba(52,211,153,0.15); color: var(--green); }
   .badge-yellow { background: rgba(251,191,36,0.15); color: var(--yellow); }
   .badge-red { background: rgba(248,113,113,0.15); color: var(--red); }
@@ -61,30 +47,16 @@
   .progress-bar { background: var(--surface); height: 3px; margin-top: 10px; border-radius: 2px; overflow: hidden; }
   .progress-fill { height: 100%; background: linear-gradient(90deg, var(--accent), var(--green)); transition: width 0.3s ease; border-radius: 2px; }
   .progress-text { font-size: 0.65rem; color: var(--text2); margin-top: 4px; text-align: right; }
-
-  /* Sections */
-  .section {
-    margin: 12px; background: var(--surface); border-radius: 12px;
-    border: 1px solid var(--border); overflow: hidden;
-  }
-  .section-header {
-    padding: 14px 16px; display: flex; align-items: center; gap: 10px;
-    cursor: pointer; -webkit-tap-highlight-color: transparent; user-select: none;
-  }
+  .section { margin: 12px; background: var(--surface); border-radius: 12px; border: 1px solid var(--border); overflow: hidden; }
+  .section-header { padding: 14px 16px; display: flex; align-items: center; gap: 10px; cursor: pointer; -webkit-tap-highlight-color: transparent; user-select: none; }
   .section-header:active { background: var(--surface2); }
-  .section-icon {
-    width: 32px; height: 32px; border-radius: 8px;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 1rem; flex-shrink: 0;
-  }
+  .section-icon { width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 1rem; flex-shrink: 0; }
   .section-title { flex: 1; font-size: 0.9rem; font-weight: 600; }
   .section-meta { font-size: 0.7rem; color: var(--text2); text-align: right; }
   .section-chevron { font-size: 0.7rem; color: var(--text2); transition: transform 0.2s; flex-shrink: 0; }
   .section.open .section-chevron { transform: rotate(180deg); }
   .section-body { display: none; padding: 0 16px 14px; }
   .section.open .section-body { display: block; }
-
-  /* Locked overlay for gate */
   .section.locked { opacity: 0.5; pointer-events: none; position: relative; }
   .section.locked .section-header { cursor: not-allowed; }
   .section.locked::after {
@@ -92,13 +64,10 @@
     position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
     background: rgba(248,113,113,0.15); color: var(--red);
     padding: 8px 16px; border-radius: 8px; font-size: 0.75rem; font-weight: 600;
-    border: 1px solid rgba(248,113,113,0.3); white-space: nowrap; z-index: 5;
-    pointer-events: none;
+    border: 1px solid rgba(248,113,113,0.3); white-space: nowrap; z-index: 5; pointer-events: none;
   }
   .section.guidance-exception { opacity: 1 !important; pointer-events: auto !important; }
   .section.guidance-exception::after { display: none !important; }
-
-  /* Timeline */
   .timeline { padding: 0; }
   .tl-block { padding: 12px 16px; border-bottom: 1px solid var(--border); }
   .tl-block:last-child { border-bottom: none; }
@@ -106,133 +75,73 @@
   .tl-title { font-size: 0.85rem; font-weight: 600; }
   .tl-who { font-size: 0.7rem; color: var(--text2); margin-top: 2px; }
   .tl-desc { font-size: 0.75rem; color: var(--text2); margin-top: 4px; line-height: 1.4; }
-  .tl-note {
-    font-size: 0.7rem; color: var(--orange); margin-top: 4px; font-style: italic;
-    background: rgba(251,146,60,0.08); padding: 4px 8px; border-radius: 6px;
-  }
-
-  /* Checklist */
+  .tl-note { font-size: 0.7rem; color: var(--orange); margin-top: 4px; font-style: italic; background: rgba(251,146,60,0.08); padding: 4px 8px; border-radius: 6px; }
   .checklist { list-style: none; }
-  .checklist li {
-    display: flex; align-items: flex-start; gap: 10px; padding: 8px 0;
-    border-bottom: 1px solid rgba(46,51,72,0.5); font-size: 0.8rem; line-height: 1.4;
-  }
+  .checklist li { display: flex; align-items: flex-start; gap: 10px; padding: 8px 0; border-bottom: 1px solid rgba(46,51,72,0.5); font-size: 0.8rem; line-height: 1.4; }
   .checklist li:last-child { border-bottom: none; }
   .checklist li.checked .cl-text { text-decoration: line-through; color: var(--text2); }
   .cl-box {
     width: 20px; height: 20px; border-radius: 5px; border: 2px solid var(--border);
     flex-shrink: 0; display: flex; align-items: center; justify-content: center;
-    cursor: pointer; margin-top: 1px; transition: all 0.15s;
-    -webkit-tap-highlight-color: transparent;
+    cursor: pointer; margin-top: 1px; transition: all 0.15s; -webkit-tap-highlight-color: transparent;
   }
   .cl-box:active { transform: scale(0.9); }
   .checklist li.checked .cl-box { background: var(--green); border-color: var(--green); }
   .cl-check { font-size: 0.65rem; color: #fff; opacity: 0; transition: opacity 0.15s; }
   .checklist li.checked .cl-check { opacity: 1; }
   .cl-text { flex: 1; }
-  .cl-tag {
-    font-size: 0.6rem; padding: 1px 6px; border-radius: 4px;
-    font-weight: 600; white-space: nowrap; flex-shrink: 0; margin-top: 2px;
-  }
-
-  /* Compliance banner */
+  .cl-tag { font-size: 0.6rem; padding: 1px 6px; border-radius: 4px; font-weight: 600; white-space: nowrap; flex-shrink: 0; margin-top: 2px; }
   .compliance-banner {
     background: linear-gradient(135deg, rgba(248,113,113,0.12) 0%, rgba(251,191,36,0.08) 100%);
-    border: 1px solid rgba(248,113,113,0.25);
-    border-radius: 10px;
-    padding: 12px 14px;
-    margin-bottom: 12px;
+    border: 1px solid rgba(248,113,113,0.25); border-radius: 10px; padding: 12px 14px; margin-bottom: 12px;
   }
-  .compliance-banner h4 {
-    font-size: 0.78rem; font-weight: 700; color: var(--red); margin-bottom: 8px;
-    display: flex; align-items: center; gap: 6px;
-  }
-  .compliance-banner ol {
-    padding-left: 18px; font-size: 0.75rem; color: var(--text); line-height: 1.6;
-  }
+  .compliance-banner h4 { font-size: 0.78rem; font-weight: 700; color: var(--red); margin-bottom: 8px; display: flex; align-items: center; gap: 6px; }
+  .compliance-banner ol { padding-left: 18px; font-size: 0.75rem; color: var(--text); line-height: 1.6; }
   .compliance-banner ol li { margin-bottom: 3px; }
   .compliance-banner ol li strong { color: var(--yellow); }
-
-  /* Gate banner */
+  .consent-script {
+    background: var(--surface2); border: 1px solid var(--border); border-radius: 8px;
+    padding: 12px; margin: 10px 0; font-size: 0.75rem; color: var(--text); line-height: 1.6;
+    border-left: 3px solid var(--accent);
+  }
+  .consent-script .label { font-size: 0.7rem; color: var(--accent); font-weight: 600; margin-bottom: 6px; }
+  .consent-script em { color: var(--text2); font-style: italic; }
   .gate-banner {
     background: linear-gradient(135deg, rgba(248,113,113,0.18) 0%, rgba(251,146,60,0.12) 100%);
-    border: 2px solid rgba(248,113,113,0.4);
-    border-radius: 12px;
-    padding: 16px;
-    margin-bottom: 12px;
-    text-align: center;
+    border: 2px solid rgba(248,113,113,0.4); border-radius: 12px; padding: 16px; margin-bottom: 12px; text-align: center;
   }
   .gate-banner h3 { font-size: 0.95rem; color: var(--red); margin-bottom: 8px; }
   .gate-banner p { font-size: 0.78rem; color: var(--text2); margin-bottom: 12px; line-height: 1.5; }
-  .gate-btn {
-    display: inline-flex; align-items: center; gap: 6px;
-    padding: 10px 24px; border-radius: 8px; border: none;
-    font-size: 0.85rem; font-weight: 600; cursor: pointer;
-    transition: all 0.2s; -webkit-tap-highlight-color: transparent;
-  }
+  .gate-btn { display: inline-flex; align-items: center; gap: 6px; padding: 10px 24px; border-radius: 8px; border: none; font-size: 0.85rem; font-weight: 600; cursor: pointer; transition: all 0.2s; -webkit-tap-highlight-color: transparent; }
   .gate-btn-yes { background: var(--green); color: #000; }
   .gate-btn-yes:active { transform: scale(0.95); }
   .gate-btn-no { background: var(--surface2); color: var(--text2); border: 1px solid var(--border); margin-left: 8px; }
   .gate-btn-no:active { transform: scale(0.95); }
-
-  .gate-confirmed {
-    background: linear-gradient(135deg, rgba(52,211,153,0.15) 0%, rgba(108,140,255,0.08) 100%);
-    border: 2px solid rgba(52,211,153,0.4);
-  }
+  .gate-confirmed { background: linear-gradient(135deg, rgba(52,211,153,0.15) 0%, rgba(108,140,255,0.08) 100%); border: 2px solid rgba(52,211,153,0.4); }
   .gate-confirmed h3 { color: var(--green); }
-
-  /* Interview guide */
   .guide-block { background: var(--surface2); border-radius: 8px; padding: 12px; margin: 8px 0; }
   .guide-block h4 { font-size: 0.8rem; font-weight: 600; margin-bottom: 6px; color: var(--accent); }
   .guide-block p, .guide-block li { font-size: 0.75rem; color: var(--text2); line-height: 1.5; }
   .guide-block ol, .guide-block ul { padding-left: 16px; margin-top: 4px; }
   .guide-block li { margin-bottom: 4px; }
-  .guide-prompt {
-    font-style: italic; color: var(--text); font-size: 0.78rem;
-    background: rgba(108,140,255,0.08); padding: 8px 10px; border-radius: 6px;
-    border-left: 3px solid var(--accent); margin: 6px 0;
-  }
+  .guide-prompt { font-style: italic; color: var(--text); font-size: 0.78rem; background: rgba(108,140,255,0.08); padding: 8px 10px; border-radius: 6px; border-left: 3px solid var(--accent); margin: 6px 0; }
   .probe-table { width: 100%; font-size: 0.7rem; border-collapse: collapse; margin-top: 6px; }
   .probe-table td { padding: 4px 6px; border-bottom: 1px solid var(--border); vertical-align: top; color: var(--text2); }
   .probe-table td:first-child { color: var(--text); font-style: italic; width: 65%; }
-
-  /* Notes */
-  .notes-area {
-    width: 100%; background: var(--surface2); border: 1px solid var(--border);
-    border-radius: 8px; padding: 10px; font-size: 0.78rem; color: var(--text);
-    font-family: inherit; resize: vertical; min-height: 60px;
-  }
+  .notes-area { width: 100%; background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; padding: 10px; font-size: 0.78rem; color: var(--text); font-family: inherit; resize: vertical; min-height: 60px; }
   .notes-area:focus { outline: none; border-color: var(--accent); }
   .notes-label { font-size: 0.7rem; color: var(--text2); margin-bottom: 4px; display: block; }
-
-  /* Intercept card */
-  .intercept-card {
-    background: var(--surface2); border-radius: 8px; padding: 12px; margin: 8px 0;
-    border: 1px dashed var(--border);
-  }
+  .intercept-card { background: var(--surface2); border-radius: 8px; padding: 12px; margin: 8px 0; border: 1px dashed var(--border); }
   .intercept-card h4 { font-size: 0.8rem; color: var(--pink); margin-bottom: 6px; }
-  .field-row {
-    display: flex; align-items: center; gap: 6px; margin: 4px 0;
-    font-size: 0.75rem; color: var(--text2); flex-wrap: wrap;
-  }
+  .field-row { display: flex; align-items: center; gap: 6px; margin: 4px 0; font-size: 0.75rem; color: var(--text2); flex-wrap: wrap; }
   .field-row label { flex-shrink: 0; min-width: 60px; }
   .checkbox-group { display: flex; gap: 8px; flex-wrap: wrap; }
-  .checkbox-group span {
-    font-size: 0.7rem; padding: 2px 8px; background: rgba(255,255,255,0.05);
-    border-radius: 4px; cursor: pointer;
-  }
+  .checkbox-group span { font-size: 0.7rem; padding: 2px 8px; background: rgba(255,255,255,0.05); border-radius: 4px; cursor: pointer; }
   .rating-row { display: flex; gap: 6px; margin: 4px 0; }
-  .rating-row span {
-    width: 28px; height: 28px; border-radius: 50%; border: 1.5px solid var(--border);
-    display: flex; align-items: center; justify-content: center; font-size: 0.75rem; cursor: pointer;
-  }
-
-  /* Tags */
+  .rating-row span { width: 28px; height: 28px; border-radius: 50%; border: 1.5px solid var(--border); display: flex; align-items: center; justify-content: center; font-size: 0.75rem; cursor: pointer; }
   .tag-d { background: rgba(108,140,255,0.15); color: var(--accent); }
   .tag-c { background: rgba(244,114,182,0.15); color: var(--pink); }
-  .tag-j { background: rgba(167,139,250,0.15); color: var(--purple); }
   .tag-all { background: rgba(52,211,153,0.15); color: var(--green); }
-
   .footer { text-align: center; padding: 16px; font-size: 0.65rem; color: var(--text2); }
   .mt-8 { margin-top: 8px; }
   .mb-4 { margin-bottom: 4px; }
@@ -273,6 +182,36 @@
   </div>
 </div>
 
+<!-- ===================== VERBAL CONSENT SCRIPT ===================== -->
+<div class="section open" id="sec-consent">
+  <div class="section-header" onclick="toggleSection('sec-consent')">
+    <div class="section-icon" style="background:rgba(108,140,255,0.15)">🎙</div>
+    <div class="section-title">Verbal Consent Script</div>
+    <div class="section-meta">Read before every interview</div>
+    <div class="section-chevron">▼</div>
+  </div>
+  <div class="section-body">
+    <p class="text-sm text-muted mb-4">Read this aloud at the start of every interview. The entire exchange is recorded — their verbal "yes" serves as consent. No printed form needed.</p>
+
+    <div class="consent-script">
+      <div class="label">📝 Say this:</div>
+      <p>"Good morning/afternoon. Thank you for agreeing to speak with us. Before we begin, I need to inform you of the following:</p>
+      <p><strong>One:</strong> This interview is part of our capstone research study for BS Information Technology at ISPSC. The study is about the SecureCAT-v2 admission testing system.</p>
+      <p><strong>Two:</strong> Your participation is completely voluntary. You may choose not to answer any question, and you may stop the interview at any time without any consequences.</p>
+      <p><strong>Three:</strong> Your responses will be kept confidential. We will not use your real name in our manuscript. Your identity will be anonymized.</p>
+      <p><strong>Four:</strong> We are recording this conversation for accuracy in our notes. The recording will only be used by our research team and will not be shared publicly.</p>
+      <p>Do you understand and agree to proceed with these conditions?"</p>
+      <p style="margin-top:8px"><em>Wait for them to say "Yes" or "Oo" on the recording. If they agree → proceed. If they decline → thank them and end.</em></p>
+    </div>
+
+    <div class="consent-script" style="border-left-color:var(--pink)">
+      <div class="label" style="color:var(--pink)">🙋 For applicant / enrolee intercepts (shorter version):</div>
+      <p>"Hi, we're IT students conducting research about the admission process. Can we ask you 5–6 quick questions? It's anonymous — no names. We'll record for our notes. Is that okay?"</p>
+      <p style="margin-top:8px"><em>Wait for verbal "yes" before asking questions.</em></p>
+    </div>
+  </div>
+</div>
+
 <!-- ===================== SCHEDULE ===================== -->
 <div class="section open locked guidance-exception" id="sec-schedule">
   <div class="section-header" onclick="toggleSection('sec-schedule')">
@@ -285,7 +224,7 @@
       <div class="tl-time" style="color:var(--purple)">~08:00 — Early Arrival</div>
       <div class="tl-title">📬 Letter and Inquiry Task</div>
       <div class="tl-who">Assigned member (solo)</div>
-      <div class="tl-desc">Go to Director's office. Submit/sign the letter to conduct. If CD is free → interview now. Then quick Registrar questions + applicant intercepts.</div>
+      <div class="tl-desc">Go to Director's office. Submit/sign the letter to conduct. If CD is free → interview now. Then quick Registrar questions + enrolee intercepts.</div>
       <div class="tl-note">See "Letter and Inquiry Task" section for full checklist.</div>
     </div>
     <div class="tl-block" style="background:rgba(108,140,255,0.05)">
@@ -321,7 +260,7 @@
 
     <div class="mt-8">
       <label class="notes-label">📝 Morning notes</label>
-      <textarea class="notes-area" data-note="letter-inquiry" placeholder="Director scheduled at: ____&#10;Registrar said: ____&#10;Applicants found: ____"></textarea>
+      <textarea class="notes-area" data-note="letter-inquiry" placeholder="Director scheduled at: ____&#10;Registrar said: ____&#10;Enrolees found: ____"></textarea>
     </div>
   </div>
 </div>
@@ -335,13 +274,12 @@
     <div class="section-chevron">▼</div>
   </div>
   <div class="section-body">
-    <!-- Compliance banner -->
     <div class="compliance-banner">
       <h4>⚠️ Mandatory Before Starting This Interview</h4>
       <ol>
         <li><strong>Present the official letter</strong> — Show the signed letter to conduct capstone research to the interviewee(s).</li>
-        <li><strong>Read the consent form aloud</strong> — Ensure the interviewee understands and agrees to the conditions (voluntary participation, confidentiality, data use).</li>
-        <li><strong>Start audio recording</strong> — Begin recording before the first question. Confirm on-recording that consent was given.</li>
+        <li><strong>Read the verbal consent script aloud</strong> — Use the script from the "Verbal Consent Script" section above. Ensure the interviewee says "yes" on the recording.</li>
+        <li><strong>Start audio recording</strong> — Begin recording <em>before</em> reading the consent script so their agreement is captured.</li>
       </ol>
     </div>
 
@@ -353,8 +291,8 @@
 
     <ul class="checklist" data-group="block-a">
       <li><div class="cl-box" onclick="toggleCheck(this)"><span class="cl-check">✓</span></div><div class="cl-text">Official letter presented to interviewee(s)</div><span class="cl-tag tag-all">Required</span></li>
-      <li><div class="cl-box" onclick="toggleCheck(this)"><span class="cl-check">✓</span></div><div class="cl-text">Consent form read and agreed to</div><span class="cl-tag tag-all">Required</span></li>
-      <li><div class="cl-box" onclick="toggleCheck(this)"><span class="cl-check">✓</span></div><div class="cl-text">Audio recording started</div><span class="cl-tag tag-all">Required</span></li>
+      <li><div class="cl-box" onclick="toggleCheck(this)"><span class="cl-check">✓</span></div><div class="cl-text">Verbal consent read and "yes" recorded</div><span class="cl-tag tag-all">Required</span></li>
+      <li><div class="cl-box" onclick="toggleCheck(this)"><span class="cl-check">✓</span></div><div class="cl-text">Audio recording confirmed running</div><span class="cl-tag tag-all">Required</span></li>
       <li><div class="cl-box" onclick="toggleCheck(this)"><span class="cl-check">✓</span></div><div class="cl-text">Asked for exact official job titles</div></li>
     </ul>
 
@@ -418,18 +356,16 @@
     <div class="section-chevron">▼</div>
   </div>
   <div class="section-body">
-    <!-- Guidance exception notice -->
     <div style="background:rgba(52,211,153,0.1);border:1px solid rgba(52,211,153,0.3);border-radius:8px;padding:8px 12px;margin-bottom:10px;font-size:0.72rem;color:var(--green);">
       ℹ️ <strong>Friendly visit exception:</strong> You may visit the Guidance Office casually to explain the letter is still under process. However, the <strong>formal interview below requires the signed letter</strong>.
     </div>
 
-    <!-- Compliance banner -->
     <div class="compliance-banner">
       <h4>⚠️ Mandatory Before Starting This Interview</h4>
       <ol>
         <li><strong>Present the official letter</strong> — Show the signed letter to conduct capstone research to the interviewee(s).</li>
-        <li><strong>Read the consent form aloud</strong> — Ensure the interviewee understands and agrees to the conditions (voluntary participation, confidentiality, data use).</li>
-        <li><strong>Start audio recording</strong> — Begin recording before the first question. Confirm on-recording that consent was given.</li>
+        <li><strong>Read the verbal consent script aloud</strong> — Use the script from the "Verbal Consent Script" section above. Ensure the interviewee says "yes" on the recording.</li>
+        <li><strong>Start audio recording</strong> — Begin recording <em>before</em> reading the consent script so their agreement is captured.</li>
       </ol>
     </div>
 
@@ -441,8 +377,8 @@
 
     <ul class="checklist" data-group="block-b">
       <li><div class="cl-box" onclick="toggleCheck(this)"><span class="cl-check">✓</span></div><div class="cl-text">Official letter presented to interviewee(s)</div><span class="cl-tag tag-all">Required</span></li>
-      <li><div class="cl-box" onclick="toggleCheck(this)"><span class="cl-check">✓</span></div><div class="cl-text">Consent form read and agreed to</div><span class="cl-tag tag-all">Required</span></li>
-      <li><div class="cl-box" onclick="toggleCheck(this)"><span class="cl-check">✓</span></div><div class="cl-text">Audio recording started</div><span class="cl-tag tag-all">Required</span></li>
+      <li><div class="cl-box" onclick="toggleCheck(this)"><span class="cl-check">✓</span></div><div class="cl-text">Verbal consent read and "yes" recorded</div><span class="cl-tag tag-all">Required</span></li>
+      <li><div class="cl-box" onclick="toggleCheck(this)"><span class="cl-check">✓</span></div><div class="cl-text">Audio recording confirmed running</div><span class="cl-tag tag-all">Required</span></li>
       <li><div class="cl-box" onclick="toggleCheck(this)"><span class="cl-check">✓</span></div><div class="cl-text">Asked for exact official job titles</div></li>
     </ul>
 
@@ -509,20 +445,19 @@
   <div class="section-body">
     <div class="tl-note" style="margin-bottom:8px">⚡ Timing depends on morning arrangement. CD may have been interviewed at 8AM, or scheduled for later.</div>
 
-    <!-- Compliance banner -->
     <div class="compliance-banner">
       <h4>⚠️ Mandatory Before Starting This Interview</h4>
       <ol>
         <li><strong>Present the official letter</strong> — Show the signed letter to conduct capstone research to the Director.</li>
-        <li><strong>Read the consent form aloud</strong> — Ensure the Director understands and agrees to the conditions.</li>
-        <li><strong>Start audio recording</strong> — Begin recording before the first question. Confirm on-recording that consent was given.</li>
+        <li><strong>Read the verbal consent script aloud</strong> — Use the script from the "Verbal Consent Script" section above. Ensure the Director says "yes" on the recording.</li>
+        <li><strong>Start audio recording</strong> — Begin recording <em>before</em> reading the consent script so their agreement is captured.</li>
       </ol>
     </div>
 
     <ul class="checklist" data-group="block-c">
       <li><div class="cl-box" onclick="toggleCheck(this)"><span class="cl-check">✓</span></div><div class="cl-text">Official letter presented to Director</div><span class="cl-tag tag-all">Required</span></li>
-      <li><div class="cl-box" onclick="toggleCheck(this)"><span class="cl-check">✓</span></div><div class="cl-text">Consent form read and agreed to</div><span class="cl-tag tag-all">Required</span></li>
-      <li><div class="cl-box" onclick="toggleCheck(this)"><span class="cl-check">✓</span></div><div class="cl-text">Audio recording started</div><span class="cl-tag tag-all">Required</span></li>
+      <li><div class="cl-box" onclick="toggleCheck(this)"><span class="cl-check">✓</span></div><div class="cl-text">Verbal consent read and "yes" recorded</div><span class="cl-tag tag-all">Required</span></li>
+      <li><div class="cl-box" onclick="toggleCheck(this)"><span class="cl-check">✓</span></div><div class="cl-text">Audio recording confirmed running</div><span class="cl-tag tag-all">Required</span></li>
     </ul>
 
     <div class="guide-block">
@@ -544,16 +479,16 @@
   </div>
 </div>
 
-<!-- ===================== APPLICANT INTERCEPTS ===================== -->
+<!-- ===================== ENROLEE / APPLICANT INTERCEPTS ===================== -->
 <div class="section" id="sec-intercept">
   <div class="section-header" onclick="toggleSection('sec-intercept')">
     <div class="section-icon" style="background:rgba(244,114,182,0.15)">🙋</div>
-    <div class="section-title">Applicant Intercepts</div>
+    <div class="section-title">Enrolee / Applicant Intercepts</div>
     <div class="section-meta">5–7 min each</div>
     <div class="section-chevron">▼</div>
   </div>
   <div class="section-body">
-    <p class="text-sm text-muted mb-4">Get verbal consent first. No names — only role ("Applicant") and general responses.</p>
+    <p class="text-sm text-muted mb-4">This section is always accessible — intercepts are informal conversations with enrolees, examinees, or applicants in queues or waiting areas. Use the short verbal consent from the "Verbal Consent Script" section above. No names recorded.</p>
 
     <div class="guide-block">
       <h4>Micro-Interview Script (6 questions)</h4>
@@ -568,7 +503,7 @@
     </div>
 
     <div class="intercept-card">
-      <h4>📝 Quick Capture — Applicant #__</h4>
+      <h4>📝 Quick Capture — Enrolee/Applicant #__</h4>
       <div class="field-row">
         <label>Time:</label>
         <input type="text" class="notes-area" style="min-height:auto;padding:4px 8px;width:80px" placeholder="10:30">
@@ -606,8 +541,8 @@
     </div>
 
     <div class="mt-8">
-      <label class="notes-label">📝 Applicant intercept tally</label>
-      <textarea class="notes-area" data-note="intercept" placeholder="# interviewed: __&#10;Avg rating: __&#10;Common themes: __"></textarea>
+      <label class="notes-label">📝 Intercept tally</label>
+      <textarea class="notes-area" data-note="intercept" placeholder="# intercepted: __&#10;Avg rating: __&#10;Common themes: __"></textarea>
     </div>
   </div>
 </div>
@@ -622,13 +557,12 @@
   <div class="section-body">
     <ul class="checklist" data-group="block-d">
       <li><div class="cl-box" onclick="toggleCheck(this)"><span class="cl-check">✓</span></div><div class="cl-text">Follow-up questions from Blocks A/B (anything unclear or skipped)</div></li>
-      <li><div class="cl-box" onclick="toggleCheck(this)"><span class="cl-check">✓</span></div><div class="cl-text">More applicant intercepts if opportunity exists</div></li>
+      <li><div class="cl-box" onclick="toggleCheck(this)"><span class="cl-check">✓</span></div><div class="cl-text">More enrolee/applicant intercepts if opportunity exists</div></li>
       <li><div class="cl-box" onclick="toggleCheck(this)"><span class="cl-check">✓</span></div><div class="cl-text">Collect: blank application form</div></li>
       <li><div class="cl-box" onclick="toggleCheck(this)"><span class="cl-check">✓</span></div><div class="cl-text">Collect: admission slip template</div></li>
       <li><div class="cl-box" onclick="toggleCheck(this)"><span class="cl-check">✓</span></div><div class="cl-text">Collect: OMR sheet sample</div></li>
       <li><div class="cl-box" onclick="toggleCheck(this)"><span class="cl-check">✓</span></div><div class="cl-text">Collect: manual attendance log sample</div></li>
       <li><div class="cl-box" onclick="toggleCheck(this)"><span class="cl-check">✓</span></div><div class="cl-text">Collect: any existing spreadsheet screenshots</div></li>
-      <li><div class="cl-box" onclick="toggleCheck(this)"><span class="cl-check">✓</span></div><div class="cl-text">SUS/TLX instrument pre-test with 1–2 willing staff (nice-to-have)</div></li>
       <li><div class="cl-box" onclick="toggleCheck(this)"><span class="cl-check">✓</span></div><div class="cl-text">Thank all participants</div></li>
     </ul>
 
@@ -639,25 +573,24 @@
   </div>
 </div>
 
-<!-- ===================== PREP CHECKLIST ===================== -->
+<!-- ===================== READINESS CHECKLIST ===================== -->
 <div class="section" id="sec-prep">
   <div class="section-header" onclick="toggleSection('sec-prep')">
     <div class="section-icon" style="background:rgba(167,139,250,0.15)">✅</div>
-    <div class="section-title">Pre-Interview Prep (June 6–7)</div>
+    <div class="section-title">Readiness Checklist (June 6–7)</div>
     <div class="section-chevron">▼</div>
   </div>
   <div class="section-body">
     <ul class="checklist" data-group="prep">
-      <li><div class="cl-box" onclick="toggleCheck(this)"><span class="cl-check">✓</span></div><div class="cl-text">Print claim verification sheets (Registrar + Guidance versions)</div><span class="cl-tag tag-d">David</span></li>
-      <li><div class="cl-box" onclick="toggleCheck(this)"><span class="cl-check">✓</span></div><div class="cl-text">Print applicant intercept half-sheets (10 copies)</div><span class="cl-tag tag-c">Christine</span></li>
-      <li><div class="cl-box" onclick="toggleCheck(this)"><span class="cl-check">✓</span></div><div class="cl-text">Print consent forms (15 copies)</div><span class="cl-tag tag-j">Assigned</span></li>
-      <li><div class="cl-box" onclick="toggleCheck(this)"><span class="cl-check">✓</span></div><div class="cl-text">Charge phones + test voice recorder app + backup device</div><span class="cl-tag tag-c">Christine</span></li>
-      <li><div class="cl-box" onclick="toggleCheck(this)"><span class="cl-check">✓</span></div><div class="cl-text">Print interview guides (this page → per-block sections)</div><span class="cl-tag tag-d">David</span></li>
-      <li><div class="cl-box" onclick="toggleCheck(this)"><span class="cl-check">✓</span></div><div class="cl-text">Prepare artifact request list</div><span class="cl-tag tag-j">Assigned</span></li>
-      <li><div class="cl-box" onclick="toggleCheck(this)"><span class="cl-check">✓</span></div><div class="cl-text">Prepare letter to conduct research (for Director's office)</div><span class="cl-tag tag-all">Team</span></li>
-      <li><div class="cl-box" onclick="toggleCheck(this)"><span class="cl-check">✓</span></div><div class="cl-text">Dry-run Block A interview (time it ≤ 50 min)</div><span class="cl-tag tag-all">All</span></li>
-      <li><div class="cl-box" onclick="toggleCheck(this)"><span class="cl-check">✓</span></div><div class="cl-text">Confirm campus contacts (Director, Registrar, Guidance)</div><span class="cl-tag tag-d">David</span></li>
-      <li><div class="cl-box" onclick="toggleCheck(this)"><span class="cl-check">✓</span></div><div class="cl-text">Pack: printed materials, pens, clipboards, portable charger, water</div><span class="cl-tag tag-c">Christine</span></li>
+      <li><div class="cl-box" onclick="toggleCheck(this)"><span class="cl-check">✓</span></div><div class="cl-text">Charge phones overnight — full battery for recording</div></li>
+      <li><div class="cl-box" onclick="toggleCheck(this)"><span class="cl-check">✓</span></div><div class="cl-text">Test voice recorder app — record 10 sec, play back, confirm clear audio</div></li>
+      <li><div class="cl-box" onclick="toggleCheck(this)"><span class="cl-check">✓</span></div><div class="cl-text">Backup recording device ready (second phone or a teammate's phone)</div></li>
+      <li><div class="cl-box" onclick="toggleCheck(this)"><span class="cl-check">✓</span></div><div class="cl-text">Prepare the letter to conduct research (print for physical signing)</div><span class="cl-tag tag-all">Team</span></li>
+      <li><div class="cl-box" onclick="toggleCheck(this)"><span class="cl-check">✓</span></div><div class="cl-text">Review this entire page — read through all interview guides and the consent script at least once</div><span class="cl-tag tag-all">All</span></li>
+      <li><div class="cl-box" onclick="toggleCheck(this)"><span class="cl-check">✓</span></div><div class="cl-text">Confirm campus contacts: Director availability, Registrar and Guidance willingness</div><span class="cl-tag tag-all">Team</span></li>
+      <li><div class="cl-box" onclick="toggleCheck(this)"><span class="cl-check">✓</span></div><div class="cl-text">Dry-run Block A interview with team (time it ≤ 50 min)</div><span class="cl-tag tag-all">All</span></li>
+      <li><div class="cl-box" onclick="toggleCheck(this)"><span class="cl-check">✓</span></div><div class="cl-text">Pack: portable charger, pens, water</div></li>
+      <li><div class="cl-box" onclick="toggleCheck(this)"><span class="cl-check">✓</span></div><div class="cl-text">Bookmark this page on your phone browser for quick access on June 8</div></li>
     </ul>
   </div>
 </div>
@@ -717,7 +650,7 @@
       <ul>
         <li><strong>CD unavailable:</strong> Ask for 15-min call on June 9.</li>
         <li><strong>Registrar too busy:</strong> Cut to 30 min — skip Phase 4.</li>
-        <li><strong>No applicants in queue:</strong> Ask staff for recent applicant contacts.</li>
+        <li><strong>No enrolees in queue:</strong> Ask staff for recent applicant contacts.</li>
         <li><strong>Audio fails:</strong> Switch to rapid handwritten notes.</li>
         <li><strong>Rain / travel delay:</strong> Pack night before. Leave 30 min early.</li>
       </ul>
@@ -731,7 +664,6 @@
 </div>
 
 <script>
-// === LETTER GATE SYSTEM ===
 function setLetterSigned(signed) {
   localStorage.setItem('june8-letter-signed', signed ? 'true' : 'false');
   applyLetterGate();
@@ -743,8 +675,6 @@ function applyLetterGate() {
   const title = document.getElementById('gateTitle');
   const desc = document.getElementById('gateDesc');
   const actions = document.getElementById('gateActions');
-
-  // Blocks that require signed letter (NOT Guidance - it has exception)
   const lockedBlocks = ['sec-block-a', 'sec-block-c', 'sec-block-d'];
 
   if (signed) {
@@ -752,44 +682,29 @@ function applyLetterGate() {
     title.textContent = '✅ Letter Signed — All Blocks Unlocked';
     desc.textContent = 'The official letter to conduct capstone research has been signed. All interview blocks are now accessible.';
     actions.innerHTML = '<button class="gate-btn gate-btn-no" onclick="setLetterSigned(false)">↩ Undo</button>';
-
-    lockedBlocks.forEach(id => {
-      const el = document.getElementById(id);
-      if (el) { el.classList.remove('locked'); }
-    });
+    lockedBlocks.forEach(id => { const el = document.getElementById(id); if (el) el.classList.remove('locked'); });
   } else {
     banner.className = 'gate-banner';
     title.textContent = '📭 Official Letter — Not Yet Signed';
     desc.innerHTML = 'The official letter must be signed before any office visits or formal interviews can proceed.<br><br><strong style="color:var(--green)">Exception:</strong> You may visit the <strong>Guidance Office in a friendly manner</strong> to explain that the letter is still under process.';
     actions.innerHTML = '<button class="gate-btn gate-btn-yes" onclick="setLetterSigned(true)">✅ Letter is Signed</button><button class="gate-btn gate-btn-no" onclick="setLetterSigned(false)">❌ Not Yet</button>';
-
-    lockedBlocks.forEach(id => {
-      const el = document.getElementById(id);
-      if (el) { el.classList.add('locked'); }
-    });
+    lockedBlocks.forEach(id => { const el = document.getElementById(id); if (el) el.classList.add('locked'); });
   }
 }
 
-// === SECTIONS ===
-function toggleSection(id) {
-  document.getElementById(id).classList.toggle('open');
-}
+function toggleSection(id) { document.getElementById(id).classList.toggle('open'); }
 
-// === CHECKLISTS ===
 function toggleCheck(box) {
   const li = box.closest('li');
   li.classList.toggle('checked');
-  saveState();
-  updateProgress();
+  saveState(); updateProgress();
 }
 
 function saveState() {
   const checks = {};
   document.querySelectorAll('.checklist').forEach(ul => {
     const group = ul.dataset.group;
-    ul.querySelectorAll('li').forEach((li, i) => {
-      checks[group + '-' + i] = li.classList.contains('checked');
-    });
+    ul.querySelectorAll('li').forEach((li, i) => { checks[group + '-' + i] = li.classList.contains('checked'); });
   });
   localStorage.setItem('june8-checks', JSON.stringify(checks));
 }
@@ -799,14 +714,10 @@ function loadState() {
     const checks = JSON.parse(localStorage.getItem('june8-checks') || '{}');
     document.querySelectorAll('.checklist').forEach(ul => {
       const group = ul.dataset.group;
-      ul.querySelectorAll('li').forEach((li, i) => {
-        if (checks[group + '-' + i]) li.classList.add('checked');
-      });
+      ul.querySelectorAll('li').forEach((li, i) => { if (checks[group + '-' + i]) li.classList.add('checked'); });
     });
     const notes = JSON.parse(localStorage.getItem('june8-notes') || '{}');
-    document.querySelectorAll('[data-note]').forEach(el => {
-      if (notes[el.dataset.note]) el.value = notes[el.dataset.note];
-    });
+    document.querySelectorAll('[data-note]').forEach(el => { if (notes[el.dataset.note]) el.value = notes[el.dataset.note]; });
   } catch(e) {}
 }
 
@@ -820,7 +731,6 @@ function updateProgress() {
   saveState();
 }
 
-// Save notes on input
 document.querySelectorAll('[data-note]').forEach(el => {
   el.addEventListener('input', () => {
     const notes = JSON.parse(localStorage.getItem('june8-notes') || '{}');
@@ -829,10 +739,7 @@ document.querySelectorAll('[data-note]').forEach(el => {
   });
 });
 
-// Init
-loadState();
-applyLetterGate();
-updateProgress();
+loadState(); applyLetterGate(); updateProgress();
 </script>
 </body>
 </html>
