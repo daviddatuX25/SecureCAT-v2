@@ -1,0 +1,972 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>June 8 Field Day — SecureCAT Capstone</title>
+<style>
+  :root {
+    --bg: #0f1117;
+    --surface: #1a1d27;
+    --surface2: #22263a;
+    --border: #2e3348;
+    --text: #e4e6f0;
+    --text2: #9a9cb8;
+    --accent: #6c8cff;
+    --accent2: #4a6bdb;
+    --green: #34d399;
+    --yellow: #fbbf24;
+    --red: #f87171;
+    --orange: #fb923c;
+    --purple: #a78bfa;
+    --pink: #f472b6;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+    padding-bottom: 80px;
+  }
+
+  /* Header */
+  .header {
+    background: linear-gradient(135deg, #1e2235 0%, #0f1117 100%);
+    padding: 20px 16px 16px;
+    border-bottom: 1px solid var(--border);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+  }
+  .header h1 {
+    font-size: 1.25rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    color: var(--text);
+  }
+  .header .subtitle {
+    font-size: 0.8rem;
+    color: var(--text2);
+    margin-top: 2px;
+  }
+  .header .badge-row {
+    display: flex;
+    gap: 6px;
+    margin-top: 8px;
+    flex-wrap: wrap;
+  }
+  .badge {
+    font-size: 0.7rem;
+    padding: 3px 8px;
+    border-radius: 99px;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .badge-green { background: rgba(52,211,153,0.15); color: var(--green); }
+  .badge-yellow { background: rgba(251,191,36,0.15); color: var(--yellow); }
+  .badge-red { background: rgba(248,113,113,0.15); color: var(--red); }
+  .badge-blue { background: rgba(108,140,255,0.15); color: var(--accent); }
+  .badge-purple { background: rgba(167,139,250,0.15); color: var(--purple); }
+  .badge-orange { background: rgba(251,146,60,0.15); color: var(--orange); }
+
+  /* Progress bar */
+  .progress-bar {
+    background: var(--surface);
+    height: 3px;
+    margin-top: 10px;
+    border-radius: 2px;
+    overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent), var(--green));
+    transition: width 0.3s ease;
+    border-radius: 2px;
+  }
+  .progress-text {
+    font-size: 0.65rem;
+    color: var(--text2);
+    margin-top: 4px;
+    text-align: right;
+  }
+
+  /* Sections */
+  .section {
+    margin: 12px;
+    background: var(--surface);
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    overflow: hidden;
+  }
+  .section-header {
+    padding: 14px 16px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    user-select: none;
+  }
+  .section-header:active { background: var(--surface2); }
+  .section-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+    flex-shrink: 0;
+  }
+  .section-title {
+    flex: 1;
+    font-size: 0.9rem;
+    font-weight: 600;
+  }
+  .section-meta {
+    font-size: 0.7rem;
+    color: var(--text2);
+    text-align: right;
+  }
+  .section-chevron {
+    font-size: 0.7rem;
+    color: var(--text2);
+    transition: transform 0.2s;
+    flex-shrink: 0;
+  }
+  .section.open .section-chevron { transform: rotate(180deg); }
+  .section-body {
+    display: none;
+    padding: 0 16px 14px;
+  }
+  .section.open .section-body { display: block; }
+
+  /* Timeline */
+  .timeline { padding: 0; }
+  .tl-block {
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border);
+  }
+  .tl-block:last-child { border-bottom: none; }
+  .tl-time {
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 4px;
+  }
+  .tl-title {
+    font-size: 0.85rem;
+    font-weight: 600;
+  }
+  .tl-who {
+    font-size: 0.7rem;
+    color: var(--text2);
+    margin-top: 2px;
+  }
+  .tl-desc {
+    font-size: 0.75rem;
+    color: var(--text2);
+    margin-top: 4px;
+    line-height: 1.4;
+  }
+  .tl-note {
+    font-size: 0.7rem;
+    color: var(--orange);
+    margin-top: 4px;
+    font-style: italic;
+    background: rgba(251,146,60,0.08);
+    padding: 4px 8px;
+    border-radius: 6px;
+  }
+
+  /* Checklist */
+  .checklist { list-style: none; }
+  .checklist li {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 8px 0;
+    border-bottom: 1px solid rgba(46,51,72,0.5);
+    font-size: 0.8rem;
+    line-height: 1.4;
+  }
+  .checklist li:last-child { border-bottom: none; }
+  .checklist li.checked .cl-text {
+    text-decoration: line-through;
+    color: var(--text2);
+  }
+  .cl-box {
+    width: 20px;
+    height: 20px;
+    border-radius: 5px;
+    border: 2px solid var(--border);
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    margin-top: 1px;
+    transition: all 0.15s;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .cl-box:active { transform: scale(0.9); }
+  .checklist li.checked .cl-box {
+    background: var(--green);
+    border-color: var(--green);
+  }
+  .cl-check {
+    font-size: 0.65rem;
+    color: #fff;
+    opacity: 0;
+    transition: opacity 0.15s;
+  }
+  .checklist li.checked .cl-check { opacity: 1; }
+  .cl-text { flex: 1; }
+  .cl-tag {
+    font-size: 0.6rem;
+    padding: 1px 6px;
+    border-radius: 4px;
+    font-weight: 600;
+    white-space: nowrap;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+
+  /* Interview guide */
+  .guide-block {
+    background: var(--surface2);
+    border-radius: 8px;
+    padding: 12px;
+    margin: 8px 0;
+  }
+  .guide-block h4 {
+    font-size: 0.8rem;
+    font-weight: 600;
+    margin-bottom: 6px;
+    color: var(--accent);
+  }
+  .guide-block p, .guide-block li {
+    font-size: 0.75rem;
+    color: var(--text2);
+    line-height: 1.5;
+  }
+  .guide-block ol, .guide-block ul {
+    padding-left: 16px;
+    margin-top: 4px;
+  }
+  .guide-block li { margin-bottom: 4px; }
+  .guide-prompt {
+    font-style: italic;
+    color: var(--text);
+    font-size: 0.78rem;
+    background: rgba(108,140,255,0.08);
+    padding: 8px 10px;
+    border-radius: 6px;
+    border-left: 3px solid var(--accent);
+    margin: 6px 0;
+  }
+  .probe-table {
+    width: 100%;
+    font-size: 0.7rem;
+    border-collapse: collapse;
+    margin-top: 6px;
+  }
+  .probe-table td {
+    padding: 4px 6px;
+    border-bottom: 1px solid var(--border);
+    vertical-align: top;
+    color: var(--text2);
+  }
+  .probe-table td:first-child {
+    color: var(--text);
+    font-style: italic;
+    width: 65%;
+  }
+
+  /* Intercept form */
+  .intercept-card {
+    background: var(--surface2);
+    border-radius: 8px;
+    padding: 12px;
+    margin: 8px 0;
+    border: 1px dashed var(--border);
+  }
+  .intercept-card h4 {
+    font-size: 0.8rem;
+    color: var(--pink);
+    margin-bottom: 6px;
+  }
+  .field-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin: 4px 0;
+    font-size: 0.75rem;
+    color: var(--text2);
+    flex-wrap: wrap;
+  }
+  .field-row label { flex-shrink: 0; min-width: 60px; }
+  .checkbox-group {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .checkbox-group span {
+    font-size: 0.7rem;
+    padding: 2px 8px;
+    background: rgba(255,255,255,0.05);
+    border-radius: 4px;
+    cursor: pointer;
+  }
+  .rating-row {
+    display: flex;
+    gap: 6px;
+    margin: 4px 0;
+  }
+  .rating-row span {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    border: 1.5px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.75rem;
+    cursor: pointer;
+  }
+
+  /* Quick notes */
+  .notes-area {
+    width: 100%;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px;
+    font-size: 0.78rem;
+    color: var(--text);
+    font-family: inherit;
+    resize: vertical;
+    min-height: 60px;
+  }
+  .notes-area:focus {
+    outline: none;
+    border-color: var(--accent);
+  }
+  .notes-label {
+    font-size: 0.7rem;
+    color: var(--text2);
+    margin-bottom: 4px;
+    display: block;
+  }
+
+  /* Footer */
+  .footer {
+    text-align: center;
+    padding: 16px;
+    font-size: 0.65rem;
+    color: var(--text2);
+  }
+
+  /* Utility */
+  .tag-d { background: rgba(108,140,255,0.15); color: var(--accent); }
+  .tag-c { background: rgba(244,114,182,0.15); color: var(--pink); }
+  .tag-j { background: rgba(167,139,250,0.15); color: var(--purple); }
+  .tag-all { background: rgba(52,211,153,0.15); color: var(--green); }
+  .mt-8 { margin-top: 8px; }
+  .mb-4 { margin-bottom: 4px; }
+  .text-sm { font-size: 0.75rem; }
+  .text-muted { color: var(--text2); }
+  .bold { font-weight: 600; }
+</style>
+</head>
+<body>
+
+<!-- Header -->
+<div class="header">
+  <h1>📅 June 8 — Field Day</h1>
+  <div class="subtitle">SecureCAT-v2 Capstone · ISPSC Tagudin · Data Gathering</div>
+  <div class="badge-row">
+    <span class="badge badge-green" id="progressBadge">0 / 0 done</span>
+    <span class="badge badge-blue">4 blocks</span>
+    <span class="badge badge-yellow">8AM–12PM</span>
+  </div>
+  <div class="progress-bar"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
+  <div class="progress-text" id="progressText">Tap checkboxes as you go</div>
+</div>
+
+<!-- ============== SCHEDULE ============== -->
+<div class="section open" id="sec-schedule">
+  <div class="section-header" onclick="toggleSection('sec-schedule')">
+    <div class="section-icon" style="background:rgba(108,140,255,0.15)">🕐</div>
+    <div class="section-title">Schedule</div>
+    <div class="section-meta">Updated</div>
+    <div class="section-chevron">▼</div>
+  </div>
+  <div class="section-body timeline">
+    <!-- EARLY: Jaypee solo -->
+    <div class="tl-block">
+      <div class="tl-time" style="color:var(--purple)">~08:00 — Jaypee arrives early</div>
+      <div class="tl-title">📋 Director's Office — Drop Letter to Conduct</div>
+      <div class="tl-who">Jaypee (solo)</div>
+      <div class="tl-desc">Submit/sign the <strong>letter for conducting capstone research</strong> at the Director's office. If the Campus Director (CD) is available immediately, conduct the interview right there and then.</div>
+      <div class="tl-note">⚡ If CD is free now → conduct Block C here. If scheduled for later → note the time and Block C moves accordingly.</div>
+    </div>
+
+    <div class="tl-block">
+      <div class="tl-time" style="color:var(--purple)">08:00–10:00 — Jaypee (solo window)</div>
+      <div class="tl-title">🏢 Block A-prep: Registrar + Enrolee Intercepts</div>
+      <div class="tl-who">Jaypee (roaming)</div>
+      <div class="tl-desc">Interview Registrar staff (quick process questions). Intercept enrolees/applicants in the queue with the 5-min micro-survey. Collect any available blank forms or documents.</div>
+      <div class="tl-note">Jaypee does what he can before David &amp; Christine arrive at 10.</div>
+    </div>
+
+    <!-- 10AM: David + Christine arrive -->
+    <div class="tl-block" style="background:rgba(108,140,255,0.05)">
+      <div class="tl-time" style="color:var(--accent)">⭐ 10:00 — David & Christine arrive</div>
+      <div class="tl-title">Quick sync with Jaypee</div>
+      <div class="tl-who">All 3</div>
+      <div class="tl-desc">Jaypee briefs David &amp; Christine on what he got from the Registrar and whether the Director interview is scheduled. Decide which block to run first.</div>
+    </div>
+
+    <div class="tl-block">
+      <div class="tl-time" style="color:var(--accent)">10:00–10:50</div>
+      <div class="tl-title">🏢 Block A: Registrar Office (Full Interview)</div>
+      <div class="tl-who">David (lead) + Christine (audio/notes)</div>
+      <div class="tl-desc">Full structured interview with Registrar head + staff. Claim verification → process walk-through → pain points → system integration.</div>
+      <div class="tl-note">If Jaypee already covered some ground, skip repeats and go deeper on pain points + requirements.</div>
+    </div>
+
+    <div class="tl-block">
+      <div class="tl-time" style="color:var(--accent)">10:50–11:00</div>
+      <div class="tl-title">Transition + debrief</div>
+      <div class="tl-who">All 3</div>
+    </div>
+
+    <div class="tl-block">
+      <div class="tl-time" style="color:var(--accent)">11:00–11:40</div>
+      <div class="tl-title">🏥 Block B: Guidance Office</div>
+      <div class="tl-who">David (lead) + Christine (audio/notes)</div>
+      <div class="tl-desc">Counselors + staff + proctors. Testing workflow walk-through, scoring process, OMR, pain points, AI/OMR requirements validation.</div>
+    </div>
+
+    <div class="tl-block">
+      <div class="tl-time" style="color:var(--orange)">11:40–12:00 (or scheduled time)</div>
+      <div class="tl-title">🏫 Block C: Campus Director</div>
+      <div class="tl-who">David (lead) + Christine (notes)</div>
+      <div class="tl-desc">20-min strategic interview. Digital vision, infrastructure, multi-campus, data privacy.</div>
+      <div class="tl-note">⚡ Time depends on what Jaypee arranged in the morning. Could be earlier if CD was available at 8AM.</div>
+    </div>
+
+    <div class="tl-block">
+      <div class="tl-time" style="color:var(--text2)">Remaining time</div>
+      <div class="tl-title">📦 Block D: Catch-up + Artifacts</div>
+      <div class="tl-who">Split as needed</div>
+      <div class="tl-desc">Follow-up questions, collect physical documents (blank forms, OMR sheets, logs), more applicant intercepts if opportunity exists, SUS/TLX instrument pre-test with willing staff.</div>
+    </div>
+  </div>
+</div>
+
+<!-- ============== TEAM ROLES ============== -->
+<div class="section" id="sec-roles">
+  <div class="section-header" onclick="toggleSection('sec-roles')">
+    <div class="section-icon" style="background:rgba(52,211,153,0.15)">👥</div>
+    <div class="section-title">Team Roles</div>
+    <div class="section-chevron">▼</div>
+  </div>
+  <div class="section-body">
+    <div class="guide-block">
+      <h4>David — Lead Interviewer</h4>
+      <p>Asks all primary questions. Controls pacing. Redirects tangents. Has deepest system context as original developer. Arrives 10AM.</p>
+    </div>
+    <div class="guide-block">
+      <h4>Christine — Audio + Observer</h4>
+      <p>Operates recorder. Captures non-verbal cues. Manages consent forms. Writes observer margin notes. Arrives 10AM.</p>
+    </div>
+    <div class="guide-block">
+      <h4>Jaypee — Process Mapper + Early Bird</h4>
+      <p>Arrives ~8AM. Signs letter at Director's office first. Handles Registrar quick interviews + applicant intercepts. Draws live process flows during main sessions. Conducts Director interview if CD is available early.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ============== JAYPEE EARLY TASKS ============== -->
+<div class="section" id="sec-jaypee-early">
+  <div class="section-header" onclick="toggleSection('sec-jaypee-early')">
+    <div class="section-icon" style="background:rgba(167,139,250,0.15)">📋</div>
+    <div class="section-title">Jaypee's Early Tasks (8–10AM)</div>
+    <div class="section-meta">Solo</div>
+    <div class="section-chevron">▼</div>
+  </div>
+  <div class="section-body">
+    <ul class="checklist" data-group="jaypee-early">
+      <li><div class="cl-box" onclick="toggleCheck(this)"><span class="cl-check">✓</span></div><div class="cl-text">Arrive at ISPSC Tagudin ~8:00 AM</div><span class="cl-tag tag-j">JP</span></li>
+      <li><div class="cl-box" onclick="toggleCheck(this)"><span class="cl-check">✓</span></div><div class="cl-text"><strong>Go to Director's office — submit/sign the Letter to Conduct Research</strong></div><span class="cl-tag tag-j">JP</span></li>
+      <li><div class="cl-box" onclick="toggleCheck(this)"><span class="cl-check">✓</span></div><div class="cl-text">If CD is available → conduct Block C interview now (see Block C guide below)</div><span class="cl-tag tag-j">JP</span></li>
+      <li><div class="cl-box" onclick="toggleCheck(this)"><span class="cl-check">✓</span></div><div class="cl-text">If CD schedules for later → note the scheduled time and tell David at 10AM sync</div><span class="cl-tag tag-j">JP</span></li>
+      <li><div class="cl-box" onclick="toggleCheck(this)"><span class="cl-check">✓</span></div><div class="cl-text">Visit Registrar office — quick process questions (who handles intake, how many per cycle, what's manual)</div><span class="cl-tag tag-j">JP</span></li>
+      <li><div class="cl-box" onclick="toggleCheck(this)"><span class="cl-check">✓</span></div><div class="cl-text">Intercept 2-3 enrolees/applicants in queue if available (use micro-survey)</div><span class="cl-tag tag-j">JP</span></li>
+      <li><div class="cl-box" onclick="toggleCheck(this)"><span class="cl-check">✓</span></div><div class="cl-text">Collect blank forms / documents if staff will provide</div><span class="cl-tag tag-j">JP</span></li>
+      <li><div class="cl-box" onclick="toggleCheck(this)"><span class="cl-check">✓</span></div><div class="cl-text">Brief David &amp; Christine at 10AM on findings</div><span class="cl-tag tag-j">JP</span></li>
+    </ul>
+    <div class="mt-8">
+      <label class="notes-label">📝 Jaypee's early notes</label>
+      <textarea class="notes-area" data-note="jaypee-early" placeholder="Director scheduled at: ____, Registrar said: ____, etc."></textarea>
+    </div>
+  </div>
+</div>
+
+<!-- ============== BLOCK A: REGISTRAR ============== -->
+<div class="section" id="sec-block-a">
+  <div class="section-header" onclick="toggleSection('sec-block-a')">
+    <div class="section-icon" style="background:rgba(108,140,255,0.15)">🏢</div>
+    <div class="section-title">Block A — Registrar Office</div>
+    <div class="section-meta">~40-50 min</div>
+    <div class="section-chevron">▼</div>
+  </div>
+  <div class="section-body">
+    <div class="badge-row mb-4">
+      <span class="badge badge-blue">RQ1 Process</span>
+      <span class="badge badge-red">RQ2 Pain points</span>
+      <span class="badge badge-yellow">RQ3 Requirements</span>
+    </div>
+    <ul class="checklist" data-group="block-a">
+      <li><div class="cl-box" onclick="toggleCheck(this)"><span class="cl-check">✓</span></div><div class="cl-text">Ask for exact official job titles (for manuscript accuracy)</div><span class="cl-tag tag-all">Required</span></li>
+      <li><div class="cl-box" onclick="toggleCheck(this)"><span class="cl-check">✓</span></div><div class="cl-text">Verbal consent + recording permission obtained</div><span class="cl-tag tag-all">Required</span></li>
+    </ul>
+
+    <div class="guide-block">
+      <h4>Phase 1: Claim Verification (~10 min)</h4>
+      <p>Read each claim. Ask them to confirm ✅ / partially ⚠️ / deny ❌:</p>
+      <ul>
+        <li>Application intake uses Google Forms + manual spreadsheet tracking</li>
+        <li>Registrar manually generates admission slips using Word templates</li>
+        <li>There is no automated status notification to applicants</li>
+        <li>Exam scheduling is coordinated verbally with Guidance</li>
+        <li>Applicant documents are stored in physical folders with no digital backup</li>
+      </ul>
+    </div>
+
+    <div class="guide-block">
+      <h4>Phase 2: Process Walk-Through (~15 min)</h4>
+      <div class="guide-prompt">"Walk me through what happens from when an applicant submits their application to when they receive their admission result — step by step. Who does what? Where are the handoffs between Registrar and Guidance?"</div>
+      <table class="probe-table">
+        <tr><td>"At which step does Registrar's responsibility end and Guidance's begin?"</td><td>RQ1, scope</td></tr>
+        <tr><td>"How many applicants per cycle? Per day at peak?"</td><td>RQ2, C2-05</td></tr>
+        <tr><td>"What forms/documents do you generate? Can I see blank copies?"</td><td>Artifact</td></tr>
+        <tr><td>"What happens when documents are incomplete?"</td><td>RQ2</td></tr>
+      </table>
+    </div>
+
+    <div class="guide-block">
+      <h4>Phase 3: Pain Points (~10 min)</h4>
+      <div class="guide-prompt">"What are the top 3 things that slow you down or frustrate you in the current admission process?"</div>
+      <table class="probe-table">
+        <tr><td>"What do you do manually that you wish a system handled?"</td><td>RQ2, RQ3</td></tr>
+        <tr><td>"Do you use any part of the existing digital system? Which parts? What do you avoid?"</td><td>RQ1, RQ2</td></tr>
+        <tr><td>"Have you ever lost data, had duplicates, or campus mix-ups?"</td><td>RQ2, RQ3</td></tr>
+        <tr><td>"How is applicant data protected? Who can access the spreadsheets?"</td><td>RQ3, RA 10173</td></tr>
+      </table>
+    </div>
+
+    <div class="guide-block">
+      <h4>Phase 4: System Integration (~10 min)</h4>
+      <div class="guide-prompt">"If a unified digital system could auto-generate admission slips from applicant-filled web forms, how would that change your workload?"</div>
+      <table class="probe-table">
+        <tr><td>"Would you be open to applicants filling their own data online and staff only verifying?"</td><td>RQ3</td></tr>
+        <tr><td>"Do you need to work offline? How often does internet go down?"</td><td>RQ3, offline</td></tr>
+        <tr><td>"What reports does the Director ask for? How long does that take?"</td><td>RQ2, RQ3</td></tr>
+      </table>
+    </div>
+
+    <div class="mt-8">
+      <label class="notes-label">📝 Registrar interview notes</label>
+      <textarea class="notes-area" data-note="block-a" placeholder="Key quotes, surprises, confirmations..."></textarea>
+    </div>
+  </div>
+</div>
+
+<!-- ============== BLOCK B: GUIDANCE ============== -->
+<div class="section" id="sec-block-b">
+  <div class="section-header" onclick="toggleSection('sec-block-b')">
+    <div class="section-icon" style="background:rgba(52,211,153,0.15)">🏥</div>
+    <div class="section-title">Block B — Guidance Office</div>
+    <div class="section-meta">~40 min</div>
+    <div class="section-chevron">▼</div>
+  </div>
+  <div class="section-body">
+    <div class="badge-row mb-4">
+      <span class="badge badge-blue">RQ1 Process</span>
+      <span class="badge badge-red">RQ2 Pain points</span>
+      <span class="badge badge-yellow">RQ3 Requirements</span>
+    </div>
+    <ul class="checklist" data-group="block-b">
+      <li><div class="cl-box" onclick="toggleCheck(this)"><span class="cl-check">✓</span></div><div class="cl-text">Ask for exact official job titles</div><span class="cl-tag tag-all">Required</span></li>
+      <li><div class="cl-box" onclick="toggleCheck(this)"><span class="cl-check">✓</span></div><div class="cl-text">Verbal consent + recording permission obtained</div><span class="cl-tag tag-all">Required</span></li>
+    </ul>
+
+    <div class="guide-block">
+      <h4>Phase 1: Claim Verification (~10 min)</h4>
+      <p>Read each claim. Confirm ✅ / partially ⚠️ / deny ❌:</p>
+      <ul>
+        <li>Guidance counselors manually score exams using OMR overlay templates</li>
+        <li>Guidance staff handle all proctoring rather than delegating to other faculty</li>
+        <li>Attendance during exams is tracked on paper sign-in sheets</li>
+        <li>Test results are computed in Excel and manually transferred to Registrar</li>
+        <li>There is no system-level audit trail for who accessed or modified scores</li>
+      </ul>
+    </div>
+
+    <div class="guide-block">
+      <h4>Phase 2: Testing Workflow (~15 min)</h4>
+      <div class="guide-prompt">"Walk me through exam day — from room setup to score release. Who proctors? How is attendance taken? How are papers scored?"</div>
+      <table class="probe-table">
+        <tr><td>"If a system allowed other staff to proctor securely, would that help accommodate more applicants?"</td><td>RQ3, RBAC</td></tr>
+        <tr><td>"How do you coordinate exam schedule/rooms with Registrar?"</td><td>RQ1, boundary</td></tr>
+        <tr><td>"What if a staff member is absent on a heavy testing day?"</td><td>RQ2, resilience</td></tr>
+        <tr><td>"How long from last exam to result release?"</td><td>RQ2, bottleneck</td></tr>
+        <tr><td>"Have there been scoring disputes or errors? How resolved?"</td><td>RQ2, RQ3</td></tr>
+      </table>
+    </div>
+
+    <div class="guide-block">
+      <h4>Phase 3: Pain Points + Security (~10 min)</h4>
+      <div class="guide-prompt">"What's the most stressful part of the admission testing season for your office?"</div>
+      <table class="probe-table">
+        <tr><td>"Unauthorized score access or tampering incidents?"</td><td>RQ3, security</td></tr>
+        <tr><td>"What happens when Wi-Fi fails during testing?"</td><td>RQ3, offline</td></tr>
+        <tr><td>"How do you handle applicants needing special accommodations?"</td><td>RQ2</td></tr>
+        <tr><td>"How do you manage course recommendations with departmental quotas?"</td><td>RQ1</td></tr>
+      </table>
+    </div>
+
+    <div class="guide-block">
+      <h4>Phase 4: Requirements + Advanced (~5 min)</h4>
+      <div class="guide-prompt">"If you could change one thing about testing and scoring, what would it be?"</div>
+      <table class="probe-table">
+        <tr><td>"Would automated OMR scanning that scores instantly be a priority?"</td><td>RQ3</td></tr>
+        <tr><td>"Would having both auto-computation AND your conversion tables future-proof scoring?"</td><td>RQ3</td></tr>
+        <tr><td>"If an AI companion were available, how could it assist (not replace) you?"</td><td>RQ3, AI</td></tr>
+      </table>
+    </div>
+
+    <div class="mt-8">
+      <label class="notes-label">📝 Guidance interview notes</label>
+      <textarea class="notes-area" data-note="block-b" placeholder="Key quotes, surprises, confirmations..."></textarea>
+    </div>
+  </div>
+</div>
+
+<!-- ============== BLOCK C: DIRECTOR ============== -->
+<div class="section" id="sec-block-c">
+  <div class="section-header" onclick="toggleSection('sec-block-c')">
+    <div class="section-icon" style="background:rgba(251,191,36,0.15)">🏫</div>
+    <div class="section-title">Block C — Campus Director</div>
+    <div class="section-meta">~20 min</div>
+    <div class="section-chevron">▼</div>
+  </div>
+  <div class="section-body">
+    <div class="badge-row mb-4">
+      <span class="badge badge-yellow">Strategic only</span>
+      <span class="badge badge-orange">⚠ Time-dependent</span>
+    </div>
+
+    <div class="tl-note" style="margin-bottom:8px">⚡ This block's timing depends on what Jaypee arranged in the morning. CD may have been interviewed at 8AM, or scheduled for 11:40, or another time entirely.</div>
+
+    <ul class="checklist" data-group="block-c">
+      <li><div class="cl-box" onclick="toggleCheck(this)"><span class="cl-check">✓</span></div><div class="cl-text">Confirm CD's scheduled time (Jaypee to relay)</div><span class="cl-tag tag-j">JP</span></li>
+      <li><div class="cl-box" onclick="toggleCheck(this)"><span class="cl-check">✓</span></div><div class="cl-text">Consent + recording permission obtained</div><span class="cl-tag tag-all">Required</span></li>
+    </ul>
+
+    <div class="guide-block">
+      <h4>6 Strategic Questions (20 min max)</h4>
+      <ol>
+        <li><strong>Digital vision:</strong> "How fully digital do you envision the Tagudin admission experience becoming?"</li>
+        <li><strong>Infrastructure:</strong> "Would you prefer local MIS servers or cloud hosting for uptime, given seasonal admission usage?"</li>
+        <li><strong>Multi-campus:</strong> "How do you feel about a unified system that allows seamless applicant transfers across ISPSC campuses?"</li>
+        <li><strong>Dashboard:</strong> "Would you prefer a live admin dashboard to monitor admission progress, or current method of receiving generated reports?"</li>
+        <li><strong>Proctor delegation:</strong> "Would you support delegating proctoring to non-Guidance staff, provided role-based access ensures test security?"</li>
+        <li><strong>Data privacy:</strong> "What are your expectations regarding RA 10173 compliance for applicant records?"</li>
+      </ol>
+    </div>
+
+    <div class="mt-8">
+      <label class="notes-label">📝 Director interview notes</label>
+      <textarea class="notes-area" data-note="block-c" placeholder="CD's answers, strategic priorities..."></textarea>
+    </div>
+  </div>
+</div>
+
+<!-- ============== APPLICANT INTERCEPTS ============== -->
+<div class="section" id="sec-intercept">
+  <div class="section-header" onclick="toggleSection('sec-intercept')">
+    <div class="section-icon" style="background:rgba(244,114,182,0.15)">🙋</div>
+    <div class="section-title">Applicant Intercepts</div>
+    <div class="section-meta">5–7 min each</div>
+    <div class="section-chevron">▼</div>
+  </div>
+  <div class="section-body">
+    <p class="text-sm text-muted mb-4">Get verbal consent first. No names — only role ("Applicant") and general responses. Jaypee does these early; anyone can do more later.</p>
+
+    <div class="guide-block">
+      <h4>Micro-Interview Script (6 questions)</h4>
+      <ol>
+        <li><strong>Discovery:</strong> "How did you find out about the admission process? Where did you submit?"</li>
+        <li><strong>Wait time:</strong> "How long have you been waiting for results? Do you know your current status?"</li>
+        <li><strong>Pain point:</strong> "What was the most confusing or frustrating part of applying?"</li>
+        <li><strong>Format:</strong> "Did you use any online form or system, or was everything on paper?"</li>
+        <li><strong>Interest:</strong> "If there was an app/website to track your admission status, would you use it? Phone or computer?"</li>
+        <li><strong>Rating:</strong> "On a scale of 1–5, how would you rate the overall admission experience?"</li>
+      </ol>
+    </div>
+
+    <div class="intercept-card">
+      <h4>📝 Quick Capture — Applicant #__</h4>
+      <div class="field-row">
+        <label>Time:</label>
+        <input type="text" class="notes-area" style="min-height:auto;padding:4px 8px;width:80px" placeholder="10:30">
+        <label>By:</label>
+        <input type="text" class="notes-area" style="min-height:auto;padding:4px 8px;width:60px" placeholder="JP">
+      </div>
+      <div class="field-row">
+        <label>Q1 found via:</label>
+        <div class="checkbox-group"><span>School</span><span>Online</span><span>Word</span><span>Other</span></div>
+      </div>
+      <div class="field-row">
+        <label>Q2 knows status:</label>
+        <div class="checkbox-group"><span>Yes</span><span>No</span><span>Unsure</span></div>
+      </div>
+      <div class="field-row">
+        <label>Q3 pain:</label>
+        <input type="text" class="notes-area" style="min-height:auto;padding:4px 8px;flex:1" placeholder="...">
+      </div>
+      <div class="field-row">
+        <label>Q4 format:</label>
+        <div class="checkbox-group"><span>Paper</span><span>Online</span><span>Both</span></div>
+      </div>
+      <div class="field-row">
+        <label>Q5 use app:</label>
+        <div class="checkbox-group"><span>Yes</span><span>No</span><span>Maybe</span></div>
+      </div>
+      <div class="field-row">
+        <label>Q6 rating:</label>
+        <div class="rating-row"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span></div>
+      </div>
+      <div class="field-row">
+        <label>Consent:</label>
+        <div class="checkbox-group" style="color:var(--green)"><span>✅ Verbal</span></div>
+      </div>
+    </div>
+
+    <div class="mt-8">
+      <label class="notes-label">📝 Applicant intercept tally</label>
+      <textarea class="notes-area" data-note="intercept" placeholder="# interviewed: __&#10;Avg rating: __&#10;Common themes: __"></textarea>
+    </div>
+  </div>
+</div>
+
+<!-- ============== BLOCK D: CATCH-UP ============== -->
+<div class="section" id="sec-block-d">
+  <div class="section-header" onclick="toggleSection('sec-block-d')">
+    <div class="section-icon" style="background:rgba(251,146,60,0.15)">📦</div>
+    <div class="section-title">Block D — Catch-up + Artifacts</div>
+    <div class="section-chevron">▼</div>
+  </div>
+  <div class="section-body">
+    <ul class="checklist" data-group="block-d">
+      <li><div class="cl-box" onclick="toggleCheck(this)"><span class="cl-check">✓</span></div><div class="cl-text">Follow-up questions from Blocks A/B (anything unclear or skipped)</div></li>
+      <li><div class="cl-box" onclick="toggleCheck(this)"><span class="cl-check">✓</span></div><div class="cl-text">More applicant intercepts if opportunity exists</div></li>
+      <li><div class="cl-box" onclick="toggleCheck(this)"><span class="cl-check">✓</span></div><div class="cl-text">Collect physical documents: blank application form</div></li>
+      <li><div class="cl-box" onclick="toggleCheck(this)"><span class="cl-check">✓</span></div><div class="cl-text">Collect: admission slip template</div></li>
+      <li><div class="cl-box" onclick="toggleCheck(this)"><span class="cl-check">✓</span></div><div class="cl-text">Collect: OMR sheet sample</div></li>
+      <li><div class="cl-box" onclick="toggleCheck(this)"><span class="cl-check">✓</span></div><div class="cl-text">Collect: manual attendance log sample</div></li>
+      <li><div class="cl-box" onclick="toggleCheck(this)"><span class="cl-check">✓</span></div><div class="cl-text">Collect: any existing spreadsheet screenshots</div></li>
+      <li><div class="cl-box" onclick="toggleCheck(this)"><span class="cl-check">✓</span></div><div class="cl-text">SUS/TLX instrument pre-test with 1–2 willing staff (nice-to-have)</div></li>
+      <li><div class="cl-box" onclick="toggleCheck(this)"><span class="cl-check">✓</span></div><div class="cl-text">Thank all participants</div></li>
+    </ul>
+
+    <div class="mt-8">
+      <label class="notes-label">📝 Artifacts collected</label>
+      <textarea class="notes-area" data-note="artifacts" placeholder="What did you get? From whom?"></textarea>
+    </div>
+  </div>
+</div>
+
+<!-- ============== PREP CHECKLIST ============== -->
+<div class="section" id="sec-prep">
+  <div class="section-header" onclick="toggleSection('sec-prep')">
+    <div class="section-icon" style="background:rgba(167,139,250,0.15)">✅</div>
+    <div class="section-title">Pre-Interview Prep (June 6–7)</div>
+    <div class="section-chevron">▼</div>
+  </div>
+  <div class="section-body">
+    <ul class="checklist" data-group="prep">
+      <li><div class="cl-box" onclick="toggleCheck(this)"><span class="cl-check">✓</span></div><div class="cl-text">Print claim verification sheets (Registrar + Guidance versions)</div><span class="cl-tag tag-d">David</span></li>
+      <li><div class="cl-box" onclick="toggleCheck(this)"><span class="cl-check">✓</span></div><div class="cl-text">Print applicant intercept half-sheets (10 copies)</div><span class="cl-tag tag-c">Christine</span></li>
+      <li><div class="cl-box" onclick="toggleCheck(this)"><span class="cl-check">✓</span></div><div class="cl-text">Print consent forms (15 copies)</div><span class="cl-tag tag-j">Jaypee</span></li>
+      <li><div class="cl-box" onclick="toggleCheck(this)"><span class="cl-check">✓</span></div><div class="cl-text">Charge phones + test voice recorder app + backup device</div><span class="cl-tag tag-c">Christine</span></li>
+      <li><div class="cl-box" onclick="toggleCheck(this)"><span class="cl-check">✓</span></div><div class="cl-text">Print interview guides (this page → per-block sections)</div><span class="cl-tag tag-d">David</span></li>
+      <li><div class="cl-box" onclick="toggleCheck(this)"><span class="cl-check">✓</span></div><div class="cl-text">Prepare artifact request list</div><span class="cl-tag tag-j">Jaypee</span></li>
+      <li><div class="cl-box" onclick="toggleCheck(this)"><span class="cl-check">✓</span></div><div class="cl-text">Prepare letter to conduct research (for Director's office)</div><span class="cl-tag tag-all">Team</span></li>
+      <li><div class="cl-box" onclick="toggleCheck(this)"><span class="cl-check">✓</span></div><div class="cl-text">Dry-run Block A interview (time it ≤ 50 min)</div><span class="cl-tag tag-all">All</span></li>
+      <li><div class="cl-box" onclick="toggleCheck(this)"><span class="cl-check">✓</span></div><div class="cl-text">Confirm campus contacts (Director availability, Registrar/Guidance willingness)</div><span class="cl-tag tag-d">David</span></li>
+      <li><div class="cl-box" onclick="toggleCheck(this)"><span class="cl-check">✓</span></div><div class="cl-text">Pack: printed materials, pens (blue for respondents, black for team), clipboards, portable charger, water</div><span class="cl-tag tag-c">Christine</span></li>
+    </ul>
+  </div>
+</div>
+
+<!-- ============== POST-INTERVIEW ============== -->
+<div class="section" id="sec-post">
+  <div class="section-header" onclick="toggleSection('sec-post')">
+    <div class="section-icon" style="background:rgba(248,113,113,0.15)">🔥</div>
+    <div class="section-title">Post-Interview (June 8 Evening)</div>
+    <div class="section-meta">Hot debrief — same day!</div>
+    <div class="section-chevron">▼</div>
+  </div>
+  <div class="section-body">
+    <p class="text-sm text-muted mb-4">Do this <strong>the same day</strong> while memory is fresh. Do NOT wait until June 9.</p>
+    <ul class="checklist" data-group="post">
+      <li><div class="cl-box" onclick="toggleCheck(this)"><span class="cl-check">✓</span></div><div class="cl-text">Team debrief — each shares top 3 surprises, top 3 confirmations, top 3 gaps</div></li>
+      <li><div class="cl-box" onclick="toggleCheck(this)"><span class="cl-check">✓</span></div><div class="cl-text">Label all audio files: BLOCK-A-REG, BLOCK-B-GUID, BLOCK-C-DIR + timestamps</div></li>
+      <li><div class="cl-box" onclick="toggleCheck(this)"><span class="cl-check">✓</span></div><div class="cl-text">Back up audio + photos to cloud immediately</div></li>
+      <li><div class="cl-box" onclick="toggleCheck(this)"><span class="cl-check">✓</span></div><div class="cl-text">Photograph all collected artifacts → upload to capstone/research/artifacts/</div></li>
+      <li><div class="cl-box" onclick="toggleCheck(this)"><span class="cl-check">✓</span></div><div class="cl-text">Transfer claim sheet ✅/⚠️/❌ markings to digital ledger</div></li>
+      <li><div class="cl-box" onclick="toggleCheck(this)"><span class="cl-check">✓</span></div><div class="cl-text">Run: <code style="background:var(--surface2);padding:2px 6px;border-radius:4px;font-size:0.7rem">grep -rn "STEER:" capstone/drafts/</code> → punch list of updates needed</div></li>
+    </ul>
+
+    <div class="mt-8">
+      <label class="notes-label">📝 Hot debrief notes</label>
+      <textarea class="notes-area" data-note="post-debrief" placeholder="Surprises:&#10;1. &#10;2. &#10;3. &#10;&#10;Confirmations:&#10;1. &#10;2. &#10;3. &#10;&#10;Gaps still open:&#10;1. &#10;2. &#10;3."></textarea>
+    </div>
+  </div>
+</div>
+
+<!-- ============== REMINDERS ============== -->
+<div class="section" id="sec-tips">
+  <div class="section-header" onclick="toggleSection('sec-tips')">
+    <div class="section-icon" style="background:rgba(251,191,36,0.15)">💡</div>
+    <div class="section-title">Reminders</div>
+    <div class="section-chevron">▼</div>
+  </div>
+  <div class="section-body">
+    <div class="guide-block">
+      <h4>⚠️ David — Don't say "I already know"</h4>
+      <p>Even though you built the system, the interview must feel like genuine discovery. If a respondent says something you know, say <em>"That's helpful — can you tell me more about [specific detail]?"</em></p>
+    </div>
+    <div class="guide-block">
+      <h4>📝 Evidence Tags to Use</h4>
+      <ul>
+        <li><code>[INT-REG-01]</code> — Interview, Registrar, quote #1</li>
+        <li><code>[INT-GUID-03]</code> — Interview, Guidance, quote #3</li>
+        <li><code>[INT-DIR-02]</code> — Interview, Director, quote #2</li>
+        <li><code>[INT-APP-05]</code> — Applicant #5</li>
+        <li><code>[OBS-01]</code> — Direct observation</li>
+        <li><code>[DOC-FORM-01]</code> — Document artifact</li>
+        <li><code>[DEV-KNOW-01]</code> — Developer knowledge (must cross-ref with another tag)</li>
+      </ul>
+    </div>
+    <div class="guide-block">
+      <h4>🔄 Contingency</h4>
+      <ul>
+        <li><strong>CD unavailable:</strong> Ask for 15-min call on June 9. Questions are strategic — can be async.</li>
+        <li><strong>Registrar too busy:</strong> Cut to 30 min — skip Phase 4, focus on claims + walk-through.</li>
+        <li><strong>No applicants in queue:</strong> Ask Registrar/Guidance for contact info of recent applicants for text/call.</li>
+        <li><strong>Audio fails:</strong> Christine → rapid handwritten notes. Jaypee stops mapping, becomes second note-taker.</li>
+        <li><strong>Rain / travel delay:</strong> Pack night before. Leave 30 min early. Waterproof bag.</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<div class="footer">
+  SecureCAT-v2 Capstone · June 8, 2026 · ISPSC Tagudin<br>
+  Tap checkboxes to track progress · Data saved locally on this device
+</div>
+
+<script>
+// Toggle section open/close
+function toggleSection(id) {
+  document.getElementById(id).classList.toggle('open');
+}
+
+// Toggle checklist item
+function toggleCheck(box) {
+  const li = box.closest('li');
+  li.classList.toggle('checked');
+  saveState();
+  updateProgress();
+}
+
+// Save all checkbox + textarea state to localStorage
+function saveState() {
+  const checks = {};
+  document.querySelectorAll('.checklist').forEach(ul => {
+    const group = ul.dataset.group;
+    ul.querySelectorAll('li').forEach((li, i) => {
+      checks[group + '-' + i] = li.classList.contains('checked');
+    });
+  });
+  localStorage.setItem('june8-checks', JSON.stringify(checks));
+
+  const notes = {};
+  document.querySelectorAll('[data-note]').forEach(el => {
+    notes[el.dataset.note] = el.value;
+  });
+  localStorage.setItem('june8-notes', JSON.stringify(notes));
+}
+
+// Load state from localStorage
+function loadState() {
+  try {
+    const checks = JSON.parse(localStorage.getItem('june8-checks') || '{}');
+    document.querySelectorAll('.checklist').forEach(ul => {
+      const group = ul.dataset.group;
+      ul.querySelectorAll('li').forEach((li, i) => {
+        if (checks[group + '-' + i]) li.classList.add('checked');
+      });
+    });
+
+    const notes = JSON.parse(localStorage.getItem('june8-notes') || '{}');
+    document.querySelectorAll('[data-note]').forEach(el => {
+      if (notes[el.dataset.note]) el.value = notes[el.dataset.note];
+    });
+  } catch(e) {}
+}
+
+// Update progress bar
+function updateProgress() {
+  const total = document.querySelectorAll('.checklist li').length;
+  const done = document.querySelectorAll('.checklist li.checked').length;
+  const pct = total ? Math.round((done / total) * 100) : 0;
+
+  document.getElementById('progressFill').style.width = pct + '%';
+  document.getElementById('progressBadge').textContent = done + ' / ' + total + ' done';
+  document.getElementById('progressText').textContent = pct === 100 ? '✅ All done!' : pct + '% complete';
+
+  // Save on progress update too
+  saveState();
+}
+
+// Save notes on input
+document.querySelectorAll('[data-note]').forEach(el => {
+  el.addEventListener('input', () => {
+    const notes = JSON.parse(localStorage.getItem('june8-notes') || '{}');
+    notes[el.dataset.note] = el.value;
+    localStorage.setItem('june8-notes', JSON.stringify(notes));
+  });
+});
+
+// Init
+loadState();
+updateProgress();
+</script>
+</body>
+</html>
