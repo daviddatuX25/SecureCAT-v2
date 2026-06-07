@@ -875,6 +875,104 @@
         .modal-link-item:hover .modal-link-icon {
             background: rgba(99, 102, 241, 0.15);
         }
+
+        /* June 8 Banner — high-visibility CTA */
+        .june8-banner {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+            text-decoration: none;
+            margin: 8px 0 4px 0;
+            padding: 14px 18px;
+            border-radius: 12px;
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.18) 0%, rgba(236, 72, 153, 0.12) 100%);
+            border: 1.5px solid rgba(99, 102, 241, 0.4);
+            box-shadow: 0 0 20px rgba(99, 102, 241, 0.12), 0 4px 12px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .june8-banner::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.04), transparent);
+            animation: june8-shimmer 3s ease-in-out infinite;
+        }
+
+        @keyframes june8-shimmer {
+            0%, 100% { transform: translateX(-100%); }
+            50% { transform: translateX(100%); }
+        }
+
+        .june8-banner:hover {
+            border-color: rgba(99, 102, 241, 0.7);
+            box-shadow: 0 0 30px rgba(99, 102, 241, 0.2), 0 8px 24px rgba(0, 0, 0, 0.3);
+            transform: translateY(-2px);
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.25) 0%, rgba(236, 72, 153, 0.18) 100%);
+        }
+
+        .june8-banner-left {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .june8-banner-icon {
+            font-size: 1.6rem;
+            filter: drop-shadow(0 0 8px rgba(99, 102, 241, 0.4));
+            animation: june8-pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes june8-pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.12); }
+        }
+
+        .june8-banner-text {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .june8-banner-title {
+            font-family: 'Outfit', sans-serif;
+            font-size: 1.05rem;
+            font-weight: 700;
+            color: #fff;
+            letter-spacing: 0.01em;
+        }
+
+        .june8-banner-desc {
+            font-size: 0.78rem;
+            color: #cbd5e1;
+            line-height: 1.4;
+        }
+
+        .june8-banner-cta {
+            font-family: 'Outfit', sans-serif;
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: #a5b4fc;
+            padding: 6px 14px;
+            border-radius: 8px;
+            background: rgba(99, 102, 241, 0.2);
+            border: 1px solid rgba(99, 102, 241, 0.35);
+            white-space: nowrap;
+            transition: all 0.2s ease;
+            position: relative;
+            z-index: 1;
+        }
+
+        .june8-banner:hover .june8-banner-cta {
+            background: rgba(99, 102, 241, 0.4);
+            color: #fff;
+            border-color: rgba(99, 102, 241, 0.6);
+        }
     </style>
 </head>
 <body>
@@ -938,13 +1036,15 @@
                                     <span class="file-link-desc">Guidance Office official capstone request letter</span>
                                 </div>
                             </a>
-                            <a href="https://daviddatuX25.github.io/SecureCAT-v2/capstone/june8-field-day.html" class="file-link" target="_blank">
-                                <span class="file-icon">📅</span>
-                                <div class="file-link-content">
-                                    <span class="file-link-title">June 8 Field Day</span>
-                                    <span class="file-link-desc">Mobile interview checklist, schedule & guides for ISPSC data gathering</span>
+                            <a href="https://daviddatuX25.github.io/SecureCAT-v2/capstone/june8-field-day.html" class="june8-banner" target="_blank">
+                                <div class="june8-banner-left">
+                                    <span class="june8-banner-icon">📅</span>
+                                    <div class="june8-banner-text">
+                                        <span class="june8-banner-title">June 8 — Field Day</span>
+                                        <span class="june8-banner-desc">Interview checklist, schedule & guides for ISPSC data gathering</span>
+                                    </div>
                                 </div>
-                                <span class="file-priority-badge priority-active">Live</span>
+                                <span class="june8-banner-cta">Open →</span>
                             </a>
                         </div>
                     </div>
