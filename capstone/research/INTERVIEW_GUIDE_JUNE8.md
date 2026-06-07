@@ -91,6 +91,9 @@ Read each claim. Ask them to confirm ✅ / partially ⚠️ / deny ❌:
 | "How many applicants per cycle? Per day at peak?" | RQ2, C2-05 |
 | "What forms/documents do you generate? Can I see blank copies?" | Artifact collection |
 | "What happens when documents are incomplete?" | RQ2 |
+| "What system or tool do you use to generate application or admission slips for the Guidance Office?" | RQ1, C2-05 |
+| "Is the final decision to accept an admission the responsibility of the Registrar?" | RQ1, scope |
+| "Who holds the primary responsibility for scheduling examinations — your office or Guidance?" | RQ1, scope |
 
 ### Phase 3: Pain Points (~10 min)
 
@@ -105,6 +108,7 @@ Read each claim. Ask them to confirm ✅ / partially ⚠️ / deny ❌:
 | "Do you use any part of a digital system? Which parts?" | RQ1, RQ2 |
 | "Have you ever lost data, had duplicates, or campus mix-ups?" | RQ2, RQ3 |
 | "How is applicant data protected? Who can access the spreadsheets?" | RQ3, RA 10173 |
+| "How does the office currently handle system processes during offline periods or internet outages?" | RQ2, offline |
 
 ### Phase 4: System Integration (~10 min)
 
@@ -118,6 +122,8 @@ Read each claim. Ask them to confirm ✅ / partially ⚠️ / deny ❌:
 | "Would you be open to applicants filling their own data online?" | RQ3 |
 | "Do you need to work offline? How often does internet go down?" | RQ3, offline |
 | "What reports does the Director ask for? How long does that take?" | RQ2, RQ3 |
+| "Is the office willing to integrate with an automated exam system that imports applicant data directly upon review?" | RQ3 |
+| "How feasible is a transition to online document uploading for grades and forms?" | RQ3 |
 
 ---
 
@@ -158,6 +164,7 @@ Read each claim. Confirm ✅ / partially ⚠️ / deny ❌:
 | "What if a staff member is absent on a heavy testing day?" | RQ2 |
 | "How long from last exam to result release?" | RQ2 |
 | "Have there been scoring disputes or errors?" | RQ2, RQ3 |
+| "What are the specific frustrations you have experienced with the current admission testing process and any tools or methods you have used in the past?" | RQ2, pain points |
 
 ### Phase 3: Pain Points + Security (~10 min)
 
@@ -178,6 +185,8 @@ Read each claim. Confirm ✅ / partially ⚠️ / deny ❌:
 **Main prompt:**
 > "If you could change one thing about testing and scoring, what would it be?"
 
+**Interviewer context note:** When the conversation touches on scoring or OMR scanning, be prepared to explain Optical Mark Recognition (OMR) in simple terms: *"OMR is a technology that reads bubble-sheet answer sheets automatically using a scanner or camera. Instead of staff manually comparing each bubble to an answer key, the system reads all answers at once and scores them instantly."* The Guidance staff may not be familiar with this technology, so use plain language and avoid jargon.
+
 **Probe questions:**
 
 | Probe | RQ Mapping |
@@ -185,6 +194,7 @@ Read each claim. Confirm ✅ / partially ⚠️ / deny ❌:
 | "Would automated OMR scanning be a priority?" | RQ3 |
 | "Would both auto-computation AND your conversion tables future-proof scoring?" | RQ3 |
 | "If an AI companion were available, how could it assist you?" | RQ3 |
+| "Would you support a system that records and forecasts recommended courses for students to track enrollment trends and quotas?" | RQ3, enrollment |
 
 ---
 
@@ -192,20 +202,28 @@ Read each claim. Confirm ✅ / partially ⚠️ / deny ❌:
 
 **Timing depends on morning arrangement.** CD may have been interviewed at 8AM during the Letter and Inquiry Task, or scheduled for later.
 
+### Pre-Interview Note
+
+Before starting Block C questions, briefly summarize the key preferences confirmed by the Registrar (Block A) and Guidance (Block B) — e.g., applicant self-entry, OMR scanning, proctor delegation willingness. Then ask the Director to confirm alignment with these preferences. This ensures administrative coherence before strategic questions.
+
+> *"Before we start, here's what the Registrar and Guidance offices confirmed they'd be open to: [summarize]. Do these align with your vision for the admission process?"*
+
 ### Mandatory Before Starting
 
 1. Present the official letter — show the signed letter to the Director
 2. Read the verbal consent script aloud — ensure the Director says "yes" on recording
 3. Confirm audio recording is running
 
-### 6 Strategic Questions (20 min max)
+### 8 Strategic Questions (20 min max)
 
 1. **Digital vision:** "How fully digital do you envision the Tagudin admission experience becoming?"
 2. **Infrastructure:** "Would you prefer local MIS servers or cloud hosting for uptime, given seasonal usage?"
 3. **Multi-campus:** "How do you feel about a unified system allowing seamless applicant transfers across ISPSC campuses?"
 4. **Dashboard:** "Would you prefer a live admin dashboard to monitor admission progress, or generated reports from staff?"
 5. **Proctor delegation:** "Would you support delegating proctoring to non-Guidance staff with role-based access ensuring test security?"
-6. **Data privacy:** "What are your expectations regarding RA 10173 compliance for applicant records?"
+6. **Data privacy & system security:** "What are your expectations regarding RA 10173 compliance and system security for applicant records?"
+7. **AI companion support (RQ3):** "Would you support an AI companion or chatbot system to assist examinees with routine inquiries during the admission process?"
+8. **Course quotas & enrollment targets (RQ1):** "How should course quotas and enrollment targets be managed within the admission system?"
 
 ---
 
@@ -231,7 +249,7 @@ Each interview question maps to specific STEER markers (unverified claims) in th
 | STEER Marker | Location | What to Get | Interview Source | Fallback |
 |---|---|---|---|---|
 | Annual applicant volume `[N]` | C1-04 Background P4, C1-01 Background P1 | Exact annual applicant count | Block A Phase 2: "How many applicants per cycle?" | Leave `[N]` blank |
-| Registrar staff headcount `[N]` | C1-04 Background P4 | Exact number of Registrar staff | Block A Phase 1: Claim verification | Blank table row |
+| Registrar staff headcount `[N]` | C1-04 Background P4, C2-05 Population | Exact number of Registrar staff | Block A Phase 1: Claim verification | Blank table row |
 | Guidance staff headcount `[N]` | C2-05 Population | Exact number of Guidance staff | Block B Phase 1: Claim verification | Blank table row |
 | Active proctor count `[N]` | C2-05 Population | Exact number of proctors | Block B Phase 1: Claim verification | Blank table row |
 | Applicant intercept count `[N]` | C2-05 Population | Total intercept surveys completed | Enrolee intercepts tally | Blank table row |
