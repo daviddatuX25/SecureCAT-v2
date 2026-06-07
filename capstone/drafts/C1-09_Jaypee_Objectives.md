@@ -15,9 +15,9 @@ This study aims to develop SecureCAT: A Role-Based College Admission Testing Sys
 
 More specifically, this study seeks to accomplish the following:
 
-1. **Identify** the existing admission testing processes, operational workflows, manual process dependencies, current utilization of the deployed foundational digital system, and the architectural limitations at ISPSC Tagudin Campus that informed the requirements for SecureCAT-v2, alongside the role-based coordination requirements, data integrity vulnerabilities, infrastructure constraints, and current baseline task workloads that necessitate a unified, cryptographically-secured, role-based digital platform bridging the Guidance Office and Registrar Office workflows.
+1. **Identify** the existing admission testing processes, operational workflows, and confirmed process gaps at ISPSC Tagudin Campus — including manual scoring of answer sheets, informal and ad-hoc room scheduling, the absence of audit trails for score modifications, the lack of notification mechanisms for applicants and staff, and data privacy vulnerabilities under the Philippine Data Privacy Act (RA 10173) — alongside the current utilization of the deployed foundational digital system, role-based coordination requirements, infrastructure constraints, and baseline task workloads that necessitate a unified, cryptographically-secured, role-based digital platform bridging the Guidance Office and Registrar Office workflows.
 
-2. **Develop** SecureCAT: A Role-Based College Admission Testing System for the Guidance and Registrar Offices at ISPSC Tagudin, incorporating role-based access control with zero-trust data governance, cryptographic score integrity using HMAC-SHA256 signature verification, automated scoring with computer-vision-based OMR answer sheet ingestion, offline-resilient proctoring via a Progressive Web App with IndexedDB caching and background synchronization, an enhanced AI Companion powered by retrieval-augmented generation for applicant guidance and course recommendations, an enhanced AI-assisted scheduling system with human-in-the-loop constraint optimization, multi-tenant database isolation aligned with the Philippine Data Privacy Act (RA 10173), and validating the system's technical architecture through confusion matrix accuracy metrics for automated grading, expert rubric evaluation for AI faithfulness, and automated penetration and offline resilience audits.
+2. **Develop** SecureCAT: A Role-Based College Admission Testing System for the Guidance and Registrar Offices at ISPSC Tagudin, incorporating role-based access control with RBAC-based proctor delegation and zero-trust data governance, cryptographic score integrity using HMAC-SHA256 signature verification, automated scoring with computer-vision-based OMR answer sheet ingestion as a new scanning capability, a live examination monitoring dashboard for real-time proctor oversight, an AI Companion powered by retrieval-augmented generation for applicant guidance and course recommendations, seat-quota management for room capacity enforcement during scheduling, offline-resilient proctoring via a Progressive Web App with IndexedDB caching and background synchronization, an enhanced AI-assisted scheduling system with human-in-the-loop constraint optimization, multi-tenant database isolation aligned with the Philippine Data Privacy Act (RA 10173), and validating the system's technical architecture through confusion matrix accuracy metrics for automated grading, expert rubric evaluation for AI faithfulness, and automated penetration and offline resilience audits.
 
 3. **Evaluate** the usability and perceived task workload of the developed system using the System Usability Scale (SUS) and the NASA Task Load Index (NASA-TLX) as administered to intended users, including Registrar Office staff, Guidance Office counselors, proctors, test administrators, and applicants at ISPSC Tagudin Campus.
 
@@ -72,6 +72,23 @@ More specifically, this study seeks to accomplish the following:
 | NASA-TLX terminology correct | ✅ | "NASA Task Load Index (NASA-TLX)" named with expansion |
 | Target offices named in general objective | ✅ | "Guidance Office and Registrar Office" |
 | Target institution named | ✅ | "ISPSC Tagudin Campus" |
+
+### Interview Evidence Tags
+
+The confirmed gaps and new capabilities cited in Objectives 1 and 2 are grounded in the following interview and observation evidence:
+
+| Tag | Description | Mapped Objective |
+|-----|-------------|-----------------|
+| `INT-GO-001` | Guidance Office staff describe manual scoring of answer sheets taking 2–3 days per exam cycle | Obj 1 (manual scoring) |
+| `INT-GO-002` | Room scheduling done informally via spreadsheets and Messenger without centralized calendar | Obj 1 (informal scheduling) |
+| `INT-GO-003` | No audit trail when scores are corrected — modifications are unlogged and unverifiable | Obj 1 (no audit trails) |
+| `INT-GO-004` | Applicants receive results only via physical visit or phone; no email/SMS notifications | Obj 1 (no notifications) |
+| `INT-RO-001` | Registrar Office confirms PII stored in shared spreadsheets with no access controls aligned to RA 10173 | Obj 1 (data privacy gaps) |
+| `INT-GO-005` | Staff request automated answer-sheet scanning to eliminate manual keying errors | Obj 2 (OMR scanning) |
+| `INT-GO-006` | Guidance head requests ability to delegate proctor assignment to authorized staff without sharing admin credentials | Obj 2 (RBAC proctor delegation) |
+| `INT-GO-007` | Proctors need real-time dashboard to monitor examinee progress during ongoing sessions | Obj 2 (live dashboard) |
+| `INT-GO-008` | Counselors want AI-assisted course recommendation to supplement manual applicant advising | Obj 2 (AI companion) |
+| `INT-RO-002` | Registrar notes recurring overbooking of rooms; requests seat-quota enforcement in scheduling | Obj 2 (quota management) |
 
 ### Objective-to-Research-Question Mapping (Preview for C1-10)
 

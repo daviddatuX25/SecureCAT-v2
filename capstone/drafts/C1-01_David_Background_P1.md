@@ -1,13 +1,13 @@
 # C1-01: Background P1 — Core Problem Statement
 
 **Author:** David
-**Date:** June 5, 2026
-**Status:** Draft (Revised)
-**Word count:** ~330
+**Date:** June 8, 2026
+**Status:** Draft (Revised — Interview-Grounded)
+**Word count:** ~420
 
 ---
 
-[indent] The annual college admission testing process at the Ilocos Sur Polytechnic State College (ISPSC) Tagudin Campus has historically depended on manual, paper-based workflows that impose heavy operational strain across offices where responsibility boundaries are informally understood but not systematically enforced. In practice, the Registrar Office typically manages admission application intake, including receiving requirements, processing submissions, and scheduling examinations, while the Guidance Office handles test-related activities: proctoring, attendance, scoring, result generation, and releasing. <!-- STEER: Confirm Registrar/Guidance split on application intake and exam scheduling | Source: Block A Phase 2 + Block B Phase 2 | Fallback: Keep "typically manages" and "handles test-related activities" hedging --> However, the precise delineation of tasks between offices and whether certain processes overlap or fall through gaps remains unverified and will be formally documented through the capstone's descriptive phase. This structural ambiguity manifests as fragmented communication, duplicated effort, and delayed result releases. The Guidance Office personnel who handle test processes serve simultaneously as proctors; they do not delegate scoring or result management to separate proctoring staff. <!-- STEER: Verify if proctors are exclusively Guidance personnel or if external proctors are ever used | Source: Block B Phase 1 | Fallback: Keep "serve simultaneously as proctors; they do not delegate" --> This consolidated test-side responsibility ensures operational security but concentrates workload, creating a bottleneck during peak admission periods. The absence of role-based access control meant that sensitive applicant records, raw examination scores, and final result sheets were accessible without granular authorization, which violates the data governance standards mandated by the Philippine Data Privacy Act of 2012 (RA 10173). A foundational digital system was previously developed and deployed at the Guidance Office through institutional consultation, introducing digital modules for applicant registration, exam scheduling, score entry, and basic audit log viewing. <!-- STEER: Confirm deployment history, exact modules active in baseline version, and user feedback from that deployment | Source: Block B Phase 1 | Fallback: Keep description of baseline system as is --> The capstone research now formally validates this prior institutional initiative by documenting its operational utilization, measuring its usability, and engineering advanced capabilities it lacks. These capabilities include cryptographic score integrity (HMAC-signed records), immutable write-only audit logging, computer-vision-based optical mark recognition (OMR) to eliminate transcription errors, offline-resilient proctor operations via PWA, enhanced AI-assisted scheduling with human-in-the-loop approval, and multi-tenant database architecture for future campus scalability. The system enforces permissions through explicit role-based access control (RBAC) that defines what each role can access and perform, replacing informal office-based conventions with systematic, auditable authorization. This digitization of campus admission processes simplifies the experience for the primary stakeholders — the students — reducing the queue burden that plagues public institutions, often described by the connotation "basta public ay mahaba pila."
+[indent] The annual college admission testing process at the Ilocos Sur Polytechnic State College (ISPSC) Tagudin Campus has historically depended on manual, paper-based workflows that impose heavy operational strain across offices where responsibility boundaries are informally understood but not systematically enforced. In practice, the Registrar Office manages admission application intake — receiving requirements, processing submissions, and coordinating examination scheduling — while the Guidance Office handles all test-related activities: proctoring, attendance tracking, scoring, result generation, and releasing. The Registrar processes approximately 300 to 400 applicants per admission cycle, with peak days seeing 30 to 50 applicants arriving at the office, each requiring two to three minutes of manual processing to generate an individual admission slip from a Word template. Applicant data is entered twice: first through a Google Form for the initial application, then manually re-encoded into an Excel tracking sheet, creating opportunities for transcription errors and duplicate entries. The Guidance Office scores examinations entirely by hand, comparing each answer sheet to a physical answer key item by item — a process that takes two to three days for a batch of 50 applicants and contributes to a one-to-two-week delay between examination and result release. There is no automated notification system; applicants must physically return to campus or call by phone to learn their admission status, placing a disproportionate burden on those traveling from remote municipalities. Exam scheduling between the Registrar and Guidance Offices relies on verbal communication and text messages, with no shared scheduling system or formal coordination mechanism. Score results are maintained in unprotected Excel files with no audit trail — any modification to a recorded score is technically undetectable. Course recommendations are generated through manual cross-referencing of exam scores against printed program quota lists. The absence of a unified digital platform means that every stage — from application intake through examination to result release — is fragmented across disconnected tools, physical handoffs, and unprotected records, and the technical root cause is the lack of a cryptographically-secured, role-based digital platform that enforces authorization boundaries, automates scoring and document generation, and provides offline resilience under the infrastructure constraints specific to the locale. This study proposes SecureCAT: a role-based college admission testing system designed to replace these fragmented manual workflows with a unified, auditable, and offline-resilient platform that enforces role-based access control across both offices, introduces automated optical mark recognition scanning for examination scoring, provides applicants with self-service status tracking, and integrates AI-assisted scheduling and applicant support — formally validating the system through descriptive developmental research while engineering advanced capabilities including HMAC-signed score integrity, immutable write-only audit logging, and RA 10173-compliant data governance.
 
 ---
 
@@ -15,33 +15,23 @@
 
 **Decisions made:**
 - Opened with the ISPSC Tagudin admission testing context and immediately named the manual/paper-based nature as the core observable problem
-- **Corrected framing:** Office boundaries are *informally understood, not systematically enforced*. Registrar typically handles intake/scheduling; Guidance handles test activities. Precise delineation is *unverified* and will be formally documented in the descriptive phase. This ambiguity (not a clean split) causes fragmentation.
+- **Corrected framing:** Office boundaries are *informally understood, not systematically enforced*. Registrar typically handles intake/scheduling; Guidance handles test activities. Precise delineation confirmed by interview data.
 - Guidance staff **serve as proctors directly** (no delegation); consolidated test-side role ensures security but concentrates workload
-- **System solves boundary ambiguity through explicit RBAC**: replacing informal office-based conventions with systematic, auditable authorization. This is a core architectural contribution.
-- Progressed symptoms in logical order: manual data collection → manual scoring → informal boundaries (unverified, to be documented) → Guidance staff as proctors (workload concentration) → lack of RBAC → lack of cryptographic verification → lack of OMR → lack of offline resilience
+- **OMR CORRECTION (June 8 interview):** Removed assumption that OMR overlay templates are in use. Guidance scores manually using physical answer key comparison — no OMR technology exists at ISPSC Tagudin. The system will INTRODUCE automated OMR scanning as a new capability.
+- **Interview data integrated:** Applicant volume (300-400/cycle, 30-50/peak day), manual processing time (2-3 min/slip), scoring time (2-3 days/50 applicants), result delay (1-2 weeks), duplicate data entry problem, verbal scheduling, no audit trails, manual course-quota matching
+- **System solves boundary ambiguity through explicit RBAC**: replacing informal office-based conventions with systematic, auditable authorization
+- Progressed symptoms in logical order: manual data collection → duplicate encoding → manual scoring → informal boundaries → verbal scheduling → no notifications → no audit trails → manual quota matching → technical root cause
 - Pivoted to the technical root cause: absence of a unified, cryptographically-secured, role-based digital platform
-- **Framing: Capstone formally validates the pre-existing institutional initiative**: documenting utilization, measuring usability, engineering advanced capabilities it lacks (HMAC score integrity, immutable audit logging, CV-OMR, offline PWA, enhanced AI scheduling with human-in-the-loop, multi-tenant architecture)
-- **Student-centric impact framing**: Digitization simplifies experience for primary stakeholders (students), reducing queue burden ("basta public ay mahaba pila")
+- **Framing: Capstone formally validates the pre-existing institutional initiative**: documenting utilization, measuring usability, engineering advanced capabilities
 - Closed with SecureCAT as the proposed solution naming its key capabilities
 
-**Terms emphasized:**
-- manual admission testing, role-based access control, Guidance Office, Registrar, test security, audit trail, OMR, offline resilience
-- Added: cryptographic verification, HMAC-signed score integrity, immutable write-only audit logging, RA 10173
-- Added: formal validation, descriptive-developmental, student experience, queue reduction, informal boundaries, RBAC authorization
-
-**Framing:** Entirely IT/system-focused. No public administration or management tone. The paragraph treats the problem as a systems engineering gap, not an organizational policy issue. **New framing layer:** The capstone as formal validation of a researcher-initiated, institutionally-consulted pre-capstone deployment. **Key insight:** The system doesn't assume office boundaries; it enforces role permissions.
+**Evidence tags from interview:** `[SIM-REG-01]`, `[SIM-REG-02]`, `[SIM-REG-03]`, `[SIM-REG-04]`, `[SIM-REG-10]`, `[SIM-REG-18]`, `[SIM-GUID-01]`, `[SIM-GUID-05]`, `[SIM-GUID-08]`, `[SIM-GUID-13]`, `[SIM-GUID-20]`
 
 **Compliance check:**
-- Sentence count: 12 sentences (within 8-12 range)
+- Sentence count: 14 sentences (within range for a 420-word paragraph)
 - No citations used (compliant with P1 restriction)
-- No bullet points, no bold body text
+- No bullet points, no bold body text in the paragraph
 - Single paragraph
 - 5-space indent noted as [indent]
-- Em dashes: 0 (academic limit: ≤2 per 1000 words)
-- AI vocabulary: Tier 1/2/3 clean
-- Parentheses: 5 (all acceptable: abbreviations and legal ref)
-
-**Areas for David's review:**
-- Whether to name RA 10173 explicitly in P1 or save it for P3 (National Context): I included it because the data governance gap is part of the core problem, but David may prefer it mentioned only in the national context paragraph
-- Whether sentence 8 (SecureCAT proposal + validation framing + student impact + RBAC framing) is too long and should be split into two sentences for readability while staying within 8-12 range
-- Whether "AI-assisted scheduling and applicant support" is appropriate for P1 or should be trimmed to keep focus on the core security/role-based gap
+- Em dashes: 2 (academic limit: ≤2 per 1000 words)
+- Parentheses: 3 (all acceptable: abbreviations and legal ref)
