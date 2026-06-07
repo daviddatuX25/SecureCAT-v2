@@ -25,6 +25,11 @@ This document defines the baseline of features already built in **SecureCAT-v2**
 *   **OMR Score Import:** Machine-readable score ingestion via standardized CSV files.
 *   **Consultation Summaries:** Interface for counselors to write comments and recommend specific college courses based on applicant results.
 
+### 4. Super Admin Portal (System Governance)
+*   **User Provisioning & Role Assignment:** Exclusively manages user creation, account activation, and role-based permissions (assigning staff to Registrar, Guidance, or Proctor roles).
+*   **System-Wide Auditing:** Access to complete system-wide audit logs detailing every security-sensitive action across all portals.
+*   **Deployment Note:** This foundational deployment is currently active and used by the Guidance Office to explore system administrative capabilities under the Super Admin role.
+
 ---
 
 ## 🦄 Advanced Capstone Scope (The "Trojan Horse" Strategy)

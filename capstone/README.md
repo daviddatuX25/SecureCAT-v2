@@ -27,8 +27,14 @@ All files listed below are clickable links:
     *   **[SEARCH_TERM_CHEAT_SHEET.md](research/SEARCH_TERM_CHEAT_SHEET.md)** — Literature search queries per section and topic
     *   **[Chapter_1_2_Drafting_Plan.md](research/Chapter_1_2_Drafting_Plan.md)** — Narrative structure and blending strategy (reference)
     *   **[Existing_and_Planned_Features.md](research/Existing_and_Planned_Features.md)** — Detailed mapping of existing vs. planned features
+    *   **[CONTEXT_UPDATE_June4.md](research/CONTEXT_UPDATE_June4.md)** — Critical context clarifications: Super Admin role + two-phase intervention research model *(June 4)*
+    *   **[DEVELOPMENT_CHRONOLOGY.md](research/DEVELOPMENT_CHRONOLOGY.md)** — Canonical development timeline: Phase 0 (OJT) → Phase 1 (foundational) → Phase 2 (capstone) *(June 4)*
+    *   **[FEATURE_VERIFICATION_PROTOCOL.md](research/FEATURE_VERIFICATION_PROTOCOL.md)** — Data gathering protocol to confirm Guidance Office baseline usage *(June 4)*
+    *   **[EVALUATION_STRATEGY.md](research/EVALUATION_STRATEGY.md)** — Usability (SUS) and perceived workload (NASA-TLX) assessment taxonomy *(June 4)*
+    *   **[ROLE_MODEL_ANALYSIS.md](research/ROLE_MODEL_ANALYSIS.md)** — Detailed role hierarchy analysis and transition to zero-trust *(June 4)*
 *   📁 **[strategy/](strategy/)** — Defense & framing strategy
     *   **[pre_proposal_defense.md](strategy/pre_proposal_defense.md)** — Tactical defense strategy (Trojan Horse framing & panel playbook)
+    *   **[DEFENSE_EVIDENCE_PLAYBOOK.md](strategy/DEFENSE_EVIDENCE_PLAYBOOK.md)** — Deployment-first defense playbook and panel question pre-emption scripts *(June 4)*
 *   📁 **[team_meta/](team_meta/)** — Team coordination & task management
     *   **[COMPREHENSIVE_TASK_REPORT.md](team_meta/COMPREHENSIVE_TASK_REPORT.md)** — Master task overview (assignments & status)
     *   **[TASK_DISTRIBUTION_PLAN.md](team_meta/TASK_DISTRIBUTION_PLAN.md)** — Detailed task breakdowns and deliverables
@@ -100,12 +106,18 @@ All files listed below are clickable links:
 | **[SEARCH_TERM_CHEAT_SHEET.md](research/SEARCH_TERM_CHEAT_SHEET.md)** | Literature search queries grouped by section and topic |
 | **[Chapter_1_2_Drafting_Plan.md](research/Chapter_1_2_Drafting_Plan.md)** | Narrative structure and blending strategy (reference material) |
 | **[Existing_and_Planned_Features.md](research/Existing_and_Planned_Features.md)** | Detailed mapping of existing vs. planned features (reference) |
+| **[CONTEXT_UPDATE_June4.md](research/CONTEXT_UPDATE_June4.md)** | Critical context updates regarding Phase 1 deployment and Super Admin status |
+| **[DEVELOPMENT_CHRONOLOGY.md](research/DEVELOPMENT_CHRONOLOGY.md)** | Canonical development timeline (Phase 0 -> Phase 1 -> Phase 2) |
+| **[FEATURE_VERIFICATION_PROTOCOL.md](research/FEATURE_VERIFICATION_PROTOCOL.md)** | Baseline data collection protocol for Guidance Office deployment audits |
+| **[EVALUATION_STRATEGY.md](research/EVALUATION_STRATEGY.md)** | Usability (SUS) and perceived workload (NASA-TLX) assessment taxonomy |
+| **[ROLE_MODEL_ANALYSIS.md](research/ROLE_MODEL_ANALYSIS.md)** | Roles & permissions evolution and transition analysis |
 
 ### strategy/ (Defense & Framing)
 
 | File | Purpose |
 |------|---------|
 | **[pre_proposal_defense.md](strategy/pre_proposal_defense.md)** | Tactical defense strategy — "Trojan Horse" framing & panel playbook |
+| **[DEFENSE_EVIDENCE_PLAYBOOK.md](strategy/DEFENSE_EVIDENCE_PLAYBOOK.md)** | Deployment evidence defense playbook and pre-emption scripts |
 
 ### team_meta/ (Team Coordination)
 

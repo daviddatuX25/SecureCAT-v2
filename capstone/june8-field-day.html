@@ -320,6 +320,9 @@
         <tr><td>"How many applicants per cycle? Per day at peak?"</td><td>RQ2, C2-05</td></tr>
         <tr><td>"What forms/documents do you generate? Can I see blank copies?"</td><td>Artifact</td></tr>
         <tr><td>"What happens when documents are incomplete?"</td><td>RQ2</td></tr>
+        <tr><td>"What system or tool do you use to generate application or admission slips for the Guidance Office?"</td><td>RQ1, C2-05</td></tr>
+        <tr><td>"Is the final decision to accept an admission the responsibility of the Registrar?"</td><td>RQ1, scope</td></tr>
+        <tr><td>"Who holds the primary responsibility for scheduling examinations — your office or Guidance?"</td><td>RQ1, scope</td></tr>
       </table>
     </div>
 
@@ -331,6 +334,7 @@
         <tr><td>"Do you use any part of a digital system? Which parts?"</td><td>RQ1, RQ2</td></tr>
         <tr><td>"Have you ever lost data, had duplicates, or campus mix-ups?"</td><td>RQ2, RQ3</td></tr>
         <tr><td>"How is applicant data protected? Who can access the spreadsheets?"</td><td>RQ3, RA 10173</td></tr>
+        <tr><td>"How does the office currently handle system processes during offline periods or internet outages?"</td><td>RQ2, offline</td></tr>
       </table>
     </div>
 
@@ -341,6 +345,8 @@
         <tr><td>"Would you be open to applicants filling their own data online?"</td><td>RQ3</td></tr>
         <tr><td>"Do you need to work offline? How often does internet go down?"</td><td>RQ3, offline</td></tr>
         <tr><td>"What reports does the Director ask for? How long does that take?"</td><td>RQ2, RQ3</td></tr>
+        <tr><td>"Is the office willing to integrate with an automated exam system that imports applicant data directly upon review?"</td><td>RQ3</td></tr>
+        <tr><td>"How feasible is a transition to online document uploading for grades and forms?"</td><td>RQ3</td></tr>
       </table>
     </div>
 
@@ -407,6 +413,7 @@
         <tr><td>"What if a staff member is absent on a heavy testing day?"</td><td>RQ2</td></tr>
         <tr><td>"How long from last exam to result release?"</td><td>RQ2</td></tr>
         <tr><td>"Have there been scoring disputes or errors?"</td><td>RQ2, RQ3</td></tr>
+        <tr><td>"What are the specific frustrations you have experienced with the current admission testing process and any tools or methods you have used in the past?"</td><td>RQ2, pain points</td></tr>
       </table>
     </div>
 
@@ -424,10 +431,16 @@
     <div class="guide-block">
       <h4>Phase 4: Requirements + Advanced (~5 min)</h4>
       <div class="guide-prompt">"If you could change one thing about testing and scoring, what would it be?"</div>
+      <!-- Interviewer context note: When the conversation touches on scoring or OMR scanning, be prepared to explain
+           Optical Mark Recognition (OMR) in simple terms: "OMR is a technology that reads bubble-sheet answer sheets
+           automatically using a scanner or camera. Instead of staff manually comparing each bubble to an answer key,
+           the system reads all answers at once and scores them instantly." The Guidance staff may not be familiar
+           with this technology, so use plain language and avoid jargon. -->
       <table class="probe-table">
         <tr><td>"Would automated OMR scanning be a priority?"</td><td>RQ3</td></tr>
         <tr><td>"Would both auto-computation AND your conversion tables future-proof scoring?"</td><td>RQ3</td></tr>
         <tr><td>"If an AI companion were available, how could it assist you?"</td><td>RQ3</td></tr>
+        <tr><td>"Would you support a system that records and forecasts recommended courses for students to track enrollment trends and quotas?"</td><td>RQ3, enrollment</td></tr>
       </table>
     </div>
 
@@ -449,6 +462,14 @@
   <div class="section-body">
     <div class="tl-note" style="margin-bottom:8px">⚡ Timing depends on morning arrangement. CD may have been interviewed at 8AM, or scheduled for later.</div>
 
+    <!-- Interviewer instruction: Before starting Block C questions, briefly summarize the key preferences
+         confirmed by the Registrar (Block A) and Guidance (Block B) — e.g., applicant self-entry, OMR
+         scanning, proctor delegation willingness. Then ask the Director to confirm alignment with these
+         preferences. This ensures administrative coherence before strategic questions. -->
+    <div class="tl-note" style="margin-bottom:8px;border-left:3px solid var(--accent);background:rgba(251,191,36,0.08)">
+      🎯 <strong>Before Q1:</strong> Present confirmed Registrar &amp; Guidance preferences (e.g., applicant self-entry, OMR scanning, proctor delegation) and ask: <em>"Do these align with your vision for the admission process?"</em>
+    </div>
+
     <div class="compliance-banner">
       <h4>⚠️ Mandatory Before Starting This Interview</h4>
       <ol>
@@ -465,14 +486,16 @@
     </ul>
 
     <div class="guide-block">
-      <h4>6 Strategic Questions (20 min max)</h4>
+      <h4>8 Strategic Questions (20 min max)</h4>
       <ol>
         <li><strong>Digital vision:</strong> "How fully digital do you envision the Tagudin admission experience becoming?"</li>
         <li><strong>Infrastructure:</strong> "Would you prefer local MIS servers or cloud hosting for uptime, given seasonal usage?"</li>
         <li><strong>Multi-campus:</strong> "How do you feel about a unified system allowing seamless applicant transfers across ISPSC campuses?"</li>
         <li><strong>Dashboard:</strong> "Would you prefer a live admin dashboard to monitor admission progress, or generated reports from staff?"</li>
         <li><strong>Proctor delegation:</strong> "Would you support delegating proctoring to non-Guidance staff with role-based access ensuring test security?"</li>
-        <li><strong>Data privacy:</strong> "What are your expectations regarding RA 10173 compliance for applicant records?"</li>
+        <li><strong>AI companion support <span class="rq-tag">RQ3</span>:</strong> "Would you support an AI companion or chatbot system to assist examinees with routine inquiries during the admission process?"</li>
+        <li><strong>Course quotas &amp; enrollment targets <span class="rq-tag">RQ1</span>:</strong> "How should course quotas and enrollment targets be managed within the admission system?"</li>
+        <li><strong>Data privacy &amp; system security <span class="rq-tag">RQ3</span>:</strong> "What are your expectations regarding RA 10173 compliance and system security for applicant records?"</li>
       </ol>
     </div>
 

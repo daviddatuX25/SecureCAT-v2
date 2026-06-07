@@ -65,6 +65,12 @@ SecureCAT-v2 is already implemented as a role-based admission testing system for
 - Report export endpoints.
 - Audit log viewing and export for security-sensitive events.
 
+### Super Administrator Features
+- User creation and account activation provisioning.
+- Role mapping and permission assignments for personnel.
+- System-wide audit log access and export controls.
+- **Deployment Status:** Currently deployed and accessible to the Guidance Office under a shared Super Admin account for initial operational evaluation.
+
 ### Integrations
 - Google OAuth support for candidate or staff login.
 - QR code generation.

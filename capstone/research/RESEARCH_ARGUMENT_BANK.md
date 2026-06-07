@@ -16,16 +16,16 @@
 ### C1-01: Core Problem Statement
 **Goal:** Establish that SUC admission testing is operationally fragmented, insecure, and non-scalable — in 8-12 sentences, no citations.
 
-| # | Argument | Detail |
-|---|----------|--------|
-| 1 | **Operational fragmentation (Historical Manual State)** | Prior to the deployment of the foundational digital platform, admission workflows were split across disconnected manual processes — paper forms, spreadsheets, physical rosters, handwritten scores. No single system managed the full lifecycle, and the subsequent foundational deployment remains architecturally fragmented without resolving core security and scalability gaps. |
-| 2 | **Informal office boundaries with unverified task delineation** | The Registrar Office typically manages admission intake (requirements, submissions, scheduling) and the Guidance Office handles test activities (proctoring, scoring, releasing), but the precise boundaries are informally understood, not systematically enforced. Overlaps and gaps remain unverified — to be formally documented in the descriptive phase. This ambiguity manifests as fragmented communication, duplicated effort, and delayed releases. |
-| 3 | **Guidance staff serve as proctors (consolidated test-side role)** | Guidance personnel handle proctoring, scoring, and result management directly — no delegation to separate proctoring staff. This consolidated test-side responsibility ensures operational security but concentrates workload, creating a bottleneck during peak periods. |
-| 4 | **Scoring vulnerability** | Test scores pass through multiple human transcription points (paper → spreadsheet → record). Each transcription is an error-injection opportunity. There is no cryptographic verification that a score hasn't been altered. |
-| 5 | **Data silo risk for multi-campus institutions** | ISPSC operates multiple campuses. A single-campus standalone system isolates Tagudin's data from the wider institutional network, preventing future cross-campus analytics and capacity sharing. |
-| 6 | **Native app overhead for seasonal users** | Applicants interact with the admission system once or twice in their academic lifetime. Requiring a native mobile app installation for this brief interaction is disproportionate — especially for applicants from rural areas with budget devices and limited storage. |
-| 7 | **Seasonal volume spikes** | Admission periods create predictable but intense surges. Current manual processes cannot absorb these surges without proportional staffing increases, which SUCs rarely have budget for. |
-| 8 | **Lack of document automation** | Admission slips, result sheets, and consultation summaries are prepared manually. This is slow, error-prone, and inconsistent across applicants. |
+| Argument | Detail |
+|----------|--------|
+| **Operational fragmentation (Historical Manual State)** | Prior to the deployment of the foundational digital platform, admission workflows were split across disconnected manual processes — paper forms, spreadsheets, physical rosters, handwritten scores. No single system managed the full lifecycle, and the subsequent foundational deployment remains architecturally fragmented without resolving core security and scalability gaps. |
+| **Informal office boundaries with unverified task delineation** | The Registrar Office typically manages admission intake (requirements, submissions, scheduling) and the Guidance Office handles test activities (proctoring, scoring, releasing), but the precise boundaries are informally understood, not systematically enforced. Overlaps and gaps remain unverified — to be formally documented in the descriptive phase. This ambiguity manifests as fragmented communication, duplicated effort, and delayed releases. |
+| **Guidance staff serve as proctors (consolidated test-side role)** | Guidance personnel handle proctoring, scoring, and result management directly — no delegation to separate proctoring staff. This consolidated test-side responsibility ensures operational security but concentrates workload, creating a bottleneck during peak periods. |
+| **Scoring vulnerability** | Test scores pass through multiple human transcription points (paper → spreadsheet → record). Each transcription is an error-injection opportunity. There is no cryptographic verification that a score hasn't been altered. |
+| **Data silo risk for multi-campus institutions** | ISPSC operates multiple campuses. A single-campus standalone system isolates Tagudin's data from the wider institutional network, preventing future cross-campus analytics and capacity sharing. |
+| **Native app overhead for seasonal users** | Applicants interact with the admission system once or twice in their academic lifetime. Requiring a native mobile app installation for this brief interaction is disproportionate — especially for applicants from rural areas with budget devices and limited storage. |
+| **Seasonal volume spikes** | Admission periods create predictable but intense surges. Current manual processes cannot absorb these surges without proportional staffing increases, which SUCs rarely have budget for. |
+| **Lack of document automation** | Admission slips, result sheets, and consultation summaries are prepared manually. This is slow, error-prone, and inconsistent across applicants. |
 
 **Narrative flow:** Start with observable symptoms (1, 2, 3, 7) → pivot to underlying technical root causes (4, 5, 6, 8) → frame as an IT problem, not a public administration problem. **Key framing:** The system solves boundary ambiguity through explicit RBAC — replacing informal conventions with systematic, auditable authorization.
 
@@ -34,14 +34,14 @@
 ### C1-02: Global Context
 **Goal:** 12-15 sentences showing how this problem is addressed internationally. Min 5 APA citations (2022-2026).
 
-| # | Argument | What to cite |
-|---|----------|-------------|
-| 1 | **Global shift to online admission** | Universities worldwide have transitioned to digital intake — cite efficiency gains, error reduction, applicant satisfaction studies |
-| 2 | **Secure assessment platforms** | International education systems increasingly use role-based access and data integrity measures for assessment data |
-| 3 | **AI in university admission guidance** | Post-2023 explosion of chatbots and AI assistants in higher education enrollment contexts |
-| 4 | **Automated scoring technologies** | Global adoption of OMR, computer-aided assessment, and image-based grading — especially in resource-constrained settings |
-| 5 | **Lightweight web access over native apps** | Trend toward PWAs and web-based access for institutional services — particularly for infrequent/seasonal users |
-| 6 | **Scalable multi-campus systems** | How multi-site universities manage shared infrastructure while maintaining data isolation |
+| Argument | What to cite |
+|----------|-------------|
+| **Global shift to online admission** | Universities worldwide have transitioned to digital intake — cite efficiency gains, error reduction, applicant satisfaction studies |
+| **Secure assessment platforms** | International education systems increasingly use role-based access and data integrity measures for assessment data |
+| **AI in university admission guidance** | Post-2023 explosion of chatbots and AI assistants in higher education enrollment contexts |
+| **Automated scoring technologies** | Global adoption of OMR, computer-aided assessment, and image-based grading — especially in resource-constrained settings |
+| **Lightweight web access over native apps** | Trend toward PWAs and web-based access for institutional services — particularly for infrequent/seasonal users |
+| **Scalable multi-campus systems** | How multi-site universities manage shared infrastructure while maintaining data isolation |
 
 **Key synthesis to build toward:** "Globally, admission systems are converging toward integrated digital platforms that combine security, automation, and intelligent guidance — but this convergence has not reached Philippine state university campuses."
 
@@ -50,14 +50,14 @@
 ### C1-03: National Context — Philippines
 **Goal:** 12-15 sentences on Philippine-specific context. Min 5 APA citations (2022-2026).
 
-| # | Argument | What to cite |
-|---|----------|-------------|
-| 1 | **CHED digitization mandates** | CMO directives on HEI information systems, enrollment management, quality assurance |
-| 2 | **RA 10173 (Data Privacy Act)** | Data privacy requirements for educational institutions handling applicant PII |
-| 3 | **SUC digital readiness gap** | Studies showing that Philippine state universities lag behind private HEIs in IT adoption |
-| 4 | **National enrollment system initiatives** | CHED's push for standardized enrollment/admission platforms |
-| 5 | **Infrastructure constraints in regional SUCs** | Internet connectivity, device availability, and IT staffing challenges in provincial campuses |
-| 6 | **PH education sector digitization post-pandemic** | How COVID-19 accelerated digital transformation in PH HEIs but left admission workflows behind |
+| Argument | What to cite |
+|----------|-------------|
+| **CHED digitization mandates** | CMO directives on HEI information systems, enrollment management, quality assurance |
+| **RA 10173 (Data Privacy Act)** | Data privacy requirements for educational institutions handling applicant PII |
+| **SUC digital readiness gap** | Studies showing that Philippine state universities lag behind private HEIs in IT adoption |
+| **National enrollment system initiatives** | CHED's push for standardized enrollment/admission platforms |
+| **Infrastructure constraints in regional SUCs** | Internet connectivity, device availability, and IT staffing challenges in provincial campuses |
+| **PH education sector digitization post-pandemic** | How COVID-19 accelerated digital transformation in PH HEIs but left admission workflows behind |
 
 **Key synthesis to build toward:** "While national policy mandates digitization, the implementation gap in regional SUCs means admission testing — a high-stakes, data-sensitive process — remains largely manual."
 
@@ -66,18 +66,18 @@
 ### C1-04: Local Context — ISPSC Tagudin
 **Goal:** 12-15 sentences on ISPSC Tagudin specifically. Min 5 APA citations (2022-2026).
 
-| # | Argument | Source |
-|---|----------|--------|
-| 1 | **ISPSC's multi-campus structure** | ISPSC has campuses across Ilocos Sur — Tagudin is one of several, each currently operating in isolation |
-| 2 | **Informal office boundaries; task delineation unverified** | The Registrar Office typically manages admission intake (requirements, submissions, scheduling) and the Guidance Office handles test activities (proctoring, scoring, releasing), but precise boundaries are informally understood, not systematically enforced. Overlaps and gaps remain unverified — to be formally documented in the capstone's descriptive phase. This ambiguity manifests as fragmented communication, duplicated effort, and delayed releases. |
-| 3 | **Guidance staff serve as proctors (consolidated test-side role)** | Guidance personnel handle proctoring, scoring, and result management directly — no delegation to separate proctoring staff. This consolidated test-side responsibility ensures operational security but concentrates workload, creating a bottleneck during peaks. |
-| 4 | **Foundational digital system deployed but architecturally limited** | A first-generation digital admission system was developed and deployed at ISPSC Tagudin through prior institutional consultation (Phase 1, see Development Chronology). The Guidance Office has access and has been suggested to use it for result generation, new applications, and direct assessment. However, the system lacks cryptographic score integrity, role-based policy enforcement at system level, offline resilience, and scalable multi-campus architecture. Crucially, the extent of actual adoption versus remaining manual processes requires formal verification through the capstone's descriptive phase. |
-| 5 | **Capstone formally validates the pre-existing institutional initiative** | The foundational system was built by the researcher during 3rd year (pre-capstone) through institutional consultation. The capstone now applies a descriptive-developmental research design to: (a) formally document and validate Phase 1 features through research — proving alignment with best practices, measuring usability, gathering user feedback; and (b) engineer advanced capabilities Phase 1 lacked (HMAC score integrity, immutable audit logging, CV-OMR, offline PWA, enhanced AI scheduling with human-in-the-loop, multi-tenant architecture). This dual function — confirmatory validation + developmental advancement — is the study's methodological core. |
-| 6 | **System solves boundary ambiguity through RBAC (not office conventions)** | The system enforces permissions through explicit role-based access control — defining what each role can access and perform — thereby replacing informal office-based conventions with systematic, auditable authorization. This is a core architectural contribution of SecureCAT. |
-| 7 | **Staff multitasking burden** | Guidance counselors handle proctoring, scoring, attendance, AND counseling during admission periods |
-| 8 | **Seasonal applicant volume** | Admission periods create concentrated demand spikes that exceed current staff capacity |
-| 9 | **Campus infrastructure constraints** | Wi-Fi reliability, available computers, physical office space limitations |
-| 10 | **Regional institutional context** | Compare with nearby SUCs or Ilocos Sur institutions to establish local precedent |
+| Argument | Source |
+|----------|--------|
+| **ISPSC's multi-campus structure** | ISPSC has campuses across Ilocos Sur — Tagudin is one of several, each currently operating in isolation |
+| **Informal office boundaries; task delineation unverified** | The Registrar Office typically manages admission intake (requirements, submissions, scheduling) and the Guidance Office handles test activities (proctoring, scoring, releasing), but precise boundaries are informally understood, not systematically enforced. Overlaps and gaps remain unverified — to be formally documented in the capstone's descriptive phase. This ambiguity manifests as fragmented communication, duplicated effort, and delayed releases. |
+| **Guidance staff serve as proctors (consolidated test-side role)** | Guidance personnel handle proctoring, scoring, and result management directly — no delegation to separate proctoring staff. This consolidated test-side responsibility ensures operational security but concentrates workload, creating a bottleneck during peaks. |
+| **Foundational digital system deployed but architecturally limited** | A first-generation digital admission system was developed and deployed at ISPSC Tagudin through prior institutional consultation (Phase 1, see Development Chronology). The Guidance Office has access and has been suggested to use it for result generation, new applications, and direct assessment. However, the system lacks cryptographic score integrity, role-based policy enforcement at system level, offline resilience, and scalable multi-campus architecture. Crucially, the extent of actual adoption versus remaining manual processes requires formal verification through the capstone's descriptive phase. |
+| **Capstone formally validates the pre-existing institutional initiative** | The foundational system was built by the researcher during 3rd year (pre-capstone) through institutional consultation. The capstone now applies a descriptive-developmental research design to: (a) formally document and validate Phase 1 features through research — proving alignment with best practices, measuring usability, gathering user feedback; and (b) engineer advanced capabilities Phase 1 lacked (HMAC score integrity, immutable audit logging, CV-OMR, offline PWA, enhanced AI scheduling with human-in-the-loop, multi-tenant architecture). This dual function — confirmatory validation + developmental advancement — is the study's methodological core. |
+| **System solves boundary ambiguity through RBAC (not office conventions)** | The system enforces permissions through explicit role-based access control — defining what each role can access and perform — thereby replacing informal office-based conventions with systematic, auditable authorization. This is a core architectural contribution of SecureCAT. |
+| **Staff multitasking burden** | Guidance counselors handle proctoring, scoring, attendance, AND counseling during admission periods |
+| **Seasonal applicant volume** | Admission periods create concentrated demand spikes that exceed current staff capacity |
+| **Campus infrastructure constraints** | Wi-Fi reliability, available computers, physical office space limitations |
+| **Regional institutional context** | Compare with nearby SUCs or Ilocos Sur institutions to establish local precedent |
 
 **Note:** All team members are at ISPSC Tagudin — this is your direct observation context. Cite regional studies, ISPSC publications, or comparable Ilocos/Region I institution studies.
 
@@ -162,50 +162,50 @@
 ### C2-01: Research Design — Descriptive Developmental
 **Goal:** Establish the overall research design and justify why Descriptive-Developmental is appropriate for this capstone. 8-12 sentences.
 
-| # | Argument | Detail |
-|---|----------|--------|
-| 1 | **Descriptive phase** | The study describes the existing admission processes, workflows, manual dependencies, current utilization, and operational limitations of the deployed foundational digital system at ISPSC Tagudin. This grounds the development in real institutional needs rather than assumed requirements. |
-| 2 | **Developmental phase** | Based on the descriptive findings, the study develops a software solution (SecureCAT) that addresses the identified gaps. The developmental phase is iterative — build, test, refine. |
-| 3 | **Why this design fits** | BSIT capstone projects are applied research — the goal is to solve a real institutional problem, not to test theoretical hypotheses. Descriptive-Developmental is the standard design for tool/system development studies in Philippine HEI capstones. |
-| 4 | **Descriptive instruments** | Observation, interviews, and document analysis of current ISPSC admission workflows feed into the developmental requirements. |
-| 5 | **Developmental output** | The output is a functional, deployable system — not just a prototype or proof-of-concept. SUS evaluation validates the developmental output. |
+| Argument | Detail |
+|----------|--------|
+| **Descriptive phase** | The study describes the existing admission processes, workflows, manual dependencies, current utilization, and operational limitations of the deployed foundational digital system at ISPSC Tagudin. This grounds the development in real institutional needs rather than assumed requirements. |
+| **Developmental phase** | Based on the descriptive findings, the study develops a software solution (SecureCAT) that addresses the identified gaps. The developmental phase is iterative — build, test, refine. |
+| **Why this design fits** | BSIT capstone projects are applied research — the goal is to solve a real institutional problem, not to test theoretical hypotheses. Descriptive-Developmental is the standard design for tool/system development studies in Philippine HEI capstones. |
+| **Descriptive instruments** | Observation, interviews, and document analysis of current ISPSC admission workflows feed into the developmental requirements. |
+| **Developmental output** | The output is a functional, deployable system — not just a prototype or proof-of-concept. SUS evaluation validates the developmental output. |
 
 ---
 
 ### C2-02: Software Model — RAD or AIDLC
 **Goal:** Justify the software development methodology. 8-10 sentences.
 
-| # | Argument | Detail |
-|---|----------|--------|
-| 1 | **RAD (Rapid Application Development)** | If using RAD: emphasize the iterative prototyping cycle, time-boxed development, and user feedback integration. RAD suits projects with clear functional scope and a small, co-located development team. |
-| 2 | **AIDLC (Agile Iterative Development Life Cycle)** | If using AIDLC: emphasize sprint-based iterations, continuous stakeholder feedback, and adaptive planning. AIDLC suits projects where requirements may evolve during development. |
-| 3 | **Justification for the chosen model** | The capstone has a fixed timeline, a small team (3 members), and well-defined functional requirements derived from the descriptive phase. The chosen model must accommodate rapid iteration with limited resources. |
-| 4 | **Phases mapped to project** | Map the chosen model's phases to actual project activities: requirements gathering (descriptive phase), design, implementation (developmental phase), testing, and deployment. |
-| 5 | **Risk mitigation** | The iterative nature of RAD/AIDLC allows early detection of technical risks (OMR accuracy, offline sync, AI response quality) before they compound. |
+| Argument | Detail |
+|----------|--------|
+| **RAD (Rapid Application Development)** | If using RAD: emphasize the iterative prototyping cycle, time-boxed development, and user feedback integration. RAD suits projects with clear functional scope and a small, co-located development team. |
+| **AIDLC (Agile Iterative Development Life Cycle)** | If using AIDLC: emphasize sprint-based iterations, continuous stakeholder feedback, and adaptive planning. AIDLC suits projects where requirements may evolve during development. |
+| **Justification for the chosen model** | The capstone has a fixed timeline, a small team (3 members), and well-defined functional requirements derived from the descriptive phase. The chosen model must accommodate rapid iteration with limited resources. |
+| **Phases mapped to project** | Map the chosen model's phases to actual project activities: requirements gathering (descriptive phase), design, implementation (developmental phase), testing, and deployment. |
+| **Risk mitigation** | The iterative nature of RAD/AIDLC allows early detection of technical risks (OMR accuracy, offline sync, AI response quality) before they compound. |
 
 ---
 
 ### C2-03: Project Plan — Gantt Chart
 **Goal:** Present the project timeline as a Gantt chart. Brief explanatory paragraph.
 
-| # | Argument | Detail |
-|---|----------|--------|
-| 1 | **Phase breakdown** | The Gantt chart must show major phases: requirements gathering, system design, development (by module), testing, SUS evaluation, documentation, and final presentation. |
-| 2 | **Milestone markers** | Key milestones should be clearly marked — design review, alpha build, beta build, SUS administration, manuscript submission. |
-| 3 | **Parallel tracks** | Development tasks may overlap (e.g., frontend and backend modules developed concurrently by different team members). Show task assignments alongside the timeline. |
-| 4 | **Timeframe realism** | The plan must reflect the actual capstone semester timeline, accounting for academic breaks, exam periods, and coordination overhead. |
+| Argument | Detail |
+|----------|--------|
+| **Phase breakdown** | The Gantt chart must show major phases: requirements gathering, system design, development (by module), testing, SUS evaluation, documentation, and final presentation. |
+| **Milestone markers** | Key milestones should be clearly marked — design review, alpha build, beta build, SUS administration, manuscript submission. |
+| **Parallel tracks** | Development tasks may overlap (e.g., frontend and backend modules developed concurrently by different team members). Show task assignments alongside the timeline. |
+| **Timeframe realism** | The plan must reflect the actual capstone semester timeline, accounting for academic breaks, exam periods, and coordination overhead. |
 
 ---
 
 ### C2-04: Project Assignment — Table 1
 **Goal:** Present a table showing task-to-team-member assignments. Brief explanatory paragraph.
 
-| # | Argument | Detail |
-|---|----------|--------|
-| 1 | **Task decomposition** | Break down all capstone tasks (research, development, testing, documentation) and assign each to a specific team member. |
-| 2 | **Balance of workload** | Demonstrate equitable distribution — each member handles research writing AND development tasks. No member is solely a "writer" or "developer." |
-| 3 | **Accountability** | Each task has a clear owner — this prevents overlap and gaps in responsibility. |
-| 4 | **Format** | Use the BSIT Capstone Template "Table 1" format: Task | Assigned To | Role/Responsibility. |
+| Argument | Detail |
+|----------|--------|
+| **Task decomposition** | Break down all capstone tasks (research, development, testing, documentation) and assign each to a specific team member. |
+| **Balance of workload** | Demonstrate equitable distribution — each member handles research writing AND development tasks. No member is solely a "writer" or "developer." |
+| **Accountability** | Each task has a clear owner — this prevents overlap and gaps in responsibility. |
+| **Format** | Use the BSIT Capstone Template "Table 1" format: Task | Assigned To | Role/Responsibility. |
 
 ---
 
