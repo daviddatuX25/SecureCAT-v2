@@ -1,0 +1,31 @@
+
+graph TD
+    subgraph INPUT["INPUT"]
+        direction TB
+        I1["1. Applicant data<br/>(personal information, academic preferences,<br/>application forms, GWA records, course selections)"]
+        I2["2. Exam configurations<br/>(aptitude area definitions, scoring formulas,<br/>rating scales, session parameters, academic year settings)"]
+        I3["3. OMR images/scans<br/>(physical answer sheet photographs,<br/>bubble sheet scans for CV-based grading and CSV imports)"]
+        I4["4. Role credentials<br/>(user authentication data, role-based access tokens,<br/>Google OAuth identifiers, proctor/admin authorization)"]
+        I5["5. QR scans<br/>(examinee QR code reads at exam room doors<br/>for attendance verification and session check-in)"]
+        I6["6. Natural language queries<br/>(applicant questions about admission requirements,<br/>course recommendations, exam schedules, policies)"]
+    end
+
+    subgraph PROCESS["PROCESS"]
+        direction TB
+        PT["SecureCAT: A Role-Based College Admission Testing System<br/>for the Guidance and Registrar Offices at ISPSC Tagudin<br/><br/>• RBAC with zero-trust data governance<br/>• HMAC-SHA256 score integrity<br/>• Immutable write-only audit logging<br/>• Automated scoring pipeline<br/>• Offline-resilient PWA proctoring<br/>• AI-assisted RAG operations<br/>• RA 10173-compliant data isolation"]
+    end
+
+    subgraph OUTPUT["OUTPUT"]
+        direction TB
+        O1["1. Status tracking displays"]
+        O2["2. Exam schedules"]
+        O3["3. Score reports"]
+        O4["4. Audit logs"]
+        O5["5. Result sheets / PDFs"]
+        O6["6. Consultation summaries"]
+        O7["7. AI Companion responses"]
+        O8["8. Offline-cached records"]
+        O9["9. Statistical reports"]
+    end
+
+    INPUT --> PROCESS --> OUTPUT
