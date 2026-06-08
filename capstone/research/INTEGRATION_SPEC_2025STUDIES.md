@@ -9,11 +9,18 @@
 
 ## Part A. ML-Assisted Course Triage and Recommender Module Specification
 
-### A.1 Design Boundary
+### A.1 Design Boundary — Live K-Means Clustering (Adopt & Tweak)
 
-The triage module implements **static rule matching**, not live K-Means. Both Yukee et al. (2025) and Ballesteros et al. (2025) validated K=4 clusters using K-Means on ISPSC student data. SecureCAT does not re-run K-Means at classification time. Instead, it encodes their validated cluster centroids and classification thresholds as a static decision surface. The module classifies each applicant into a pre-existing profile by rule-matching their intake data against these published parameters.
+The triage module implements **live K-Means clustering**, adopting and adapting the validated K=4 configurations from Yukee et al. (2025) and Ballesteros et al. (2025). SecureCAT executes K-Means at classification time using scikit-learn (or equivalent) against live applicant data captured through the digital intake pipeline. The system integrates the school-owned algorithm — since both prior studies were produced at ISPSC, their source code and implementation details are institutionally available for adoption and tailoring.
 
-This boundary is deliberate: live clustering requires retraining, validation, and computational overhead that is inappropriate for an admission workflow where each applicant is classified once and where reproducibility matters. The static approach guarantees deterministic output — the same applicant profile always produces the same triage suggestion, which counselors can verify and override.
+This "adopt & tweak" approach is deliberate and defensible:
+1. **The contribution is the operational integration, not the algorithm.** SecureCAT does not claim to have invented K-Means. It integrates a proven local algorithm into an operational admission pipeline that did not previously exist — bridging the gap from research output to live workflow.
+2. **K-Means is lightweight.** A few hundred students with 5-7 features runs in milliseconds. Server resource concern is effectively zero.
+3. **"ML-Assisted" becomes genuine.** The module name now honestly describes what it does — live machine learning, not a static lookup table.
+4. **Adaptability.** Static thresholds from 2025 data become stale. Live clustering adapts to each new cohort automatically.
+5. **AIDLC vs CRISP-DM is a non-issue.** The prior studies used CRISP-DM as their RESEARCH methodology. SecureCAT uses AIDLC as its SOFTWARE model. The clustering module is a COMPONENT inside the system, not the whole methodology — different layers, no conflict.
+
+**Prerequisite:** Source code or exact implementation details from the ISPSC-produced software must be secured through the adviser (Sir Zeus) or the department. This is a school-owned asset produced by prior capstone teams.
 
 ### A.2 Input Ingestion — What SecureCAT Already Captures
 
@@ -31,9 +38,11 @@ SecureCAT's application intake form already collects every data dimension used b
 
 **Key point:** Study 1 (Yukee) uses ICAT aptitude scores as its primary feature space. Study 2 (Ballesteros) uses socio-economic and academic indicators (Income + GWA). The triage module can apply **both** classification surfaces to each applicant, producing a dual-profile: an aptitude cluster from Study 1's parameters and a socio-academic cluster from Study 2's parameters. This dual classification enriches the counselor's decision-support view.
 
-### A.3 Triage Engine Logic — Static Rule-Matching Matrix
+### A.3 Triage Engine Logic — Live K-Means Clustering
 
-#### A.3.1 Aptitude Classification (from Yukee et al. centroids)
+The triage engine executes live K-Means clustering at classification time, adopting the K=4 configuration validated by both studies. The source code from the ISPSC-produced software (Yukee et al. FreshGroup system and/or Ballesteros et al.) will be adapted for integration into the SecureCAT Laravel backend.
+
+#### A.3.1 Aptitude Clustering (from Yukee et al. K=4 configuration)
 
 After score import, the module classifies the applicant's aptitude profile:
 
@@ -46,11 +55,11 @@ After score import, the module classifies the applicant's aptitude profile:
 
 **NOTE:** The exact thresholds (whether "highest" means strictly highest, or above a minimum percentile) are EXTRACTED from the study description but may need refinement from the full manuscript. Currently INFERRED that classification uses relative ranking of component scores. If Yukee et al. used absolute cutoffs (e.g., "above 75th percentile"), the rule matrix must be updated post-library-visit.
 
-#### A.3.2 Socio-Academic Classification (from Ballesteros et al. centroids)
+#### A.3.2 Socio-Academic Clustering (from Ballesteros et al. K=4 configuration)
 
-After intake data is captured, the module applies auto-classification:
+After intake data is captured, the module executes live K-Means clustering on the socio-academic feature space:
 
-**Step 1 — Classify raw inputs:**
+**Step 1 — Feature preparation (live, not pre-classified):**
 - Income → Poor / Low / Lower Middle / Middle / Rich (thresholds NEEDS LIBRARY EXTRACTION)
 - GWA → With Honors / Average (cutoff INFERRED at 90+)
 - Municipality → Upland / Lowland (lookup table NEEDS LIBRARY EXTRACTION)
@@ -145,9 +154,9 @@ The guidance counselor's consultation summary interface is extended with a triag
 
 **Draft insertion text:**
 
-> These planned capabilities include a course triage and recommendation module that applies static rule-matching logic derived from validated K-Means cluster parameters published in recent institutional studies (Yukee et al., 2025; Ballesteros et al., 2025), classifying applicants into aptitude-based and socio-academic profiles to support guidance counselors in making informed course recommendations while maintaining human-in-the-loop decision authority.
+> These planned capabilities include an ML-assisted course triage and recommendation module that executes live K-Means clustering, adopting and adapting the validated K=4 configurations from recent institutional studies (Yukee et al., 2025; Ballesteros et al., 2025). The module clusters applicants into aptitude-based and socio-academic profiles at classification time, providing data-driven decision support for guidance counselors in making informed course recommendations while maintaining human-in-the-loop decision authority. The system integrates school-owned algorithm implementations produced by prior ISPSC research teams, tailoring them for live operation within the SecureCAT admission pipeline.
 
-**Rationale:** The scope paragraph needs to mention the triage module since it is a planned research feature. This phrasing clearly distinguishes static rule matching from live ML, which is critical for the panel's assessment of technical depth vs. scope realism.
+**Rationale:** The scope paragraph needs to mention the triage module since it is a planned research feature. This phrasing clearly states live ML while capping scope through the "adopt & adapt" framing — the panel doesn't expect defense of pure math since the algorithm is borrowed from institutional predecessors.
 
 ### B.4 C1-09 (Objectives)
 
@@ -155,9 +164,9 @@ The guidance counselor's consultation summary interface is extended with a triag
 
 **Draft insertion text to append after "AI-assisted scheduling system with human-in-the-loop constraint optimization":**
 
-> , a course triage module implementing static rule matching based on validated institutional cluster parameters to provide decision support for guidance counselors during applicant course recommendation
+> , an ML-assisted course triage module executing live K-Means clustering (K=4) adopted from validated institutional studies to provide real-time, data-driven decision support for guidance counselors during applicant course recommendation
 
-**Rationale:** The objectives must enumerate all planned features. The triage module, while using pre-computed parameters rather than live ML, is a meaningful research contribution that bridges the Yukee and Ballesteros findings into an operational workflow.
+**Rationale:** The objectives must enumerate all planned features. The triage module with live K-Means is a meaningful research contribution that operationalizes the Yukee and Ballesteros findings into a live admission workflow.
 
 ---
 
@@ -167,7 +176,7 @@ The guidance counselor's consultation summary interface is extended with a triag
 
 | Capability / Feature | Study 1 (Yukee et al.) | Study 2 (Ballesteros et al.) | SecureCAT | Coverage Note |
 |---|---|---|---|---|
-| **Clustering algorithm** | K-Means (K=4, Elbow method) | K-Means (K=4, method NEEDS EXTRACTION) | Static rule matching derived from both studies' validated centroids | SecureCAT uses their outputs, not live K-Means |
+| **Clustering algorithm** | K-Means (K=4, Elbow method) | K-Means (K=4, method NEEDS EXTRACTION) | Live K-Means (K=4) — adopts & adapts both studies' validated configurations | SecureCAT runs live clustering on live intake data |
 | **Primary feature space** | ICAT aptitude percentile scores | Family Income + Grade 12 GWA | Both — dual classification surface | SecureCAT captures both dimensions at intake |
 | **Supporting features** | Not specified beyond ICAT scores | Municipality, Sex, SHS Type, SHS Origin | All of the above captured at application intake | Complete coverage |
 | **Live data pipeline** | No — archived static data | No — manually extracted static data | Yes — digital application intake captures all fields at source | SecureCAT solves the 14.8% data starvation problem |

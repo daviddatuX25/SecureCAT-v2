@@ -91,3 +91,30 @@ This is not passive acceptance of AI output. It is **active human oversight** at
 ---
 
 *This document should be referenced when writing C2-01 (Research Design), C2-02 (Software Model), C2-06 (Research Instruments), C2-07 (Data Analysis), and during panel defense preparation.*
+
+---
+
+## 4. ML Triage Module: Live K-Means (Adopt & Tweak)
+
+### Decision
+The ML-Assisted Course Triage & Recommender Module executes **live K-Means clustering** at classification time — not static rule matching.
+
+### Rationale — Why Live, Not Static
+
+1. **"ML-Assisted" becomes honest.** The module name says ML-Assisted. Static rule-matching is a lookup table — panelists who know ML will spot that immediately. Live K-Means makes the name genuine.
+2. **K-Means is lightweight.** A few hundred students with 5-7 features runs in milliseconds via scikit-learn. The "server resource" concern is effectively zero.
+3. **Adaptability.** Static thresholds from 2025 data get stale. Live clustering adapts to each new cohort automatically — that's a real feature and a defensible design choice.
+4. **The "adopt & tweak" framing caps scope.** We're not claiming to have invented K-Means. We're integrating a proven, school-owned algorithm into an operational pipeline that didn't exist. The contribution is the integration + the operational system, not the algorithm itself. Since both Yukee et al. and Ballesteros et al. were ISPSC-produced capstone software, the source code is institutionally available.
+
+### AIDLC vs CRISP-DM — Non-Issue
+The prior studies used CRISP-DM as their RESEARCH methodology. SecureCAT uses AIDLC as its SOFTWARE model. The clustering module is a COMPONENT inside the system, not the whole methodology. They're different layers — no conflict.
+
+### Defense Position (If Challenged)
+
+> "The system adopts the K-Means clustering algorithm validated by two prior ISPSC institutional studies (Yukee et al., 2025; Ballesteros et al., 2025), tailoring their school-owned implementations for live integration within the SecureCAT admission pipeline. Our contribution is the operational bridge — transforming research output into real-time, data-driven counselor decision support within a secure, role-based, privacy-compliant system. The algorithm is proven; the integration and operational deployment are new."
+
+### Prerequisite
+Source code or exact implementation details from the ISPSC-produced software must be secured through the adviser (Sir Zeus) or the ISPSC department. This is a school-owned asset.
+
+### Status (Updated June 9, 2026)
+Previous kanban tasks (t_144825bb, t_e7b270c8) produced INTEGRATION_SPEC_2025STUDIES.md under the old "static rule matching" framing. All three documents (INTEGRATION_SPEC, SYSTEM_FEATURES, STRATEGY_NOTES) have been corrected to reflect the live K-Means decision.
