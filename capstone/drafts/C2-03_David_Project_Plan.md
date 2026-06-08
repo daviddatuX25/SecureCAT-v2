@@ -116,6 +116,6 @@ MILESTONES
 
 ### Cross-References
 
-- **C2-01 (Research Design):** Descriptive developmental design provides the overarching methodology; AIDLC is the software model.
+- **C2-01 (Research Design):** Descriptive developmental design provides the general methodology; AIDLC is the software model.
 - **C2-02 (Software Model):** Defines the three AIDLC phases (Inception, Construction, Operations) that the Gantt chart must mirror exactly.
 - **ROADMAP.md:** Source of projected milestone dates (Title Defense completed May 2026, Proposal Defense projected June 2026, Final Defense projected August 2026).
