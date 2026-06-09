@@ -34,3 +34,8 @@ Thumbs.db
 # Graphify
 /graphify-out/cache/
 
+
+# Large binaries
+*.deb
+graphify-out/
+*.docx.bak
