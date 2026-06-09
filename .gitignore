@@ -39,3 +39,4 @@ Thumbs.db
 *.deb
 graphify-out/
 *.docx.bak
+*.~lock.*
