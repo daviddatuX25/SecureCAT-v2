@@ -57,6 +57,9 @@
 │   • AI-assisted operations using retrieval-augmented generation (RAG)           │
 │     with local vector embeddings for applicant guidance, course                 │
 │     recommendations, and scheduling optimization                                │
+│   • Live K-Means clustering via integrated Python microservice                  │
+│     (adopted from ISPSC institutional studies) for applicant triage             │
+│     and course recommendation with bidirectional data streaming                 │
 │   • Multi-tenant database isolation architecture aligned with the               │
 │     Philippine Data Privacy Act (RA 10173)                                      │
 │                                                                                 │
