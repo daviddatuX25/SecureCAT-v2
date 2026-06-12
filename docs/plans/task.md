@@ -1,6 +1,14 @@
 # Scaling Readiness — Task Tracker
 
-> Updated: 2026-05-27
+> Updated: 2026-06-12
+
+| # | Plan File | Phase | Status |
+|---|-----------|-------|--------|
+| CLN-1 | [repo-cleanup-design](./2026-06-12-repo-cleanup-design.md) | Explore context & list files | ✅ DONE |
+| CLN-2 | [repo-cleanup-design](./2026-06-12-repo-cleanup-design.md) | Ask clarifying questions and propose options | ✅ DONE |
+| CLN-3 | [repo-cleanup-design](./2026-06-12-repo-cleanup-design.md) | Present design & write design doc | ✅ DONE |
+| CLN-4 | [repo-cleanup-design](./2026-06-12-repo-cleanup-design.md) | Execute plan (pruning worktrees, log files, config files) | ✅ DONE |
+| CLN-5 | [repo-cleanup-design](./2026-06-12-repo-cleanup-design.md) | Rebuild distilled ctxpkg and remove temporary scripts | ✅ DONE |
 
 | # | Plan File | Phase | Status |
 |---|-----------|-------|--------|
@@ -46,3 +54,21 @@
 | J5-C1 | [june5_10_execution_plan_v3](../../.gemini/antigravity-cli/brain/7c6dbee5-5894-4622-a4a1-649cc0d110a6/june5_10_execution_plan_v3.md) | Christine: C2-04 Project Assignment — full draft | ✅ DONE |
 | J5-C2 | [june5_10_execution_plan_v3](../../.gemini/antigravity-cli/brain/7c6dbee5-5894-4622-a4a1-649cc0d110a6/june5_10_execution_plan_v3.md) | Christine: C2-06 Research Instruments — draft | ✅ DONE |
 | J5-C3 | [june5_10_execution_plan_v3](../../.gemini/antigravity-cli/brain/7c6dbee5-5894-4622-a4a1-649cc0d110a6/june5_10_execution_plan_v3.md) | Christine: C2-05 Population & Locale — skeleton | ✅ DONE |
+| AD-1 | [IMPROVEMENT_TASKS.md](../../capstone/notes/IMPROVEMENT_TASKS.md) | Remove multi-tenancy from current scope to recommendations (SecureCAT-v2-swl) | ✅ DONE |
+| AD-2 | [IMPROVEMENT_TASKS.md](../../capstone/notes/IMPROVEMENT_TASKS.md) | Add infrastructure and tenancy notes to research notes (SecureCAT-v2-m66) | ✅ DONE |
+| AD-3 | [IMPROVEMENT_TASKS.md](../../capstone/notes/IMPROVEMENT_TASKS.md) | Update IPO diagram: consistent naming and remove formulas (SecureCAT-v2-9i2) | ✅ DONE |
+| AD-4 | [IMPROVEMENT_TASKS.md](../../capstone/notes/IMPROVEMENT_TASKS.md) | Define and frame RAG/AI Companion use cases (SecureCAT-v2-i18) | ✅ DONE |
+| AD-5 | [IMPROVEMENT_TASKS.md](../../capstone/notes/IMPROVEMENT_TASKS.md) | Structure ML section with transitions and bridge to integration (SecureCAT-v2-awo) | ✅ DONE |
+| AD-6 | [IMPROVEMENT_TASKS.md](../../capstone/notes/IMPROVEMENT_TASKS.md) | Enhance security emphasis (SecureCAT-v2-j2x) | ✅ DONE |
+| AD-7 | [IMPROVEMENT_TASKS.md](../../capstone/notes/IMPROVEMENT_TASKS.md) | Rewrite Background of the Study for quality & organization (SecureCAT-v2-y21) | ✅ DONE |
+| AD-8 | [IMPROVEMENT_TASKS.md](../../capstone/notes/IMPROVEMENT_TASKS.md) | David reviews simulated interview responses for accuracy (SecureCAT-v2-c67) | ✅ DONE |
+| AD-9 | [IMPROVEMENT_TASKS.md](../../capstone/notes/IMPROVEMENT_TASKS.md) | Perform final unification pass (SecureCAT-v2-6rl) | ⬜ TODO |
+| AD2-1 | [IMPROVEMENT_TASKS_2.md](../../capstone/notes/IMPROVEMENT_TASKS_2.md) | Align C2-01 Research Design to future tense (SecureCAT-v2-ezd) | ✅ DONE |
+| AD2-2 | [IMPROVEMENT_TASKS_2.md](../../capstone/notes/IMPROVEMENT_TASKS_2.md) | Align C2-02 Software Model to future tense (SecureCAT-v2-aq2) | ✅ DONE |
+| AD2-3 | [IMPROVEMENT_TASKS_2.md](../../capstone/notes/IMPROVEMENT_TASKS_2.md) | Align C2-05 Population & Locale to future tense (SecureCAT-v2-akq) | ✅ DONE |
+| AD2-4 | [IMPROVEMENT_TASKS_2.md](../../capstone/notes/IMPROVEMENT_TASKS_2.md) | Align C2-06 Research Instruments to future tense (SecureCAT-v2-d65) | ⬜ TODO |
+| AD2-5 | [IMPROVEMENT_TASKS_2.md](../../capstone/notes/IMPROVEMENT_TASKS_2.md) | Align C2-07 Data Analysis to future tense (SecureCAT-v2-j45) | ⬜ TODO |
+| AD2-6 | [IMPROVEMENT_TASKS_2.md](../../capstone/notes/IMPROVEMENT_TASKS_2.md) | Align C1-12 Significance of the Study to future tense (SecureCAT-v2-5zc) | ⬜ TODO |
+| AD2-7 | [IMPROVEMENT_TASKS_2.md](../../capstone/notes/IMPROVEMENT_TASKS_2.md) | Verify Thematic Consistency and Bead Trends (SecureCAT-v2-tz9) | ⬜ TODO |
+| AD2-8 | [IMPROVEMENT_TASKS_2.md](../../capstone/notes/IMPROVEMENT_TASKS_2.md) | Compile and Assemble Updated Manuscript (SecureCAT-v2-5ls) | ⬜ TODO |
+

@@ -42,3 +42,10 @@ graphify-out/
 *.~lock.*
 capstone/output/
 capstone/manuscript/diagrams/*.png
+
+# Agent / editor context
+.claude/worktrees/
+.playwright-mcp/
+.superpowers/
+securecat-conventions-1.0.0.ctxpkg
+
