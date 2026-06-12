@@ -82,9 +82,26 @@ def sanitize_bookmark(name: str) -> str:
 def get_or_create_bookmark(doc: Document, tag_name: str, heading_text: str, heading_level: int) -> str:
     bookmark_name = f"tag_{sanitize_bookmark(tag_name)}"
     
-    for bookmark in doc.part.package.part_related_parts[doc.part].bookmarks:
-        if bookmark.name == bookmark_name:
-            return bookmark_name
+    # Find heading and create bookmark there
+    target_idx = None
+    for i, p in enumerate(doc.paragraphs):
+        if p.style.name.startswith("Heading") and heading_text.lower() in p.text.lower():
+            target_idx = i
+            break
+    
+    if target_idx is None:
+        for i, p in enumerate(doc.paragraphs):
+            if heading_text.lower() in p.text.lower():
+                target_idx = i
+                break
+    
+    if target_idx is not None:
+        create_bookmark_at_paragraph(doc.paragraphs[target_idx], bookmark_name)
+        return bookmark_name
+    
+    # Fallback: create at end
+    create_bookmark_at_paragraph(doc.paragraphs[-1], bookmark_name)
+    return bookmark_name
     
     target_idx = None
     for i, p in enumerate(doc.paragraphs):
@@ -201,7 +218,7 @@ def apply_updates(doc: Document, tags: dict, update_tags: list = None) -> dict:
         
         tag_data = tags[tag_name]
         bookmark_name = get_or_create_bookmark(doc, tag_name, tag_data['heading'], tag_data['level'])
-        start_idx, end_idx = find_section_paragraphs(doc, bookmark_name, tag_name, tag_data)
+        start_idx, end_idx = find_section_paragraphs(doc, bookmark_name, tag_data)
         
         tag_map[tag_name] = {
             'bookmark': bookmark_name,
