@@ -40,3 +40,5 @@ Thumbs.db
 graphify-out/
 *.docx.bak
 *.~lock.*
+capstone/output/
+capstone/manuscript/diagrams/*.png
