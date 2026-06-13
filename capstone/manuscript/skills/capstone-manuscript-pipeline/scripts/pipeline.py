@@ -156,20 +156,102 @@ def extract_docx_text(path: Path) -> str:
     except:
         return ""
 
+def diff_md_with_docx(md_path: Path, docx_path: Path):
+    """Compare sections of the MD file with the sections of the DOCX file."""
+    import sys
+    sys.path.insert(0, str(Path("capstone/manuscript")))
+    from rebuild_docx_from_md import parse_md_sections, BOOKMARKS, find_heading_index, find_next_bookmarked_heading_index
+    
+    if not md_path.exists():
+        print(f"❌ Markdown file not found: {md_path}")
+        return False
+    if not docx_path.exists():
+        print(f"❌ DOCX file not found: {docx_path}")
+        return False
+        
+    try:
+        md_sections = parse_md_sections(md_path)
+        doc = Document(docx_path)
+    except Exception as e:
+        print(f"❌ Error loading files: {e}")
+        return False
+        
+    bookmarked_headings = {h.strip().lower() for _, h in BOOKMARKS}
+    
+    import difflib
+    has_diff = False
+    
+    for tag, heading_text in BOOKMARKS:
+        heading_idx = find_heading_index(doc, heading_text)
+        if heading_idx < 0:
+            continue
+            
+        next_idx = find_next_bookmarked_heading_index(doc, heading_idx, bookmarked_headings)
+        
+        # Extract DOCX section content
+        docx_parts = []
+        for k in range(heading_idx + 1, next_idx):
+            p = doc.paragraphs[k]
+            text = p.text.strip()
+            if text:
+                if p.style.name.startswith('Heading'):
+                    try:
+                        level = int(p.style.name.split()[-1])
+                        text = f"{'#' * level} {text}"
+                    except (ValueError, IndexError):
+                        text = f"# {text}"
+                docx_parts.append(text)
+        docx_content = '\n\n'.join(docx_parts)
+        
+        # Get MD section content
+        md_content = md_sections.get(tag, {}).get('content', '')
+        
+        if md_content.strip() != docx_content.strip():
+            has_diff = True
+            print(f"\n──────────────────────────────────────────────────")
+            print(f" Section: {tag.upper()} ({heading_text})")
+            print(f"──────────────────────────────────────────────────")
+            
+            md_lines = [line.strip() for line in md_content.split('\n') if line.strip()]
+            docx_lines = [line.strip() for line in docx_content.split('\n') if line.strip()]
+            
+            diff = list(difflib.unified_diff(
+                md_lines,
+                docx_lines,
+                fromfile='Local MD File',
+                tofile='Remote DOCX (Drive)',
+                lineterm=''
+            ))
+            
+            for line in diff:
+                if line.startswith('+') and not line.startswith('+++'):
+                    print(f"\033[92m{line}\033[0m") # green
+                elif line.startswith('-') and not line.startswith('---'):
+                    print(f"\033[91m{line}\033[0m") # red
+                elif line.startswith('@@'):
+                    print(f"\033[36m{line}\033[0m") # cyan
+                else:
+                    print(line)
+                    
+    if not has_diff:
+        print("✅ No section content differences found between MD and DOCX files!")
+    return True
+
 # ======== DRIFT RESOLUTION ========
 
 def resolve_drift(meta: dict) -> bool:
     """Interactive drift resolution. Returns True if resolved, False if aborted."""
-    print("""
+    while True:
+        print("""
 Resolution options:
   [1] accept-cloud   → Use cloud version, update META, continue pipeline
   [2] keep-local     → Push local DOCX to cloud (overwrite cloud)
   [3] merge          → Manual merge required (open both, resolve, re-run)
   [4] snapshot-cloud → Archive cloud version to backups/, then proceed
-  [5] abort          → Cancel pipeline
+  [5] view-diff      → Compare cloud version against local MD file
+  [6] abort          → Cancel pipeline
 """)
-    while True:
-        choice = input("Enter choice [1-5]: ").strip()
+        choice = input("Enter choice [1-6]: ").strip()
         if choice == '1':
             return accept_cloud_resolution(meta)
         elif choice == '2':
@@ -180,10 +262,12 @@ Resolution options:
         elif choice == '4':
             return snapshot_cloud_resolution()
         elif choice == '5':
+            diff_md_with_docx(MANUSCRIPT_MD, LOCAL_DOCX)
+        elif choice == '6':
             print("🛑 Pipeline aborted by user")
             return False
         else:
-            print("Invalid choice. Enter 1-5.")
+            print("Invalid choice. Enter 1-6.")
 
 def accept_cloud_resolution(meta: dict) -> bool:
     """Accept cloud version as truth: update META tag with new SHA256."""
@@ -269,22 +353,36 @@ def surgical_update() -> bool:
     
     # Import and run md_to_docx functions
     sys.path.insert(0, str(Path("capstone/manuscript")))
-    from md_to_docx import parse_manuscript, apply_updates, compute_docx_sha256, update_manuscript_meta
+    from md_to_docx import parse_manuscript, apply_updates, compute_docx_sha256, update_manuscript_meta, save_tag_map
     from docx import Document
     
-    meta, tags = parse_manuscript(MANUSCRIPT_MD)
+    meta, tags, _ = parse_manuscript(MANUSCRIPT_MD)
     doc = Document(LOCAL_DOCX)
-    
-    # Build tag map
-    from md_to_docx import build_tag_map
-    tag_map = build_tag_map(doc, tags)
     
     # Apply all tags with UPDATE/REMOVE
     update_tags = list(tags.keys())
-    apply_updates(doc, tags, tag_map, update_tags)
+    change_log = []
+    tag_map = apply_updates(doc, tags, update_tags, change_log)
     
+    # Ensure page breaks before Chapter, REFERENCES, and APPENDIX headings
+    for p in doc.paragraphs:
+        if p.style.name.startswith('Heading'):
+            text_upper = p.text.strip().upper()
+            if text_upper.startswith('CHAPTER') or text_upper.startswith('REFERENCES') or text_upper.startswith('APPENDIX'):
+                p.paragraph_format.page_break_before = True
+                
     # Save
     doc.save(LOCAL_DOCX)
+    save_tag_map(tag_map, LOCAL_DOCX.parent / 'tag_map.json')
+    
+    # Save change log
+    change_log_path = LOCAL_DOCX.parent / 'change_log.json'
+    change_log_data = {
+        'version': 1,
+        'generated': datetime.now(timezone.utc).isoformat(),
+        'entries': change_log
+    }
+    change_log_path.write_text(json.dumps(change_log_data, indent=2))
     
     # Update META
     new_sha = compute_docx_sha256(LOCAL_DOCX)
@@ -306,6 +404,43 @@ def push_to_drive() -> bool:
         print(f"❌ Push failed: {stderr}")
         return False
     print("✅ Push complete")
+    return True
+
+def action_diff():
+    if not anti_deletion_guard():
+        return False
+    
+    print("⬇️  Pulling Google Drive file for diffing...")
+    temp_dir = OUTPUT_DIR / "temp"
+    temp_dir.mkdir(exist_ok=True)
+    temp_docx = temp_dir / "temp_drive.docx"
+    
+    # Download
+    code, stdout, stderr = run_cmd(f'rclone copy "{REMOTE_DOCX}" "{temp_dir}" --progress -v')
+    if code != 0:
+        print(f"❌ Failed to download file for diffing: {stderr}")
+        return False
+        
+    # Rename download
+    downloaded = temp_dir / DEFENSE_FILE
+    if downloaded.exists():
+        if temp_docx.exists():
+            temp_docx.unlink()
+        downloaded.rename(temp_docx)
+    else:
+        print("❌ Downloaded file not found")
+        return False
+        
+    # Diff MD with DOCX
+    diff_md_with_docx(MANUSCRIPT_MD, temp_docx)
+                
+    # Clean up temp
+    if temp_docx.exists():
+        temp_docx.unlink()
+    try:
+        shutil.rmtree(temp_dir)
+    except:
+        pass
     return True
 
 # ======== MAIN ACTIONS ========
@@ -397,7 +532,7 @@ def action_full():
 
 def main():
     parser = argparse.ArgumentParser(description="Capstone Manuscript Pipeline")
-    parser.add_argument('--action', choices=['pull', 'check', 'update', 'push', 'full'],
+    parser.add_argument('--action', choices=['pull', 'check', 'update', 'push', 'full', 'diff'],
                        default='full', help="Pipeline action to run")
     args = parser.parse_args()
     
@@ -407,6 +542,7 @@ def main():
         'update': action_update,
         'push': action_push,
         'full': action_full,
+        'diff': action_diff,
     }
     
     success = action_map[args.action]()

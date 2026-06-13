@@ -7,12 +7,13 @@ import sys
 from pathlib import Path
 
 # Add manuscript dir to path for md_to_docx import
-sys.path.insert(0, str(Path(__file__).parent.parent.parent))
+sys.path.insert(0, str(Path(__file__).parent.parent.parent.parent))
 
 try:
     from md_to_docx import (
-        parse_manuscript, build_tag_map, apply_updates, 
-        compute_docx_sha256, update_manuscript_meta, full_rebuild
+        parse_manuscript, apply_updates, 
+        compute_docx_sha256, update_manuscript_meta, full_rebuild,
+        save_tag_map
     )
 except ImportError as e:
     print(f"❌ Import error: {e}", file=sys.stderr)
@@ -33,7 +34,7 @@ def main():
     template_path = Path(args.template)
     
     # Parse manuscript
-    meta, tags = parse_manuscript(md_path)
+    meta, tags, _ = parse_manuscript(md_path)
     print(f"Parsed {len(tags)} tags from {md_path}")
     
     # Full rebuild mode
@@ -59,17 +60,16 @@ def main():
         else:
             doc = Document(template_path)
         
-        # Build tag map
-        tag_map = build_tag_map(doc, tags)
-        
         # Determine which tags to update
         update_tags = args.update_tags if args.update_tags else list(tags.keys())
         
         # Apply updates
-        apply_updates(doc, tag_map, tags, update_tags)
+        change_log = []
+        tag_map = apply_updates(doc, tags, update_tags, change_log)
         
         # Save updated DOCX
         doc.save(docx_path)
+        save_tag_map(tag_map, docx_path.parent / 'tag_map.json')
     
     # Update META in MD
     new_sha = compute_docx_sha256(docx_path)
@@ -81,6 +81,8 @@ def main():
     update_manuscript_meta(md_path, new_meta)
     print(f"✅ Updated {docx_path} and META tag in {md_path}")
     print(f"   New SHA256: {new_sha}")
+    
+
 
 if __name__ == '__main__':
     main()
