@@ -1,0 +1,648 @@
+Certain facts about the current process of application like google forms it's not really google forms but primarily through register with a system recorded there in their system which is course not connected to system in guidance for collaboration and for faster intake that's the current dilemma there not google forms is the only correction for that.
+
+About the internet outage once or twice quickly that is false data so sometimes it happens that is slow but the ideal difference of it is that the campus internet is shared and oishi for the internet sometimes is a probably the otc is once a month or in once in 2 weeks the cause of it but the real scenario of the internet problem is that students get don't have don't get to access the internet of the school..
+
+
+such records are recorded but i think its needlels to mention this first version .... the registrar as we sai
+d has their system so we are not sure about the data of students are protected but theirs is their concern so
+meaning to say if having a system to ingtegrate their cuyrrent system with like securecat then security has
+to be maximized eitherway specially ours so ... also the guidance scoring is their long standing practice whi
+ch is using the stencil method, which is faster than manual visual check maybem,,... and their scoring also i
+s another fact that they kind of emphasis that the econversion table formula not be exposed to anyone so this
+is a key security need also ... .... another separate task to do for this modules/drafts is that theree seem
+to be text like "[SIM-GUID-08]." so please remove them .......
+
+
+
+
+transcript.json
+[
+  {
+    "timestamp": [0, 29],
+    "text": " Starting on the paragraph in first sentence of background of the study."
+  },
+  {
+    "timestamp": [29, 36],
+    "text": " So one thing to plug about this sentence is that historically dependent on manual."
+  },
+  {
+    "timestamp": [36, 47.92],
+    "text": " Yes, there are lots of manual, but just as we defined that the registrar also has been using system and even the guidance office has"
+  },
+  {
+    "timestamp": [47.92, 54.76],
+    "text": " has one and we also have our MIS system which is the student information"
+  },
+  {
+    "timestamp": [54.76, 61.24],
+    "text": " management system I think. It's just that one caveat of these systems are that they"
+  },
+  {
+    "timestamp": [61.24, 129.68],
+    "text": " are just like a problem stated later on which is a different beta (crowd murmuring) [inaudible] One thing to note about the processing of applicants is that since I have worked on"
+  },
+  {
+    "timestamp": [129.68, 135.96],
+    "text": " the guidance of East the knowledge about it is that they usually have for example in"
+  },
+  {
+    "timestamp": [135.96, 147],
+    "text": " one school year for first years or freshman, we usually have applicants of up to 1000 averaging 500 plus"
+  },
+  {
+    "timestamp": [148.24, 155.24],
+    "text": " or more or less than 1000 or sometimes greater than. But I think it's good that I think the"
+  },
+  {
+    "timestamp": [155.8, 175.36],
+    "text": " already the trend now is that it's more or less than 1000. And that's just the registrar as we have defined that it via its own interface."
+  },
+  {
+    "timestamp": [175.36, 231.12],
+    "text": " They usually after receiving the documents and forms, feeling the feelings, feelings, feelings, feelings, feelings, feelings, feelings, feelings, feelings, feelings, feelings, feelings, feelings, feelings, feelings, feelings, feelings, feelings, feelings, feelings, feelings, feelings, feelings, feelings, feelings, feelings, feelings, feelings, feelings, feelings, feelings, feelings, feelings, feelings, feelings, feelings, feelings, feelings, feelings, feelings, feelings, feelings, feelings, feelings, feelings, feelings, feelings, feelings, feelings, feelings, feelings, feelings, feelings, feelings, feelings, feelings, feelings, feelings, feelings, feelings, feelings, feelings, feelings, feelings, feelings, feelings, feelings, feelings, feelings, feelings, feelings, feelings, feelings, feelings, feelings, feelings, feelings, feelings, feelings, feelings, feelings, feelings, feelings, feelings, feelings, feelings, feelings, feelings, feelings, feelings, feelings, feelings, feelings, feelings, feelings, feelings, feelings, feelings, feelings, feelings, feelings, feelings, feelings, feelings, feelings, feelings, feelings, feelings, feelings, feelings, feelings, feelings, feelings, feelings, feelings, feelings, feelings, feelings, feelings, feelings, feelings, feelings, feelings, feelings, feelings, feelings, feelings, feelings, feelings, feelings, feelings, feelings, feelings, feelings, feelings, feelings, feelings, feelings, feelings, feelings, feelings, feelings, feelings, feelings, feelings, feelings, feelings, feelings, feelings, feelings, feelings, feelings, feelings, feelings, feelings, feelings, feelings, feelings, feelings, feelings, feelings, feelings, feelings, feelings, feelings, feelings, feelings, feelings, feelings, feelings, feelings, feelings, feelings, feelings, feelings, feelings, feelings, feelings, feelings, feelings, feelings, feelings, feelings, feelings, feelings, feelings, feelings, feelings, feelings, feelings, feelings, feelings, feelings, feelings, feelings, feelings, feelings, feelings, feelings, feelings, feelings, feelings, feelings, feelings, feelings, feelings, feelings, feelings, feelings, feelings, feelings, feelings, feelings, feelings, feelings, feelings, feelings, feelings, No, that's really about Google Form as you have mentioned. Although there is no phone, physical dashboard for applicants to check for themselves, the"
+  },
+  {
+    "timestamp": [231.12, 236.88],
+    "text": " convenient way usually is for them to reach out to the Facebook page of guidance office,"
+  },
+  {
+    "timestamp": [236.88, 250.2],
+    "text": " which is very helpful, and this has recently been applied on the foreign administration. For example, inquiry about the statuses and we are the"
+  },
+  {
+    "timestamp": [250.2, 257.16],
+    "text": " Facebook post they released the exam release dates or more or less they do it"
+  },
+  {
+    "timestamp": [257.16, 265],
+    "text": " by batch which as we see here have been supported by the trim called consultation and release."
+  },
+  {
+    "timestamp": [275, 278],
+    "text": " And of course the office is open also for the follow ups."
+  },
+  {
+    "timestamp": [279, 316.68],
+    "text": " Physically. [ Inaudible ] The course recommendations are generated, of course we had the expertise of the guidance"
+  },
+  {
+    "timestamp": [316.68, 327],
+    "text": " counselor and his assistant to generate those insights I think they are trained on that since they are the Ganyan's culture."
+  },
+  {
+    "timestamp": [337.28, 341.76],
+    "text": " Since it's more specifically, we have been following a standard for example with I have"
+  },
+  {
+    "timestamp": [341.76, 369.92],
+    "text": " been showing with the street formula that they don't want to disclose. Actually, the printed program sometimes is applied, but it's good because I think sometimes"
+  },
+  {
+    "timestamp": [369.92, 421.36],
+    "text": " department deans usually communicate this. [ Inaudible ] We cannot just say that it's unsecure because they do use a system, but I can confirm that"
+  },
+  {
+    "timestamp": [421.36, 425],
+    "text": " on the system that I have tried to use with the guidance office"
+  },
+  {
+    "timestamp": [425, 430],
+    "text": " since before the first version of Securecut that I have placed in there"
+  },
+  {
+    "timestamp": [430, 434],
+    "text": " unofficially as a part of the requirement of other subjects before"
+  },
+  {
+    "timestamp": [434, 442],
+    "text": " is that the system that they use is just basically a PHP with a less restriction, no-a-hound authentication"
+  },
+  {
+    "timestamp": [442, 550],
+    "text": " so that's the system that they use NSS and that is what the security needs. (muff murmuring) (crowd talking) ( ( ) (silence) (silence)"
+  },
+  {
+    "timestamp": [550, 556],
+    "text": " (silence)"
+  },
+  {
+    "timestamp": [556, 560],
+    "text": " (silence)"
+  },
+  {
+    "timestamp": [560, 579.72],
+    "text": " (silence) I think it's also a good note that when seeing about the AI-based evaluation for this core"
+  },
+  {
+    "timestamp": [579.72, 585.84],
+    "text": " recognition, I think it's a good note there in the background of the study about"
+  },
+  {
+    "timestamp": [585.84, 594.32],
+    "text": " the security flaws of inherent trends in AI, where in they will just use cloud"
+  },
+  {
+    "timestamp": [594.32, 600.16],
+    "text": " whereas these records should be sensitively handled. So it's just a"
+  },
+  {
+    "timestamp": [600.16, 607.68],
+    "text": " note there because I think on the OMR we'll just probabilistic to the algorithms that is"
+  },
+  {
+    "timestamp": [607.68, 618.56],
+    "text": " already present and is already accurate in itself. And highlighting just for example handwritten names"
+  },
+  {
+    "timestamp": [618.56, 625.68],
+    "text": " on the paper would be probabilistic placed if either having printed a QR code for each of the applicants attached"
+  },
+  {
+    "timestamp": [625.68, 670.96],
+    "text": " onto their own score sheets or either by just manually encoding applicant data like names I think it's also a good way to note how we handle role-based by label but in the current"
+  },
+  {
+    "timestamp": [670.96, 676.56],
+    "text": " flexibility of the system as a super admin we are leaning on to have a more flexible"
+  },
+  {
+    "timestamp": [676.56, 687],
+    "text": " and scalable approach which should be probably the excel still a role base, but we can assign different, for example, roles to a single user."
+  },
+  {
+    "timestamp": [687, 759.68],
+    "text": " Just so in case that policy changes can affect how we manage the system and it's not only glued onto or tied onto specific rules which is not friendly for scalability. ability. It's a good thing that you have already mentioned about the AA companion, so make sure to maintain (muffled speaking)"
+  },
+  {
+    "timestamp": [846, 848],
+    "text": " Wait. (speaking in foreign language) So let's make sure again that we make it accurate to reflect, for example, the upper-conspirate admission cycle. That's what I have mentioned before. (silence) ( ( ) ( )"
+  },
+  {
+    "timestamp": [848, 877.76],
+    "text": " ( ) ( (chuckles)"
+  },
+  {
+    "timestamp": [968.64, 974.88],
+    "text": " - Very nice. (coughing) ( ) ( Well, I think when we have to compare advanced university compasses, for example, all innovated cities, the difference that I want you to seek and research more onto is probably the"
+  },
+  {
+    "timestamp": [974.88, 982.68],
+    "text": " utilization of resources, for example, like server and hosting in SPAR structures, because"
+  },
+  {
+    "timestamp": [982.68, 986.18],
+    "text": " one problem that our comp campus and we should probably"
+  },
+  {
+    "timestamp": [986.18, 992.36],
+    "text": " frame this more on to defining in the bottom of the problem is the resource"
+  },
+  {
+    "timestamp": [992.36, 997.08],
+    "text": " constraint availability of servers"
+  },
+  {
+    "timestamp": [1014.44, 1022.12],
+    "text": " And whilst the decision to either take it up onto cloud hosting providers or to self-host is something that the compus should decide on and this research should be limited onto"
+  },
+  {
+    "timestamp": [1022.12, 1026.88],
+    "text": " upon recommendation. However, for our deployment, which we should"
+  },
+  {
+    "timestamp": [1102.34, 1110],
+    "text": " The local hosted platforms for example the Let me... Then I'll smooth it in a bit. So, I think there is still plenty of time to decide whether to self-host a system or to use hosting, which I think the background of the problem should not focus on to and just define the cards"
+  },
+  {
+    "timestamp": [1110, 1113],
+    "text": " that we are going to play with"
+  },
+  {
+    "timestamp": [1120, 1128],
+    "text": " so as I defined already firstly on my first statements about the outages, it's not that"
+  },
+  {
+    "timestamp": [1128, 1137],
+    "text": " it's not that worse really of like once or twice weekly."
+  },
+  {
+    "timestamp": [1137, 1150.4],
+    "text": " But probably if you want to highlight the infrastructure constraints, the Wi-Fi is very"
+  },
+  {
+    "timestamp": [1150.4, 1159.32],
+    "text": " much limited on to use for compass stuff like teachers and faculties and then not strictly"
+  },
+  {
+    "timestamp": [1159.32, 1174.92],
+    "text": " for student use."
+  },
+  {
+    "timestamp": [1174.92, 1182.8],
+    "text": " And the first note, which should not be focused on this background of the study, I want you"
+  },
+  {
+    "timestamp": [1182.8, 1189.68],
+    "text": " to separate or include onto my capstone notes about if we're going to have"
+  },
+  {
+    "timestamp": [1189.68, 1196.4],
+    "text": " a recommendation in the future is to recommend a self-hosted approach infrastructure for"
+  },
+  {
+    "timestamp": [1196.4, 1202.36],
+    "text": " the school to adhere onto because it really will maximize the security potential when"
+  },
+  {
+    "timestamp": [1202.36, 1328],
+    "text": " managing data, strictly managing data that is private. I think about the statement for you having the post ad hoc due to the pandemic. It's a good phrase or sentence to include the next sample of this. (crowdled speaking) So, all of these recently mentioned that is focusing on the back of the study is recently of course in the I think in the national context but"
+  },
+  {
+    "timestamp": [1328, 1382.28],
+    "text": " make sure if it's targeted for the national it's it let it be national context and now next we're gonna proceed on to the local operational context (crickets chirping) And once again on the local context since we have now been focusing on the real sense"
+  },
+  {
+    "timestamp": [1382.28, 1390.48],
+    "text": " of the reality of our school is that I want you to include now a separate task already to clarify"
+  },
+  {
+    "timestamp": [1392.4, 1398.4],
+    "text": " to really want to really have the real data and at the simulated data because as of now"
+  },
+  {
+    "timestamp": [1399.04, 1405],
+    "text": " it defines of using our word template whereas I have confirmed"
+  },
+  {
+    "timestamp": [1405, 1408.56],
+    "text": " being part of the process for three years in this school"
+  },
+  {
+    "timestamp": [1408.56, 1412.24],
+    "text": " that they do have a system to do something"
+  },
+  {
+    "timestamp": [1412.24, 1417.16],
+    "text": " like the functions for printing automated"
+  },
+  {
+    "timestamp": [1418.16, 1420.64],
+    "text": " and not with the word template."
+  },
+  {
+    "timestamp": [1424.56, 1456.96],
+    "text": " (dog barking) complete. And just like I said all about how checking is done, the use of tensile does indeed decrease"
+  },
+  {
+    "timestamp": [1456.96, 1460.08],
+    "text": " the complexity and increase the speed."
+  },
+  {
+    "timestamp": [1460.08, 1465.88],
+    "text": " However, it's a good point since we're going gonna be using OMR to point out about"
+  },
+  {
+    "timestamp": [1465.88, 1516],
+    "text": " the differences and advantages of the latter (silence) [ Pause ]"
+  },
+  {
+    "timestamp": [1516.5, 1523],
+    "text": " [ Pause ]"
+  },
+  {
+    "timestamp": [1538.2, 1539.76],
+    "text": " And also I think there's a lot of duplicated sections and keynotes within transitioning from product to paragraph."
+  },
+  {
+    "timestamp": [1539.76, 1550],
+    "text": " So I think it's a good way to organize the thought here in the background of the study. Because as of now, I think there's a lot of duplicated phrases and emphasis."
+  },
+  {
+    "timestamp": [1550, 1555],
+    "text": " And also like the transition phrase of, for example, on this paragraph that says,"
+  },
+  {
+    "timestamp": [1555, 1561],
+    "text": " the literature review above and the researchers or its traditional inquiry, cetera."
+  },
+  {
+    "timestamp": [1561, 1572.6],
+    "text": " So that phrase is an un-bent, unffitting for the starting of a paragraph."
+  },
+  {
+    "timestamp": [1572.6, 1640.76],
+    "text": " Use better words than that because it's already one document. (inaudible) [ Pause ] And since ASPC already used the system, for example, in registrar, you cannot just see"
+  },
+  {
+    "timestamp": [1640.76, 1647.8],
+    "text": " purely manual paper-based admission testing workflow and that if you're gonna code that many found in"
+  },
+  {
+    "timestamp": [1648.32, 1678.4],
+    "text": " Regional Philippines issues, then you have to confirm So, I think because I think this are largely repeated paragraph or at least statements should"
+  },
+  {
+    "timestamp": [1678.4, 1686.32],
+    "text": " probably be a conversion error from the different modules or drafts we have going to avoid files. So"
+  },
+  {
+    "timestamp": [1687.6, 1689.28],
+    "text": " it's I think a byproduct of that."
+  },
+  {
+    "timestamp": [1691.28, 1697.84],
+    "text": " So I want you to create also another different task which is after we finish all of this,"
+  },
+  {
+    "timestamp": [1698.4, 1706.8],
+    "text": " we have to suggest to use first the method of unifying all the content into a certain markdown before converting"
+  },
+  {
+    "timestamp": [1706.8, 1747.92],
+    "text": " to a document so that we can verify it in double check that there are no sections duplicated. And I think one thing about also the next section which is this one,"
+  },
+  {
+    "timestamp": [1747.92, 1754],
+    "text": " recent word cut the same institution has explored machine learning techniques."
+  },
+  {
+    "timestamp": [1754, 1763.88],
+    "text": " So that statement is not a good bridge and it kind of like jumped on to going in without"
+  },
+  {
+    "timestamp": [1763.88, 1766.72],
+    "text": " even the proper transition to machine learning so I think"
+  },
+  {
+    "timestamp": [1766.72, 1800.36],
+    "text": " we should have a good connection from"
+  },
+  {
+    "timestamp": [1800.36, 1803.64],
+    "text": " the start to mention machine learning evenly."
+  },
+  {
+    "timestamp": [1803.64, 1805.76],
+    "text": " So before mentioning those two research,"
+  },
+  {
+    "timestamp": [1805.76, 1811.36],
+    "text": " make sure that the had he shown and cohesion of the statements going on to mentioning those"
+  },
+  {
+    "timestamp": [1811.36, 1818.24],
+    "text": " two researches image immediately. So that afterwards mentioning this research, then have the"
+  },
+  {
+    "timestamp": [1819.2, 1831.04],
+    "text": " the statement that would probably reveal on to the integration solution that is happening that will be that can be the solution for assist for an problem we are exploring"
+  },
+  {
+    "timestamp": [1858.26, 1866.4],
+    "text": " So, for example, since in, I think, the context of machine learning here circles around the concept of course recommendation and smart insights and profiling something like those records."
+  },
+  {
+    "timestamp": [1866.4, 1874.94],
+    "text": " So having those to frame it initially, the need for that is better"
+  },
+  {
+    "timestamp": [1874.94, 1880.2],
+    "text": " be done immediately trying to mention those two researchers that have machine"
+  },
+  {
+    "timestamp": [1880.2, 1927],
+    "text": " learning applied. And also I think it's not a good philosophy that on the background of the state problem"
+  },
+  {
+    "timestamp": [1927, 1932],
+    "text": " is that we're going to mention already that secure cut addresses, etc. etc."
+  },
+  {
+    "timestamp": [1932, 1937],
+    "text": " because we're only talking about the problem yet just yet."
+  },
+  {
+    "timestamp": [1937, 1942],
+    "text": " So don't go ahead on saying that our system addresses these."
+  },
+  {
+    "timestamp": [1942, 1948.08],
+    "text": " So just state the need in the problem context so again double"
+  },
+  {
+    "timestamp": [1948.08, 1956.68],
+    "text": " check this paragraph specifically for host on machine learning researchers make sure"
+  },
+  {
+    "timestamp": [1956.68, 2048.4],
+    "text": " that have the like I said have the good turnaround in this section of the part of the background of the problem. (dog barking) And I think whilst on the research gap it is don't know if it's already valid to mention"
+  },
+  {
+    "timestamp": [2048.4, 2053.72],
+    "text": " the system or the title name that for example, secure cut, idonomic real time examination"
+  },
+  {
+    "timestamp": [2053.72, 2057.4],
+    "text": " or orchestration platform featuring offline first."
+  },
+  {
+    "timestamp": [2057.4, 2065.04],
+    "text": " So that last statement or sentence on to presenting the research gap make sure if it is"
+  },
+  {
+    "timestamp": [2065.04, 2110.52],
+    "text": " if it is the good standard of mentioning it already there in And And whilst yes, I think you should also have a task that will not just be researcher to"
+  },
+  {
+    "timestamp": [2110.52, 2116.96],
+    "text": " review the simulated responses because those will be the solid foundations of the current"
+  },
+  {
+    "timestamp": [2116.96, 2119.8],
+    "text": " account of the problem and others."
+  },
+  {
+    "timestamp": [2119.8, 2128],
+    "text": " For example, one example is the data of whole applicants were seen waiting in hallways"
+  },
+  {
+    "timestamp": [2128, 2132],
+    "text": " multiple times and returning multiple times to inquire about results."
+  },
+  {
+    "timestamp": [2132, 2136],
+    "text": " So I can verify some of the data like this if this is valid or not."
+  },
+  {
+    "timestamp": [2136, 2140],
+    "text": " So make sure to have a task that will remind me to review the"
+  },
+  {
+    "timestamp": [2140, 2197.24],
+    "text": " given simulated answers. And once again it has been duplicated that you have mentioned once again that that"
+  },
+  {
+    "timestamp": [2197.24, 2200.76],
+    "text": " for example, I got this statement of"
+  },
+  {
+    "timestamp": [2200.76, 2204.76],
+    "text": " \"U.K. at ALT-25 demonstrated that"
+  },
+  {
+    "timestamp": [2204.76, 2207.6],
+    "text": " \"K-min clustering in identifies meaningful,"
+  },
+  {
+    "timestamp": [2207.6, 2214.6],
+    "text": " aptitude-based profiles among ISPs applicants and confirmed similar profiling on socioeconomic"
+  },
+  {
+    "timestamp": [2214.6, 2227],
+    "text": " academic indicators both produced findings with direct 11 stockers placement. and have a good transition there also."
+  },
+  {
+    "timestamp": [2240, 2245.1],
+    "text": " Also be clear with the term that will go me going to use here like for example the adopted"
+  },
+  {
+    "timestamp": [2248.88, 2250.88],
+    "text": " The word adopted"
+  },
+  {
+    "timestamp": [2252.2, 2305.28],
+    "text": " What would it mean and in the case of a background of the problem? How do you state this? [ Pause ] Firstly, I think we should face out already on different modules, the existing of scoring formulas because as it seems"
+  },
+  {
+    "timestamp": [2305.28, 2312.48],
+    "text": " the existing or maybe not probably because it should be however noted that"
+  },
+  {
+    "timestamp": [2312.48, 2319.52],
+    "text": " the terminology to use for example when on when defining onto the IPO so of course"
+  },
+  {
+    "timestamp": [2319.52, 2329.92],
+    "text": " now we are now proceeding here onto the IPO. So talking about IPO is that the data or variable of scoring for relax should probably"
+  },
+  {
+    "timestamp": [2329.92, 2369.56],
+    "text": " be replaced with conversion table values standardized conversion table values orange. I think going on to this the variable names, the use of rating scales name, so don't do"
+  },
+  {
+    "timestamp": [2369.56, 2407.32],
+    "text": " that I think it would be clearer to use that term of aptitude scores. Also, it's a good mention."
+  },
+  {
+    "timestamp": [2407.32, 2416.18],
+    "text": " Since we're going to be dealing with like data in the companion."
+  },
+  {
+    "timestamp": [2416.18, 2420.54],
+    "text": " So this since we mentioned about the track, I think it's understated on the background"
+  },
+  {
+    "timestamp": [2420.54, 2426.8],
+    "text": " of the problem of how we use the useRUG, the trivial augmented generation"
+  },
+  {
+    "timestamp": [2426.8, 2434.24],
+    "text": " to work for to make function for the problem of AI assistant since we have to really frame"
+  },
+  {
+    "timestamp": [2434.24, 2447.92],
+    "text": " the problem that is solving by our features. So make sure to define the term and for the need of RAG and the data to be fed on it probably is"
+  },
+  {
+    "timestamp": [2449.44, 2466],
+    "text": " constitutional data or for example Q&A scenarios which the AI of course will study on and then when responding to applicants."
+  },
+  {
+    "timestamp": [2466, 2475],
+    "text": " And that those data could simply be recommendations for applicants."
+  },
+  {
+    "timestamp": [2475, 2479.5],
+    "text": " For example, for those who are about to take the exam or meaning or also for those who"
+  },
+  {
+    "timestamp": [2479.5, 2487],
+    "text": " already received the results, either be face to face or also be on their own online results."
+  },
+  {
+    "timestamp": [2487, 2495.32],
+    "text": " So, I think also the results and the results consultation would also be included in the"
+  },
+  {
+    "timestamp": [2495.32, 2500.56],
+    "text": " problem context because one of the current pain points of course and should be already"
+  },
+  {
+    "timestamp": [2500.56, 2506.4],
+    "text": " present in the simulated interview or interview reality is the pain points of"
+  },
+  {
+    "timestamp": [2506.4, 2516],
+    "text": " having two limited consulars to counsel them all on certain days. And whilst it's recommended"
+  },
+  {
+    "timestamp": [2516, 2528],
+    "text": " to have a human to recommend and to talk to. Having just the added on top feature of for example when they have gone home on end"
+  },
+  {
+    "timestamp": [2528, 2613],
+    "text": " I forgot and the advice they can base on the companion to have their insights be validated post examination part (sighs) (silence) And I think I should be bold here."
+  },
+  {
+    "timestamp": [2613, 2622.8],
+    "text": " So generate also another one more task to finally look out the definition and inclusion"
+  },
+  {
+    "timestamp": [2622.8, 2626.44],
+    "text": " of multi-tenancy so we should we could"
+  },
+  {
+    "timestamp": [2626.44, 2633.32],
+    "text": " probably as a added bones and limitations of the system because it's"
+  },
+  {
+    "timestamp": [2633.32, 2637.88],
+    "text": " having stuck on more features so probably just remove on the feature of"
+  },
+  {
+    "timestamp": [2637.88, 2649.24],
+    "text": " multi-tenancy and whilst we can still include there as an optional feature we should probably remove it onto context"
+  },
+  {
+    "timestamp": [2649.24, 2659.68],
+    "text": " already and probably the best thing to do after looking at all the references for"
+  },
+  {
+    "timestamp": [2659.68, 2664.88],
+    "text": " including a multi-tenancy is just have it on the recommendation so again include"
+  },
+  {
+    "timestamp": [2664.88, 2668],
+    "text": " this on my notes capstone or research notes"
+  },
+  {
+    "timestamp": [2668, 2754.7],
+    "text": " just as the other notes that I have told you to do so. (crick murmuring) So, those are the only two tasks. First, I have going to do to make you two. So I think"
+  },
+  {
+    "timestamp": [2754.7, 2771.2],
+    "text": " to generalize on the big task picture of it is the modification of certain facts about the interview and/or simulated interview factation and the"
+  },
+  {
+    "timestamp": [2771.2, 2777],
+    "text": " account of the study being rewritten for quality and as I have said on many"
+  },
+  {
+    "timestamp": [2777, 2787],
+    "text": " accounts to be done and also about the IPO, the variables of the consistent naming and properliness and the"
+  },
+  {
+    "timestamp": [2787, 2790.72],
+    "text": " first the not so only those for now."
+  }
+]

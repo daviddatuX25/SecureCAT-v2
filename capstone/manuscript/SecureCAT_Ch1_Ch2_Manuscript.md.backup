@@ -1,0 +1,123 @@
+<!-- META: docx-sync-version="2026-06-13T04:14:29.108712+00:00" docx-sha256="994f7c0b005f8232e86f9360d6af4399aead3a2b084f44da6b516e64dd8d03e8" -->
+
+# SecureCAT: A Role-Based College Admission Testing System
+
+Sarmiento, David Datu N. | Pagaduan, Jaypee G. | Lopez, Christine M.
+Ilocos Sur Polytechnic State College — Tagudin Campus
+Bachelor of Science in Information Technology
+June 2026
+
+<!-- META: docx-sync-version="2026-06-13T04:14:29.108712+00:00" docx-sha256="994f7c0b005f8232e86f9360d6af4399aead3a2b084f44da6b516e64dd8d03e8" -->
+
+<!-- TAG: ch1_introduction -->
+# Chapter 1
+
+<!-- UPDATE:START -->
+INTRODUCTION
+<!-- UPDATE:END -->
+<!-- TAG: ch1_bg_of_the_study -->
+## Background of the Study
+
+<!-- UPDATE:START -->
+The annual college admission testing process at the Ilocos Sur Polytechnic State College (ISPSC) Tagudin Campus operates without a unified digital platform, leaving the Registrar Office and the Guidance Office to manage their separate responsibilities through paper-based workflows and informal coordination. Responsibility boundaries between these offices are understood by convention rather than enforced by system controls: the Registrar Office manages application intake and issues admission slip
+<!-- UPDATE:END -->
+<!-- TAG: ch1_conceptual_framework -->
+## Conceptual Framework of the Study
+
+<!-- UPDATE:START -->
+Input-Process-Output (IPO) Diagram
+
+Figure 1. Conceptual Framework Diagram (Input-Process-Output)
+<!-- UPDATE:END -->
+<!-- TAG: ch1_objectives -->
+## Objectives of the Study
+
+<!-- UPDATE:START -->
+This study aims to develop SecureCAT: A Role-Based College Admission Testing System for the Guidance and Registrar Offices at ISPSC Tagudin, a web-based platform that centralizes and automates the entire admission testing pipeline, from applicant registration and dynamic room scheduling through proctor-monitored examination, automated scoring, result sheet generation, and AI-assisted counseling, while enforcing zero-trust data governance through cryptographic score integrity, immutable audit log
+<!-- UPDATE:END -->
+<!-- TAG: ch1_scope_delimitations -->
+## Scope and Limitation of the Study
+
+<!-- UPDATE:START -->
+Scope
+
+This study covers the design, development, and evaluation of SecureCAT, a role-based college admission testing system built for the Guidance and Registrar Offices of the Ilocos Sur Polytechnic State College (ISPSC), Tagudin Campus, located in Tagudin, Ilocos Sur, Philippines. The system accommodates six types of users. Applicants submit application forms and take the entrance examination. Proctors oversee testing sessions and record attendance. Guidance counselors review examination resul
+<!-- UPDATE:END -->
+<!-- TAG: ch1_significance -->
+## Importance of the Study
+
+<!-- UPDATE:START -->
+The Community. The implementation of SecureCAT will benefit the local community of Tagudin and surrounding municipalities in Ilocos Sur, whose residents comprise the primary applicant pool of Ilocos Sur Polytechnic State College (ISPSC) Tagudin Campus. By shifting the college admission testing process from workflows fragmented across disconnected systems (the registrar's registration system, the guidance office system, and MIS/SIMS) with manual gaps between them to a unified role-based digital s
+<!-- UPDATE:END -->
+<!-- TAG: ch2_methodology -->
+# Chapter 2
+
+<!-- UPDATE:START -->
+METHODOLOGY
+<!-- UPDATE:END -->
+<!-- TAG: ch2_research_design -->
+## Research Design
+
+<!-- UPDATE:START -->
+This chapter presents the procedures for data collection and analysis in the study. The sections that follow describe the research design, software model, project strategy, project assignments, population and locale, research instruments, and data analysis. Details regarding respondent selection and sampling procedures are also discussed.
+
+This study employs a descriptive developmental research design, a hybrid methodology that combines descriptive inquiry with iterative system construction and
+<!-- UPDATE:END -->
+<!-- TAG: ch2_software_model -->
+## Software Development Model
+
+<!-- UPDATE:START -->
+The development of SecureCAT follows the AI-Driven Development Lifecycle (AIDLC), a software engineering framework that replaces traditional human-only development models with structured AI-human collaboration workflows (Addla, 2026; Raja, 2025). Traditional lifecycles, such as the Rapid Application Development (RAD) model, were formulated for human-only team dynamics and do not account for the code generation and testing patterns characteristic of current software development (Raja, 2025). In c
+<!-- UPDATE:END -->
+<!-- TAG: ch2_project_plan -->
+## Project Plan
+
+<!-- UPDATE:START -->
+Figure 3. Project Gantt Chart of SecureCAT
+
+The project timeline spans four months, from May 2026 to August 2026, and is organized into the three sequential phases of the AI-Driven Development Lifecycle (AIDLC) — adopted from Addla (2026) and Raja (2025) as the software model for this study. The Inception phase, covering May to early June 2026, encompasses the Mob Elaboration activities: conducting semi-structured interviews with the Guidance and Registrar office staff at ISPSC Tagudin Campus to
+<!-- UPDATE:END -->
+<!-- TAG: ch2_project_assignment -->
+## Project Assignments
+
+<!-- UPDATE:START -->
+The execution and delivery of SecureCAT is built around five project roles distributed among the three capstone team members to cover all software engineering and academic research requirements. This division of labor separates project management and documentation from core software architecture, programming, and testing, so each member can focus on their area of responsibility. David, who has the primary systems development background, takes the roles of Lead Developer and Programmer as well as
+<!-- UPDATE:END -->
+<!-- TAG: ch2_population_locale -->
+## Population and Locale of the Study
+
+<!-- UPDATE:START -->
+This study takes place at the Ilocos Sur Polytechnic State College (ISPSC) Tagudin Campus, located in the municipality of Tagudin, Ilocos Sur, Philippines. ISPSC Tagudin Campus is a public higher education institution serving regional communities in Northern Luzon, offering undergraduate programs across disciplines. The study focuses on the operational workflows of the Guidance Office and the Registrar Office, which co-manage the institution's annual college admission testing and applicant proce
+<!-- UPDATE:END -->
+<!-- TAG: ch2_research_instruments -->
+## Research Instruments
+
+<!-- UPDATE:START -->
+This study will use two peer-validated research instruments to evaluate the developed system: the System Usability Scale (SUS) and the NASA Task Load Index (NASA-TLX). Usability and cognitive workload both affect user adoption of institutional systems, and a dual-instrument approach captures both ease of use and administrative burden (Loiacono & McCoy, 2024). In this study, the research instruments will be administered to Registrar staff and Guidance staff, who are the confirmed system users of
+<!-- UPDATE:END -->
+<!-- TAG: ch2_data_analysis -->
+## Data Analysis
+
+<!-- UPDATE:START -->
+The data analysis procedures for this study will follow the three specific research objectives, each paired with an analytical approach suited to the type of data it generates. For the first specific objective, which seeks to identify existing admission testing processes, operational gaps, and coordination requirements at ISPSC Tagudin, qualitative thematic analysis will be applied to the interview transcripts gathered from the Registrar staff, Guidance staff, and Campus Director, as well as to
+<!-- UPDATE:END -->
+<!-- TAG: references_list -->
+## REFERENCES
+
+<!-- UPDATE:START -->
+Addla, N. (2026). AI-Driven Development Lifecycle (AI-DLC): Reimagining software engineering for the AI era. International Journal of Artificial Intelligence, Data Science, and Machine Learning, 7(1), 266–270. https://doi.org/10.63282/3050-9262.IJAIDSML-V7I1P145
+
+Al-Qudah, M., & Al-Sarrayriah, A. (2023). Evaluating task workload of administrative information systems in higher education using NASA-TLX. International Journal of Human-Computer Interaction, 39(8), 1645–1658. https://doi.org/10.1080/
+<!-- UPDATE:END -->
+<!-- TAG: appendix_a_use_case -->
+## APPENDIX A
+
+<!-- UPDATE:START -->
+SCAN OF SIGNED LETTER TO CONDUCT
+<!-- UPDATE:END -->
+<!-- TAG: appendix_b_letter_conduct -->
+## APPENDIX B
+
+<!-- UPDATE:START -->
+USE CASE DIAGRAM
+<!-- UPDATE:END -->

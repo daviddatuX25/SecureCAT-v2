@@ -1,4 +1,4 @@
-<!-- META: docx-sync-version="2026-06-12T10:37:05.259577+00:00" docx-sha256="8beb13df367da2ee649ff70fa92248526f2a0030514b5062a6b2c92f03e103cd" -->
+<!-- META: docx-sync-version="2026-06-13T04:30:08.857783+00:00" docx-sha256="c00ab4409a94733e8d5a27aef534632e76c784fd8d568418779cfddea7d7180e" -->
 
 # SecureCAT: A Role-Based College Admission Testing System
 
@@ -7,16 +7,20 @@ Ilocos Sur Polytechnic State College — Tagudin Campus
 Bachelor of Science in Information Technology
 June 2026
 
-<!-- TAG: ch1-introduction -->
-# Chapter 1: Introduction
+<!-- META: docx-sync-version="2026-06-13T04:30:08.857783+00:00" docx-sha256="c00ab4409a94733e8d5a27aef534632e76c784fd8d568418779cfddea7d7180e" -->
+
+<!-- META: docx-sync-version="2026-06-13T04:30:08.857783+00:00" docx-sha256="c00ab4409a94733e8d5a27aef534632e76c784fd8d568418779cfddea7d7180e" -->
+
+<!-- TAG: ch1_introduction -->
+# Chapter 1
 
 <!-- UPDATE:START -->
-[MISSING FROM DEFENSE DOCX — add from archive/drafts/]
+INTRODUCTION
 <!-- UPDATE:END -->
-
-<!-- TAG: ch1-bg-of-the-study -->
+<!-- TAG: ch1_bg_of_the_study -->
 ## Background of the Study
 
+<!-- UPDATE:START -->
 The annual college admission testing process at the Ilocos Sur Polytechnic State College (ISPSC) Tagudin Campus operates without a unified digital platform, leaving the Registrar Office and the Guidance Office to manage their separate responsibilities through paper-based workflows and informal coordination. Responsibility boundaries between these offices are understood by convention rather than enforced by system controls: the Registrar Office manages application intake and issues admission slips, while the Guidance Office handles test administration, proctoring, scoring, and results release. Applicant intake at the Registrar is conducted entirely through paper forms, with submitted documents filed in physical folders under lock and key and no digital backup copies maintained. During peak admission season, the campus processes approximately 700 to 1,000 freshman applicants, with admission slips produced individually using Microsoft Word templates. Because no automated status portal exists, applicants who want an update on their application must call the office or return to campus in person; the only broadcast channel is the Guidance Office's Facebook page, where examination schedules and batch release dates are posted. Scheduling between the two offices is arranged through verbal communication and text messages, with no shared platform or calendar to formalize the handoff. The Guidance Office scores all examinations using the manual stencil method, which takes two to three days for a batch of fifty applicants and results in a cumulative one-to-two-week delay between test administration and results consultation. Score records are stored in spreadsheets that have no access logging, meaning that modifications to an applicant's results leave no traceable record. In addition, the Guidance Office's current digital system is a basic PHP application with minimal access restrictions, inadequate to protect the confidential scoring conversion tables it handles. The limited number of guidance counselors creates a bottleneck during results release, forcing applicants, including those traveling from remote municipalities, to wait or make repeat visits simply to receive their course recommendations. The technical root cause of these compounding problems is the absence of a unified, cryptographically secured, role-based platform that enforces authorization boundaries, automates scoring and document generation, and provides offline resilience within the resource constraints of a regional campus.
 
 The field of higher education admissions has undergone notable digital transformation since the early 2020s, driven by the convergence of cloud computing, automated assessment technologies, and data privacy regulations that reshape how institutions process, evaluate, and admit prospective students. Universities across North America, Europe, and East Asia have widely adopted unified admission management platforms that integrate application intake, document verification, examination scheduling, automated scoring, and result dissemination into single digital ecosystems, replacing the fragmented manual workflows that characterized earlier administrative practices (Chen & Liu, 2024). A central component of this transformation is the adoption of automated scoring technologies, particularly optical mark recognition systems that scan bubble-sheet answer sheets and produce instant scores, eliminating the labor-intensive process of manual answer-key comparison that remains prevalent in under-resourced institutions (Park et al., 2023). Beyond traditional optical mark recognition, recent advances in computer vision and deep learning have enabled AI-based assessment platforms that can evaluate handwritten responses, detect cheating patterns through behavioral analytics, and generate adaptive test items calibrated to individual applicant ability levels (Kumar & Singh, 2025). These technologies have reduced scoring turnaround time, with institutions reporting score release timelines compressed from weeks to hours following examination administration. A notable concern accompanying this AI-driven transformation, however, is the inherent security risk of processing sensitive student records through cloud-based AI services, where aptitude scores, personal identifiable information, and confidential evaluation data are transmitted to and stored on third-party servers operated by technology vendors outside the institution's direct governance, creating data privacy vulnerabilities that conflict with institutional responsibility for student data stewardship (Okafor & Tanaka, 2024). This tension between technological capability and data sovereignty has motivated a growing emphasis on local and controlled data handling architectures that retain sensitive student information within institutional infrastructure rather than entrusting it to external cloud providers.
@@ -34,21 +38,19 @@ The Guidance Office conducts all proctoring using its own staff, tracks exam att
 While global academic institutions have successfully deployed unified admission systems (Chen & Liu, 2024; Müller & Hoffmann, 2023), and national mandates demand strict data privacy and digitalization (National Privacy Commission, 2024; Department of Information and Communications Technology, 2023), regional campuses like ISPSC Tagudin continue to operate with disconnected legacy platforms that leave significant operational and security gaps (Caintic & Lahaylahay, 2024; Comprendio & Canlas, 2025). Studies in computerized admissions often focus on static record management or cloud-hosted student portals, yet they fail to address campuses that lack persistent connectivity and require offline resilience for high-volume intake (Chen & Liu, 2024). In addition, while cloud-based AI tools can automate applicant support, they introduce severe security risks regarding the exposure of sensitive student records and confidential scoring tables on third-party servers (Okafor & Tanaka, 2024). This leaves a critical research gap: the lack of a secure, unified framework that coordinates inter-office workflows, automates scoring, and embeds local intelligence directly within the campus database. Addressing this gap requires data-driven decision-making systems that can translate raw applicant metrics into actionable academic guidance. In this context, machine learning techniques offer a robust framework for extracting intelligent insights from applicant profiles, enabling institutions to generate data-driven course recommendations based on multi-dimensional aptitude profiles and utilize applicant profiling to optimize placement decisions (Kumar & Singh, 2025). The relevance and validity of this approach have been demonstrated through local institutional research at ISPSC, where K-Means clustering algorithms were applied to historical student datasets. Specifically, Yukee et al. (2025) validated the use of a K=4 clustering configuration on entrance examination results to establish distinct aptitude-based student profiles, while Ballesteros et al. (2025) analyzed the relationship between student academic performance and socioeconomic indicators to guide course routing. However, because these institutional studies were conducted as post-hoc analyses on static databases, their machine learning models remained entirely isolated from the active enrollment workflow, operating retrospectively rather than during the live consultation. Consequently, there remains a critical research gap in designing a unified architecture that executes live K-Means clustering to classify applicant aptitude profiles at the exact moment of consultation, while extending counselor reach through a secure, retrieval-augmented companion that leverages local institutional policies without risking data sovereignty.
 
 The structuring of the research methodology and system design was directly informed by the global and national literature on computerized admissions, secure access controls, and local machine learning integration. Specifically, global trends in optical mark recognition and retrieval-augmented generation provided the architectural blueprints for automating workflows and augmenting counselor capacity. The selection of this research topic was driven by direct observations of the admissions process at the Ilocos Sur Polytechnic State College (ISPSC) Tagudin Campus. During these site visits, the researchers observed paper-based test routing, a lack of secure audit trails, potential scoring errors from manual stencil checks, and fragmented coordination during peak periods. These firsthand operational failures demonstrated that the existing disconnected tools could not sustain the institution's rising applicant volume. To address these challenges, this study proposes SecureCAT, a secure and offline-first college admission testing platform designed to unify registrar and guidance workflows. SecureCAT acts as the critical solution by integrating computer-vision optical mark recognition for automated scoring and a local K-Means clustering microservice for live applicant profiling at the point of consultation. It also incorporates a RAG-powered AI Companion to provide pre-examination and post-examination guidance, thereby extending counselor reach without compromising sensitive student records. By bridging raw administrative data with local academic intelligence, this platform aligns with SDG 4 on Quality Education and SDG 16 on Peace, Justice, and Strong Institutions through transparent, efficient, and private institutional governance.
-
-<!-- UPDATE:START -->
-[Content synchronized from SecureCAT_Ch1_Ch2_Manuscript[never delete].docx — review and edit here]
 <!-- UPDATE:END -->
-
-<!-- TAG: ch1-conceptual-framework -->
+<!-- TAG: ch1_conceptual_framework -->
 ## Conceptual Framework of the Study
 
 <!-- UPDATE:START -->
-[MISSING FROM DEFENSE DOCX — add from archive/drafts/]
-<!-- UPDATE:END -->
+Input-Process-Output (IPO) Diagram
 
-<!-- TAG: ch1-objectives -->
+Figure 1. Conceptual Framework Diagram (Input-Process-Output)
+<!-- UPDATE:END -->
+<!-- TAG: ch1_objectives -->
 ## Objectives of the Study
 
+<!-- UPDATE:START -->
 This study aims to develop SecureCAT: A Role-Based College Admission Testing System for the Guidance and Registrar Offices at ISPSC Tagudin, a web-based platform that centralizes and automates the entire admission testing pipeline, from applicant registration and dynamic room scheduling through proctor-monitored examination, automated scoring, result sheet generation, and AI-assisted counseling, while enforcing zero-trust data governance through cryptographic score integrity, immutable audit logging, and role-based access control designed to operate reliably under the infrastructure constraints specific to the Ilocos Sur Polytechnic State College Tagudin Campus.
 
 More specifically, this study seeks to accomplish the following:
@@ -58,27 +60,23 @@ More specifically, this study seeks to accomplish the following:
 2. Develop SecureCAT: A Role-Based College Admission Testing System for the Guidance and Registrar Offices at ISPSC Tagudin, incorporating role-based access control with RBAC-based proctor delegation and zero-trust data governance, cryptographic score integrity using HMAC-SHA256 signature verification, automated scoring with computer-vision-based OMR answer sheet ingestion as a new scanning capability, a live examination monitoring dashboard for real-time proctor oversight, an ML-assisted course triage module that executes live K-Means clustering by adopting and adapting school-owned algorithm source code from prior ISPSC institutional studies (Yukee et al., 2025; Ballesteros et al., 2025) to classify applicants into aptitude-based and socio-academic profiles at classification time, cross-referencing OMR-parsed aptitude scores and socio-academic data via a Python microservice communicating with the Laravel backend through internal API to support guidance counselor course recommendation decision-making, seat-quota management for room capacity enforcement during scheduling, offline-resilient proctoring via a Progressive Web App with IndexedDB caching and background synchronization, an enhanced AI-assisted scheduling system with human-in-the-loop constraint optimization, role-based data isolation aligned with the Philippine Data Privacy Act (RA 10173), and validating the system's technical architecture through confusion matrix accuracy metrics for automated grading, expert rubric evaluation for AI faithfulness, and automated penetration and offline resilience audits.
 
 3. Evaluate the usability and perceived task workload of the developed system using the System Usability Scale (SUS) and the NASA Task Load Index (NASA-TLX) as administered to intended users, including Registrar Office staff, Guidance Office counselors, proctors, test administrators, and applicants at ISPSC Tagudin Campus.
+<!-- UPDATE:END -->
+<!-- TAG: ch1_scope_delimitations -->
+## Scope and Limitation of the Study
 
 <!-- UPDATE:START -->
-[Content synchronized from SecureCAT_Ch1_Ch2_Manuscript[never delete].docx — review and edit here]
-<!-- UPDATE:END -->
-
-<!-- TAG: ch1-scope-delimitations -->
-## Scope and Delimitations of the Study
+Scope
 
 This study covers the design, development, and evaluation of SecureCAT, a role-based college admission testing system built for the Guidance and Registrar Offices of the Ilocos Sur Polytechnic State College (ISPSC), Tagudin Campus, located in Tagudin, Ilocos Sur, Philippines. The system accommodates six types of users. Applicants submit application forms and take the entrance examination. Proctors oversee testing sessions and record attendance. Guidance counselors review examination results and document course recommendations. Registrar staff handle applications, scheduling, and document generation. Registrar administrators manage overall operations and approve system configurations. Super administrators hold the highest access level and are solely responsible for creating user accounts and assigning roles. A notable design choice is that one person may carry more than one role at a time, and role assignments can be updated as institutional needs change. The system handles end-to-end admission tasks: it accepts web-based applications, activates accounts through time-limited tokens, tracks each applicant's status in real time, and generates admission slips and result documents in both PDF and DOCX formats. Scheduling functions allow staff to set examination sessions, assign proctors, and record attendance. Scores can be imported from CSV files, consultation notes are recorded by counselors, and notifications are sent to both staff and applicants. Audit logs capture key system events, and database access is isolated by role. On the technical side, the system uses computer-vision-based optical mark recognition (OMR) to score physical answer sheets and applies HMAC-SHA256 signature locks to protect score records from tampering. An offline-capable progressive web application (PWA) allows proctors to continue working during network outages, with data stored locally and synchronized once the connection is restored. For decision support, an AI companion powered by retrieval-augmented generation (RAG) answers applicant questions before and after the examination by drawing from a local institutional knowledge base. A scheduling assistant generates session proposals that require administrator approval before taking effect. A course triage module runs live K-Means clustering with four clusters, adapted from prior ISPSC institutional studies (Yukee et al., 2025; Ballesteros et al., 2025), to suggest academic placements based on aptitude scores and socio-academic profiles. The main variables handled by the system are applicant profiles, examination configurations, OMR scan data, role credentials, QR code scans, and natural language queries. The study runs from May to August 2026, covering requirements gathering, development, usability testing, and the final defense at ISPSC Tagudin Campus. These boundaries were drawn to match exactly what the Guidance and Registrar Offices need, keeping each system capability tied to a clear operational purpose.
 
 While the system is broad in scope, several important boundaries must be acknowledged. SecureCAT addresses only the admission testing process and does not cover enrollment after admission, tuition or fee management, student academic records, or learning management. Course recommendations provided by the AI companion mark the extent of academic advising the system offers. The system is tested and evaluated only at the ISPSC Tagudin Campus; deploying it at other campuses would require independent server setups, data isolation configurations, and formal institutional agreements. Hardware and connectivity requirements also limit certain functions. The OMR module depends on a camera or scanner capable of producing clear images of answer sheets, and it uses pre-printed QR codes to link sheets to the correct applicant. Handwritten name matching is not used as a primary identification method because of its inherent reliability issues. The offline PWA mode requires at least one successful initial connection to register the service worker and prepare cached data; it cannot function entirely without any prior internet access. Some processes deliberately remain under human control. Examination questions are written by faculty, not generated by the system. Scoring rubrics and the standardized conversion tables used to translate raw aptitude scores into final results are determined by the Guidance Office, and those tables are kept strictly confidential. The system enforces this by blocking access to conversion data for applicants, non-authorized staff, API consumers, and any exported files. Finally, the system is built to follow the Data Privacy Act of 2012, or Republic Act No. 10173, through role-based access control and immutable audit logging. Formal auditing by the National Privacy Commission, however, falls outside the scope of this study.
 
 .
+<!-- UPDATE:END -->
+<!-- TAG: ch1_significance -->
+## Importance of the Study
 
 <!-- UPDATE:START -->
-[Content synchronized from SecureCAT_Ch1_Ch2_Manuscript[never delete].docx — review and edit here]
-<!-- UPDATE:END -->
-
-<!-- TAG: ch1-significance -->
-## Significance of the Study
-
 The Community. The implementation of SecureCAT will benefit the local community of Tagudin and surrounding municipalities in Ilocos Sur, whose residents comprise the primary applicant pool of Ilocos Sur Polytechnic State College (ISPSC) Tagudin Campus. By shifting the college admission testing process from workflows fragmented across disconnected systems (the registrar's registration system, the guidance office system, and MIS/SIMS) with manual gaps between them to a unified role-based digital system, the platform will reduce the economic and time burden placed on applicants and their families. Simulation data reveal that applicants from remote municipalities travel more than two hours each way and must make multiple visits to submit requirements, secure exam schedules, and claim results. The digitized system will minimize physical queue bottlenecks and will reduce the need for repeated campus visits, making higher education admissions more accessible for the community.
 
 The Client Institution. The Ilocos Sur Polytechnic State College Tagudin Campus, particularly the Guidance Office and the Registrar Office, will benefit from integrating a unified, secure, and offline-resilient admissions platform. The system will address coordination gaps and manual transcription bottlenecks that have historically slowed the processing of applicant files. By deploying a system that includes automated computer-vision optical mark recognition (OMR) grading, secure score transmission, and automated scheduling, the institution will be able to reduce the total processing timeframe of an admission cycle by approximately %. Automated registration slip generation through the existing system will halve the processing time per applicant compared to the prior manual encoding approach, while an integrated analytics dashboard will replace the half-day manual compilation of periodic admission reports with on-demand data visualization. The role-based data isolation and zero-trust access control will assist the college in complying with the security and data governance standards mandated by the Philippine Data Privacy Act of 2012 (RA 10173). By surfacing quota-aware course recommendations during counselor consultations, the triage module also will support institutional capacity planning, enabling the administration to distribute student enrollment more evenly across programs and directly addressing concerns raised by the Dean about balancing faculty workloads and redirecting applicants to programs with available capacity.
@@ -92,100 +90,87 @@ The Students. The students of ISPSC Tagudin Campus, particularly future examinee
 The Researchers. The researchers will benefit from the study by gaining hands-on experience in the entire software development lifecycle, from requirements elicitation through implementation and formal evaluation. By executing this project under the AI-Driven Development Lifecycle (AIDLC) framework, the researchers will develop professional competencies in agentic workflows, database scaling, API security, and mobile offline synchronization. The researchers will also develop academic research skills by administering standardized evaluation instruments (SUS and NASA-TLX) and conducting descriptive developmental data analysis, preparing them for future careers in systems analysis, software engineering, and data privacy compliance.
 
 Future Researchers. This study will provide a reference and baseline framework for future researchers interested in developing, deploying, or evaluating institutional web applications in resource-constrained educational environments. The documentation of the AIDLC software model, the zero-trust data governance architecture, and the offline proctor synchronization strategies will offer a reusable blueprint for future institutional deployments. The empirical findings and data collected from the usability (SUS) and workload (NASA-TLX) evaluations can be used by future investigators to compare the efficiency of alternative development lifecycles or to study user adoption patterns in regional Philippine state colleges. The course triage module, in particular, will operationalize prior institutional K-Means clustering analyses by adopting school-owned algorithm source code (Yukee et al., 2025; Ballesteros et al., 2025) and executing live K-Means clustering within a production admission workflow via a Python microservice integrated with the Laravel backend, offering future researchers a concrete model for translating exploratory clustering research into operational decision-support tools through adopt-and-tweak integration.
+<!-- UPDATE:END -->
+<!-- TAG: ch2_methodology -->
+# Chapter 2
 
 <!-- UPDATE:START -->
-[Content synchronized from SecureCAT_Ch1_Ch2_Manuscript[never delete].docx — review and edit here]
+METHODOLOGY
 <!-- UPDATE:END -->
-
-<!-- TAG: ch2-methodology -->
-# Chapter 2: Methodology
-
-<!-- UPDATE:START -->
-[MISSING FROM DEFENSE DOCX — add from archive/drafts/]
-<!-- UPDATE:END -->
-
-<!-- TAG: ch2-research-design -->
+<!-- TAG: ch2_research_design -->
 ## Research Design
 
+<!-- UPDATE:START -->
 This chapter presents the procedures for data collection and analysis in the study. The sections that follow describe the research design, software model, project strategy, project assignments, population and locale, research instruments, and data analysis. Details regarding respondent selection and sampling procedures are also discussed.
 
 This study employs a descriptive developmental research design, a hybrid methodology that combines descriptive inquiry with iterative system construction and validation. Descriptive research involves the systematic observation, documentation, and characterization of existing conditions and user requirements without manipulation of variables (Frey, 2022), while developmental research encompasses the design, creation, and evaluation of solutions grounded in the empirical findings of that descriptive inquiry (Frey, 2022). This hybrid model is used in system-development research in Philippine educational institutions, where the objective is to analyze local administrative challenges and subsequently construct and evaluate an appropriate web-based platform to address them (Malaya et al., 2022; Olipas, 2023). The descriptive developmental framework thus supports a two-fold research arc: first observing and modeling real-world workflows, and then engineering, deploying, and validating a software response to resolve identified inefficiencies.
 
 In the context of this study, the descriptive component will be applied to observe, document, and analyze the operational workflows, manual process dependencies, current utilization, and architectural limitations of the foundational digital system already deployed at the site through prior institutional consultation, alongside the role-based coordination gaps, data integrity vulnerabilities, and infrastructure constraints at ISPSC Tagudin Campus, directly addressing the first specific objective, which seeks to identify existing processes and operational gaps. Data for the descriptive component will be gathered through semi-structured interviews with Registrar staff, Guidance staff, and the Campus Director, supplemented by applicant intercept surveys administered on-site during peak enrollment periods. The developmental component will involve the iterative design, construction, and validation of SecureCAT using the AI-Driven Development Lifecycle (AIDLC) as the software model, wherein AI-assisted code generation will be governed by human review, automated testing, and architectural oversight at every phase (Addla, 2026; Raja, 2025), addressing the second specific objective on developing the system with security, resilience, and AI-assisted features as described in the project scope. Finally, the evaluation of the system's usability and perceived task workload through the System Usability Scale (SUS) and the NASA Task Load Index (NASA-TLX) will constitute the descriptive-assessment phase, corresponding to the third specific objective on evaluating system usability and perceived task workload. This three-phase alignment, spanning identification, development, and evaluation, links each specific objective to a named methodological component, producing a research design appropriate for a descriptive developmental study in information technology.
-
-<!-- UPDATE:START -->
-[Content synchronized from SecureCAT_Ch1_Ch2_Manuscript[never delete].docx — review and edit here]
 <!-- UPDATE:END -->
-
-<!-- TAG: ch2-software-model -->
+<!-- TAG: ch2_software_model -->
 ## Software Development Model
 
+<!-- UPDATE:START -->
 The development of SecureCAT follows the AI-Driven Development Lifecycle (AIDLC), a software engineering framework that replaces traditional human-only development models with structured AI-human collaboration workflows (Addla, 2026; Raja, 2025). Traditional lifecycles, such as the Rapid Application Development (RAD) model, were formulated for human-only team dynamics and do not account for the code generation and testing patterns characteristic of current software development (Raja, 2025). In contrast, the AIDLC framework uses artificial intelligence agents as partners in the design, construction, and verification of software systems, enabling a single developer to cover roles traditionally distributed across entire teams. By adopting this model, the researcher provides an accurate representation of the development process of SecureCAT, which will be constructed using AI assistants (Gemini, Claude, and GitHub Copilot) for code generation, architectural planning, and test automation under human oversight (Addla, 2026). The AIDLC model has three linear phases: Inception, Construction, and Operations.
+
+Figure 2. AI-Driven Development Lifecycle (AIDLC)
 
 Inception. In this phase, the development requirements and software specifications will be conceptualized through Mob Elaboration, wherein the researcher will collaborate with AI assistants to translate observed operational challenges at ISPSC Tagudin Campus into structured technical and architectural requirements. These challenges will be identified through interview data gathering with guidance and registrar office staff at ISPSC Tagudin, which will confirm critical process gaps: manual scoring of answer sheets using paper-based keys, informal scheduling of entrance examinations without centralized coordination, and the absence of audit trails for score modifications and examinee records. During this phase, the researcher will use conversational and code-generation models to design the role-based database schema, outline the system's role-based access control (RBAC) rules, plan the application's service architecture, and define the technical interfaces for the proctor, guidance staff, and registrar roles. The deliverables of the Inception phase will include the conceptual data models, API endpoints, mockups of the public and admin portals, and the feature specifications for the offline-resilient Progressive Web Application (PWA), cryptographic score verification, and AI-assisted scheduling modules.
 
 Construction. In this phase, the system modules will be developed and tested using a Mob Construction workflow, where AI coding agents will generate backend and frontend code while the researcher will act as the architect, reviewer, and quality gate. The backend will be constructed using PHP 8.4 and the Laravel 12 framework, using Inertia.js v2 to bridge server-side routing with the Svelte 5 frontend component library, with styling powered by Tailwind CSS v4. One capability to be built during this phase is the Optical Mark Recognition (OMR) scanning module, which will be designed and implemented from scratch as a software-based image processing feature that will enable the system to capture and score examinee answer sheets directly from scanned images — this is a newly developed capability within SecureCAT and does not replace any pre-existing OMR system at ISPSC. Additionally, the ML-assisted course triage module will be constructed by adopting school-owned K-Means algorithm source code from prior ISPSC institutional studies (Yukee et al., 2025; Ballesteros et al., 2025) and wrapping it as a Python microservice (FastAPI) that will communicate with the Laravel backend via internal API — this architectural decision keeps the ML engine in its native language (scikit-learn) while enabling bidirectional data streaming between the admission platform and the clustering service. During coding, the AI agents will generate the core database migrations, Eloquent models, controllers, and services — specifically implementing the HMAC-SHA256 score signing algorithm, the write-only immutable audit logging system, the OMR image processing pipeline, the ML triage microservice integration layer, and the offline IndexedDB synchronization middleware. Automated unit and feature testing will be integrated into the construction loop; tests will run using PHPUnit 11 to validate the behavioral correctness of the AI-generated code, so code quality defects or security vulnerabilities will be flagged and corrected before code integration.
 
 Operations. In this phase, the system will undergo pilot deployment, automated monitoring, and empirical evaluation. The SecureCAT application will be deployed on a local server environment to replicate the network conditions of the ISPSC Tagudin campus, and database seeders will be executed to populate the system with simulated applicant records and test schedules. The researcher will use automated scripts and AI diagnostic assistants to monitor system resource consumption, audit log performance, and OMR image scanning accuracy — validating the newly built OMR scanning capability under realistic conditions — confirming that the platform will operate reliably under simulated peak load.
-
-<!-- UPDATE:START -->
-[Content synchronized from SecureCAT_Ch1_Ch2_Manuscript[never delete].docx — review and edit here]
 <!-- UPDATE:END -->
-
-<!-- TAG: ch2-project-plan -->
+<!-- TAG: ch2_project_plan -->
 ## Project Plan
 
+<!-- UPDATE:START -->
+Figure 3. Project Gantt Chart of SecureCAT
+
 The project timeline spans four months, from May 2026 to August 2026, and is organized into the three sequential phases of the AI-Driven Development Lifecycle (AIDLC) — adopted from Addla (2026) and Raja (2025) as the software model for this study. The Inception phase, covering May to early June 2026, encompasses the Mob Elaboration activities: conducting semi-structured interviews with the Guidance and Registrar office staff at ISPSC Tagudin Campus to gather qualitative data on existing manual processes, performing requirements analysis to translate those findings into structured technical specifications, and completing the system architecture design, including the role-based database schema, role-based access control rules, and the application service blueprint. The Construction phase runs from mid-June to mid-July 2026 and follows the Mob Construction workflow described in the Software Model section, covering backend development using PHP 8.4 and Laravel 12, frontend development using Inertia.js v2 with Svelte 5 and Tailwind CSS v4, automated unit and feature testing with PHPUnit 11, and integration and security quality assurance — all produced through AI-assisted code generation under human architectural oversight. The Operations phase spans mid-July to August 2026 and includes pilot deployment of SecureCAT on a local server environment replicating ISPSC Tagudin network conditions, administration of the System Usability Scale (SUS) and NASA Task Load Index (NASA-TLX) evaluation instruments to target respondents, and the finalization of technical documentation and the capstone manuscript. This timeline aligns with the projected milestones outlined in the project ROADMAP.md, where the Title Defense was completed in May 2026, the Proposal Defense is projected for late June 2026 following the Chapter 1 and Chapter 2 submission deadline of June 10, 2026, and the Final Defense is projected for August 2026 after system evaluation and documentation are concluded.
+<!-- UPDATE:END -->
+<!-- TAG: ch2_project_assignment -->
+## Project Assignments
 
 <!-- UPDATE:START -->
-[Content synchronized from SecureCAT_Ch1_Ch2_Manuscript[never delete].docx — review and edit here]
-<!-- UPDATE:END -->
-
-<!-- TAG: ch2-project-assignment -->
-## Project Assignment
-
 The execution and delivery of SecureCAT is built around five project roles distributed among the three capstone team members to cover all software engineering and academic research requirements. This division of labor separates project management and documentation from core software architecture, programming, and testing, so each member can focus on their area of responsibility. David, who has the primary systems development background, takes the roles of Lead Developer and Programmer as well as System Analyst and Designer, so that the cryptographic, computer vision, and offline capabilities are architecturally consistent and correctly implemented. Jaypee serves as Project Manager to coordinate schedules, communicate with institutional stakeholders, and manage resource constraints, while sharing Technical Writer and Documenter responsibilities with Christine. Christine serves as Quality Assurance Tester to independently design test cases, coordinate user acceptance testing, and lead the usability and workload evaluations — specifically administering the System Usability Scale (SUS) and NASA Task Load Index (NASA-TLX) to Registrar staff and Guidance staff during pilot testing. The specific functions for each role are detailed in Table 1.
 
-<!-- UPDATE:START -->
-[Content synchronized from SecureCAT_Ch1_Ch2_Manuscript[never delete].docx — review and edit here]
+Table 1. Project Roles and Responsibilities
 <!-- UPDATE:END -->
-
-<!-- TAG: ch2-population-locale -->
+<!-- TAG: ch2_population_locale -->
 ## Population and Locale of the Study
 
+<!-- UPDATE:START -->
 This study takes place at the Ilocos Sur Polytechnic State College (ISPSC) Tagudin Campus, located in the municipality of Tagudin, Ilocos Sur, Philippines. ISPSC Tagudin Campus is a public higher education institution serving regional communities in Northern Luzon, offering undergraduate programs across disciplines. The study focuses on the operational workflows of the Guidance Office and the Registrar Office, which co-manage the institution's annual college admission testing and applicant processing cycle, accommodating approximately 500 to over 1,000 freshman applicants per academic year. The locale presents technological and infrastructure constraints — shared campus bandwidth, internet that is sometimes slow but not frequently down, and Wi-Fi primarily reserved for campus staff and faculty rather than student access — that affect administrative operations. The primary population of interest comprises the administrative personnel, guidance counselors, proctors, and test administrators who operate the admissions pipeline, alongside the annual cohort of applicants seeking admission to the college.
 
 To evaluate the developed system, a purposive sampling technique will select the administrative and test-monitoring respondents, while convenience intercept sampling will be used for the applicant cohort. Purposive sampling is a non-probability sampling design where respondents are chosen based on specific operational roles and expertise relative to the system being evaluated (Frey, 2022). In this study, the administrative respondent group will be split into experienced staff users who have direct exposure to the pre-existing baseline database, and new staff users who will operate the proctor and registration modules for the first time. The examinee respondent group will be selected through intercept sampling of applicants queuing for admissions processing during the pilot evaluation period. The preliminary distribution of respondents, subject to final headcount verification after field interviews on June 8, will be presented in Table 2.
 
-<!-- UPDATE:START -->
-[Content synchronized from SecureCAT_Ch1_Ch2_Manuscript[never delete].docx — review and edit here]
+Table 2. Distribution of Respondents
 <!-- UPDATE:END -->
-
-<!-- TAG: ch2-research-instruments -->
+<!-- TAG: ch2_research_instruments -->
 ## Research Instruments
 
+<!-- UPDATE:START -->
 This study will use two peer-validated research instruments to evaluate the developed system: the System Usability Scale (SUS) and the NASA Task Load Index (NASA-TLX). Usability and cognitive workload both affect user adoption of institutional systems, and a dual-instrument approach captures both ease of use and administrative burden (Loiacono & McCoy, 2024). In this study, the research instruments will be administered to Registrar staff and Guidance staff, who are the confirmed system users of SecureCAT and whose workflows are directly affected by the transition from manual admissions testing to automated digital processing. The System Usability Scale will be administered to both Registrar staff and Guidance staff to measure their perception of the system's interface and usability. The NASA Task Load Index will also be administered to Registrar staff and Guidance staff to evaluate the cognitive workload and operational pressure they experience when using the system for admissions testing workflows.
 
 The System Usability Scale is a reliable, industry-standard instrument for evaluating the usability of web applications and information systems. Formulated by Brooke (1996) and validated in academic settings (Vlachogianni & Tselios, 2022), the SUS consists of a ten-item questionnaire on a five-point Likert scale from strongly disagree to strongly agree. Odd-numbered items measure positive usability aspects such as ease of use and integration; even-numbered items measure negative aspects such as complexity and the need for technical support. The instrument assesses whether users would like to use the system frequently, find it unnecessarily complex, find it easy to use, need technical support, find functions well integrated, experience inconsistency, find it quick to learn, find it cumbersome, feel confident using it, or need to learn many things before starting. To calculate the final SUS score, the score contributions from each item are summed and multiplied by 2.5, yielding a composite score from 0 to 100, where a score above 68.0 indicates above-average usability (Safi & Elsayed, 2023; Vlachogianni & Tselios, 2022).
 
 The NASA Task Load Index is a multi-dimensional rating scale that measures perceived cognitive workload and operational pressure during task execution. Originally designed for human-factors engineering (Hart & Staveland, 1988), the instrument assesses administrative systems and digital workflows in higher education to verify whether software interventions reduce staff fatigue and processing friction (Al-Qudah & Al-Sarrayriah, 2023). The NASA-TLX evaluates workload across six dimensions: mental demand, physical demand, temporal demand, performance, effort, and frustration level. Mental demand measures the cognitive, analytical, and perceptual thinking required. Physical demand assesses physical activity or manual strain such as document sorting and paper handling. Temporal demand measures time pressure during peak administrative cycles. Performance evaluates the user's perceived success in accomplishing goals. Effort measures the mental and physical exertion required to maintain performance. Frustration level assesses the stress, irritation, and insecurity experienced by staff. Each dimension is rated on a 0 to 100 scale, letting researchers construct a workload profile comparing the digital system against historical manual baselines (Al-Qudah & Al-Sarrayriah, 2023; Loiacono & McCoy, 2024).
-
-<!-- UPDATE:START -->
-[Content synchronized from SecureCAT_Ch1_Ch2_Manuscript[never delete].docx — review and edit here]
 <!-- UPDATE:END -->
-
-<!-- TAG: ch2-data-analysis -->
+<!-- TAG: ch2_data_analysis -->
 ## Data Analysis
 
+<!-- UPDATE:START -->
 The data analysis procedures for this study will follow the three specific research objectives, each paired with an analytical approach suited to the type of data it generates. For the first specific objective, which seeks to identify existing admission testing processes, operational gaps, and coordination requirements at ISPSC Tagudin, qualitative thematic analysis will be applied to the interview transcripts gathered from the Registrar staff, Guidance staff, and Campus Director, as well as to the notes from applicant intercept surveys. The interview data will be transcribed, coded, and organized into themes corresponding to the study's research questions, including process bottlenecks, inter-office coordination failures, data integrity vulnerabilities, and infrastructure constraints. Observational notes collected during the campus visit will supplement the thematic analysis by providing contextual detail about physical workflows that interviews alone may not capture. For the second specific objective, which seeks to develop the SecureCAT system, design validation will be conducted through iterative user feedback collected during the development cycle. As each system module reaches a functional state, the research team will demonstrate the module to designated staff members at the Registrar and Guidance Offices and solicit structured feedback on usability, feature completeness, and alignment with their actual operational requirements. This iterative feedback loop will ensure that the system design remains grounded in the confirmed needs of its end users rather than assumptions, and any design revisions prompted by user feedback will be documented as part of the developmental record. For the third specific objective, which seeks to evaluate the usability and perceived task workload of the developed system, descriptive statistics will be computed from the two research instruments: the System Usability Scale and the NASA Task Load Index. The SUS will yield a single composite score ranging from 0 to 100, which will be interpreted using the standard SUS score interpretation bands (Table 3) to determine the overall usability grade and acceptability level of the system. For the NASA Task Load Index (Table 4), descriptive statistics (mean and standard deviation) will be computed for each of the six subscales to identify the specific dimensions of workload that were most affected by the digital platform. Comparing the workload profiles generated by the system against the baseline manual workflows will show whether the software successfully reduces mental demand, physical strain, time pressure, effort, and frustration while improving performance.
 
-<!-- UPDATE:START -->
-[Content synchronized from SecureCAT_Ch1_Ch2_Manuscript[never delete].docx — review and edit here]
+Table 3. System Usability Scale Score Interpretation
+
+Table 4. NASA Task Load Index Subscale Descriptions
 <!-- UPDATE:END -->
+<!-- TAG: references_list -->
+## REFERENCES
 
-<!-- TAG: references-list -->
-## References
-
+<!-- UPDATE:START -->
 Addla, N. (2026). AI-Driven Development Lifecycle (AI-DLC): Reimagining software engineering for the AI era. International Journal of Artificial Intelligence, Data Science, and Machine Learning, 7(1), 266–270. https://doi.org/10.63282/3050-9262.IJAIDSML-V7I1P145
 
 Al-Qudah, M., & Al-Sarrayriah, A. (2023). Evaluating task workload of administrative information systems in higher education using NASA-TLX. International Journal of Human-Computer Interaction, 39(8), 1645–1658. https://doi.org/10.1080/10447318.2023.2189012
@@ -234,38 +219,17 @@ Williams, T., & Garcia, M. (2024). Role-based access control in educational mana
 
 Yukee, A. J. M., Bonifacio, C. L., Salvador, J. M. A., & Macabitas, A. P. (2025). A clustering student ICAT score using machine learning algorithm [Unpublished capstone project]. Ilocos Sur Polytechnic State College, Tagudin Campus.
 
-<!-- UPDATE:START -->
-[Content synchronized from SecureCAT_Ch1_Ch2_Manuscript[never delete].docx — review and edit here]
+APPENDICES
 <!-- UPDATE:END -->
-
-<!-- TAG: appendix-a-use-case -->
-## Appendix A: Use Case Diagram
+<!-- TAG: appendix_a_use_case -->
+## APPENDIX A
 
 <!-- UPDATE:START -->
-[MISSING FROM DEFENSE DOCX — add from archive/drafts/]
+SCAN OF SIGNED LETTER TO CONDUCT
 <!-- UPDATE:END -->
-
-<!-- TAG: appendix-b-letter-conduct -->
-## Appendix B: Letter to Conduct
-
-<!-- UPDATE:START -->
-[MISSING FROM DEFENSE DOCX — add from archive/drafts/]
-<!-- UPDATE:END -->
-
-<!-- TAG: appendix-a-use-case -->
-## Appendix A: Use Case Diagram
-
-[MISSING — diagram image not extractable from DOCX]
+<!-- TAG: appendix_b_letter_conduct -->
+## APPENDIX B
 
 <!-- UPDATE:START -->
-[Add Use Case Diagram image from archive/drafts/Appendix_A_UseCase_Diagram.md]
-<!-- UPDATE:END -->
-
-<!-- TAG: appendix-b-letter-conduct -->
-## Appendix B: Letter to Conduct
-
-[MISSING — scanned letter image not extractable from DOCX]
-
-<!-- UPDATE:START -->
-[Add scanned letter from archive/]
+USE CASE DIAGRAM
 <!-- UPDATE:END -->

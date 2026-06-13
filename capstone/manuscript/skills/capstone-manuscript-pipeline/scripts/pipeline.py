@@ -17,7 +17,7 @@ from pathlib import Path
 from docx import Document
 
 # ======== CONFIG ========
-DEFENSE_FILE = "SecureCAT_Ch1_Ch2_Manuscriptnever_delete.docx"
+DEFENSE_FILE = "SecureCAT_Ch1_Ch2_Manuscript[never delete].docx"
 DRIVE_BASE = "gdrive:A.Y. 2026-2027/Capstone/output/"
 MANUSCRIPT_MD = Path("capstone/manuscript/SecureCAT_Ch1_Ch2_Manuscript.md")
 TEMPLATE_DOCX = Path("capstone/templates/BSIT Capstone Template.docx")

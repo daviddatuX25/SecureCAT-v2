@@ -62,13 +62,13 @@
 | AD-6 | [IMPROVEMENT_TASKS.md](../../capstone/notes/IMPROVEMENT_TASKS.md) | Enhance security emphasis (SecureCAT-v2-j2x) | ✅ DONE |
 | AD-7 | [IMPROVEMENT_TASKS.md](../../capstone/notes/IMPROVEMENT_TASKS.md) | Rewrite Background of the Study for quality & organization (SecureCAT-v2-y21) | ✅ DONE |
 | AD-8 | [IMPROVEMENT_TASKS.md](../../capstone/notes/IMPROVEMENT_TASKS.md) | David reviews simulated interview responses for accuracy (SecureCAT-v2-c67) | ✅ DONE |
-| AD-9 | [IMPROVEMENT_TASKS.md](../../capstone/notes/IMPROVEMENT_TASKS.md) | Perform final unification pass (SecureCAT-v2-6rl) | ⬜ TODO |
+| AD-9 | [IMPROVEMENT_TASKS.md](../../capstone/notes/IMPROVEMENT_TASKS.md) | Perform final unification pass (SecureCAT-v2-6rl) | 🔄 IN_PROGRESS |
 | AD2-1 | [IMPROVEMENT_TASKS_2.md](../../capstone/notes/IMPROVEMENT_TASKS_2.md) | Align C2-01 Research Design to future tense (SecureCAT-v2-ezd) | ✅ DONE |
 | AD2-2 | [IMPROVEMENT_TASKS_2.md](../../capstone/notes/IMPROVEMENT_TASKS_2.md) | Align C2-02 Software Model to future tense (SecureCAT-v2-aq2) | ✅ DONE |
 | AD2-3 | [IMPROVEMENT_TASKS_2.md](../../capstone/notes/IMPROVEMENT_TASKS_2.md) | Align C2-05 Population & Locale to future tense (SecureCAT-v2-akq) | ✅ DONE |
-| AD2-4 | [IMPROVEMENT_TASKS_2.md](../../capstone/notes/IMPROVEMENT_TASKS_2.md) | Align C2-06 Research Instruments to future tense (SecureCAT-v2-d65) | ⬜ TODO |
-| AD2-5 | [IMPROVEMENT_TASKS_2.md](../../capstone/notes/IMPROVEMENT_TASKS_2.md) | Align C2-07 Data Analysis to future tense (SecureCAT-v2-j45) | ⬜ TODO |
-| AD2-6 | [IMPROVEMENT_TASKS_2.md](../../capstone/notes/IMPROVEMENT_TASKS_2.md) | Align C1-12 Significance of the Study to future tense (SecureCAT-v2-5zc) | ⬜ TODO |
-| AD2-7 | [IMPROVEMENT_TASKS_2.md](../../capstone/notes/IMPROVEMENT_TASKS_2.md) | Verify Thematic Consistency and Bead Trends (SecureCAT-v2-tz9) | ⬜ TODO |
+| AD2-4 | [IMPROVEMENT_TASKS_2.md](../../capstone/notes/IMPROVEMENT_TASKS_2.md) | Align C2-06 Research Instruments to future tense (SecureCAT-v2-d65) | ✅ DONE |
+| AD2-5 | [IMPROVEMENT_TASKS_2.md](../../capstone/notes/IMPROVEMENT_TASKS_2.md) | Align C2-07 Data Analysis to future tense (SecureCAT-v2-j45) | ✅ DONE |
+| AD2-6 | [IMPROVEMENT_TASKS_2.md](../../capstone/notes/IMPROVEMENT_TASKS_2.md) | Align C1-12 Significance of the Study to future tense (SecureCAT-v2-5zc) | ✅ DONE |
+| AD2-7 | [IMPROVEMENT_TASKS_2.md](../../capstone/notes/IMPROVEMENT_TASKS_2.md) | Verify Thematic Consistency and Bead Trends (SecureCAT-v2-tz9) | ✅ DONE |
 | AD2-8 | [IMPROVEMENT_TASKS_2.md](../../capstone/notes/IMPROVEMENT_TASKS_2.md) | Compile and Assemble Updated Manuscript (SecureCAT-v2-5ls) | ⬜ TODO |
 

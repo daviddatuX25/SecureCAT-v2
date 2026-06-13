@@ -1,0 +1,160 @@
+{
+  "version": 1,
+  "generated": "2026-06-12T14:11:34.451330+00:00",
+  "tags": {
+    "ch1-introduction": {
+      "bookmark": "tag_ch1_introduction",
+      "start_idx": 0,
+      "end_idx": 47,
+      "heading": "Chapter 1: Introduction",
+      "level": 1
+    },
+    "ch1-bg-of-the-study": {
+      "bookmark": "tag_ch1_bg_of_the_study",
+      "start_idx": 23,
+      "end_idx": 24,
+      "heading": "Background of the Study",
+      "level": 2
+    },
+    "ch1-background-para-2": {
+      "bookmark": "tag_ch1_background_para_2",
+      "start_idx": 23,
+      "end_idx": 24,
+      "heading": "ch1-background-para-2",
+      "level": 2
+    },
+    "ch1-background-para-3": {
+      "bookmark": "tag_ch1_background_para_3",
+      "start_idx": 23,
+      "end_idx": 24,
+      "heading": "ch1-background-para-3",
+      "level": 2
+    },
+    "ch1-background-para-4": {
+      "bookmark": "tag_ch1_background_para_4",
+      "start_idx": 23,
+      "end_idx": 24,
+      "heading": "ch1-background-para-4",
+      "level": 2
+    },
+    "ch1-background-para-5": {
+      "bookmark": "tag_ch1_background_para_5",
+      "start_idx": 23,
+      "end_idx": 24,
+      "heading": "ch1-background-para-5",
+      "level": 2
+    },
+    "ch1-background-para-6": {
+      "bookmark": "tag_ch1_background_para_6",
+      "start_idx": 23,
+      "end_idx": 24,
+      "heading": "ch1-background-para-6",
+      "level": 2
+    },
+    "ch1-conceptual-framework": {
+      "bookmark": "tag_ch1_conceptual_framework",
+      "start_idx": 24,
+      "end_idx": 25,
+      "heading": "Conceptual Framework of the Study",
+      "level": 2
+    },
+    "ch1-objectives": {
+      "bookmark": "tag_ch1_objectives",
+      "start_idx": 25,
+      "end_idx": 26,
+      "heading": "Objectives of the Study",
+      "level": 2
+    },
+    "ch1-scope-delimitations": {
+      "bookmark": "tag_ch1_scope_delimitations",
+      "start_idx": 26,
+      "end_idx": 27,
+      "heading": "Scope and Delimitations of the Study",
+      "level": 2
+    },
+    "ch1-significance": {
+      "bookmark": "tag_ch1_significance",
+      "start_idx": 27,
+      "end_idx": 28,
+      "heading": "Significance of the Study",
+      "level": 2
+    },
+    "ch2-methodology": {
+      "bookmark": "tag_ch2_methodology",
+      "start_idx": 1,
+      "end_idx": 29,
+      "heading": "Chapter 2: Methodology",
+      "level": 1
+    },
+    "ch2-research-design": {
+      "bookmark": "tag_ch2_research_design",
+      "start_idx": 2,
+      "end_idx": 3,
+      "heading": "Research Design",
+      "level": 2
+    },
+    "ch2-software-model": {
+      "bookmark": "tag_ch2_software_model",
+      "start_idx": 3,
+      "end_idx": 4,
+      "heading": "Software Development Model",
+      "level": 2
+    },
+    "ch2-project-plan": {
+      "bookmark": "tag_ch2_project_plan",
+      "start_idx": 4,
+      "end_idx": 5,
+      "heading": "Project Plan",
+      "level": 2
+    },
+    "ch2-project-assignment": {
+      "bookmark": "tag_ch2_project_assignment",
+      "start_idx": 5,
+      "end_idx": 6,
+      "heading": "Project Assignment",
+      "level": 2
+    },
+    "ch2-population-locale": {
+      "bookmark": "tag_ch2_population_locale",
+      "start_idx": 6,
+      "end_idx": 7,
+      "heading": "Population and Locale of the Study",
+      "level": 2
+    },
+    "ch2-research-instruments": {
+      "bookmark": "tag_ch2_research_instruments",
+      "start_idx": 7,
+      "end_idx": 8,
+      "heading": "Research Instruments",
+      "level": 2
+    },
+    "ch2-data-analysis": {
+      "bookmark": "tag_ch2_data_analysis",
+      "start_idx": 8,
+      "end_idx": 9,
+      "heading": "Data Analysis",
+      "level": 2
+    },
+    "references-list": {
+      "bookmark": "tag_references_list",
+      "start_idx": 9,
+      "end_idx": 10,
+      "heading": "References",
+      "level": 2
+    },
+    "appendix-a-use-case": {
+      "bookmark": "tag_appendix_a_use_case",
+      "start_idx": 10,
+      "end_idx": 11,
+      "heading": "Appendix A: Use Case Diagram",
+      "level": 2
+    },
+    "appendix-b-letter-conduct": {
+      "bookmark": "tag_appendix_b_letter_conduct",
+      "start_idx": 11,
+      "end_idx": 12,
+      "heading": "Appendix B: Letter to Conduct",
+      "level": 2
+    }
+  }
+}

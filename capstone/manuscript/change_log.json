@@ -1,0 +1,309 @@
+{
+  "version": 1,
+  "generated": "2026-06-12T14:11:34.451550+00:00",
+  "entries": [
+    {
+      "source": "legacy_tag",
+      "tag": "ch1-introduction",
+      "action": "update",
+      "section": "Chapter 1: Introduction",
+      "details": "[MISSING FROM DEFENSE DOCX \u2014 add from archive/drafts/]"
+    },
+    {
+      "source": "legacy_tag",
+      "tag": "ch1-background-para-6",
+      "action": "update",
+      "section": "ch1-background-para-6",
+      "details": "[Content synchronized from SecureCAT_Ch1_Ch2_Manuscript[never delete].docx \u2014 review and edit here]"
+    },
+    {
+      "source": "legacy_tag",
+      "tag": "ch1-conceptual-framework",
+      "action": "update",
+      "section": "Conceptual Framework of the Study",
+      "details": "[MISSING FROM DEFENSE DOCX \u2014 add from archive/drafts/]"
+    },
+    {
+      "source": "legacy_tag",
+      "tag": "ch1-objectives",
+      "action": "update",
+      "section": "Objectives of the Study",
+      "details": "[Content synchronized from SecureCAT_Ch1_Ch2_Manuscript[never delete].docx \u2014 review and edit here]"
+    },
+    {
+      "source": "legacy_tag",
+      "tag": "ch1-scope-delimitations",
+      "action": "update",
+      "section": "Scope and Delimitations of the Study",
+      "details": "[Content synchronized from SecureCAT_Ch1_Ch2_Manuscript[never delete].docx \u2014 review and edit here]"
+    },
+    {
+      "source": "legacy_tag",
+      "tag": "ch1-significance",
+      "action": "update",
+      "section": "Significance of the Study",
+      "details": "[Content synchronized from SecureCAT_Ch1_Ch2_Manuscript[never delete].docx \u2014 review and edit here]"
+    },
+    {
+      "source": "legacy_tag",
+      "tag": "ch2-methodology",
+      "action": "update",
+      "section": "Chapter 2: Methodology",
+      "details": "[MISSING FROM DEFENSE DOCX \u2014 add from archive/drafts/]"
+    },
+    {
+      "source": "legacy_tag",
+      "tag": "ch2-research-design",
+      "action": "update",
+      "section": "Research Design",
+      "details": "[Content synchronized from SecureCAT_Ch1_Ch2_Manuscript[never delete].docx \u2014 review and edit here]"
+    },
+    {
+      "source": "legacy_tag",
+      "tag": "ch2-software-model",
+      "action": "update",
+      "section": "Software Development Model",
+      "details": "[Content synchronized from SecureCAT_Ch1_Ch2_Manuscript[never delete].docx \u2014 review and edit here]"
+    },
+    {
+      "source": "legacy_tag",
+      "tag": "ch2-project-plan",
+      "action": "update",
+      "section": "Project Plan",
+      "details": "[Content synchronized from SecureCAT_Ch1_Ch2_Manuscript[never delete].docx \u2014 review and edit here]"
+    },
+    {
+      "source": "legacy_tag",
+      "tag": "ch2-project-assignment",
+      "action": "update",
+      "section": "Project Assignment",
+      "details": "[Content synchronized from SecureCAT_Ch1_Ch2_Manuscript[never delete].docx \u2014 review and edit here]"
+    },
+    {
+      "source": "legacy_tag",
+      "tag": "ch2-population-locale",
+      "action": "update",
+      "section": "Population and Locale of the Study",
+      "details": "[Content synchronized from SecureCAT_Ch1_Ch2_Manuscript[never delete].docx \u2014 review and edit here]"
+    },
+    {
+      "source": "legacy_tag",
+      "tag": "ch2-research-instruments",
+      "action": "update",
+      "section": "Research Instruments",
+      "details": "[Content synchronized from SecureCAT_Ch1_Ch2_Manuscript[never delete].docx \u2014 review and edit here]"
+    },
+    {
+      "source": "legacy_tag",
+      "tag": "ch2-data-analysis",
+      "action": "update",
+      "section": "Data Analysis",
+      "details": "[Content synchronized from SecureCAT_Ch1_Ch2_Manuscript[never delete].docx \u2014 review and edit here]"
+    },
+    {
+      "source": "legacy_tag",
+      "tag": "references-list",
+      "action": "update",
+      "section": "References",
+      "details": "[Content synchronized from SecureCAT_Ch1_Ch2_Manuscript[never delete].docx \u2014 review and edit here]"
+    },
+    {
+      "source": "legacy_tag",
+      "tag": "appendix-a-use-case",
+      "action": "update",
+      "section": "Appendix A: Use Case Diagram",
+      "details": "[Add Use Case Diagram image from archive/drafts/Appendix_A_UseCase_Diagram.md]"
+    },
+    {
+      "source": "legacy_tag",
+      "tag": "appendix-b-letter-conduct",
+      "action": "update",
+      "section": "Appendix B: Letter to Conduct",
+      "details": "[Add scanned letter from archive/]"
+    },
+    {
+      "source": "annotation",
+      "type": "updated",
+      "section": "Background of the Study",
+      "para": 1,
+      "action": "error",
+      "details": "Section not found: Background of the Study"
+    },
+    {
+      "source": "annotation",
+      "type": "updated",
+      "section": "Background of the Study",
+      "para": 2,
+      "action": "error",
+      "details": "Section not found: Background of the Study"
+    },
+    {
+      "source": "annotation",
+      "type": "updated",
+      "section": "Background of the Study",
+      "para": 4,
+      "action": "error",
+      "details": "Section not found: Background of the Study"
+    },
+    {
+      "source": "annotation",
+      "type": "to-be-removed",
+      "section": "Background of the Study",
+      "para": 2,
+      "action": "error",
+      "details": "Section not found: Background of the Study"
+    },
+    {
+      "source": "annotation",
+      "type": "to-be-removed",
+      "section": "Background of the Study",
+      "para": 2,
+      "action": "error",
+      "details": "Section not found: Background of the Study"
+    },
+    {
+      "source": "annotation",
+      "type": "to-be-removed",
+      "section": "Background of the Study",
+      "para": 2,
+      "action": "error",
+      "details": "Section not found: Background of the Study"
+    },
+    {
+      "source": "annotation",
+      "type": "to-be-removed",
+      "section": "Background of the Study",
+      "para": 2,
+      "action": "error",
+      "details": "Section not found: Background of the Study"
+    },
+    {
+      "source": "annotation",
+      "type": "to-be-removed",
+      "section": "Background of the Study",
+      "para": 3,
+      "action": "error",
+      "details": "Section not found: Background of the Study"
+    },
+    {
+      "source": "annotation",
+      "type": "to-be-removed",
+      "section": "Background of the Study",
+      "para": 3,
+      "action": "error",
+      "details": "Section not found: Background of the Study"
+    },
+    {
+      "source": "annotation",
+      "type": "to-be-removed",
+      "section": "Background of the Study",
+      "para": 3,
+      "action": "error",
+      "details": "Section not found: Background of the Study"
+    },
+    {
+      "source": "annotation",
+      "type": "to-be-removed",
+      "section": "Background of the Study",
+      "para": 3,
+      "action": "error",
+      "details": "Section not found: Background of the Study"
+    },
+    {
+      "source": "annotation",
+      "type": "to-be-removed",
+      "section": "Background of the Study",
+      "para": 4,
+      "action": "error",
+      "details": "Section not found: Background of the Study"
+    },
+    {
+      "source": "annotation",
+      "type": "to-be-removed",
+      "section": "Background of the Study",
+      "para": 4,
+      "action": "error",
+      "details": "Section not found: Background of the Study"
+    },
+    {
+      "source": "annotation",
+      "type": "to-be-removed",
+      "section": "Background of the Study",
+      "para": 4,
+      "action": "error",
+      "details": "Section not found: Background of the Study"
+    },
+    {
+      "source": "annotation",
+      "type": "to-be-removed",
+      "section": "Background of the Study",
+      "para": 4,
+      "action": "error",
+      "details": "Section not found: Background of the Study"
+    },
+    {
+      "source": "annotation",
+      "type": "to-be-removed",
+      "section": "Background of the Study",
+      "para": 5,
+      "action": "error",
+      "details": "Section not found: Background of the Study"
+    },
+    {
+      "source": "annotation",
+      "type": "to-be-removed",
+      "section": "Background of the Study",
+      "para": 5,
+      "action": "error",
+      "details": "Section not found: Background of the Study"
+    },
+    {
+      "source": "annotation",
+      "type": "to-be-removed",
+      "section": "Background of the Study",
+      "para": 5,
+      "action": "error",
+      "details": "Section not found: Background of the Study"
+    },
+    {
+      "source": "annotation",
+      "type": "to-be-removed",
+      "section": "Background of the Study",
+      "para": 5,
+      "action": "error",
+      "details": "Section not found: Background of the Study"
+    },
+    {
+      "source": "annotation",
+      "type": "to-be-removed",
+      "section": "Background of the Study",
+      "para": 6,
+      "action": "error",
+      "details": "Section not found: Background of the Study"
+    },
+    {
+      "source": "annotation",
+      "type": "to-be-removed",
+      "section": "Background of the Study",
+      "para": 6,
+      "action": "error",
+      "details": "Section not found: Background of the Study"
+    },
+    {
+      "source": "annotation",
+      "type": "to-be-removed",
+      "section": "Background of the Study",
+      "para": 6,
+      "action": "error",
+      "details": "Section not found: Background of the Study"
+    },
+    {
+      "source": "annotation",
+      "type": "to-be-removed",
+      "section": "Background of the Study",
+      "para": 6,
+      "action": "error",
+      "details": "Section not found: Background of the Study"
+    }
+  ]
+}

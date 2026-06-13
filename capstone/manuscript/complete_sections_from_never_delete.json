@@ -1,0 +1,50 @@
+{
+  "ch1-bg-of-the-study": {
+    "heading": "Background of the Study",
+    "content": "The Philippine higher education system, overseen by the Commission on Higher Education (CHED), comprises over 200 State Universities and Colleges (SUCs) tasked with providing accessible tertiary education across the archipelago, yet the digital readiness of these institutions varies dramatically between metropolitan centers and regional campuses. The enactment of Republic Act No. 10931, or the Universal Access to Quality Tertiary Education Act, which eliminated tuition and miscellaneous fees at ..."
+  },
+  "ch1-objectives": {
+    "heading": "General Objective",
+    "content": "This study aims to develop SecureCAT: A Role-Based College Admission Testing System for the Guidance and Registrar Offices at ISPSC Tagudin, a web-based platform that centralizes and automates the entire admission testing pipeline, from applicant registration and dynamic room scheduling through proctor-monitored examination, automated scoring, result sheet generation, and AI-assisted counseling, while enforcing zero-trust data governance through cryptographic score integrity, immutable audit log..."
+  },
+  "ch1-scope-delimitations": {
+    "heading": "Scope",
+    "content": "This study focuses on the design, development, and evaluation of SecureCAT, a role-based college admission testing system intended for the Guidance and Registrar Offices at the Ilocos Sur Polytechnic State College (ISPSC), Tagudin Campus, located in Tagudin, Ilocos Sur, Philippines. The system serves six distinct user roles: Applicants and Examinees who submit applications, take admission tests, and receive results; Proctors and Test Administrators who manage test sessions, record attendance, an..."
+  },
+  "ch1-significance": {
+    "heading": "Importance of the Study",
+    "content": "The Community. The implementation of SecureCAT benefits the local community of Tagudin and surrounding municipalities in Ilocos Sur, whose residents comprise the primary applicant pool of Ilocos Sur Polytechnic State College (ISPSC) Tagudin Campus. By shifting the college admission testing process from workflows fragmented across disconnected systems (the registrar's registration system, the guidance office system, and MIS/SIMS) with manual gaps between them to a unified role-based digital syste..."
+  },
+  "ch2-research-design": {
+    "heading": "Research Design",
+    "content": "This chapter presents the procedures for data collection and analysis in the study. The sections that follow describe the research design, software model, project strategy, project assignments, population and locale, research instruments, and data analysis. Details regarding respondent selection and sampling procedures are also discussed.\n\nThis study employs a descriptive developmental research design, a hybrid methodology that combines descriptive inquiry with iterative system construction and ..."
+  },
+  "ch2-software-model": {
+    "heading": "Software Development Model",
+    "content": "The development of SecureCAT follows the AI-Driven Development Lifecycle (AIDLC), a software engineering framework that replaces traditional human-only development models with structured AI-human collaboration workflows (Addla, 2026; Raja, 2025). Traditional lifecycles, such as the Rapid Application Development (RAD) model, were formulated for human-only team dynamics and do not account for the code generation and testing patterns characteristic of current software development (Raja, 2025). In c..."
+  },
+  "ch2-project-plan": {
+    "heading": "Project Plan",
+    "content": "The project timeline spans four months, from May 2026 to August 2026, and is organized into the three sequential phases of the AI-Driven Development Lifecycle (AIDLC) \u2014 adopted from Addla (2026) and Raja (2025) as the software model for this study. The Inception phase, covering May to early June 2026, encompasses the Mob Elaboration activities: conducting semi-structured interviews with the Guidance and Registrar office staff at ISPSC Tagudin Campus to gather qualitative data on existing manual ..."
+  },
+  "ch2-population-locale": {
+    "heading": "Population and Locale of the Study",
+    "content": "This study takes place at the Ilocos Sur Polytechnic State College (ISPSC) Tagudin Campus, located in the municipality of Tagudin, Ilocos Sur, Philippines. ISPSC Tagudin Campus is a public higher education institution serving regional communities in Northern Luzon, offering undergraduate programs across disciplines. The study focuses on the operational workflows of the Guidance Office and the Registrar Office, which co-manage the institution's annual college admission testing and applicant proce..."
+  },
+  "ch2-research-instruments": {
+    "heading": "Research Instruments",
+    "content": "This study uses two peer-validated research instruments to evaluate the developed system: the System Usability Scale (SUS) and the NASA Task Load Index (NASA-TLX). Usability and cognitive workload both affect user adoption of institutional systems, and a dual-instrument approach captures both ease of use and administrative burden (Loiacono & McCoy, 2024). In this study, the research instruments are administered to Registrar staff and Guidance staff, who are the confirmed system users of SecureCA..."
+  },
+  "ch1-conceptual-framework": {
+    "heading": "Conceptual Framework of the Study",
+    "content": "Input-Process-Output (IPO) Diagram..."
+  },
+  "ch2-methodology": {
+    "heading": "Chapter 2: Methodology",
+    "content": "METHODOLOGY..."
+  },
+  "ch1-introduction": {
+    "heading": "Chapter 1: Introduction",
+    "content": "INTRODUCTION..."
+  }
+}

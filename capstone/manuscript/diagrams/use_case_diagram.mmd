@@ -1,0 +1,84 @@
+%%{init: {
+  "theme": "base",
+  "themeVariables": {
+    "primaryColor": "#ffffff",
+    "primaryTextColor": "#000000",
+    "primaryBorderColor": "#000000",
+    "lineColor": "#000000",
+    "secondaryColor": "#ffffff",
+    "tertiaryColor": "#ffffff",
+    "fontFamily": "Times New Roman, serif",
+    "fontSize": "13px"
+  }
+}}%%
+graph LR
+  %% Left Actors (Outside Boundary)
+  A(["👤 Applicant"])
+  PR(["👤 Proctor"])
+  GC(["👤 Guidance Counselor"])
+
+  %% Right Actors (Outside Boundary)
+  RS(["👤 Registrar Staff"])
+  RA(["👤 Registrar Admin"])
+  SA(["👤 Super Admin"])
+
+  %% System Boundary 1: User & Operations
+  subgraph SYSTEM1["SecureCAT: User & Operations Modules"]
+    direction TB
+    UC1(["Submit Application Form"])
+    UC2(["Track Application Status"])
+    UC3(["Query AI Companion"])
+    UC4(["Scan QR for Attendance"])
+    UC5(["Monitor Session Offline"])
+    UC6(["View Score Reports"])
+    UC7(["Run K-Means Triage"])
+    UC8(["Record Consultations"])
+    UC9(["Release Results"])
+  end
+
+  %% System Boundary 2: Administration
+  subgraph SYSTEM2["SecureCAT: Administrative Modules"]
+    direction TB
+    UC10(["Process Application & Slip"])
+    UC11(["Import OMR / CSV Scores"])
+    UC12(["Schedule Exam Sessions"])
+    UC13(["Send Notifications"])
+    UC14(["Approve Scheduling Proposals"])
+    UC15(["Generate Statistical Reports"])
+    UC16(["Review Audit Logs"])
+    UC17(["Create User Accounts"])
+    UC18(["Assign System Roles"])
+    UC19(["Configure Settings"])
+  end
+
+  %% Force the two system boundaries side-by-side
+  UC1 ~~~ UC10
+  UC5 ~~~ UC14
+  UC9 ~~~ UC19
+
+  %% Left Actor Associations
+  A --- UC1
+  A --- UC2
+  A --- UC3
+
+  PR --- UC4
+  PR --- UC5
+
+  GC --- UC6
+  GC --- UC7
+  GC --- UC8
+  GC --- UC9
+
+  %% Right Actor Associations
+  UC10 --- RS
+  UC11 --- RS
+  UC12 --- RS
+  UC13 --- RS
+
+  UC14 --- RA
+  UC15 --- RA
+  UC16 --- RA
+
+  UC17 --- SA
+  UC18 --- SA
+  UC19 --- SA

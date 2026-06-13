@@ -1,0 +1,42 @@
+{
+  "appendix-a-use-case": {
+    "heading": "Compliance check: - Single continuous paragraph \u2705 -  marker \u2705 - No bullet points in body text \u2705 - No bold in body text \u2705 - Minimum 5 citations (has 6) \u2705 - All citations 2022-2026 \u2705 - Citations integrated into sentence flow \u2705 - Em dashes: 2 (within limit) \u2705 - Parentheses: 8 (all for citations) \u2705 - Sentence length varied \u2705 - No noun clusters > 3 words \u2705 - Section 6.1 (Define RAG): Added explanation of retrieval-augmented generation \u2014 what it is, why needed, what data feeds it, how it works in the admission context \u2705 - Section 6.2 (AI Companion Use Cases): Included both pre-examination (what to expect, document prep, scoring interpretation) and post-examination (course recommendations, alternatives, next steps) use cases \u2705 - Counselor augmentation framing: Explicitly states AI companions augment (not replace) counselors \u2705 46|",
+    "content": "The Philippine higher education system, overseen by the Commission on Higher Education (CHED), comprises over 200 State Universities and Colleges (SUCs) tasked with providing accessible tertiary educa..."
+  },
+  "ch1-objectives": {
+    "heading": "General Objective",
+    "content": "This study aims to develop SecureCAT: A Role-Based College Admission Testing System for the Guidance and Registrar Offices at ISPSC Tagudin, a web-based platform that centralizes and automates the ent..."
+  },
+  "section-scope": {
+    "heading": "Scope",
+    "content": "This study focuses on the design, development, and evaluation of SecureCAT, a role-based college admission testing system intended for the Guidance and Registrar Offices at the Ilocos Sur Polytechnic ..."
+  },
+  "ch1-significance": {
+    "heading": "Importance of the Study",
+    "content": "The Community. The implementation of SecureCAT benefits the local community of Tagudin and surrounding municipalities in Ilocos Sur, whose residents comprise the primary applicant pool of Ilocos Sur P..."
+  },
+  "ch2-research-design": {
+    "heading": "Research Design",
+    "content": "This chapter presents the procedures for data collection and analysis in the study. The sections that follow describe the research design, software model, project strategy, project assignments, popula..."
+  },
+  "ch2-software-model": {
+    "heading": "Figure 2. AI-Driven Development Lifecycle (AIDLC) Phases of SecureCAT: A Role-Based College Admission Testing System for the Guidance and Registrar Offices at ISPSC Tagudin",
+    "content": "Inception. In this phase, the development requirements and software specifications were conceptualized through Mob Elaboration, wherein the researcher collaborated with AI assistants to translate obse..."
+  },
+  "ch2-project-plan": {
+    "heading": "Figure 3. Project Gantt Chart of SecureCAT: A Role-Based College Admission Testing System for the Guidance and Registrar Offices at ISPSC Tagudin",
+    "content": "The project timeline spans four months, from May 2026 to August 2026, and is organized into the three sequential phases of the AI-Driven Development Lifecycle (AIDLC) \u2014 adopted from Addla (2026) and R..."
+  },
+  "ch2-project-assignment": {
+    "heading": "Project Assignments",
+    "content": "The execution and delivery of SecureCAT is built around five project roles distributed among the three capstone team members to cover all software engineering and academic research requirements . This..."
+  },
+  "ch2-population-locale": {
+    "heading": "Population and Locale of the Study",
+    "content": "This study takes place at the Ilocos Sur Polytechnic State College (ISPSC) Tagudin Campus, located in the municipality of Tagudin, Ilocos Sur, Philippines. ISPSC Tagudin Campus is a public higher educ..."
+  },
+  "ch2-research-instruments": {
+    "heading": "Research Instruments",
+    "content": "This study uses two peer-validated research instruments to evaluate the developed system: the System Usability Scale (SUS) and the NASA Task Load Index (NASA-TLX). Usability and cognitive workload bot..."
+  }
+}
