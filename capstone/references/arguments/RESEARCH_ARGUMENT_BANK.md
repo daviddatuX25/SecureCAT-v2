@@ -119,7 +119,7 @@
 | **General** | "To develop SecureCAT, a role-based college admission testing system for the Guidance and Registrar Offices at ISPSC Tagudin" | Must match title exactly |
 | **Specific 1 — Identify** | Document existing admission processes, operational workflows, manual process dependencies, current utilization and operational limitations of the deployed foundational digital system, and institutional requirements at ISPSC Tagudin | Covers: current workflows, deployed system usage, architectural gaps, pain points, staff roles, applicant journey, infrastructure constraints |
 | **Specific 2 — Develop** | Build the system with RBAC + zero-trust security, AI-assisted guidance, automated scoring capabilities, offline-resilient proctoring, and multi-tenant data architecture | Covers: all six pillars as features |
-| **Specific 3 — Evaluate** | Assess the **usability** of the system using the System Usability Scale (SUS) | Use "usability" only — not "acceptability" — because SUS is a usability instrument |
+| **Specific 3 — Evaluate** | Assess the perceived task workload of the developed system using the NASA Task Load Index (NASA-TLX) | Use "perceived task workload" only, focusing on the cognitive and operational load on campus staff |
 
 ---
 
@@ -168,7 +168,7 @@
 | **Developmental phase** | Based on the descriptive findings, the study develops a software solution (SecureCAT) that addresses the identified gaps. The developmental phase is iterative — build, test, refine. |
 | **Why this design fits** | BSIT capstone projects are applied research — the goal is to solve a real institutional problem, not to test theoretical hypotheses. Descriptive-Developmental is the standard design for tool/system development studies in Philippine HEI capstones. |
 | **Descriptive instruments** | Observation, interviews, and document analysis of current ISPSC admission workflows feed into the developmental requirements. |
-| **Developmental output** | The output is a functional, deployable system — not just a prototype or proof-of-concept. SUS evaluation validates the developmental output. |
+| **Developmental output** | The output is a functional, deployable system — not just a prototype or proof-of-concept. NASA-TLX evaluation validates the reduction in administrative task workload. |
 
 ---
 
@@ -190,8 +190,8 @@
 
 | Argument | Detail |
 |----------|--------|
-| **Phase breakdown** | The Gantt chart must show major phases: requirements gathering, system design, development (by module), testing, SUS evaluation, documentation, and final presentation. |
-| **Milestone markers** | Key milestones should be clearly marked — design review, alpha build, beta build, SUS administration, manuscript submission. |
+| **Phase breakdown** | The Gantt chart must show major phases: requirements gathering, system design, development (by module), testing, NASA-TLX evaluation, documentation, and final presentation. |
+| **Milestone markers** | Key milestones should be clearly marked — design review, alpha build, beta build, NASA-TLX administration, manuscript submission. |
 | **Parallel tracks** | Development tasks may overlap (e.g., frontend and backend modules developed concurrently by different team members). Show task assignments alongside the timeline. |
 | **Timeframe realism** | The plan must reflect the actual capstone semester timeline, accounting for academic breaks, exam periods, and coordination overhead. |
 
@@ -214,38 +214,36 @@
 
 | # | Argument | Detail |
 |---|----------|--------|
-| 1 | **Population** | Define the target respondents for SUS evaluation — typically ISPSC staff (guidance counselors, registrar staff, proctors) and a sample of applicants/examinees who interact with the system. |
+| 1 | **Population** | Define the target respondents for NASA-TLX evaluation — typically registrar staff and guidance counselors who execute the administrative and testing workflows. |
 | 2 | **Locale** | The study is conducted at ISPSC — Main Campus, Tagudin, Ilocos Sur. Specify the offices involved (Guidance Office, Registrar Office). |
-| 3 | **Sampling method** | Justify the sampling approach — purposive sampling is appropriate for usability evaluation since respondents must have direct experience with the system. |
-| 4 | **Sample size** | State the intended number of respondents. For SUS, a minimum of 5-10 respondents provides usable scores, though larger samples improve reliability. |
+| 3 | **Sampling method** | Justify the sampling approach — purposive sampling is appropriate for workload evaluation since respondents must have direct experience executing the admission tasks. |
+| 4 | **Sample size** | State the intended number of respondents. For NASA-TLX, the evaluation focuses on the primary staff users (Registrar and Guidance personnel) directly involved in system operations. |
 | 5 | **Inclusion criteria** | Respondents must have actually used SecureCAT features relevant to their role (e.g., proctor must have used the proctoring module, applicant must have completed the application flow). |
 
 ---
 
-### C2-06: Research Instruments — SUS
-**Goal:** Describe the System Usability Scale as the evaluation instrument. 8-12 sentences.
+### C2-06: Research Instruments — NASA-TLX
+**Goal:** Describe the NASA Task Load Index as the evaluation instrument. 8-12 sentences.
 
 | # | Argument | Detail |
 |---|----------|--------|
-| 1 | **Instrument description** | The System Usability Scale (SUS) is a 10-item Likert-type questionnaire that produces a composite usability score from 0 to 100. It is the most widely used usability questionnaire in industry and academia. |
-| 2 | **Why SUS** | SUS is technology-agnostic, quick to administer, and produces a single quantifiable score — making it ideal for capstone-level evaluation where statistical rigor must be practical. |
-| 3 | **Validity and reliability** | SUS has established validity and reliability across thousands of studies. Cite Brooke (1996) as the original source and subsequent meta-analyses confirming its psychometric properties. |
-| 4 | **Administration protocol** | Describe how SUS will be administered: after respondents complete a structured interaction with SecureCAT, they fill out the 10-item questionnaire. The system should be evaluated in context — not just demonstrated. |
-| 5 | **Scoring interpretation** | SUS scores are interpreted against established benchmarks: below 50 = poor, 50-70 = marginal, 70-85 = good, above 85 = excellent. A score above 68 is considered above average. |
-| 6 | **Adaptation** | If any SUS items are adapted for the admission testing context, document the modifications and justify them. Otherwise, use the standard wording. |
+| 1 | **Instrument description** | The NASA Task Load Index (NASA-TLX) is a multi-dimensional assessment tool that measures perceived cognitive and operational workload across six subscales: Mental Demand, Physical Demand, Temporal Demand, Performance, Effort, and Frustration. |
+| 2 | **Why NASA-TLX** | It captures the mental and physical workload shifts experienced by campus staff when moving from manual paper-based processes to automated digital workflows. |
+| 3 | **Validity and reliability** | The instrument has established reliability for assessing administrative software and higher education information systems. Cite Hart & Staveland (1988), Al-Qudah & Al-Sarrayriah (2023), and Loiacono & McCoy (2024). |
+| 4 | **Administration protocol** | Administered in two parts: first, a pairwise comparison of the six dimensions to establish weights; second, rating each dimension on a 100-point scale after executing admissions tasks. |
+| 5 | **Workload profiling** | The results allow researchers to map specific areas of operational stress (e.g., temporal demand or frustration) and compare the digital system directly against manual baselines. |
 
 ---
 
 ### C2-07: Data Analysis
-**Goal:** Describe how SUS data will be analyzed and interpreted. 6-8 sentences.
+**Goal:** Describe how NASA-TLX data will be analyzed and interpreted. 6-8 sentences.
 
 | # | Argument | Detail |
 |---|----------|--------|
-| 1 | **SUS score computation** | Describe the standard SUS scoring formula: sum of odd items (after subtracting 1 from each) plus sum of even items (after subtracting each from 5), multiplied by 2.5. |
-| 2 | **Descriptive statistics** | Report the mean, median, and standard deviation of SUS scores per respondent group (staff vs. applicants, if applicable). |
-| 3 | **Interpretive framework** | Map computed SUS scores to the adjective rating scale (Best Imaginable → Worst Imaginable) and the acceptability ranges (Acceptable / Marginal / Not Acceptable). |
-| 4 | **Qualitative support** | If open-ended feedback is collected alongside SUS, summarize qualitative themes to contextualize the numeric scores. |
-| 5 | **Limitations of analysis** | Acknowledge that with small sample sizes, SUS scores are indicative rather than statistically generalizable. This is acceptable for capstone-level evaluation. |
+| 1 | **Workload score computation** | Detail the calculation of the weighted workload score: multiply each dimension's raw rating (0-100) by its pairwise weight (0-5), sum the products, and divide by 15. |
+| 2 | **Descriptive statistics** | Compute the mean and standard deviation for each of the six subscales to identify which specific workload factors are most affected by the system. |
+| 3 | **Comparative profiling** | Compare the post-implementation workload scores against baseline manual workloads to measure the percentage reduction in cognitive and physical strain. |
+| 4 | **Qualitative validation** | Pair the quantitative scores with qualitative feedback from staff interviews to identify remaining workflow bottlenecks or system adjustments. |
 
 ---
 
