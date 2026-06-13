@@ -202,25 +202,54 @@ def sanitize_bookmark(name: str) -> str:
 def get_or_create_bookmark(doc: Document, tag_name: str, heading_text: str, heading_level: int) -> str:
     bookmark_name = f"tag_{sanitize_bookmark(tag_name)}"
 
-    # Find heading and create bookmark there
-    target_idx = None
+    # 1. Check if the bookmark already exists in the document.
     for i, p in enumerate(doc.paragraphs):
-        if p.style.name.startswith("Heading") and heading_text.lower() in p.text.lower():
-            target_idx = i
-            break
+        if p._p.xpath(f'.//w:bookmarkStart[@w:name="{bookmark_name}"]'):
+            return bookmark_name
 
-    if target_idx is None:
-        for i, p in enumerate(doc.paragraphs):
-            if heading_text.lower() in p.text.lower():
-                target_idx = i
-                break
+    # 2. If it doesn't exist, locate the best paragraph to place it.
+    heading_text_clean = heading_text.strip().lower()
+    
+    # Try exact match on Heading style paragraphs first
+    for i, p in enumerate(doc.paragraphs):
+        if p.style.name.startswith("Heading") and p.text.strip().lower() == heading_text_clean:
+            create_bookmark_at_paragraph(p, bookmark_name)
+            return bookmark_name
 
-    if target_idx is not None:
-        create_bookmark_at_paragraph(doc.paragraphs[target_idx], bookmark_name)
-        return bookmark_name
+    # Try substring match on Heading style paragraphs
+    for i, p in enumerate(doc.paragraphs):
+        if p.style.name.startswith("Heading") and heading_text_clean in p.text.strip().lower():
+            create_bookmark_at_paragraph(p, bookmark_name)
+            return bookmark_name
+
+    # Try exact match on any paragraph (styled Normal or otherwise)
+    for i, p in enumerate(doc.paragraphs):
+        if p.text.strip().lower() == heading_text_clean:
+            create_bookmark_at_paragraph(p, bookmark_name)
+            return bookmark_name
+
+    # Try fuzzy exact matches (e.g. plural vs singular, "and limitation" vs "and delimitations")
+    def normalize_text(t):
+        t = re.sub(r'[^a-z0-9\s]', '', t.lower())
+        t = t.replace('delimitations', 'limitation').replace('delimitations', 'limitations')
+        t = t.replace('limitations', 'limitation')
+        t = t.replace('assignments', 'assignment')
+        t = t.replace('significance', 'importance')
+        t = t.replace('importance', 'significance')
+        return ' '.join(t.split())
+
+    norm_heading = normalize_text(heading_text_clean)
+    for i, p in enumerate(doc.paragraphs):
+        norm_p = normalize_text(p.text)
+        if norm_p == norm_heading or (norm_heading in norm_p and len(norm_p) < 150):
+            create_bookmark_at_paragraph(p, bookmark_name)
+            return bookmark_name
 
     # Fallback: create at end
-    create_bookmark_at_paragraph(doc.paragraphs[-1], bookmark_name)
+    p = doc.paragraphs[-1]
+    existing = p._p.xpath(f'.//w:bookmarkStart[@w:name="{bookmark_name}"]')
+    if not existing:
+        create_bookmark_at_paragraph(p, bookmark_name)
     return bookmark_name
 
 
@@ -236,7 +265,12 @@ def create_bookmark_at_paragraph(paragraph, bookmark_name: str):
 
 
 def find_section_paragraphs(doc: Document, bookmark_name: str, tag_data: dict) -> tuple[int, int]:
-    """Find the start and end paragraph indices for a section identified by bookmark."""
+    """Find the start and end paragraph indices for a section identified by bookmark.
+
+    Section boundaries are determined by the NEXT tag_ bookmark in document order.
+    This avoids the old bug where stopping at 'any bookmarked heading' caused sections
+    to end immediately when all headings are bookmarked.
+    """
     start_idx = -1
     for i, p in enumerate(doc.paragraphs):
         if p._p.xpath(f'.//w:bookmarkStart[@w:name="{bookmark_name}"]'):
@@ -252,37 +286,23 @@ def find_section_paragraphs(doc: Document, bookmark_name: str, tag_data: dict) -
     if start_idx == -1:
         return (-1, -1)
 
-    current_level = 0
-    for p in doc.paragraphs[start_idx:start_idx+1]:
-        if p.style.name.startswith('Heading'):
-            try:
-                current_level = int(p.style.name[-1])
-            except:
-                current_level = 2
+    # Find ALL tag_ bookmarks in document order (deduplicated)
+    seen_tags = set()
+    all_bookmarks = []
+    for i, p in enumerate(doc.paragraphs):
+        for bm in p._p.xpath('.//w:bookmarkStart'):
+            name = bm.get(qn('w:name'))
+            if name and name.startswith('tag_') and name not in seen_tags:
+                seen_tags.add(name)
+                all_bookmarks.append(i)
+    all_bookmarks.sort()
 
+    # End index is the next bookmark AFTER start_idx
     end_idx = len(doc.paragraphs)
-    # Collect all bookmarked heading indices to respect sub-section boundaries
-    bookmarked_heading_indices = set()
-    for ii, pp in enumerate(doc.paragraphs):
-        if pp.style.name.startswith('Heading'):
-            bookmarks_start = pp._p.xpath('.//w:bookmarkStart')
-            if bookmarks_start:
-                bookmarked_heading_indices.add(ii)
-
-    for i in range(start_idx + 1, len(doc.paragraphs)):
-        p = doc.paragraphs[i]
-        if p.style.name.startswith('Heading'):
-            try:
-                level = int(p.style.name[-1])
-            except:
-                level = 2
-            if level <= current_level:
-                end_idx = i
-                break
-            # Also stop at any bookmarked heading (sub-section boundary)
-            if i in bookmarked_heading_indices:
-                end_idx = i
-                break
+    for bm_idx in all_bookmarks:
+        if bm_idx > start_idx:
+            end_idx = bm_idx
+            break
 
     return (start_idx, end_idx)
 
@@ -375,26 +395,49 @@ def delete_paragraphs(doc: Document, start_idx: int, end_idx: int, remove_text: 
         p._element.getparent().remove(p._element)
 
 
-def insert_section_content(doc: Document, start_idx: int, end_idx: int, new_content: str, heading_level: int):
+def insert_section_content(doc: Document, start_idx: int, end_idx: int, new_content: str, heading_level: int, is_references: bool = False):
     if start_idx < 0:
         start_idx = len(doc.paragraphs) - 1
 
     delete_paragraphs(doc, start_idx, end_idx)
-    insert_at = start_idx + 1
+
+    # Get the heading paragraph's XML element for direct insertion
+    heading_element = doc.paragraphs[start_idx]._p
 
     lines = new_content.split('\n')
-    for line in lines:
-        line = line.strip()
-        if not line:
-            continue
+    # Process lines in REVERSE so each insert goes right after heading
+    # (inserting A, B, C after heading in reverse gives: heading → A → B → C)
+    non_empty_lines = [line.strip() for line in lines if line.strip()]
+
+    # Insert in reverse order using addnext (each goes right after heading)
+    for line in reversed(non_empty_lines):
         if line.startswith('#'):
             level = len(line) - len(line.lstrip('#'))
             text = line.lstrip('# ').strip()
             p = doc.add_paragraph(text, style=f'Heading {min(level, 4)}')
+            for run in p.runs:
+                run.font.name = 'Times New Roman'
         else:
             p = doc.add_paragraph(line, style='Normal')
-        move_paragraph_after(p, doc.paragraphs[insert_at])
-        insert_at += 1
+            if is_references:
+                p.paragraph_format.first_line_indent = Inches(-0.5)
+                p.paragraph_format.left_indent = Inches(0.5)
+            else:
+                p.paragraph_format.first_line_indent = Inches(0.5)
+                p.paragraph_format.left_indent = Inches(0)
+            
+            p.paragraph_format.line_spacing = 2.0
+            p.paragraph_format.space_before = Pt(0)
+            p.paragraph_format.space_after = Pt(0)
+            p.alignment = WD_ALIGN_PARAGRAPH.JUSTIFY
+            
+            if not p.runs:
+                p.add_run()
+            for run in p.runs:
+                run.font.name = 'Times New Roman'
+                run.font.size = Pt(12)
+        # Move from end-of-document to right after heading
+        heading_element.addnext(p._p)
 
 
 def move_paragraph_after(paragraph, after_paragraph):
@@ -406,15 +449,23 @@ def apply_updates(doc: Document, tags: dict, update_tags: list = None, change_lo
     if update_tags is None:
         update_tags = list(tags.keys())
 
+    # Pass 1: Ensure all bookmarks are created first at their initial positions.
+    for tag_name in update_tags:
+        if tag_name not in tags:
+            continue
+        tag_data = tags[tag_name]
+        get_or_create_bookmark(doc, tag_name, tag_data['heading'], tag_data['level'])
+
     tag_map = {}
 
+    # Pass 2: Apply updates (delete and insert) using the now stable bookmarks.
     for tag_name in update_tags:
         if tag_name not in tags:
             print(f"⚠️  Tag '{tag_name}' not found in manuscript")
             continue
 
         tag_data = tags[tag_name]
-        bookmark_name = get_or_create_bookmark(doc, tag_name, tag_data['heading'], tag_data['level'])
+        bookmark_name = f"tag_{sanitize_bookmark(tag_name)}"
         start_idx, end_idx = find_section_paragraphs(doc, bookmark_name, tag_data)
 
         tag_map[tag_name] = {
@@ -438,7 +489,7 @@ def apply_updates(doc: Document, tags: dict, update_tags: list = None, change_lo
                 })
 
         if tag_data['update'] and start_idx >= 0:
-            insert_section_content(doc, start_idx, end_idx, tag_data['update'], tag_data['level'])
+            insert_section_content(doc, start_idx, end_idx, tag_data['update'], tag_data['level'], is_references=(tag_name == 'references_list'))
             print(f"  UPDATED content for {tag_name}")
             if change_log is not None:
                 change_log.append({
