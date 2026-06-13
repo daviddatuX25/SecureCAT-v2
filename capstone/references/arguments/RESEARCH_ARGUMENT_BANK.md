@@ -78,6 +78,10 @@
 | **Seasonal applicant volume** | Admission periods create concentrated demand spikes that exceed current staff capacity |
 | **Campus infrastructure constraints** | Wi-Fi reliability, available computers, physical office space limitations |
 | **Regional institutional context** | Compare with nearby SUCs or Ilocos Sur institutions to establish local precedent |
+| **Admissions responsiveness and enrollment choice** | Prospective students apply to multiple colleges; delays in score releasing (taking one to two weeks under manual scoring) cause applicant anxiety and drive attrition to more responsive competing institutions. The admissions timeline acts as a key gate in the student's enrollment decision. |
+| **Dynamic program capacity limits (quotas)** | Program slot availability (BSIT, BSBA, BSED) is limited by classroom facilities (room utilization) and faculty loading. These capacities are dynamic and require coordination between Program Heads, Registrar, and Guidance, but the lack of real-time visibility leads to risk of overallocation and counseling friction. |
+| **Extensible applicant profiling parameters** | Standardizing on K-Means clustering requires capturing additional applicant metrics beyond entrance test scores and GWA, including high school grades in math, science, and English, to support custom counseling and future model extension. |
+
 
 **Note:** All team members are at ISPSC Tagudin — this is your direct observation context. Cite regional studies, ISPSC publications, or comparable Ilocos/Region I institution studies.
 
