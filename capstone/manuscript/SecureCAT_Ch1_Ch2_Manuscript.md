@@ -1,4 +1,4 @@
-<!-- META: docx-sync-version="2026-06-13T18:44:00.580957+00:00" docx-sha256="117d68312b8dc1de060632f55468bbc6c7b0d9e9148d55a1c02d1607c02bf9f7" -->
+<!-- META: docx-sync-version="2026-06-13T18:54:45.070027+00:00" docx-sha256="24f0700c30922ffc4b98ac333cf67ffb9c0463fe7a5e681d633dfdcce1d165b9" -->
 
 
 
@@ -85,14 +85,14 @@ Future Researchers. This study will provide a reusable blueprint for institution
 
 <!-- UPDATE:START -->
 # METHODOLOGY
+
+This chapter presents the procedures for data collection and analysis, covering the research design, software model, project plan, project assignments, population and locale, research instruments, and data analysis.
 <!-- UPDATE:END -->
 
 <!-- TAG: ch2_research_design -->
 ## Research Design
 
 <!-- UPDATE:START -->
-This chapter presents the procedures for data collection and analysis, covering the research design, software model, project plan, project assignments, population and locale, research instruments, and data analysis.
-
 This study employs a descriptive developmental research design, a hybrid methodology that combines descriptive inquiry with iterative system construction and validation (Frey, 2022). This model is used in system-development research in Philippine educational institutions, where the objective is to analyze local administrative challenges and subsequently construct and evaluate a web-based platform to address them (Malaya et al., 2022; Olipas, 2023).
 
 The descriptive component will document the operational workflows, coordination gaps, and infrastructure constraints at ISPSC Tagudin Campus, addressing the first specific objective. Data will be gathered through semi-structured interviews with Registrar and Guidance staff. The developmental component will involve the iterative design, construction, and validation of SecureCAT using the AIDLC software model (Addla, 2026; Raja, 2025), addressing the second specific objective. The evaluation of perceived task workload through the NASA Task Load Index (NASA-TLX) will constitute the descriptive-assessment phase, addressing the third specific objective.
@@ -219,13 +219,9 @@ APPENDICES
 <!-- TAG: appendix_a_use_case -->
 ## APPENDIX A
 
-<!-- UPDATE:START -->
 SCAN OF SIGNED LETTER TO CONDUCT
-<!-- UPDATE:END -->
 
 <!-- TAG: appendix_b_letter_conduct -->
 ## APPENDIX B
 
-<!-- UPDATE:START -->
 USE CASE DIAGRAM
-<!-- UPDATE:END -->
