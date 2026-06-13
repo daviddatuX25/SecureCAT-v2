@@ -384,11 +384,29 @@ def delete_paragraphs(doc: Document, start_idx: int, end_idx: int, remove_text: 
     to_delete = []
     for i in range(start_idx + 1, end_idx):
         p = doc.paragraphs[i]
+        
+        # Check if the paragraph contains a page break or section properties
+        has_page_break = False
+        if p._element.xpath('.//w:pageBreakBefore') or p._element.xpath('.//w:br[@w:type="page"]') or p._element.xpath('.//w:sectPr'):
+            has_page_break = True
+
         if remove_text:
             if remove_text.strip() in p.text:
-                to_delete.append(i)
+                if has_page_break:
+                    # Clear text in runs that don't contain the break
+                    for run in p.runs:
+                        if not run._element.xpath('.//w:br[@w:type="page"]'):
+                            run.text = ""
+                else:
+                    to_delete.append(i)
         else:
-            to_delete.append(i)
+            if has_page_break:
+                # Clear text in runs that don't contain the break
+                for run in p.runs:
+                    if not run._element.xpath('.//w:br[@w:type="page"]'):
+                        run.text = ""
+            else:
+                to_delete.append(i)
 
     for i in reversed(to_delete):
         p = doc.paragraphs[i]
@@ -444,6 +462,28 @@ def move_paragraph_after(paragraph, after_paragraph):
     after_paragraph._p.addnext(paragraph._p)
 
 
+def extract_existing_text(doc: Document, start_idx: int, end_idx: int) -> str:
+    parts = []
+    for i in range(start_idx + 1, end_idx):
+        if i >= len(doc.paragraphs):
+            break
+        p = doc.paragraphs[i]
+        text = p.text.strip()
+        if text:
+            parts.append(text)
+    return "\n\n".join(parts)
+
+
+def normalize_comparable_text(text: str) -> str:
+    if not text:
+        return ""
+    # Remove HTML comments, markdown headings, and normalize spaces/newlines
+    text = re.sub(r'<!--.*?-->', '', text, flags=re.DOTALL)
+    text = re.sub(r'^#+\s+', '', text, flags=re.MULTILINE)
+    text = re.sub(r'\s+', ' ', text)
+    return text.strip().lower()
+
+
 def apply_updates(doc: Document, tags: dict, update_tags: list = None, change_log: list = None) -> dict:
     """Apply legacy TAG-based updates to the document."""
     if update_tags is None:
@@ -489,16 +529,20 @@ def apply_updates(doc: Document, tags: dict, update_tags: list = None, change_lo
                 })
 
         if tag_data['update'] and start_idx >= 0:
-            insert_section_content(doc, start_idx, end_idx, tag_data['update'], tag_data['level'], is_references=(tag_name == 'references_list'))
-            print(f"  UPDATED content for {tag_name}")
-            if change_log is not None:
-                change_log.append({
-                    'source': 'legacy_tag',
-                    'tag': tag_name,
-                    'action': 'update',
-                    'section': tag_data['heading'],
-                    'details': tag_data['update'][:100]
-                })
+            existing_text = extract_existing_text(doc, start_idx, end_idx)
+            if normalize_comparable_text(tag_data['update']) == normalize_comparable_text(existing_text):
+                print(f"  SKIPPED update for {tag_name} (content matches)")
+            else:
+                insert_section_content(doc, start_idx, end_idx, tag_data['update'], tag_data['level'], is_references=(tag_name == 'references_list'))
+                print(f"  UPDATED content for {tag_name}")
+                if change_log is not None:
+                    change_log.append({
+                        'source': 'legacy_tag',
+                        'tag': tag_name,
+                        'action': 'update',
+                        'section': tag_data['heading'],
+                        'details': tag_data['update'][:100]
+                    })
 
         if not tag_data['update'] and not tag_data['remove']:
             print(f"  No changes for {tag_name}")
