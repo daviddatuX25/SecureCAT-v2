@@ -100,9 +100,10 @@
 
 ---
 
-### Angle 6: Acronym/Initialism (12) — defense-panel friendly
+### Angle 6: Acronym/Initialism (13) — defense-panel friendly
 | Acronym | Expansion | Rationale | Title Compatibility |
 |---------|-----------|-----------|---------------------|
+| **SICAAT** | **S**ecure **I**ntelligent **C**entral **A**utomated **A**dmission **T**echnology | ⭐ **FEATURED CANDIDATE** — Directly addresses panel feedback; each letter maps to a core pillar; "Zero Trust" + "Intelligent" + "RAG" in title; professional gravitas; no animal association | ✅ All templates |
 | **CATS** | **C**ollege **A**dmission **T**esting **S**ystem | Retains "CAT" professionally | ✅ All templates |
 | **RACATS** | **R**ole-based **A**dmission **C**ollege **A**dmission **T**esting **S**ystem | Descriptive, complete | ✅ All templates |
 | **ADAPT** | **A**dmission **D**igital **A**utomation **P**latform **T**esting | Action verb, adaptive | ✅ All templates |
@@ -126,6 +127,7 @@
 **Ready-to-use examples:**
 | Brand | Full Title |
 |-------|------------|
+| **SICAAT** | SICAAT: A Zero Trust Infrastructure for Streamlined Admissions and Examination Management, with Integrated Machine Learning and Retrieval-Augmented Generation for Adaptive Student Counseling and Support at ISPSC Tagudin Campus |
 | **AdmitCore** | AdmitCore: A Role-Based College Admission Testing System for the Guidance and Registrar Offices at ISPSC Tagudin Campus |
 | **AdmitFlow** | AdmitFlow: An Integrated College Admission Testing Platform for the Guidance and Registrar Offices at ISPSC Tagudin Campus |
 | **TrustAdmit** | TrustAdmit: A Secure Role-Based College Admission Testing System for the Guidance and Registrar Offices at ISPSC Tagudin Campus |
@@ -145,6 +147,7 @@
 **Ready-to-use examples:**
 | Brand | Full Title |
 |-------|------------|
+| **SICAAT** | SICAAT: Addressing Operational Fragmentation in College Admission Testing through Zero Trust Infrastructure, Integrated ML Triaging, and RAG-Powered Adaptive Counseling at ISPSC Tagudin Campus |
 | **AdmitCore** | AdmitCore: Addressing Operational Fragmentation in College Admission Testing through Role-Based Digital Integration at ISPSC Tagudin Campus |
 | **AdmitFlow** | AdmitFlow: Unifying Admission Workflows via Role-Based Digital Integration at ISPSC Tagudin Campus |
 | **TrustAdmit** | TrustAdmit: Securing Admission Integrity through Cryptographic Verification and Role-Based Access at ISPSC Tagudin Campus |
@@ -160,6 +163,7 @@
 **Ready-to-use examples:**
 | Brand | Full Title |
 |-------|------------|
+| **SICAAT** | SICAAT: A Zero Trust, AI-Enhanced Admission Testing Platform with HMAC-SHA256 Score Integrity, Live K-Means Triaging, RAG-Powered Counseling, and PWA Offline Resilience at ISPSC Tagudin Campus |
 | **AdmitCore** | AdmitCore: A Cryptographically Secured, AI-Enhanced College Admission Testing Platform with Offline-Resilient Architecture for ISPSC Tagudin Campus |
 | **AdmitFlow** | AdmitFlow: An Integrated Admission Platform with HMAC-SHA256 Score Integrity, Live K-Means Triage, and PWA Offline Support at ISPSC Tagudin Campus |
 | **TrustAdmit** | TrustAdmit: Zero-Trust Admission Testing with Cryptographic Score Verification and Automated OMR at ISPSC Tagudin Campus |
@@ -186,6 +190,7 @@
 **Ready-to-use examples:**
 | Brand | Full Title |
 |-------|------------|
+| **SICAAT** | SICAAT: Zero Trust Admission Testing with Integrated ML & RAG — ISPSC Tagudin Campus |
 | **AdmitCore** | AdmitCore: Role-Based College Admission Testing System — ISPSC Tagudin Campus |
 | **CATS** | CATS: College Admission Testing System — ISPSC Tagudin Campus |
 | **AdmitFlow** | AdmitFlow: Integrated Admission Testing Platform — ISPSC Tagudin Campus |
@@ -198,6 +203,7 @@
 
 | Brand | Subtitle Options (pick one) |
 |-------|----------------------------|
+| **SICAAT** | "Zero Trust. Intelligent. Centralized." \| "Secure Intelligent Central Automated Admission Technology" \| "Where Security Meets Intelligence in Admission" |
 | **AdmitCore** | "The Core Platform for Admission Integrity" \| "Where Admission Workflows Converge" \| "Centralized. Verified. Trusted." |
 | **AdmitFlow** | "End-to-End Admission, Simplified" \| "From Application to Admission — One Flow" \| "Unifying the Admission Pipeline" |
 | **TrustAdmit** | "Score Integrity, Guaranteed" \| "Cryptographically Verified Admission" \| "Zero-Trust Admission Testing" |
@@ -219,9 +225,10 @@
 
 ### If Panel Asks: "Which name do you prefer?"
 > **Have top 3 ready with rationale:**
-> 1. **AdmitCore** — Professional, architecture-descriptive, zero ambiguity
-> 2. **AdmitFlow** — Value-descriptive (end-to-end flow), modern
-> 3. **TrustAdmit** — Security-leading, matches HMAC-SHA256/audit trail core
+> 1. **SICAAT** — ⭐ Featured candidate; directly answers panel feedback; each letter = core pillar (Secure, Intelligent, Central, Automated, Admission, Technology); title encapsulates Zero Trust + ML + RAG; zero animal association; highest decision matrix score
+> 2. **AdmitCore** — Professional, architecture-descriptive, zero ambiguity
+> 3. **AdmitFlow** — Value-descriptive (end-to-end flow), modern
+> 4. **TrustAdmit** — Security-leading, matches HMAC-SHA256/audit trail core
 
 ---
 
@@ -229,6 +236,7 @@
 
 | Brand | Professional Gravitas | Security Signaling | Guidance Signaling | Cultural Fit | Acronym Safe | Panel Risk |
 |-------|----------------------|-------------------|-------------------|--------------|--------------|------------|
+| **SICAAT** | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐ | ✅ | Lowest |
 | **AdmitCore** | ⭐⭐⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐ | ⭐⭐⭐ | ✅ | Low |
 | **AdmitFlow** | ⭐⭐⭐⭐ | ⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐ | ✅ | Low |
 | **TrustAdmit** | ⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐ | ⭐⭐ | ✅ | Low |
@@ -239,6 +247,19 @@
 | **CATS** | ⭐⭐⭐ | ⭐⭐ | ⭐⭐ | ⭐⭐⭐ | ✅ | Lowest |
 | **VeriAdmit** | ⭐⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐ | ⭐⭐ | ✅ | Low |
 | **Orient** | ⭐⭐⭐⭐ | ⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐ | ✅ | Low |
+
+---
+
+## 🏆 Recommended Shortlist (Team Discussion)
+
+| Rank | Brand | Why |
+|------|-------|-----|
+| 1 | **SICAAT** | ⭐ **FEATURED** — Directly answers panel feedback; each letter = core pillar (Secure, Intelligent, Central, Automated, Admission, Technology); title includes Zero Trust, ML, RAG; zero animal association; highest decision matrix score |
+| 2 | **AdmitCore** | Professional, describes architecture (core platform), no ambiguity |
+| 3 | **AdmitFlow** | Describes value (end-to-end flow), modern, panel-friendly |
+| 4 | **TrustAdmit** | Leads with security value prop, matches HMAC-SHA256 + audit |
+| 5 | **GuidePath** | Honors Guidance Office as "heart," human-centered |
+| 6 | **CATS** | Minimal change, expands acronym professionally, safe |
 
 ---
 
