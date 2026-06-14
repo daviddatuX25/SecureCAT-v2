@@ -131,8 +131,8 @@
 ### C1-11: Scope & Delimitations
 
 **Scope paragraph must include:**
-- User types: Applicants, Registrar Staff, Guidance Counselors, Proctors, Test Administrators, Super Administrators
-- Modules: Application intake, exam scheduling, proctor/roster management, score recording (manual + CSV + OMR), AI companion, consultation summaries, result release, document generation
+- User types: Applicants, Registrar Staff, Guidance Counselors, Proctors, Test Administrators, Super Administrators, Program Heads
+- Modules: Application intake, exam scheduling, proctor/roster management, score recording (manual + CSV + OMR), AI companion, consultation summaries, result release, document generation, program quota management
 - Locale: ISPSC Tagudin, Tagudin, Ilocos Sur
 - Timeframe: [development period]
 - **PWA justification:** "Delivered as a PWA rather than a native mobile application because admission applicants are seasonal users for whom native app installation represents disproportionate overhead."
