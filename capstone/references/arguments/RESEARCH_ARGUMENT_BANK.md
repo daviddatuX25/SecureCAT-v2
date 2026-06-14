@@ -116,14 +116,15 @@
 ---
 
 ### C1-09: Objectives
-**Standard three-objective structure:**
+**Four-objective structure (aligned with BSIT Capstone Template):**
 
 | Objective | Content | Notes |
 |-----------|---------|-------|
 | **General** | "To develop SecureCAT, a role-based college admission testing system for the Guidance and Registrar Offices at ISPSC Tagudin" | Must match title exactly |
-| **Specific 1 — Identify** | Document existing admission processes, operational workflows, manual process dependencies, current utilization and operational limitations of the deployed foundational digital system, and institutional requirements at ISPSC Tagudin | Covers: current workflows, deployed system usage, architectural gaps, pain points, staff roles, applicant journey, infrastructure constraints |
-| **Specific 2 — Develop** | Build the system with RBAC + zero-trust security, AI-assisted guidance, automated scoring capabilities, offline-resilient proctoring, and multi-tenant data architecture | Covers: all six pillars as features |
-| **Specific 3 — Evaluate** | Evaluate the usability and user acceptance of the developed system using the System Usability Scale (SUS) and the Technology Acceptance Model (TAM) questionnaire through simulated user acceptance testing with proxy evaluators | Use "usability and user acceptance" — SUS measures perceived usability, TAM measures acceptance (PU + PEOU). Simulated UAT replaces real applicant testing because the development window does not overlap with an admission cycle. See METHODOLOGY_SHIFT_SUS_TAM.md for full rationale. |
+| **Specific 1 — Analyze** | To analyze the existing admission testing processes, operational workflows, and process gaps at ISPSC Tagudin Campus through descriptive inquiry | Covers: current workflows, deployed system usage, architectural gaps, pain points, staff roles, applicant journey, infrastructure constraints |
+| **Specific 2 — Determine Functional Requirements** | To determine the functional requirements of SecureCAT including web-based application intake, time-limited account activation, examination scheduling with proctor assignment, computer-vision OMR score import, consultation recording, CSV score import, and admission slip and result document generation | Data input / transactional features (what the system *does*) |
+| **Specific 3 — Determine System Features** | To determine the system features of SecureCAT including role-based access control with HMAC-SHA256 cryptographic score integrity, dynamic course quota tracking, live K-Means course triage with extensible applicant profiling, offline-resilient proctoring via Progressive Web Application, AI-assisted scheduling with administrator approval gates, RAG-powered AI companion for applicant guidance, real-time status tracking, and audit logging with role-based data isolation aligned with Republic Act No. 10173 | Quality / architectural features (how the system *behaves*) |
+| **Specific 4 — Evaluate** | To evaluate the developed system based on software quality standards of usability and user acceptance using the System Usability Scale (SUS) and the Technology Acceptance Model (TAM) questionnaire through simulated user acceptance testing with proxy evaluators | SUS measures perceived usability; TAM measures PU + PEOU. Simulated UAT replaces real applicant testing because the development window does not overlap with an admission cycle. See METHODOLOGY_SHIFT_SUS_TAM.md for full rationale. |
 
 ---
 
