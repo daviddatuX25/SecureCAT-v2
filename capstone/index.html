@@ -1,0 +1,970 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SecureCAT-v2 — Capstone Manuscript Hub</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-dark: #0f172a;
+            --bg-card: rgba(30, 41, 59, 0.7);
+            --bg-card-solid: #1e293b;
+            --border-color: rgba(255, 255, 255, 0.08);
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --primary: #6366f1;
+            --primary-glow: rgba(99, 102, 241, 0.15);
+            --primary-hover: #4f46e5;
+            --color-ch1: #a855f7;
+            --color-ch2: #ec4899;
+            --color-ref: #06b6d4;
+            --color-strat: #f59e0b;
+            --color-guide: #10b981;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            min-height: 100vh;
+            line-height: 1.5;
+            overflow-x: hidden;
+            background-image:
+                radial-gradient(circle at 10% 20%, rgba(99, 102, 241, 0.1) 0%, transparent 40%),
+                radial-gradient(circle at 90% 80%, rgba(236, 72, 153, 0.08) 0%, transparent 40%);
+            background-attachment: fixed;
+        }
+
+        /* ── Header ── */
+        header {
+            padding: 48px 20px 24px;
+            max-width: 1100px;
+            margin: 0 auto;
+            text-align: center;
+        }
+
+        .logo-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+
+        .logo-icon {
+            font-size: 2.2rem;
+            filter: drop-shadow(0 0 10px var(--primary));
+            animation: float 4s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-6px); }
+        }
+
+        h1 {
+            font-family: 'Outfit', sans-serif;
+            font-size: 2.4rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #fff 30%, #a5b4fc 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: -0.02em;
+        }
+
+        .subtitle {
+            color: var(--text-muted);
+            font-size: 1.05rem;
+            max-width: 620px;
+            margin: 8px auto 0;
+            font-weight: 300;
+        }
+
+        /* ── Defense Countdown Banner ── */
+        .defense-banner {
+            display: inline-flex;
+            align-items: center;
+            gap: 16px;
+            margin-top: 20px;
+            padding: 14px 28px;
+            border-radius: 16px;
+            background: linear-gradient(135deg, rgba(239, 68, 68, 0.15) 0%, rgba(245, 158, 11, 0.12) 100%);
+            border: 1.5px solid rgba(239, 68, 68, 0.3);
+            box-shadow: 0 0 24px rgba(239, 68, 68, 0.1), 0 4px 12px rgba(0, 0, 0, 0.2);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .defense-banner::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.04), transparent);
+            animation: shimmer 3s ease-in-out infinite;
+        }
+
+        @keyframes shimmer {
+            0%, 100% { transform: translateX(-100%); }
+            50% { transform: translateX(100%); }
+        }
+
+        .defense-banner-icon {
+            font-size: 1.5rem;
+            position: relative;
+            z-index: 1;
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.12); }
+        }
+
+        .defense-banner-text {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            position: relative;
+            z-index: 1;
+            text-align: left;
+        }
+
+        .defense-banner-title {
+            font-family: 'Outfit', sans-serif;
+            font-size: 1.05rem;
+            font-weight: 700;
+            color: #fff;
+        }
+
+        .defense-banner-desc {
+            font-size: 0.8rem;
+            color: #fca5a5;
+        }
+
+        .defense-countdown {
+            font-family: 'Outfit', sans-serif;
+            font-size: 1.3rem;
+            font-weight: 800;
+            color: #fca5a5;
+            padding-left: 16px;
+            border-left: 1px solid rgba(239, 68, 68, 0.3);
+            position: relative;
+            z-index: 1;
+        }
+
+        /* ── Main Layout ── */
+        main {
+            max-width: 1100px;
+            margin: 0 auto 80px;
+            padding: 0 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 32px;
+        }
+
+        /* ── Manuscript Hero Card ── */
+        .manuscript-hero {
+            background: var(--bg-card);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            padding: 32px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .manuscript-hero::after {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -20%;
+            width: 400px;
+            height: 400px;
+            background: radial-gradient(circle, rgba(99, 102, 241, 0.08) 0%, transparent 70%);
+            pointer-events: none;
+        }
+
+        .hero-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 8px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .hero-header h2 {
+            font-family: 'Outfit', sans-serif;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #fff;
+        }
+
+        .hero-tag {
+            font-size: 0.7rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            padding: 3px 10px;
+            border-radius: 6px;
+            background: rgba(34, 197, 94, 0.15);
+            color: #4ade80;
+            border: 1px solid rgba(34, 197, 94, 0.3);
+        }
+
+        .hero-desc {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+            margin-bottom: 24px;
+            position: relative;
+            z-index: 1;
+            max-width: 700px;
+        }
+
+        .hero-links {
+            display: flex;
+            gap: 16px;
+            flex-wrap: wrap;
+            position: relative;
+            z-index: 1;
+        }
+
+        .hero-link {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 14px 24px;
+            border-radius: 12px;
+            text-decoration: none;
+            font-family: 'Outfit', sans-serif;
+            font-weight: 600;
+            font-size: 0.95rem;
+            transition: all 0.25s ease;
+            border: 1px solid transparent;
+        }
+
+        .hero-link-primary {
+            background: var(--primary);
+            color: #fff;
+            box-shadow: 0 4px 16px rgba(99, 102, 241, 0.3);
+        }
+
+        .hero-link-primary:hover {
+            background: var(--primary-hover);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(99, 102, 241, 0.4);
+        }
+
+        .hero-link-secondary {
+            background: rgba(255, 255, 255, 0.05);
+            color: #e2e8f0;
+            border-color: var(--border-color);
+        }
+
+        .hero-link-secondary:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
+        }
+
+        .hero-link-icon { font-size: 1.2rem; }
+
+        .hero-meta {
+            display: flex;
+            gap: 20px;
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid var(--border-color);
+            position: relative;
+            z-index: 1;
+            flex-wrap: wrap;
+        }
+
+        .hero-meta-item {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .hero-meta-label {
+            font-size: 0.7rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+        }
+
+        .hero-meta-value {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: #e2e8f0;
+        }
+
+        /* ── Section Headers ── */
+        .section-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 16px;
+        }
+
+        .section-header h3 {
+            font-family: 'Outfit', sans-serif;
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: #fff;
+        }
+
+        .section-header .section-icon {
+            font-size: 1.3rem;
+        }
+
+        .section-header .section-line {
+            flex: 1;
+            height: 1px;
+            background: linear-gradient(90deg, var(--border-color), transparent);
+        }
+
+        /* ── Manuscript Structure ── */
+        .structure-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        @media (max-width: 768px) {
+            .structure-grid { grid-template-columns: 1fr; }
+        }
+
+        .chapter-card {
+            background: var(--bg-card);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 24px;
+            transition: border-color 0.3s ease;
+        }
+
+        .chapter-card:hover { border-color: rgba(255,255,255,0.15); }
+
+        .chapter-title {
+            font-family: 'Outfit', sans-serif;
+            font-size: 1.1rem;
+            font-weight: 700;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .chapter-badge {
+            font-size: 0.7rem;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        .badge-ch1 { background: rgba(168, 85, 247, 0.15); color: #d8b4fe; border: 1px solid rgba(168, 85, 247, 0.3); }
+        .badge-ch2 { background: rgba(236, 72, 153, 0.15); color: #fbcfe8; border: 1px solid rgba(236, 72, 153, 0.3); }
+
+        .section-list {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .section-list li {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            padding: 8px 10px;
+            border-radius: 8px;
+            transition: background 0.2s ease;
+            font-size: 0.9rem;
+        }
+
+        .section-list li:hover { background: rgba(255,255,255,0.03); }
+
+        .section-num {
+            font-family: 'Outfit', sans-serif;
+            font-weight: 700;
+            font-size: 0.75rem;
+            min-width: 24px;
+            height: 24px;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .section-num.ch1 { background: rgba(168, 85, 247, 0.15); color: #c4b5fd; }
+        .section-num.ch2 { background: rgba(236, 72, 153, 0.15); color: #f9a8d4; }
+
+        .section-name {
+            color: #e2e8f0;
+            font-weight: 500;
+        }
+
+        .section-detail {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            display: block;
+        }
+
+        /* ── References Grid ── */
+        .ref-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 16px;
+        }
+
+        .ref-card {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            background: var(--bg-card);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid var(--border-color);
+            border-radius: 14px;
+            padding: 20px;
+            text-decoration: none;
+            color: inherit;
+            transition: all 0.25s ease;
+            position: relative;
+        }
+
+        .ref-card:hover {
+            transform: translateY(-3px);
+            border-color: rgba(6, 182, 212, 0.3);
+            box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+        }
+
+        .ref-card-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .ref-card-icon { font-size: 1.1rem; }
+
+        .ref-card-title {
+            font-family: 'Outfit', sans-serif;
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: #fff;
+        }
+
+        .ref-card-desc {
+            font-size: 0.82rem;
+            color: var(--text-muted);
+            line-height: 1.5;
+        }
+
+        .ref-card-tag {
+            font-size: 0.68rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            padding: 2px 8px;
+            border-radius: 4px;
+            align-self: flex-start;
+        }
+
+        .tag-truth { background: rgba(34, 197, 94, 0.15); color: #4ade80; border: 1px solid rgba(34, 197, 94, 0.3); }
+        .tag-study { background: rgba(6, 182, 212, 0.15); color: #67e8f9; border: 1px solid rgba(6, 182, 212, 0.3); }
+        .tag-eval { background: rgba(168, 85, 247, 0.15); color: #d8b4fe; border: 1px solid rgba(168, 85, 247, 0.3); }
+        .tag-integration { background: rgba(245, 158, 11, 0.15); color: #fde047; border: 1px solid rgba(245, 158, 11, 0.3); }
+
+        .ref-card-path {
+            font-family: 'Courier New', monospace;
+            font-size: 0.7rem;
+            color: rgba(148, 163, 184, 0.6);
+            margin-top: 4px;
+        }
+
+        /* ── Strategy Section ── */
+        .strategy-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 16px;
+        }
+
+        .strat-card {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            background: var(--bg-card);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid var(--border-color);
+            border-radius: 14px;
+            padding: 20px;
+            text-decoration: none;
+            color: inherit;
+            transition: all 0.25s ease;
+        }
+
+        .strat-card:hover {
+            transform: translateY(-3px);
+            border-color: rgba(245, 158, 11, 0.3);
+            box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+        }
+
+        .strat-card-coming {
+            opacity: 0.5;
+            border-style: dashed;
+        }
+
+        .strat-card-coming:hover {
+            transform: none;
+            border-color: var(--border-color);
+            box-shadow: none;
+        }
+
+        .coming-soon-badge {
+            font-size: 0.65rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            padding: 2px 8px;
+            border-radius: 4px;
+            background: rgba(148, 163, 184, 0.1);
+            color: var(--text-muted);
+            border: 1px dashed rgba(148, 163, 184, 0.3);
+            align-self: flex-start;
+        }
+
+        /* ── Guides Strip ── */
+        .guides-strip {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .guide-pill {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 18px;
+            border-radius: 30px;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            text-decoration: none;
+            color: #cbd5e1;
+            font-size: 0.85rem;
+            font-weight: 500;
+            transition: all 0.2s ease;
+        }
+
+        .guide-pill:hover {
+            color: #fff;
+            background: rgba(16, 185, 129, 0.08);
+            border-color: rgba(16, 185, 129, 0.3);
+            transform: translateY(-2px);
+        }
+
+        /* ── Footer ── */
+        footer {
+            max-width: 1100px;
+            margin: 0 auto 40px;
+            padding: 24px 20px;
+            text-align: center;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .footer-text {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+
+        .footer-links {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-top: 12px;
+            flex-wrap: wrap;
+        }
+
+        .footer-link {
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 0.8rem;
+            transition: color 0.2s ease;
+        }
+
+        .footer-link:hover { color: #a5b4fc; }
+
+        /* ── Misc ── */
+        .external-icon {
+            font-size: 0.7rem;
+            opacity: 0.6;
+            margin-left: 4px;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="logo-container">
+            <span class="logo-icon">🛡️</span>
+            <h1>SecureCAT-v2 Capstone Hub</h1>
+        </div>
+        <p class="subtitle">Manuscript portal and reference index for Chapter 1 &amp; 2 — ISPSC Tagudin Campus</p>
+        <div class="defense-banner">
+            <span class="defense-banner-icon">🎯</span>
+            <div class="defense-banner-text">
+                <span class="defense-banner-title">System Proposal Defense</span>
+                <span class="defense-banner-desc">Monday, June 15, 2026</span>
+            </div>
+            <span class="defense-countdown" id="countdown">—</span>
+        </div>
+    </header>
+
+    <main>
+        <!-- ═══════════════════════════════════════ -->
+        <!--          MANUSCRIPT HERO CARD            -->
+        <!-- ═══════════════════════════════════════ -->
+        <section class="manuscript-hero">
+            <div class="hero-header">
+                <span style="font-size:1.4rem">📄</span>
+                <h2>SecureCAT Ch1 &amp; Ch2 Manuscript</h2>
+                <span class="hero-tag">Single Source</span>
+            </div>
+            <p class="hero-desc">
+                The consolidated manuscript markdown is the canonical source of truth for all Chapter 1 (Introduction) and Chapter 2 (Methodology) content. All section drafts have been merged into this file. The Google Drive DOCX is the defense master with heading bookmarks.
+            </p>
+            <div class="hero-links">
+                <a href="https://drive.google.com/file/d/1k_vK5tDgLBt242ooOT_5lGpOxKxIFT5_/view" target="_blank" rel="noopener" class="hero-link hero-link-primary">
+                    <span class="hero-link-icon">📁</span>
+                    <span>Open Defense Master (Google Drive)</span>
+                    <span class="external-icon">↗</span>
+                </a>
+                <a href="https://github.com/daviddatuX25/SecureCAT-v2/blob/master/capstone/manuscript/SecureCAT_Ch1_Ch2_Manuscript.md" target="_blank" rel="noopener" class="hero-link hero-link-secondary">
+                    <span class="hero-link-icon">📝</span>
+                    <span>View Manuscript MD (GitHub)</span>
+                    <span class="external-icon">↗</span>
+                </a>
+            </div>
+            <div class="hero-meta">
+                <div class="hero-meta-item">
+                    <span class="hero-meta-label">Stack</span>
+                    <span class="hero-meta-value">Laravel 12 · Inertia v2 · Svelte 5 · Tailwind 4</span>
+                </div>
+                <div class="hero-meta-item">
+                    <span class="hero-meta-label">Model</span>
+                    <span class="hero-meta-value">AIDLC (Inception → Construction → Operations)</span>
+                </div>
+                <div class="hero-meta-item">
+                    <span class="hero-meta-label">Instruments</span>
+                    <span class="hero-meta-value">SUS + TAM (simulated UAT)</span>
+                </div>
+                <div class="hero-meta-item">
+                    <span class="hero-meta-label">ML Module</span>
+                    <span class="hero-meta-value">K-Means (K=4) · FastAPI sidecar</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- ═══════════════════════════════════════ -->
+        <!--        MANUSCRIPT STRUCTURE             -->
+        <!-- ═══════════════════════════════════════ -->
+        <section>
+            <div class="section-header">
+                <span class="section-icon">📖</span>
+                <h3>Manuscript Structure</h3>
+                <span class="section-line"></span>
+            </div>
+            <div class="structure-grid">
+                <!-- Chapter 1 -->
+                <div class="chapter-card">
+                    <div class="chapter-title">
+                        <span class="chapter-badge badge-ch1">Ch 1</span>
+                        <span>Introduction</span>
+                    </div>
+                    <ul class="section-list">
+                        <li>
+                            <span class="section-num ch1">1</span>
+                            <div><span class="section-name">Background of the Study</span><span class="section-detail">Core problem · Global · National · Local · Synthesis &amp; Gap · Clincher</span></div>
+                        </li>
+                        <li>
+                            <span class="section-num ch1">2</span>
+                            <div><span class="section-name">Conceptual Framework</span><span class="section-detail">Input-Process-Output (IPO) Diagram</span></div>
+                        </li>
+                        <li>
+                            <span class="section-num ch1">3</span>
+                            <div><span class="section-name">Objectives of the Study</span><span class="section-detail">1 general + 4 specific objectives</span></div>
+                        </li>
+                        <li>
+                            <span class="section-num ch1">4</span>
+                            <div><span class="section-name">Scope and Limitation</span><span class="section-detail">6 user roles · May–Aug 2026 · RA 10173 compliance</span></div>
+                        </li>
+                        <li>
+                            <span class="section-num ch1">5</span>
+                            <div><span class="section-name">Importance of the Study</span><span class="section-detail">Community · Registrar · Guidance · Respondents · Dept · Students · Researchers</span></div>
+                        </li>
+                    </ul>
+                </div>
+                <!-- Chapter 2 -->
+                <div class="chapter-card">
+                    <div class="chapter-title">
+                        <span class="chapter-badge badge-ch2">Ch 2</span>
+                        <span>Methodology</span>
+                    </div>
+                    <ul class="section-list">
+                        <li>
+                            <span class="section-num ch2">1</span>
+                            <div><span class="section-name">Research Design</span><span class="section-detail">Descriptive developmental (Frey, 2022)</span></div>
+                        </li>
+                        <li>
+                            <span class="section-num ch2">2</span>
+                            <div><span class="section-name">Software Development Model</span><span class="section-detail">AIDLC — Inception · Construction · Operations</span></div>
+                        </li>
+                        <li>
+                            <span class="section-num ch2">3</span>
+                            <div><span class="section-name">Project Plan</span><span class="section-detail">Gantt Chart — May to August 2026</span></div>
+                        </li>
+                        <li>
+                            <span class="section-num ch2">4</span>
+                            <div><span class="section-name">Project Assignments</span><span class="section-detail">Table 1 — 5 roles across 3 members</span></div>
+                        </li>
+                        <li>
+                            <span class="section-num ch2">5</span>
+                            <div><span class="section-name">Population and Locale</span><span class="section-detail">ISPSC Tagudin · Proxy evaluators · Purposive sampling</span></div>
+                        </li>
+                        <li>
+                            <span class="section-num ch2">6</span>
+                            <div><span class="section-name">Research Instruments</span><span class="section-detail">SUS (10-item) + TAM (PU/PEOU, 7-point)</span></div>
+                        </li>
+                        <li>
+                            <span class="section-num ch2">7</span>
+                            <div><span class="section-name">Data Analysis</span><span class="section-detail">Thematic analysis · SUS scoring · TAM means</span></div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- ═══════════════════════════════════════ -->
+        <!--      REFERENCES & TRUTH SOURCES         -->
+        <!-- ═══════════════════════════════════════ -->
+        <section>
+            <div class="section-header">
+                <span class="section-icon">📚</span>
+                <h3>References &amp; Truth Sources</h3>
+                <span class="section-line"></span>
+            </div>
+            <div class="ref-grid">
+                <a href="https://github.com/daviddatuX25/SecureCAT-v2/blob/master/capstone/references/arguments/RESEARCH_ARGUMENT_BANK.md" target="_blank" rel="noopener" class="ref-card">
+                    <div class="ref-card-header">
+                        <span class="ref-card-icon">⚖️</span>
+                        <span class="ref-card-title">Research Argument Bank</span>
+                    </div>
+                    <span class="ref-card-desc">Ground-truth arguments, evidence, and citations organized by section ID. Every paragraph in the manuscript traces back to an entry here.</span>
+                    <span class="ref-card-tag tag-truth">Ground Truth</span>
+                    <span class="ref-card-path">references/arguments/RESEARCH_ARGUMENT_BANK.md</span>
+                </a>
+                <a href="https://github.com/daviddatuX25/SecureCAT-v2/blob/master/capstone/references/evaluation/EVALUATION_STRATEGY.md" target="_blank" rel="noopener" class="ref-card">
+                    <div class="ref-card-header">
+                        <span class="ref-card-icon">📊</span>
+                        <span class="ref-card-title">Evaluation Strategy</span>
+                    </div>
+                    <span class="ref-card-desc">SUS + TAM dual-instrument framework. Why NASA-TLX was rejected. Simulated UAT with proxy evaluators methodology.</span>
+                    <span class="ref-card-tag tag-eval">Evaluation</span>
+                    <span class="ref-card-path">references/evaluation/EVALUATION_STRATEGY.md</span>
+                </a>
+                <a href="https://github.com/daviddatuX25/SecureCAT-v2/blob/master/capstone/research/METHODOLOGY_SHIFT_SUS_TAM.md" target="_blank" rel="noopener" class="ref-card">
+                    <div class="ref-card-header">
+                        <span class="ref-card-icon">🔄</span>
+                        <span class="ref-card-title">Methodology Shift: TLX → SUS+TAM</span>
+                    </div>
+                    <span class="ref-card-desc">June 14 decision document. Rationale for replacing NASA-TLX with SUS + TAM under simulated UAT constraints.</span>
+                    <span class="ref-card-tag tag-eval">Decision Log</span>
+                    <span class="ref-card-path">research/METHODOLOGY_SHIFT_SUS_TAM.md</span>
+                </a>
+                <a href="https://github.com/daviddatuX25/SecureCAT-v2/blob/master/capstone/references/studies/STUDY1_YUKEE_EXTRACTION.md" target="_blank" rel="noopener" class="ref-card">
+                    <div class="ref-card-header">
+                        <span class="ref-card-icon">🔬</span>
+                        <span class="ref-card-title">Study 1 — Yukee et al. (2025)</span>
+                    </div>
+                    <span class="ref-card-desc">K-Means clustering on ICAT scores (K=4). School-owned source code adopted for the ML triage module. ISPSC Tagudin.</span>
+                    <span class="ref-card-tag tag-study">ML Source</span>
+                    <span class="ref-card-path">references/studies/STUDY1_YUKEE_EXTRACTION.md</span>
+                </a>
+                <a href="https://github.com/daviddatuX25/SecureCAT-v2/blob/master/capstone/references/studies/STUDY2_BALLESTEROS_EXTRACTION.md" target="_blank" rel="noopener" class="ref-card">
+                    <div class="ref-card-header">
+                        <span class="ref-card-icon">🔬</span>
+                        <span class="ref-card-title">Study 2 — Ballesteros et al. (2025)</span>
+                    </div>
+                    <span class="ref-card-desc">FreshGroup: first-year student profile clustering. Second school-owned algorithm source for adopt-and-tweak integration.</span>
+                    <span class="ref-card-tag tag-study">ML Source</span>
+                    <span class="ref-card-path">references/studies/STUDY2_BALLESTEROS_EXTRACTION.md</span>
+                </a>
+                <a href="https://github.com/daviddatuX25/SecureCAT-v2/blob/master/capstone/references/integration/INTEGRATION_SPEC_2025STUDIES.md" target="_blank" rel="noopener" class="ref-card">
+                    <div class="ref-card-header">
+                        <span class="ref-card-icon">🔌</span>
+                        <span class="ref-card-title">Integration Spec — 2025 Studies</span>
+                    </div>
+                    <span class="ref-card-desc">Option C architecture: Python FastAPI sidecar with bidirectional streaming to Laravel. How Yukee/Ballesteros code is wrapped.</span>
+                    <span class="ref-card-tag tag-integration">Architecture</span>
+                    <span class="ref-card-path">references/integration/INTEGRATION_SPEC_2025STUDIES.md</span>
+                </a>
+                <a href="https://github.com/daviddatuX25/SecureCAT-v2/blob/master/capstone/references/integration/REGISTRAR_GUIDANCE_2026_ADMISSIONS_OBSERVATIONS.md" target="_blank" rel="noopener" class="ref-card">
+                    <div class="ref-card-header">
+                        <span class="ref-card-icon">🏫</span>
+                        <span class="ref-card-title">Registrar &amp; Guidance Observations</span>
+                    </div>
+                    <span class="ref-card-desc">Field-documented operational workflows at ISPSC Tagudin. Intake, scheduling, scoring, and coordination gaps (AY 2026-2027).</span>
+                    <span class="ref-card-tag tag-truth">Field Data</span>
+                    <span class="ref-card-path">references/integration/REGISTRAR_GUIDANCE_2026_ADMISSIONS_OBSERVATIONS.md</span>
+                </a>
+                <a href="https://github.com/daviddatuX25/SecureCAT-v2/blob/master/capstone/references/research/SUS_TAM_Sources_Report.md" target="_blank" rel="noopener" class="ref-card">
+                    <div class="ref-card-header">
+                        <span class="ref-card-icon">📋</span>
+                        <span class="ref-card-title">SUS + TAM Sources Report</span>
+                    </div>
+                    <span class="ref-card-desc">Source literature for instrument selection. Brooke (1996), Davis (1989), Bangor et al. (2008/2009), King &amp; He (2006).</span>
+                    <span class="ref-card-tag tag-eval">Instruments</span>
+                    <span class="ref-card-path">references/research/SUS_TAM_Sources_Report.md</span>
+                </a>
+                <a href="https://github.com/daviddatuX25/SecureCAT-v2/blob/master/capstone/references/research/simulated_uat_academic_justification.md" target="_blank" rel="noopener" class="ref-card">
+                    <div class="ref-card-header">
+                        <span class="ref-card-icon">🎓</span>
+                        <span class="ref-card-title">Simulated UAT Justification</span>
+                    </div>
+                    <span class="ref-card-desc">Academic justification for proxy evaluator methodology when no active admission cycle overlaps the dev window.</span>
+                    <span class="ref-card-tag tag-eval">Methodology</span>
+                    <span class="ref-card-path">references/research/simulated_uat_academic_justification.md</span>
+                </a>
+                <a href="https://github.com/daviddatuX25/SecureCAT-v2/blob/master/capstone/references/instruments/FEATURE_VERIFICATION_PROTOCOL.md" target="_blank" rel="noopener" class="ref-card">
+                    <div class="ref-card-header">
+                        <span class="ref-card-icon">✅</span>
+                        <span class="ref-card-title">Feature Verification Protocol</span>
+                    </div>
+                    <span class="ref-card-desc">Use-case scenario definitions for simulated UAT. Maps system features to evaluator role-play tasks.</span>
+                    <span class="ref-card-tag tag-eval">Protocol</span>
+                    <span class="ref-card-path">references/instruments/FEATURE_VERIFICATION_PROTOCOL.md</span>
+                </a>
+            </div>
+        </section>
+
+        <!-- ═══════════════════════════════════════ -->
+        <!--         STRATEGY & DEFENSE              -->
+        <!-- ═══════════════════════════════════════ -->
+        <section>
+            <div class="section-header">
+                <span class="section-icon">♟️</span>
+                <h3>Strategy &amp; Defense</h3>
+                <span class="section-line"></span>
+            </div>
+            <div class="strategy-grid">
+                <a href="https://github.com/daviddatuX25/SecureCAT-v2/blob/master/capstone/strategy/pre_proposal_defense.md" target="_blank" rel="noopener" class="strat-card">
+                    <div class="ref-card-header">
+                        <span class="ref-card-icon">🛡️</span>
+                        <span class="ref-card-title">Pre-Proposal Defense Strategy</span>
+                    </div>
+                    <span class="ref-card-desc">The "Trojan Horse" strategy. Maps advanced system features to the simple locked title. Panel expectations vs. actual implementation.</span>
+                    <span class="ref-card-path">strategy/pre_proposal_defense.md</span>
+                </a>
+                <a href="https://github.com/daviddatuX25/SecureCAT-v2/blob/master/capstone/strategy/DEFENSE_EVIDENCE_PLAYBOOK.md" target="_blank" rel="noopener" class="strat-card">
+                    <div class="ref-card-header">
+                        <span class="ref-card-icon">🎭</span>
+                        <span class="ref-card-title">Defense Evidence Playbook</span>
+                    </div>
+                    <span class="ref-card-desc">Deployment narrative, before/after workflow comparison, 30-second opening hook. Preempts common panel criticisms using operational evidence.</span>
+                    <span class="ref-card-path">strategy/DEFENSE_EVIDENCE_PLAYBOOK.md</span>
+                </a>
+                <div class="strat-card strat-card-coming">
+                    <div class="ref-card-header">
+                        <span class="ref-card-icon">🗒️</span>
+                        <span class="ref-card-title">Proposal Defense Guide</span>
+                    </div>
+                    <span class="ref-card-desc">Full defense preparation guide for the June 15 proposal defense. Slide structure, Q&amp;A prep, and presentation flow.</span>
+                    <span class="coming-soon-badge">Coming Soon</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- ═══════════════════════════════════════ -->
+        <!--          GUIDES & TEMPLATES             -->
+        <!-- ═══════════════════════════════════════ -->
+        <section>
+            <div class="section-header">
+                <span class="section-icon">📐</span>
+                <h3>Formatting Guides &amp; Templates</h3>
+                <span class="section-line"></span>
+            </div>
+            <div class="guides-strip">
+                <a href="https://github.com/daviddatuX25/SecureCAT-v2/blob/master/capstone/guides/GUIDE-1-FORMATTING.md" target="_blank" rel="noopener" class="guide-pill">
+                    <span>📏</span> Formatting Guide
+                </a>
+                <a href="https://github.com/daviddatuX25/SecureCAT-v2/blob/master/capstone/guides/GUIDE-2-CHAPTER1-CONTENT.md" target="_blank" rel="noopener" class="guide-pill">
+                    <span>📖</span> Chapter 1 Guidelines
+                </a>
+                <a href="https://github.com/daviddatuX25/SecureCAT-v2/blob/master/capstone/guides/GUIDE-3-CHAPTER2-CONTENT.md" target="_blank" rel="noopener" class="guide-pill">
+                    <span>📖</span> Chapter 2 Guidelines
+                </a>
+                <a href="https://github.com/daviddatuX25/SecureCAT-v2/blob/master/capstone/guides/GUIDE-4-AIDLC-DEFENSE.md" target="_blank" rel="noopener" class="guide-pill">
+                    <span>💻</span> AIDLC Defense Guide
+                </a>
+                <a href="https://github.com/daviddatuX25/SecureCAT-v2/blob/master/capstone/guides/GUIDE-5-CHECKLIST.md" target="_blank" rel="noopener" class="guide-pill">
+                    <span>✅</span> Submission Checklist
+                </a>
+                <a href="https://github.com/daviddatuX25/SecureCAT-v2/blob/master/capstone/guides/GUIDE-6-CHAPTER3-ADVANCE.md" target="_blank" rel="noopener" class="guide-pill">
+                    <span>🔜</span> Chapter 3 Advance
+                </a>
+                <a href="https://github.com/daviddatuX25/SecureCAT-v2/blob/master/capstone/templates/TEMPLATE_SPEC.md" target="_blank" rel="noopener" class="guide-pill">
+                    <span>📐</span> Template Spec
+                </a>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <p class="footer-text">SecureCAT-v2 · BSIT Capstone · ISPSC Tagudin Campus · A.Y. 2026-2027</p>
+        <div class="footer-links">
+            <a href="https://github.com/daviddatuX25/SecureCAT-v2" target="_blank" rel="noopener" class="footer-link">GitHub Repository ↗</a>
+            <a href="https://github.com/daviddatuX25/SecureCAT-v2/tree/master/capstone" target="_blank" rel="noopener" class="footer-link">capstone/ folder ↗</a>
+            <a href="https://github.com/daviddatuX25/SecureCAT-v2/blob/master/capstone/manuscript/SecureCAT_Ch1_Ch2_Manuscript.md" target="_blank" rel="noopener" class="footer-link">Manuscript MD ↗</a>
+        </div>
+    </footer>
+
+    <script>
+        // Countdown to Proposal Defense — June 15, 2026
+        (function() {
+            const target = new Date('2026-06-15T08:00:00+08:00').getTime();
+            const el = document.getElementById('countdown');
+            function tick() {
+                const now = Date.now();
+                const diff = target - now;
+                if (diff <= 0) {
+                    el.textContent = 'TODAY';
+                    return;
+                }
+                const days = Math.floor(diff / 86400000);
+                const hours = Math.floor((diff % 86400000) / 3600000);
+                if (days > 0) {
+                    el.textContent = days + 'd ' + hours + 'h';
+                } else {
+                    const mins = Math.floor((diff % 3600000) / 60000);
+                    el.textContent = hours + 'h ' + mins + 'm';
+                }
+            }
+            tick();
+            setInterval(tick, 60000);
+        })();
+    </script>
+</body>
+</html>
