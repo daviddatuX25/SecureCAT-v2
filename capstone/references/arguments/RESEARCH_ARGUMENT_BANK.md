@@ -123,7 +123,7 @@
 | **General** | "To develop SecureCAT, a role-based college admission testing system for the Guidance and Registrar Offices at ISPSC Tagudin" | Must match title exactly |
 | **Specific 1 — Identify** | Document existing admission processes, operational workflows, manual process dependencies, current utilization and operational limitations of the deployed foundational digital system, and institutional requirements at ISPSC Tagudin | Covers: current workflows, deployed system usage, architectural gaps, pain points, staff roles, applicant journey, infrastructure constraints |
 | **Specific 2 — Develop** | Build the system with RBAC + zero-trust security, AI-assisted guidance, automated scoring capabilities, offline-resilient proctoring, and multi-tenant data architecture | Covers: all six pillars as features |
-| **Specific 3 — Evaluate** | Assess the perceived task workload of the developed system using the NASA Task Load Index (NASA-TLX) | Use "perceived task workload" only, focusing on the cognitive and operational load on campus staff |
+| **Specific 3 — Evaluate** | Evaluate the usability and user acceptance of the developed system using the System Usability Scale (SUS) and the Technology Acceptance Model (TAM) questionnaire through simulated user acceptance testing with proxy evaluators | Use "usability and user acceptance" — SUS measures perceived usability, TAM measures acceptance (PU + PEOU). Simulated UAT replaces real applicant testing because the development window does not overlap with an admission cycle. See METHODOLOGY_SHIFT_SUS_TAM.md for full rationale. |
 
 ---
 
@@ -216,38 +216,43 @@
 ### C2-05: Population and Locale of the Study
 **Goal:** Define who will participate in the evaluation and where the study takes place. 8-10 sentences.
 
+**Key constraint:** The development window (May-August 2026) does NOT overlap with an active admission cycle. Real admission applicants are unavailable. The evaluation uses proxy evaluators in simulated UAT.
+
 | # | Argument | Detail |
 |---|----------|--------|
-| 1 | **Population** | Define the target respondents for NASA-TLX evaluation — typically registrar staff and guidance counselors who execute the administrative and testing workflows. |
-| 2 | **Locale** | The study is conducted at ISPSC — Main Campus, Tagudin, Ilocos Sur. Specify the offices involved (Guidance Office, Registrar Office). |
-| 3 | **Sampling method** | Justify the sampling approach — purposive sampling is appropriate for workload evaluation since respondents must have direct experience executing the admission tasks. |
-| 4 | **Sample size** | State the intended number of respondents. For NASA-TLX, the evaluation focuses on the primary staff users (Registrar and Guidance personnel) directly involved in system operations. |
-| 5 | **Inclusion criteria** | Respondents must have actually used SecureCAT features relevant to their role (e.g., proctor must have used the proctoring module, applicant must have completed the application flow). |
+| 1 | **Population** | Proxy evaluators for SUS + TAM evaluation: (a) IT faculty who assess against professional quality standards, (b) Registrar and Guidance staff familiar with actual workflows, (c) development team members who role-play applicant-side use cases. |
+| 2 | **Locale** | ISPSC — Main Campus, Tagudin, Ilocos Sur. Offices involved: Guidance Office, Registrar Office. |
+| 3 | **Sampling method** | Purposive sampling — evaluators selected based on specific operational roles and IT expertise relevant to the system being evaluated (Frey, 2022). |
+| 4 | **Sample size** | Target: 5-15 proxy evaluators. SUS is validated for small samples (Brooke, 1996; Bangor et al., 2008). Nielsen & Landauer (1993) proved 3-5 evaluators find majority of usability problems. |
+| 5 | **Scenario assignment** | Each evaluator is assigned use-case scenarios matching the user role they simulate (applicant, proctor, guidance counselor, registrar staff). Consistent with scenario-based acceptance testing (Pressman & Maxim, 2020). |
 
 ---
 
-### C2-06: Research Instruments — NASA-TLX
-**Goal:** Describe the NASA Task Load Index as the evaluation instrument. 8-12 sentences.
+### C2-06: Research Instruments — SUS + TAM
+**Goal:** Describe the SUS and TAM as dual evaluation instruments. 8-12 sentences.
 
 | # | Argument | Detail |
 |---|----------|--------|
-| 1 | **Instrument description** | The NASA Task Load Index (NASA-TLX) is a multi-dimensional assessment tool that measures perceived cognitive and operational workload across six subscales: Mental Demand, Physical Demand, Temporal Demand, Performance, Effort, and Frustration. |
-| 2 | **Why NASA-TLX** | It captures the mental and physical workload shifts experienced by campus staff when moving from manual paper-based processes to automated digital workflows. |
-| 3 | **Validity and reliability** | The instrument has established reliability for assessing administrative software and higher education information systems. Cite Hart & Staveland (1988), Al-Qudah & Al-Sarrayriah (2023), and Loiacono & McCoy (2024). |
-| 4 | **Administration protocol** | Administered in two parts: first, a pairwise comparison of the six dimensions to establish weights; second, rating each dimension on a 100-point scale after executing admissions tasks. |
-| 5 | **Workload profiling** | The results allow researchers to map specific areas of operational stress (e.g., temporal demand or frustration) and compare the digital system directly against manual baselines. |
+| 1 | **Dual-instrument rationale** | SUS measures perceived usability (is the system usable?), TAM measures technology acceptance (will users adopt it?). Together they provide a more complete developmental evaluation than either alone (Brooke, 1996; Davis, 1989). |
+| 2 | **SUS description** | 10-item questionnaire, 5-point Likert (1=strongly disagree to 5=strongly agree). Alternating positive (odd) and negative (even) worded items. Originally "quick and dirty" instrument for industrial evaluation (Brooke, 1996). |
+| 3 | **SUS reliability** | Cronbach's alpha = 0.91 across 2,324 surveys / 206 studies (Bangor, Kortum, & Miller, 2008). Score >68 = above average/acceptable. Score >80 = excellent (Bangor et al., 2009; Sauro & Lewis, 2016). |
+| 4 | **SUS scoring** | Convert each item to 0-4 range (odd: score minus 1; even: 5 minus score), sum, multiply by 2.5. Composite score 0-100. |
+| 5 | **TAM description** | Measures perceived usefulness (PU) and perceived ease of use (PEOU) — the two constructs proven to predict technology adoption. Grounded in Davis (1989). Adapted items rated on 7-point Likert (1=strongly disagree to 7=strongly agree). |
+| 6 | **TAM validation** | Meta-analysis of 88 studies confirms PU → intention and PEOU → PU relationships are robust across contexts (King & He, 2006). Standard instrument in Philippine IT capstone user acceptance evaluation. |
+| 7 | **Administration** | Both instruments administered to proxy evaluators AFTER they complete their assigned use-case scenarios in the simulated UAT session. Single evaluation session. |
 
 ---
 
-### C2-07: Data Analysis
-**Goal:** Describe how NASA-TLX data will be analyzed and interpreted. 6-8 sentences.
+### C2-07: Data Analysis — SUS + TAM
+**Goal:** Describe how SUS and TAM data will be analyzed and interpreted. 6-8 sentences.
 
 | # | Argument | Detail |
 |---|----------|--------|
-| 1 | **Workload score computation** | Detail the calculation of the weighted workload score: multiply each dimension's raw rating (0-100) by its pairwise weight (0-5), sum the products, and divide by 15. |
-| 2 | **Descriptive statistics** | Compute the mean and standard deviation for each of the six subscales to identify which specific workload factors are most affected by the system. |
-| 3 | **Comparative profiling** | Compare the post-implementation workload scores against baseline manual workloads to measure the percentage reduction in cognitive and physical strain. |
-| 4 | **Qualitative validation** | Pair the quantitative scores with qualitative feedback from staff interviews to identify remaining workflow bottlenecks or system adjustments. |
+| 1 | **SUS scoring** | Standard conversion: odd items (score - 1), even items (5 - score), sum all converted values, multiply by 2.5. Composite score 0-100. |
+| 2 | **SUS interpretation** | Mean SUS score computed across all evaluators. Benchmark: >68 acceptable (above average), >80 excellent. Report mean and standard deviation. Cite Bangor et al. (2008), Sauro & Lewis (2016). |
+| 3 | **TAM analysis** | Compute mean score per construct (PU, PEOU). Mean >4.0 (midpoint of 7-point scale) indicates positive perception. Report mean and standard deviation per construct. |
+| 4 | **Comparative profiling** | Compare PU vs PEOU means to identify whether acceptance is driven more by perceived usefulness or ease of use. Cross-reference SUS scores with TAM scores to identify whether usability issues correlate with lower acceptance scores. |
+| 5 | **Qualitative validation** | Pair quantitative results with qualitative feedback from proxy evaluators' use-case walkthroughs to identify specific usability issues and acceptance barriers. |
 
 ---
 
