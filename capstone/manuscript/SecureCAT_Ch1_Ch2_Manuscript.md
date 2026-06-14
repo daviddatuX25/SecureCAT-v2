@@ -1,4 +1,4 @@
-<!-- META: docx-sync-version="2026-06-13T19:11:10.052385+00:00" docx-sha256="428ab08f2ca0911e6b9c771fea448ccfdb7d8ea96618ca24e7222eac96ba227a" -->
+<!-- META: docx-sync-version="2026-06-14T01:31:32.069791+00:00" docx-sha256="2954feaf47de19ae6d8c6660c4bccb20292466d5d599b3f01b98ccf0e01ee1aa" -->
 
 
 
@@ -47,7 +47,7 @@ More specifically, this study seeks to accomplish the following:
 
 2. To determine the functional requirements of SecureCAT including web-based application intake, time-limited account activation, examination scheduling with proctor assignment, computer-vision OMR score import, consultation recording, CSV score import, and admission slip and result document generation.
 
-3. To determine the system features of SecureCAT including role-based access control with HMAC-SHA256 cryptographic score integrity, dynamic course quota tracking, live K-Means course triage with extensible applicant profiling, offline-resilient proctoring via Progressive Web Application, AI-assisted scheduling with administrator approval gates, RAG-powered AI companion for applicant guidance, real-time status tracking, and audit logging with role-based data isolation aligned with Republic Act No. 10173.
+3. To determine the system features of SecureCAT including role-based access control with HMAC-SHA256 cryptographic score integrity, dynamic course quota tracking, live K-Means course triage with extensible applicant profiling, offline-resilient proctoring via PWA, AI-assisted scheduling with approval gates, RAG-powered AI companion, real-time status tracking, and audit logging with role-based data isolation under Republic Act No. 10173.
 
 4. To evaluate the developed system based on software quality standards of usability and user acceptance using the System Usability Scale (SUS) and the Technology Acceptance Model (TAM) questionnaire through simulated user acceptance testing with proxy evaluators at ISPSC Tagudin Campus.
 <!-- UPDATE:END -->
