@@ -48,6 +48,7 @@ BOOKMARKS = [
     ('ch2_research_instruments', 'Research Instruments'),
     ('ch2_data_analysis', 'Data Analysis'),
     ('references_list', 'REFERENCES'),
+    ('appendices_division', 'APPENDICES'),
     ('appendix_a_use_case', 'APPENDIX A'),
     ('appendix_b_letter_conduct', 'APPENDIX B'),
 ]
@@ -137,6 +138,43 @@ def fix_heading_styles(doc):
 
 def insert_clean_bookmarks(doc):
     """Insert exactly ONE bookmark per heading, with strict text matching."""
+    # Convert expected headings that are styled as Normal to Heading styles first
+    HEADING_CONVERSIONS = [
+        ("Chapter 1", 1),
+        ("INTRODUCTION", 1),
+        ("Background of the Study", 2),
+        ("Conceptual Framework of the Study", 2),
+        ("Objectives of the Study", 2),
+        ("Scope and Limitation of the Study", 2),
+        ("Significance of the Study", 2),
+        ("Importance of the Study", 2),
+        ("Chapter 2", 1),
+        ("METHODOLOGY", 1),
+        ("Research Design", 2),
+        ("Software Development Model", 2),
+        ("Project Plan", 2),
+        ("Project Assignments", 2),
+        ("Population and Locale of the Study", 2),
+        ("Research Instruments", 2),
+        ("Data Analysis", 2),
+        ("REFERENCES", 2),
+        ("APPENDICES", 2),
+        ("APPENDIX A", 2),
+        ("APPENDIX B", 2),
+    ]
+    
+    converted = 0
+    for search_text, level in HEADING_CONVERSIONS:
+        for p in doc.paragraphs:
+            ptext = p.text.strip().lower()
+            stext = search_text.strip().lower()
+            if (ptext == stext or ptext.startswith(stext)) and not p.style.name.startswith('Heading'):
+                p.style = doc.styles[f'Heading {level}']
+                converted += 1
+                print(f"  Converted normal paragraph to Heading {level}: '{p.text}'")
+    if converted > 0:
+        print(f"  Converted {converted} paragraphs to Heading styles")
+
     used_paras = set()
     added = 0
     missed = []
@@ -161,15 +199,32 @@ def insert_clean_bookmarks(doc):
                 start.set(qn('w:name'), bm_name)
                 p._p.insert(0, start)
                 
+                # Find the last paragraph before the next section heading
+                end_idx = i
+                for j in range(i + 1, len(doc.paragraphs)):
+                    p_next = doc.paragraphs[j]
+                    if p_next.style.name.lower().startswith('heading'):
+                        p_next_text = p_next.text.strip().lower()
+                        is_next_section = False
+                        for _, next_heading in BOOKMARKS:
+                            next_heading_clean = next_heading.strip().lower()
+                            if p_next_text == next_heading_clean or p_next_text.startswith(next_heading_clean):
+                                is_next_section = True
+                                break
+                        if is_next_section:
+                            break
+                    end_idx = j
+                
+                end_p = doc.paragraphs[end_idx]
                 end = OxmlElement('w:bookmarkEnd')
                 end.set(qn('w:id'), bm_id)
                 end.set(qn('w:name'), bm_name)
-                p._p.append(end)
+                end_p._p.append(end)
                 
                 used_paras.add(i)
                 added += 1
                 found = True
-                print(f"  ✓ {tag} → para {i} ({p.style.name}): \"{p.text[:60]}\"")
+                print(f"  ✓ {tag} → range para {i} to {end_idx} ({p.style.name} to {end_p.style.name})")
                 break
         
         if not found:

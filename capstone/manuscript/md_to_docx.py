@@ -264,17 +264,19 @@ def create_bookmark_at_paragraph(paragraph, bookmark_name: str):
     paragraph._p.append(end)
 
 
-def find_section_paragraphs(doc: Document, bookmark_name: str, tag_data: dict) -> tuple[int, int]:
+def find_section_paragraphs(doc: Document, bookmark_name: str, tag_data: dict) -> tuple[int, int, bool]:
     """Find the start and end paragraph indices for a section identified by bookmark.
 
-    Section boundaries are determined by the NEXT tag_ bookmark in document order.
-    This avoids the old bug where stopping at 'any bookmarked heading' caused sections
-    to end immediately when all headings are bookmarked.
+    Returns:
+        tuple: (start_idx, end_idx, is_point_bookmark)
     """
     start_idx = -1
+    bm_id = None
     for i, p in enumerate(doc.paragraphs):
-        if p._p.xpath(f'.//w:bookmarkStart[@w:name="{bookmark_name}"]'):
+        bm_starts = p._p.xpath(f'.//w:bookmarkStart[@w:name="{bookmark_name}"]')
+        if bm_starts:
             start_idx = i
+            bm_id = bm_starts[0].get(qn('w:id'))
             break
 
     if start_idx == -1:
@@ -284,9 +286,22 @@ def find_section_paragraphs(doc: Document, bookmark_name: str, tag_data: dict) -
                 break
 
     if start_idx == -1:
-        return (-1, -1)
+        return (-1, -1, True)
 
-    # Find ALL tag_ bookmarks in document order (deduplicated)
+    # 1. Look for matching bookmarkEnd by ID
+    end_idx = -1
+    if bm_id is not None:
+        for i in range(start_idx, len(doc.paragraphs)):
+            p = doc.paragraphs[i]
+            if p._p.xpath(f'.//w:bookmarkEnd[@w:id="{bm_id}"]'):
+                end_idx = i
+                break
+
+    # If bookmark end is found and it is not in the start paragraph (meaning it's a range bookmark)
+    if end_idx != -1 and end_idx > start_idx:
+        return (start_idx, end_idx, False)
+
+    # 2. Otherwise, it's a point bookmark (fallback to next start bookmark)
     seen_tags = set()
     all_bookmarks = []
     for i, p in enumerate(doc.paragraphs):
@@ -298,13 +313,13 @@ def find_section_paragraphs(doc: Document, bookmark_name: str, tag_data: dict) -
     all_bookmarks.sort()
 
     # End index is the next bookmark AFTER start_idx
-    end_idx = len(doc.paragraphs)
+    next_bm_idx = len(doc.paragraphs)
     for bm_idx in all_bookmarks:
         if bm_idx > start_idx:
-            end_idx = bm_idx
+            next_bm_idx = bm_idx
             break
 
-    return (start_idx, end_idx)
+    return (start_idx, next_bm_idx, True)
 
 
 def find_section_by_heading(doc: Document, heading_text: str) -> tuple[int, int]:
@@ -413,20 +428,37 @@ def delete_paragraphs(doc: Document, start_idx: int, end_idx: int, remove_text: 
         p._element.getparent().remove(p._element)
 
 
-def insert_section_content(doc: Document, start_idx: int, end_idx: int, new_content: str, heading_level: int, is_references: bool = False):
+def insert_section_content(doc: Document, start_idx: int, end_idx: int, new_content: str, heading_level: int, is_references: bool = False, bookmark_name: str = None, is_point: bool = True):
     if start_idx < 0:
         start_idx = len(doc.paragraphs) - 1
 
-    delete_paragraphs(doc, start_idx, end_idx)
+    # Delete existing paragraphs
+    delete_limit = end_idx if is_point else (end_idx + 1)
+    delete_paragraphs(doc, start_idx, delete_limit)
 
     # Get the heading paragraph's XML element for direct insertion
-    heading_element = doc.paragraphs[start_idx]._p
+    heading_p = doc.paragraphs[start_idx]
+    heading_element = heading_p._p
+
+    # Ensure bookmarkStart exists and get bm_id
+    bm_id = None
+    if bookmark_name:
+        bm_starts = heading_p._p.xpath(f'.//w:bookmarkStart[@w:name="{bookmark_name}"]')
+        if bm_starts:
+            bm_id = bm_starts[0].get(qn('w:id'))
+        else:
+            bm_id = str(abs(hash(bookmark_name)) % 1000000)
+            start = OxmlElement('w:bookmarkStart')
+            start.set(qn('w:id'), bm_id)
+            start.set(qn('w:name'), bookmark_name)
+            heading_p._p.insert(0, start)
 
     lines = new_content.split('\n')
     # Process lines in REVERSE so each insert goes right after heading
     # (inserting A, B, C after heading in reverse gives: heading → A → B → C)
     non_empty_lines = [line.strip() for line in lines if line.strip()]
 
+    last_inserted_p = None
     # Insert in reverse order using addnext (each goes right after heading)
     for line in reversed(non_empty_lines):
         if line.startswith('#'):
@@ -435,6 +467,12 @@ def insert_section_content(doc: Document, start_idx: int, end_idx: int, new_cont
             p = doc.add_paragraph(text, style=f'Heading {min(level, 4)}')
             for run in p.runs:
                 run.font.name = 'Times New Roman'
+            text_upper = text.upper()
+            if text_upper.startswith('CHAPTER') or text_upper.startswith('REFERENCES') or text_upper.startswith('APPENDIX') or text_upper.startswith('APPENDICES') or text_upper in ('INTRODUCTION', 'METHODOLOGY'):
+                p.alignment = WD_ALIGN_PARAGRAPH.CENTER
+                p.paragraph_format.page_break_before = True
+                for run in p.runs:
+                    run.bold = True
         else:
             p = doc.add_paragraph(line, style='Normal')
             if is_references:
@@ -456,6 +494,23 @@ def insert_section_content(doc: Document, start_idx: int, end_idx: int, new_cont
                 run.font.size = Pt(12)
         # Move from end-of-document to right after heading
         heading_element.addnext(p._p)
+        if last_inserted_p is None:
+            last_inserted_p = p
+
+    # Ensure bookmarkEnd is placed correctly
+    if bookmark_name and bm_id is not None:
+        end = OxmlElement('w:bookmarkEnd')
+        end.set(qn('w:id'), bm_id)
+        if last_inserted_p is not None:
+            # Range bookmark: place bookmarkEnd in the last paragraph of the section
+            for old_end in last_inserted_p._p.xpath(f'.//w:bookmarkEnd[@w:id="{bm_id}"]'):
+                old_end.getparent().remove(old_end)
+            last_inserted_p._p.append(end)
+        else:
+            # Point bookmark: place bookmarkEnd in the heading paragraph
+            for old_end in heading_p._p.xpath(f'.//w:bookmarkEnd[@w:id="{bm_id}"]'):
+                old_end.getparent().remove(old_end)
+            heading_p._p.append(end)
 
 
 def move_paragraph_after(paragraph, after_paragraph):
@@ -506,18 +561,20 @@ def apply_updates(doc: Document, tags: dict, update_tags: list = None, change_lo
 
         tag_data = tags[tag_name]
         bookmark_name = f"tag_{sanitize_bookmark(tag_name)}"
-        start_idx, end_idx = find_section_paragraphs(doc, bookmark_name, tag_data)
+        start_idx, end_idx, is_point = find_section_paragraphs(doc, bookmark_name, tag_data)
 
         tag_map[tag_name] = {
             'bookmark': bookmark_name,
             'start_idx': start_idx,
             'end_idx': end_idx,
+            'is_point_bookmark': is_point,
             'heading': tag_data['heading'],
             'level': tag_data['level']
         }
 
         if tag_data['remove'] and start_idx >= 0:
-            delete_paragraphs(doc, start_idx, end_idx, tag_data['remove'])
+            delete_limit = end_idx if is_point else (end_idx + 1)
+            delete_paragraphs(doc, start_idx, delete_limit, tag_data['remove'])
             print(f"  REMOVED content for {tag_name}")
             if change_log is not None:
                 change_log.append({
@@ -529,11 +586,12 @@ def apply_updates(doc: Document, tags: dict, update_tags: list = None, change_lo
                 })
 
         if tag_data['update'] and start_idx >= 0:
-            existing_text = extract_existing_text(doc, start_idx, end_idx)
+            delete_limit = end_idx if is_point else (end_idx + 1)
+            existing_text = extract_existing_text(doc, start_idx, delete_limit)
             if normalize_comparable_text(tag_data['update']) == normalize_comparable_text(existing_text):
                 print(f"  SKIPPED update for {tag_name} (content matches)")
             else:
-                insert_section_content(doc, start_idx, end_idx, tag_data['update'], tag_data['level'], is_references=(tag_name == 'references_list'))
+                insert_section_content(doc, start_idx, end_idx, tag_data['update'], tag_data['level'], is_references=(tag_name == 'references_list'), bookmark_name=bookmark_name, is_point=is_point)
                 print(f"  UPDATED content for {tag_name}")
                 if change_log is not None:
                     change_log.append({
@@ -760,6 +818,14 @@ def full_rebuild(template_path: Path, tags: dict, output_path: Path):
 
     for tag_name, tag_data in tags.items():
         p = doc.add_paragraph(tag_data['heading'], style=f'Heading {tag_data["level"]}')
+        for run in p.runs:
+            run.font.name = 'Times New Roman'
+        text_upper = tag_data['heading'].upper()
+        if text_upper.startswith('CHAPTER') or text_upper.startswith('REFERENCES') or text_upper.startswith('APPENDIX') or text_upper.startswith('APPENDICES') or text_upper in ('INTRODUCTION', 'METHODOLOGY'):
+            p.alignment = WD_ALIGN_PARAGRAPH.CENTER
+            p.paragraph_format.page_break_before = True
+            for run in p.runs:
+                run.bold = True
         create_bookmark_at_paragraph(p, f"tag_{sanitize_bookmark(tag_name)}")
 
         content = tag_data['update'] or tag_data['raw_content']

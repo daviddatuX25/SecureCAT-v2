@@ -576,6 +576,110 @@ Old content to remove
         md_path.unlink()
 
 
+def test_range_bookmarks():
+    """Test range-based bookmarks behavior and fallback point-bookmark behavior."""
+    from docx import Document
+    from docx.oxml import OxmlElement
+    from docx.oxml.ns import qn
+    from md_to_docx import find_section_paragraphs, insert_section_content, apply_updates
+
+    # Create dummy doc
+    doc = Document()
+    
+    # 1. Add point bookmark section
+    p1 = doc.add_paragraph("Chapter 1", style="Heading 1")
+    # bookmarkStart
+    s1 = OxmlElement('w:bookmarkStart')
+    s1.set(qn('w:id'), '1001')
+    s1.set(qn('w:name'), 'tag_ch1_introduction')
+    p1._p.insert(0, s1)
+    # bookmarkEnd in same para (point bookmark)
+    e1 = OxmlElement('w:bookmarkEnd')
+    e1.set(qn('w:id'), '1001')
+    p1._p.append(e1)
+    
+    doc.add_paragraph("Intro body 1", style="Normal")
+    doc.add_paragraph("Intro body 2", style="Normal")
+
+    # 2. Add range bookmark section
+    p2 = doc.add_paragraph("Conceptual Framework of the Study", style="Heading 2")
+    # bookmarkStart
+    s2 = OxmlElement('w:bookmarkStart')
+    s2.set(qn('w:id'), '1002')
+    s2.set(qn('w:name'), 'tag_ch1_conceptual_framework')
+    p2._p.insert(0, s2)
+    
+    # Body paragraph of range section
+    p2_body = doc.add_paragraph("Framework body text", style="Normal")
+    
+    # bookmarkEnd placed in the last body paragraph of the section
+    e2 = OxmlElement('w:bookmarkEnd')
+    e2.set(qn('w:id'), '1002')
+    p2_body._p.append(e2)
+
+    # 3. Add manual unallocated content (should NOT be inside any range bookmark!)
+    doc.add_paragraph("[IPO Diagram Image]", style="Normal")
+    doc.add_paragraph("Figure 1. Diagram Caption", style="Normal")
+
+    # 4. Add next heading to define end of the document sections
+    p3 = doc.add_paragraph("Objectives of the Study", style="Heading 2")
+    s3 = OxmlElement('w:bookmarkStart')
+    s3.set(qn('w:id'), '1003')
+    s3.set(qn('w:name'), 'tag_ch1_objectives')
+    p3._p.insert(0, s3)
+    e3 = OxmlElement('w:bookmarkEnd')
+    e3.set(qn('w:id'), '1003')
+    p3._p.append(e3)
+
+    # Verify boundary detection
+    # tag_ch1_introduction is a point bookmark (fallback to next bookmark start tag_ch1_conceptual_framework)
+    start_idx_1, end_idx_1, is_point_1 = find_section_paragraphs(doc, 'tag_ch1_introduction', {'heading': 'Chapter 1'})
+    assert is_point_1 is True
+    # Should stop at next heading paragraph (Conceptual Framework = index 3)
+    assert start_idx_1 == 0
+    assert end_idx_1 == 3 
+
+    # tag_ch1_conceptual_framework is a range bookmark (ends at Framework body text = index 4)
+    start_idx_2, end_idx_2, is_point_2 = find_section_paragraphs(doc, 'tag_ch1_conceptual_framework', {'heading': 'Conceptual Framework of the Study'})
+    assert is_point_2 is False
+    assert start_idx_2 == 3
+    assert end_idx_2 == 4
+
+    # Perform update on the range section tag_ch1_conceptual_framework
+    tags = {
+        'ch1_conceptual_framework': {
+            'heading': 'Conceptual Framework of the Study',
+            'level': 2,
+            'update': 'New Framework Text 1\n\nNew Framework Text 2',
+            'remove': None,
+            'raw_content': ''
+        }
+    }
+    
+    apply_updates(doc, tags, ['ch1_conceptual_framework'])
+    
+    # Assertions on updated document:
+    # 1. New content paragraphs inserted
+    # 2. [IPO Diagram Image] at index 7/8 is NOT deleted because it was outside the range bookmark boundary!
+    all_texts = [p.text for p in doc.paragraphs]
+    assert "New Framework Text 1" in all_texts
+    assert "New Framework Text 2" in all_texts
+    assert "[IPO Diagram Image]" in all_texts
+    assert "Figure 1. Diagram Caption" in all_texts
+    
+    # Assert bookmarkEnd was correctly recreated at the last paragraph of new content
+    new_end_idx = -1
+    for i, p in enumerate(doc.paragraphs):
+        if p._p.xpath('.//w:bookmarkEnd[@w:id="1002"]'):
+            new_end_idx = i
+            break
+    
+    assert new_end_idx != -1
+    assert doc.paragraphs[new_end_idx].text == "New Framework Text 2"
+    
+    print("✅ test_range_bookmarks passed")
+
+
 def run_all_tests():
     """Run all tests."""
     test_parse_legacy_tags_only()
@@ -595,6 +699,7 @@ def run_all_tests():
     test_apply_human_task_and_fact_check_log_only()
     test_missing_section_error_handling()
     test_out_of_bounds_paragraph_error_handling()
+    test_range_bookmarks()
     print("\n🎉 All tests passed!")
 
 

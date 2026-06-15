@@ -102,7 +102,7 @@ def main():
         'ch1_conceptual_framework', 'ch1_objectives', 'ch1_scope_delimitations', 'ch1_significance',
         'ch2_methodology', 'ch2_research_design', 'ch2_software_model', 'ch2_project_plan',
         'ch2_project_assignment', 'ch2_population_locale', 'ch2_research_instruments',
-        'ch2_data_analysis', 'references_list', 'appendix_a_use_case', 'appendix_b_letter_conduct'
+        'ch2_data_analysis', 'references_list', 'appendices_division', 'appendix_a_use_case', 'appendix_b_letter_conduct'
     ]
     
     docx_data = load_docx_content()

@@ -45,6 +45,7 @@ BOOKMARKS = [
     ('ch2_research_instruments', 'Research Instruments'),
     ('ch2_data_analysis', 'Data Analysis'),
     ('references_list', 'REFERENCES'),
+    ('appendices_division', 'APPENDICES'),
     ('appendix_a_use_case', 'APPENDIX A'),
     ('appendix_b_letter_conduct', 'APPENDIX B'),
 ]
@@ -234,6 +235,12 @@ def insert_content_after(doc, heading_idx, content_text, is_references=False):
             p = doc.add_paragraph(text, style=f'Heading {min(level, 4)}')
             for run in p.runs:
                 run.font.name = 'Times New Roman'
+            text_upper = text.upper()
+            if text_upper.startswith('CHAPTER') or text_upper.startswith('REFERENCES') or text_upper.startswith('APPENDIX') or text_upper.startswith('APPENDICES') or text_upper in ('INTRODUCTION', 'METHODOLOGY'):
+                p.alignment = WD_ALIGN_PARAGRAPH.CENTER
+                p.paragraph_format.page_break_before = True
+                for run in p.runs:
+                    run.bold = True
         else:
             p = doc.add_paragraph(para_text, style='Normal')
             if is_references:
@@ -260,20 +267,24 @@ def insert_content_after(doc, heading_idx, content_text, is_references=False):
     return added
 
 
-def add_bookmark(paragraph, tag_name):
-    """Add a single bookmark to a paragraph."""
+def add_range_bookmark(start_para, end_para, tag_name):
+    """Add a range bookmark spanning from start_para to end_para."""
     bm_name = f'tag_{sanitize(tag_name)}'
     bm_id = str(abs(hash(bm_name)) % 1000000)
     
     start = OxmlElement('w:bookmarkStart')
     start.set(qn('w:id'), bm_id)
     start.set(qn('w:name'), bm_name)
-    paragraph._p.insert(0, start)
+    start_para._p.insert(0, start)
     
     end = OxmlElement('w:bookmarkEnd')
     end.set(qn('w:id'), bm_id)
     end.set(qn('w:name'), bm_name)
-    paragraph._p.append(end)
+    
+    if start_para is end_para:
+        start_para._p.append(end)
+    else:
+        end_para._p.append(end)
 
 
 def update_md_meta(md_path, docx_sha):
@@ -392,10 +403,26 @@ def main():
             if not p.style.name.startswith('Heading'):
                 continue
             if p.text.strip().lower() == heading_text.strip().lower():
-                add_bookmark(p, tag)
+                # Find last paragraph before next section heading
+                end_idx = i
+                for j in range(i + 1, len(doc.paragraphs)):
+                    p_next = doc.paragraphs[j]
+                    if p_next.style.name.lower().startswith('heading'):
+                        p_next_text = p_next.text.strip().lower()
+                        is_next_section = False
+                        for _, next_heading in BOOKMARKS:
+                            next_heading_clean = next_heading.strip().lower()
+                            if p_next_text == next_heading_clean or p_next_text.startswith(next_heading_clean):
+                                is_next_section = True
+                                break
+                        if is_next_section:
+                            break
+                    end_idx = j
+                
+                add_range_bookmark(p, doc.paragraphs[end_idx], tag)
                 used_paras.add(i)
                 bookmark_count += 1
-                print(f"    ✓ {tag} → para {i}")
+                print(f"    ✓ {tag} → range para {i} to {end_idx}")
                 break
         else:
             print(f"    ⚠ {tag}: could not bookmark \"{heading_text}\"")
@@ -404,7 +431,7 @@ def main():
     for p in doc.paragraphs:
         if p.style.name.startswith('Heading'):
             text_upper = p.text.strip().upper()
-            if text_upper.startswith('CHAPTER') or text_upper.startswith('REFERENCES') or text_upper.startswith('APPENDIX'):
+            if text_upper.startswith('CHAPTER') or text_upper.startswith('REFERENCES') or text_upper.startswith('APPENDIX') or text_upper.startswith('APPENDICES'):
                 p.paragraph_format.page_break_before = True
                 
     # Save final
