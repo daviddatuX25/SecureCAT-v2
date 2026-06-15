@@ -368,7 +368,7 @@ def surgical_update() -> bool:
     for p in doc.paragraphs:
         if p.style.name.startswith('Heading'):
             text_upper = p.text.strip().upper()
-            if text_upper.startswith('CHAPTER') or text_upper.startswith('REFERENCES') or text_upper.startswith('APPENDIX'):
+            if text_upper.startswith('CHAPTER') or text_upper.startswith('REFERENCES') or text_upper.startswith('APPENDIX') or text_upper.startswith('APPENDICES'):
                 p.paragraph_format.page_break_before = True
                 
     # Save
