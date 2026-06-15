@@ -71,4 +71,9 @@
 | AD2-6 | [IMPROVEMENT_TASKS_2.md](../../capstone/notes/IMPROVEMENT_TASKS_2.md) | Align C1-12 Significance of the Study to future tense (SecureCAT-v2-5zc) | ✅ DONE |
 | AD2-7 | [IMPROVEMENT_TASKS_2.md](../../capstone/notes/IMPROVEMENT_TASKS_2.md) | Verify Thematic Consistency and Bead Trends (SecureCAT-v2-tz9) | ✅ DONE |
 | AD2-8 | [IMPROVEMENT_TASKS_2.md](../../capstone/notes/IMPROVEMENT_TASKS_2.md) | Compile and Assemble Updated Manuscript (SecureCAT-v2-5ls) | ⬜ TODO |
+| BMK-1 | [range-bookmarks-design](./2026-06-15-range-bookmarks-design.md) | Design range-based bookmarks | ✅ DONE |
+| BMK-2 | [range-bookmarks-implementation](./2026-06-15-range-bookmarks-implementation.md) | Task 1: Add Unit Tests for Range Bookmarks | ✅ DONE |
+| BMK-3 | [range-bookmarks-implementation](./2026-06-15-range-bookmarks-implementation.md) | Task 2: Implement Range-Based Bookmarks in md_to_docx.py | ✅ DONE |
+| BMK-4 | [range-bookmarks-implementation](./2026-06-15-range-bookmarks-implementation.md) | Task 3: Update Bookmark Management Scripts | ✅ DONE |
+| BMK-5 | [range-bookmarks-implementation](./2026-06-15-range-bookmarks-implementation.md) | Task 4: Run Verification and Audit Pipeline | ✅ DONE |
 

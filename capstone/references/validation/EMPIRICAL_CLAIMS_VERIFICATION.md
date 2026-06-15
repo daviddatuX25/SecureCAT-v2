@@ -33,7 +33,7 @@
 
 | # | Claim | Manuscript Location | Source to Verify | Status | Evidence/Notes |
 |---|-------|---------------------|-------------------|--------|----------------|
-| 2.1 | Applicants from remote municipalities travel >2 hours each way | Importance, "The Community" | Applicant survey / guidance records / LGU data | ⚠️ Needs Adjustment | |
+| 2.1 | Applicants from remote municipalities travel >2 hours each way | Importance, "The Community" | Applicant survey / guidance records / LGU data | ⚠️ Needs Adjustment (travel time depends from nearby municiaplities from tagudin or to ... ) | |
 | 2.2 | Applicants make multiple visits (submit reqs, check schedules, claim results) | Importance, "The Community" | Applicant flow analysis / staff interview | ⚠️ Needs Adjustment | |
 | 2.3 | Two-to-three-day stencil-method grading process | Importance, "The Guidance Office" | Guidance counselor interview / direct timing | ⚠️ Needs Adjustment | |
 | 2.4 | Manual Microsoft Word encoding and paper-based filing at Registrar | Importance, "The Registrar Office" | Registrar staff interview / direct observation | ✅ Verified | |
