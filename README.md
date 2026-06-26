@@ -16,7 +16,6 @@ SecureCAT-v2 is a comprehensive, zero-trust web application specifically enginee
 - [🔮 Planned Advanced Capstone Features (Future Roadmap)](#-planned-advanced-capstone-features-future-roadmap)
 - [💾 Database Architecture \& ERD](#-database-architecture--erd)
 - [💻 Technology Stack \& Environment](#-technology-stack--environment)
-- [🚀 Development \& Testing Guidelines](#-development--testing-guidelines)
 - [🚢 SecureCAT (NEXIAM) — Dokploy Deployment Guide](#-securecat-nexiam--dokploy-deployment-guide)
 
 ---
@@ -134,60 +133,7 @@ The core data structures are designed around the following models:
 
 ---
 
-## 🚀 Development & Testing Guidelines
 
-### 1. Setup & Execution
-Run the following commands to spin up the local development dependencies:
-```bash
-# Install PHP dependencies
-composer install
-
-# Install JS dependencies
-npm install
-
-# Run the local frontend compiler
-npm run dev
-
-# Run the database migration and seeder
-php artisan migrate --seed
-```
-
-### 2. Code Formatting (Pint)
-Before committing any backend modifications, run Laravel Pint to format files to the repository's rules:
-```bash
-vendor/bin/pint --dirty --format agent
-```
-
-### 3. Testing Suite (PHPUnit)
-All codebase changes must be backed by testing. Run unit and feature tests using the following commands:
-```bash
-# Run all tests in compact mode
-php artisan test --compact
-
-# Run a specific test file
-php artisan test --compact tests/Feature/ExampleTest.php
-
-# Filter to run a specific test case
-php artisan test --compact --filter=testName
-```
-
-### 4. Beads Task Tracking (bd)
-Use the lightweight `bd` task tracking system to manage current capstone issues:
-```bash
-# Discover available tasks
-bd ready
-
-# View detailed task description
-bd show <id>
-
-# Mark a task as in-progress
-bd update <id> --status in_progress
-
-# Mark a task as completed
-bd update <id> --status done
-```
-
----
 
 ## 🚢 SecureCAT (NEXIAM) — Dokploy Deployment Guide
 
