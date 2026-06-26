@@ -30,5 +30,10 @@
         "puppeteer": "^24.43.1",
         "svelte": "^5.51.3",
         "svelte-french-toast": "^1.2.0"
+    },
+    "overrides": {
+        "svelte-french-toast": {
+            "svelte": "$svelte"
+        }
     }
 }

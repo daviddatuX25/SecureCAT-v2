@@ -2,7 +2,7 @@
 FROM node:20-alpine AS assets-builder
 WORKDIR /app
 COPY package*.json ./
-RUN npm ci
+RUN npm ci --legacy-peer-deps
 COPY . .
 RUN npm run build
 
@@ -46,7 +46,7 @@ COPY --from=assets-builder --chown=www-data:www-data /app/public/build ./public/
 RUN composer install --no-dev --optimize-autoloader --no-progress
 
 # Install production npm dependencies (specifically puppeteer for Browsershot)
-RUN PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true npm install --omit=dev --no-audit --no-fund
+RUN PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true npm install --omit=dev --no-audit --no-fund --legacy-peer-deps
 
 # Set environment variables for production performance and task automation
 ENV PHP_OPCACHE_ENABLE=1
