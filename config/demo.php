@@ -44,4 +44,16 @@ return [
 
     'throttle_attempts' => env('DEMO_THROTTLE_ATTEMPTS', null),
 
+    /*
+    | Super Admin Seeding Configuration
+    |
+    | These credentials are used by the DemoAccountSeeder to provision the first
+    | administrator account.
+    |
+    */
+
+    'super_admin_email' => env('SUPER_ADMIN_EMAIL', 'admin@example.com'),
+    'super_admin_password' => env('SUPER_ADMIN_PASSWORD', 'Password1!'),
+    'super_admin_name' => env('SUPER_ADMIN_NAME', 'Super Admin'),
+
 ];
