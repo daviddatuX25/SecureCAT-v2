@@ -32,8 +32,7 @@ const value = `# SecureCAT-v2 Project Conventions
 
 // Utility to run a command and log output (safely using spawnSync)
 console.log(`Registering project identity fact: ${category}/${key}`);
-const result = spawnSync('npx', [
-  'lean-ctx',
+const result = spawnSync('lean-ctx', [
   'knowledge',
   'remember',
   value,
@@ -50,21 +49,21 @@ if (result.status !== 0) {
 
 // Build Graph and Export Package
 console.log('Rebuilding Code Graph...');
-const graphResult = spawnSync('npx', ['lean-ctx', 'graph', 'build'], { stdio: 'inherit' });
+const graphResult = spawnSync('lean-ctx', ['graph', 'build'], { stdio: 'inherit' });
 if (graphResult.status !== 0) {
   console.error('Failed to build graph');
   process.exit(1);
 }
 
 console.log('Creating Context Package...');
-const packResult = spawnSync('npx', ['lean-ctx', 'pack', 'create', '--name', 'securecat-conventions'], { stdio: 'inherit' });
+const packResult = spawnSync('lean-ctx', ['pack', 'create', '--name', 'securecat-conventions'], { stdio: 'inherit' });
 if (packResult.status !== 0) {
   console.error('Failed to create pack');
   process.exit(1);
 }
 
 console.log('Exporting Context Package...');
-const exportResult = spawnSync('npx', ['lean-ctx', 'pack', 'export', 'securecat-conventions'], { stdio: 'inherit' });
+const exportResult = spawnSync('lean-ctx', ['pack', 'export', 'securecat-conventions'], { stdio: 'inherit' });
 if (exportResult.status !== 0) {
   console.error('Failed to export pack');
   process.exit(1);
