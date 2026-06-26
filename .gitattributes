@@ -25,7 +25,6 @@ CHANGELOG.md export-ignore
 /.claude export-ignore
 /.codex export-ignore
 /.cursor export-ignore
-/.lean-ctx export-ignore
 /.opencode export-ignore
 /.playwright-mcp export-ignore
 /.superpowers export-ignore
