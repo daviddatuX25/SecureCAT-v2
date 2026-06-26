@@ -17,6 +17,7 @@ SecureCAT-v2 is a comprehensive, zero-trust web application specifically enginee
 - [💾 Database Architecture \& ERD](#-database-architecture--erd)
 - [💻 Technology Stack \& Environment](#-technology-stack--environment)
 - [🚀 Development \& Testing Guidelines](#-development--testing-guidelines)
+- [🚢 SecureCAT (NEXIAM) — Dokploy Deployment Guide](#-securecat-nexiam--dokploy-deployment-guide)
 
 ---
 
@@ -185,3 +186,49 @@ bd update <id> --status in_progress
 # Mark a task as completed
 bd update <id> --status done
 ```
+
+---
+
+## 🚢 SecureCAT (NEXIAM) — Dokploy Deployment Guide
+
+> Minimal deployment: App Container + MySQL. No Redis needed for demo.
+> Everything is automated — migrations, seeders, and storage symlink all run on first boot.
+
+### Stack
+- **App:** Built from `Dockerfile` via Docker Compose (`compose.prod.yaml`)
+- **Database:** MySQL 8.4 (provisioned automatically by Compose)
+- **Persistent Storage:** Docker volume mounted at `/var/www/html/storage`
+
+### Step 1 — Create a Compose Service in Dokploy
+1. Go to your Dokploy dashboard → **Create Service** → **Compose**.
+2. Connect your GitHub account and select this repository.
+3. Set the **Compose File** to `compose.prod.yaml`.
+
+### Step 2 — Set Environment Variables
+In the Compose service's **Environment** tab, paste the contents of [`.env.dokploy.example`](.env.dokploy.example) and fill in these required values:
+
+| Variable | What to put |
+|---|---|
+| `APP_URL` | Your public domain (e.g. `https://securecat.yourdomain.com`) |
+| `APP_KEY` | Generate with `php artisan key:generate --show` and paste the output |
+| `DB_PASSWORD` | Any strong password for your MySQL root user |
+| `SUPER_ADMIN_PASSWORD` | Your desired admin login password |
+| `OPENROUTER_API_KEY` | *(Optional)* AI Scheduling Assistant |
+| `MIXEDBREAD_API_KEY` | *(Optional)* AI Knowledge Companion |
+
+### Step 3 — Deploy
+Click **Deploy**. On first boot the container will automatically:
+- ✅ Wait for MySQL to be healthy
+- ✅ Run all database migrations
+- ✅ Seed all default data (roles, courses, rooms, rating scale, Super Admin account)
+- ✅ Create the storage symlink
+- ✅ Rebuild config cache
+
+Once the logs show the container is running, open `APP_URL` in your browser and log in with your `SUPER_ADMIN_EMAIL` and `SUPER_ADMIN_PASSWORD`.
+
+### Notes
+- **Redeployments are safe** — migrations only apply new changes; seeders are idempotent.
+- **Uploaded files and logs persist** across redeployments via the Docker volume.
+- **LibreOffice & Chromium** are pre-installed in the Docker image. No extra setup needed for PDF generation.
+- For detailed architecture notes see [`docs/superpowers/specs/2026-06-26-dokploy-deployment-design.md`](docs/superpowers/specs/2026-06-26-dokploy-deployment-design.md).
+
