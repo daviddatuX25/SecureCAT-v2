@@ -12,6 +12,9 @@ FROM serversideup/php:8.4-fpm-nginx
 # Switch to root to install system dependencies (Chromium, LibreOffice, Node.js)
 USER root
 
+# Install PHP gd extension
+RUN install-php-extensions gd
+
 # Tell Puppeteer to skip downloading Chromium (we use the system chromium instead)
 ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
 
