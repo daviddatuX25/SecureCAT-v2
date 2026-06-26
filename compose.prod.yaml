@@ -54,8 +54,8 @@ services:
             MIXEDBREAD_API_KEY: "${MIXEDBREAD_API_KEY:-}"
             MIXEDBREAD_STORE_ID: "${MIXEDBREAD_STORE_ID:-}"
         volumes:
-            # Mount persistent storage for uploaded files and dynamic documents
-            - securecat-storage:/var/www/html/storage/app
+            # Persist ALL of storage: uploads, logs, sessions, framework cache
+            - securecat-storage:/var/www/html/storage
         depends_on:
             mysql:
                 condition: service_healthy

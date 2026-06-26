@@ -39,11 +39,6 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        if (config('app.env') === 'production' && empty(config('app.key'))) {
-            $generatedKey = 'base64:'.base64_encode(random_bytes(32));
-            error_log("\n\n=======================================================\n[SecureCAT Setup helper] No APP_KEY detected!\nHere is a newly generated key you can copy and paste into the Dokploy UI:\n\n{$generatedKey}\n=======================================================\n\n");
-        }
-
         Gate::policy(AuditLog::class, AuditLogPolicy::class);
         Gate::policy(AptitudeArea::class, AptitudeAreaPolicy::class);
         Gate::policy(Application::class, ApplicationPolicy::class);
