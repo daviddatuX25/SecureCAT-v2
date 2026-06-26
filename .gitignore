@@ -26,11 +26,6 @@ Homestead.json
 Homestead.yaml
 Thumbs.db
 
-# Beads / Dolt files (added by bd init)
-.dolt/
-*.db
-.beads-credential-key
-
 # Graphify
 /graphify-out/cache/
 
@@ -44,8 +39,7 @@ capstone/output/
 capstone/manuscript/diagrams/*.png
 
 # Agent / editor context
-.claude/worktrees/
 .playwright-mcp/
-.superpowers/
 securecat-conventions-1.0.0.ctxpkg
+
 

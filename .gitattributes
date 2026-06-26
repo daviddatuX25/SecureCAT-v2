@@ -18,24 +18,7 @@
 CHANGELOG.md export-ignore
 .styleci.yml export-ignore
 
-# --- Agent / AI tooling (development only) ---
-/.agent export-ignore
-/.agents export-ignore
-/.beads export-ignore
-/.claude export-ignore
-/.codex export-ignore
-/.cursor export-ignore
-/.opencode export-ignore
-/.playwright-mcp export-ignore
-/.superpowers export-ignore
-AGENTS.md export-ignore
-CLAUDE.md export-ignore
-opencode.json export-ignore
-.mcp.json export-ignore
-boost.json export-ignore
-
 # --- Planning & documentation (internal) ---
-/.planning export-ignore
 /docs export-ignore
 /graphify-out export-ignore
 
