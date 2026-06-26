@@ -76,4 +76,11 @@
 | BMK-3 | [range-bookmarks-implementation](./2026-06-15-range-bookmarks-implementation.md) | Task 2: Implement Range-Based Bookmarks in md_to_docx.py | ✅ DONE |
 | BMK-4 | [range-bookmarks-implementation](./2026-06-15-range-bookmarks-implementation.md) | Task 3: Update Bookmark Management Scripts | ✅ DONE |
 | BMK-5 | [range-bookmarks-implementation](./2026-06-15-range-bookmarks-implementation.md) | Task 4: Run Verification and Audit Pipeline | ✅ DONE |
+| REV-1 | [manuscript-critical-revisions](./2026-06-16-manuscript-critical-revisions.md) | Task 1: Apply Chapter 1 Critical Revisions (Changes 1 to 14) | ✅ DONE |
+| REV-2 | [manuscript-critical-revisions](./2026-06-16-manuscript-critical-revisions.md) | Task 2: Apply Chapter 2 Critical Revisions (Changes 15 to 21) | 🔄 IN_PROGRESS |
+| REV-3 | [manuscript-critical-revisions](./2026-06-16-manuscript-critical-revisions.md) | Task 3: Perform Reference List Audit & Dead Citations Check (Changes 22 to 25) | ⬜ TODO |
+| REV-4 | [manuscript-critical-revisions](./2026-06-16-manuscript-critical-revisions.md) | Task 4: Run Unified Pipeline and Verify Roundtrip Integration | ⬜ TODO |
+| REV-5 | [manuscript-critical-revisions](./2026-06-16-manuscript-critical-revisions.md) | Task 5: Push Updates to Drive & Create Backup | ⬜ TODO |
+| LCX-1 | [remove-lean-ctx](./2026-06-26-remove-lean-ctx.md) | Clean local lean-ctx traces and install globally | ✅ DONE |
+
 
