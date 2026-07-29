@@ -1,0 +1,159 @@
+# =============================================================================
+# SecureCAT v2 — Dokploy Production Compose
+# =============================================================================
+# Deploy this as a Compose project on Dokploy.
+# Environment variables marked with ${VAR} must be set in Dokploy's Environment tab.
+# Variables with ${VAR:-default} are pre-configured for production.
+# =============================================================================
+
+name: securecat
+
+services:
+  # ── Web Application ──────────────────────────────────────────────────────────
+  # Built from the project Dockerfile (serversideup/php:8.4-fpm-nginx).
+  # Listens on port 8080 internally (serversideup default — NOT port 80).
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    # No host port mapping — Cloudflare Tunnel handles all ingress.
+    # The domain routes through Traefik directly to internal port 8080.
+    expose:
+      - "8080"
+    environment:
+      # ── Dynamic secrets (set these in Dokploy Environment tab) ──
+      APP_KEY: "${APP_KEY}"
+      APP_URL: "${APP_URL}"
+
+      DB_HOST: "${DB_HOST:-mysql}"
+      DB_PORT: "${DB_PORT:-3306}"
+      DB_DATABASE: "${DB_DATABASE:-securecat}"
+      DB_USERNAME: "${DB_USERNAME:-root}"
+      DB_PASSWORD: "${DB_PASSWORD}"
+
+      SUPER_ADMIN_EMAIL: "${SUPER_ADMIN_EMAIL}"
+      SUPER_ADMIN_PASSWORD: "${SUPER_ADMIN_PASSWORD}"
+      SUPER_ADMIN_NAME: "${SUPER_ADMIN_NAME:-Super Admin}"
+
+      MAIL_MAILER: "smtp"
+      MAIL_HOST: "mailpit"
+      MAIL_PORT: "1025"
+      MAIL_USERNAME: ""
+      MAIL_PASSWORD: ""
+      MAIL_FROM_ADDRESS: "${MAIL_FROM_ADDRESS:-securecat@test.local}"
+      MAIL_FROM_NAME: "${APP_NAME:-SecureCAT}"
+
+      # ── Production defaults (baked in, override only if needed) ──
+      APP_NAME: "SecureCAT"
+      APP_ENV: "production"
+      APP_DEBUG: "false"
+
+      LOG_CHANNEL: "stack"
+      LOG_LEVEL: "error"
+
+      CACHE_STORE: "database"
+      SESSION_DRIVER: "database"
+      QUEUE_CONNECTION: "database"
+      SESSION_LIFETIME: "10080"
+      SESSION_ENCRYPT: "false"
+
+      # ── Optional AI keys ──
+      OPENROUTER_API_KEY: "${OPENROUTER_API_KEY:-}"
+      MIXEDBREAD_API_KEY: "${MIXEDBREAD_API_KEY:-}"
+      MIXEDBREAD_STORE_ID: "${MIXEDBREAD_STORE_ID:-}"
+
+      # ── PDF & Office tools (paths inside Docker image) ──
+      LARAVEL_PDF_DRIVER: "browsershot"
+      LARAVEL_PDF_CHROME_PATH: "/usr/bin/chromium"
+      LARAVEL_PDF_NO_SANDBOX: "true"
+      LARAVEL_PDF_NODE_BINARY: "/usr/bin/node"
+      LARAVEL_PDF_NPM_BINARY: "/usr/bin/npm"
+      LIBRE_OFFICE_PATH: "/usr/bin/libreoffice"
+      PDFUNITE_PATH: "/usr/bin/pdfunite"
+      DOCX_CONVERSION_TIMEOUT: "120"
+
+      # ── Institution defaults (overridable from Admin UI) ──
+      INSTITUTION_NAME: "${INSTITUTION_NAME:-ISPSC}"
+      INSTITUTION_CAMPUS: "${INSTITUTION_CAMPUS:-Tagudin Campus}"
+      INSTITUTION_EXAM_NAME: "${INSTITUTION_EXAM_NAME:-ISPSC College Admission Test}"
+      INSTITUTION_EXAM_ACRONYM: "${INSTITUTION_EXAM_ACRONYM:-ICAT}"
+      INSTITUTION_GUIDANCE_COUNSELOR: "${INSTITUTION_GUIDANCE_COUNSELOR:-RAVEENA GALOPE, RGC, RPm}"
+      INSTITUTION_GUIDANCE_COUNSELOR_TITLE: "${INSTITUTION_GUIDANCE_COUNSELOR_TITLE:-Guidance Counselor}"
+    volumes:
+      - securecat-storage:/var/www/html/storage/app
+    depends_on:
+      mysql:
+        condition: service_healthy
+      mailpit:
+        condition: service_started
+    restart: unless-stopped
+    networks:
+      - securecat-net
+
+  # ── MySQL Database ───────────────────────────────────────────────────────────
+  mysql:
+    image: mysql:8.0
+    expose:
+      - "3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: "${DB_PASSWORD}"
+      MYSQL_ROOT_HOST: "%"
+      MYSQL_DATABASE: "${DB_DATABASE:-securecat}"
+      MYSQL_USER: "${DB_USERNAME:-root}"
+      MYSQL_PASSWORD: "${DB_PASSWORD}"
+      MYSQL_ALLOW_EMPTY_PASSWORD: 0
+    volumes:
+      - mysql-data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-p${DB_PASSWORD}", "--silent"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+    restart: unless-stopped
+    networks:
+      - securecat-net
+
+  # ── Redis Cache (optional — app defaults to database driver) ─────────────────
+  # Future-proofing: when you switch CACHE_STORE=redis this is ready.
+  redis:
+    image: redis:alpine
+    expose:
+      - "6379"
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 3
+    restart: unless-stopped
+    networks:
+      - securecat-net
+
+  # ── Mailpit — Email Testing Server ──────────────────────────────────────────
+  # SMTP server for capturing outbound emails during testing.
+  # Web UI at port 8025 (add a domain in Dokploy to access it).
+  mailpit:
+    image: axllent/mailpit:latest
+    expose:
+      - "1025"   # SMTP
+      - "8025"   # Web UI
+    environment:
+      MP_SMTP_AUTH_ACCEPT_ANY: "true"
+      MP_SMTP_AUTH_ALLOW_INSECURE: "true"
+    restart: unless-stopped
+    networks:
+      - securecat-net
+
+networks:
+  securecat-net:
+    driver: bridge
+
+volumes:
+  securecat-storage:
+    driver: local
+  mysql-data:
+    driver: local
+  redis-data:
+    driver: local
